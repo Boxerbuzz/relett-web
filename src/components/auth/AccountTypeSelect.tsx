@@ -32,7 +32,7 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-3 gap-3">
       {options.map((option) => {
         const Icon = option.icon;
         const isSelected = value === option.value;
