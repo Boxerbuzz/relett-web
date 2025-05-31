@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import MyLand from "./pages/MyLand";
 import Marketplace from "./pages/Marketplace";
 import Tokens from "./pages/Tokens";
@@ -31,11 +32,12 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/services/artisans" element={<Artisans />} />
             <Route path="/services/rentals" element={<Rentals />} />
             
             {/* Protected routes with Layout */}
+            <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/land" element={<Layout><MyLand /></Layout>} />
             <Route path="/verification" element={<Layout><Verification /></Layout>} />
             <Route path="/marketplace" element={<Layout><Marketplace /></Layout>} />
