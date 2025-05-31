@@ -22,11 +22,11 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <div className="flex">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
+      <div className="flex flex-1">
+        {/* Desktop Sidebar - Fixed */}
+        <div className="hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-10">
           <Sidebar />
         </div>
         
@@ -46,7 +46,8 @@ export function Layout({ children }: LayoutProps) {
           </SheetContent>
         </Sheet>
 
-        <main className="flex-1 p-4 md:p-6 min-h-screen pt-6">
+        {/* Main Content Area */}
+        <main className="flex-1 md:ml-64 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
           {children}
         </main>
       </div>

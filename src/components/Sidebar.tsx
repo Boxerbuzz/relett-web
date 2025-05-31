@@ -12,7 +12,8 @@ import {
   Coins,
   Gear,
   MapPin,
-  Bell
+  Bell,
+  Plus
 } from 'phosphor-react';
 
 interface SidebarProps {
@@ -20,14 +21,15 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin'] },
+  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner'] },
+  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin'] },
+  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner'] },
-  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin'] },
-  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin'] },
-  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin'] },
+  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
@@ -39,13 +41,13 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6 h-full">
-      <div className="mb-8">
+    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
+      <div className="p-6 border-b">
         <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
         <p className="text-sm text-gray-500">Land Tokenization</p>
       </div>
       
-      <nav className="space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {filteredNavigation.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;

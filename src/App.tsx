@@ -8,6 +8,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
 import MyLand from "./pages/MyLand";
+import AddProperty from "./pages/AddProperty";
 import Marketplace from "./pages/Marketplace";
 import Tokens from "./pages/Tokens";
 import Settings from "./pages/Settings";
@@ -29,6 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/land" element={<MyLand />} />
+              <Route path="/add-property" element={<AddProperty />} />
               <Route path="/verification" element={<Verification />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/tokens" element={<Tokens />} />
