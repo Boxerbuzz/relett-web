@@ -9,7 +9,6 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { VerifyOTPForm } from '@/components/auth/VerifyOTPForm';
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
 import { Dashboard } from '@/components/dashboard/Dashboard';
-import Landing from './Landing';
 
 type AuthMode = 'login' | 'signup' | 'forgot-password' | 'verify-otp' | 'change-password';
 
@@ -17,7 +16,6 @@ const Index = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [resetEmail, setResetEmail] = useState('');
   const { user, loading } = useAuth();
-  const [showAuth, setShowAuth] = useState(false);
 
   if (loading) {
     return (
@@ -30,11 +28,7 @@ const Index = () => {
     );
   }
 
-  if (!user && !showAuth) {
-    return <Landing />;
-  }
-
-  if (!user && showAuth) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 sm:p-0 p-4">
         <div className="w-full max-w-md">
