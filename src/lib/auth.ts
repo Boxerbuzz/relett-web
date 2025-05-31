@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: 'landowner' | 'verifier') => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: 'landowner' | 'verifier' | 'agent') => Promise<void>;
   signOut: () => Promise<void>;
 }
 

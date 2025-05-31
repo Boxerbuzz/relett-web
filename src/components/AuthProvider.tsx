@@ -33,7 +33,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(mockUser);
   };
 
-  const signUp = async (email: string, password: string, name: string, role: 'landowner' | 'verifier') => {
+  const signUp = async (email: string, password: string, name: string, role: 'landowner' | 'verifier' | 'agent') => {
     // Simulate sign up - replace with Supabase
     const mockUser: User = {
       id: Date.now().toString(),
