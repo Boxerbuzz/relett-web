@@ -5,11 +5,16 @@ import { useAuth } from '@/lib/auth';
 import { StatsCard } from './StatsCard';
 import { RecentActivity } from './RecentActivity';
 import { QuickActions } from './QuickActions';
+import { WelcomeCard } from './WelcomeCard';
+import { PropertyOverview } from './PropertyOverview';
+import { MarketInsights } from './MarketInsights';
 import { 
   FileText, 
   Shield, 
   Coins, 
-  TrendingUp 
+  TrendingUp,
+  MapPin,
+  DollarSign
 } from 'lucide-react';
 
 export function Dashboard() {
@@ -17,9 +22,9 @@ export function Dashboard() {
 
   const landownerStats = [
     {
-      title: 'Total Land Records',
+      title: 'Total Properties',
       value: 3,
-      icon: <FileText className="h-4 w-4" />,
+      icon: <MapPin className="h-4 w-4" />,
       description: '2 verified, 1 pending',
       trend: { value: 50, isPositive: true }
     },
@@ -30,7 +35,7 @@ export function Dashboard() {
       description: 'Ready for tokenization'
     },
     {
-      title: 'Tokens Created',
+      title: 'Active Tokens',
       value: 1,
       icon: <Coins className="h-4 w-4" />,
       description: '1 listed for sale'
@@ -38,7 +43,7 @@ export function Dashboard() {
     {
       title: 'Portfolio Value',
       value: '$2.4M',
-      icon: <TrendingUp className="h-4 w-4" />,
+      icon: <DollarSign className="h-4 w-4" />,
       description: 'Based on market estimates',
       trend: { value: 12, isPositive: true }
     }
@@ -63,24 +68,21 @@ export function Dashboard() {
       value: '2.3 days',
       icon: <TrendingUp className="h-4 w-4" />,
       description: 'Industry leading'
+    },
+    {
+      title: 'Monthly Earnings',
+      value: '$4,200',
+      icon: <DollarSign className="h-4 w-4" />,
+      description: 'From verification fees',
+      trend: { value: 8, isPositive: true }
     }
   ];
 
   const stats = user?.role === 'landowner' ? landownerStats : verifierStats;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.name}!
-        </h1>
-        <p className="text-gray-600 mt-2">
-          {user?.role === 'landowner' 
-            ? "Manage your land records and explore tokenization opportunities."
-            : "Review pending verifications and manage your workload."
-          }
-        </p>
-      </div>
+    <div className="space-y-8">
+      <WelcomeCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
@@ -89,11 +91,13 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          {user?.role === 'landowner' && <PropertyOverview />}
           <RecentActivity />
         </div>
-        <div>
+        <div className="space-y-6">
           <QuickActions />
+          <MarketInsights />
         </div>
       </div>
     </div>

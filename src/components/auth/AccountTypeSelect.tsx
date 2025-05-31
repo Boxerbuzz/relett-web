@@ -1,8 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Check, User, ShieldCheck } from 'phosphor-react';
 
@@ -16,19 +14,19 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
     {
       value: 'landowner' as const,
       title: 'Landowner',
-      description: 'Manage and tokenize your land properties',
+      description: 'Manage and tokenize properties',
       icon: User,
     },
     {
       value: 'verifier' as const,
       title: 'Verifier',
-      description: 'Verify land records as a surveyor or lawyer',
+      description: 'Verify land records',
       icon: ShieldCheck,
     },
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-2 gap-3">
       {options.map((option) => {
         const Icon = option.icon;
         const isSelected = value === option.value;
@@ -43,8 +41,8 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
             }`}
             onClick={() => onChange(option.value)}
           >
-            <div className="flex items-start space-x-3">
-              <div className={`p-2 rounded-lg ${
+            <div className="text-center">
+              <div className={`mx-auto mb-2 p-2 rounded-lg w-fit ${
                 isSelected ? 'bg-blue-100' : 'bg-gray-100'
               }`}>
                 <Icon className={`h-5 w-5 ${
@@ -52,18 +50,18 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
                 }`} />
               </div>
               
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className={`font-medium ${
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1">
+                  <h3 className={`font-medium text-sm ${
                     isSelected ? 'text-blue-900' : 'text-gray-900'
                   }`}>
                     {option.title}
                   </h3>
                   {isSelected && (
-                    <Check className="h-5 w-5 text-blue-600" />
+                    <Check className="h-4 w-4 text-blue-600" />
                   )}
                 </div>
-                <p className={`text-sm mt-1 ${
+                <p className={`text-xs ${
                   isSelected ? 'text-blue-700' : 'text-gray-600'
                 }`}>
                   {option.description}
