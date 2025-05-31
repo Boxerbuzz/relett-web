@@ -67,11 +67,6 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
                     <Check className="h-4 w-4 text-blue-600" />
                   )}
                 </div>
-                <p className={`text-xs ${
-                  isSelected ? 'text-blue-700' : 'text-gray-600'
-                }`}>
-                  {option.description}
-                </p>
               </div>
             </div>
           </Card>
