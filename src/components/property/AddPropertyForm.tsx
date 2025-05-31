@@ -15,7 +15,7 @@ import { SpecificationStep } from './steps/SpecificationStep';
 import { DocumentsStep } from './steps/DocumentsStep';
 import { MediaStep } from './steps/MediaStep';
 import { ReviewStep } from './steps/ReviewStep';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const propertySchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -71,11 +71,7 @@ const steps = [
   { title: 'Review', description: 'Confirm details' }
 ];
 
-interface AddPropertyFormProps {
-  onSuccess?: () => void;
-}
-
-export function AddPropertyForm({ onSuccess }: AddPropertyFormProps) {
+export function AddPropertyForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -115,12 +111,10 @@ export function AddPropertyForm({ onSuccess }: AddPropertyFormProps) {
     try {
       console.log('Submitting property:', data);
       // TODO: Integrate with Supabase
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onSuccess?.();
-      }, 1000);
+      alert('Property added successfully!');
     } catch (error) {
       console.error('Error submitting property:', error);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -147,55 +141,56 @@ export function AddPropertyForm({ onSuccess }: AddPropertyFormProps) {
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">Add New Property</h2>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Step {currentStep + 1} of {steps.length}</span>
-            <span>{Math.round(progress)}% Complete</span>
-          </div>
-          <Progress value={progress} className="w-full" />
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">{steps[currentStep].title}</h3>
-              <p className="text-sm text-gray-500">{steps[currentStep].description}</p>
+    <div className="max-w-4xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Add New Property</CardTitle>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Step {currentStep + 1} of {steps.length}</span>
+              <span>{Math.round(progress)}% Complete</span>
+            </div>
+            <Progress value={progress} className="w-full" />
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium">{steps[currentStep].title}</h3>
+                <p className="text-sm text-gray-500">{steps[currentStep].description}</p>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          {renderStep()}
-          
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 0}
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Previous
-            </Button>
-            
-            {currentStep === steps.length - 1 ? (
-              <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
-                {isSubmitting ? 'Adding Property...' : 'Add Property'}
-              </Button>
-            ) : (
-              <Button type="button" onClick={nextStep} className="bg-blue-600 hover:bg-blue-700">
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-          </div>
-        </form>
-      </Form>
+        </CardHeader>
+        
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              {renderStep()}
+              
+              <div className="flex justify-between mt-8 pt-6 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-2" />
+                  Previous
+                </Button>
+                
+                {currentStep === steps.length - 1 ? (
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Adding Property...' : 'Add Property'}
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={nextStep}>
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
