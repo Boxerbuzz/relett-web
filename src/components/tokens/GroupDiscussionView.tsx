@@ -1,9 +1,7 @@
 
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { InvestmentGroupChat } from '@/components/investment/InvestmentGroupChat';
-import { ArrowLeft } from 'lucide-react';
 
 interface Property {
   id: string;
@@ -12,6 +10,10 @@ interface Property {
   totalTokens: number;
   ownedTokens: number;
   investorCount: number;
+  tokenPrice: number;
+  currentValue: number;
+  totalValue: number;
+  roi: number;
 }
 
 interface GroupDiscussionViewProps {
@@ -23,22 +25,19 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
   const userSharePercentage = (property.ownedTokens / property.totalTokens) * 100;
 
   return (
-    <div className="space-y-4">
-      <Button 
-        variant="outline" 
-        onClick={onBack}
-        className="flex items-center gap-2"
-      >
-        <ArrowLeft size={16} />
-        Back to Portfolio
-      </Button>
-      
-      <InvestmentGroupChat 
-        propertyId={property.id}
-        propertyTitle={property.title}
-        investorCount={property.investorCount}
-        userSharePercentage={userSharePercentage}
-      />
-    </div>
+    <InvestmentGroupChat 
+      propertyId={property.id}
+      propertyTitle={property.title}
+      propertyLocation={property.location}
+      investorCount={property.investorCount}
+      userSharePercentage={userSharePercentage}
+      tokenPrice={property.tokenPrice}
+      currentValue={property.currentValue}
+      totalValue={property.totalValue}
+      roi={property.roi}
+      ownedTokens={property.ownedTokens}
+      totalTokens={property.totalTokens}
+      onBack={onBack}
+    />
   );
 }

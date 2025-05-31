@@ -18,7 +18,10 @@ import {
   MessageSquare,
   ThumbsUp,
   ThumbsDown,
-  Clock
+  Clock,
+  ArrowLeft,
+  MapPin,
+  DollarSign
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -39,15 +42,31 @@ interface ChatMessage {
 interface InvestmentGroupChatProps {
   propertyId: string;
   propertyTitle: string;
+  propertyLocation: string;
   investorCount: number;
   userSharePercentage: number;
+  tokenPrice: number;
+  currentValue: number;
+  totalValue: number;
+  roi: number;
+  ownedTokens: number;
+  totalTokens: number;
+  onBack: () => void;
 }
 
 export function InvestmentGroupChat({ 
   propertyId, 
-  propertyTitle, 
+  propertyTitle,
+  propertyLocation,
   investorCount, 
-  userSharePercentage 
+  userSharePercentage,
+  tokenPrice,
+  currentValue,
+  totalValue,
+  roi,
+  ownedTokens,
+  totalTokens,
+  onBack
 }: InvestmentGroupChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -163,136 +182,172 @@ export function InvestmentGroupChat({
   };
 
   return (
-    <div className="h-full flex flex-col space-y-4">
-      {/* Group Info Header */}
-      <Card className="flex-shrink-0">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {propertyTitle} - Investor Group
-            </span>
-            <Badge variant="outline">{investorCount} investors</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="h-screen flex flex-col">
+      {/* Header with Back Button and Title */}
+      <div className="flex-shrink-0 border-b bg-white px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onBack}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">Back</span>
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-semibold flex items-center gap-2 truncate">
+              <Users className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{propertyTitle}</span>
+              <Badge variant="outline" className="flex-shrink-0">{investorCount} investors</Badge>
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      {/* Pinned Investment Details */}
+      <Card className="flex-shrink-0 m-4 mb-2">
+        <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Your Share:</span>
-              <p className="font-medium text-green-600">{userSharePercentage}%</p>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs text-gray-600">Location</p>
+                <p className="font-medium truncate">{propertyLocation}</p>
+              </div>
             </div>
-            <div>
-              <span className="text-gray-600">Total Investors:</span>
-              <p className="font-medium">{investorCount}</p>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs text-gray-600">Your Investment</p>
+                <p className="font-medium text-green-600">${totalValue.toLocaleString()}</p>
+              </div>
             </div>
-            <div>
-              <span className="text-gray-600">Active Votes:</span>
-              <p className="font-medium">{activeVotes.length}</p>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs text-gray-600">ROI</p>
+                <p className={`font-medium ${roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-gray-600">Property Value:</span>
-              <p className="font-medium text-green-600">$450,000</p>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs text-gray-600">Your Share</p>
+                <p className="font-medium">{ownedTokens}/{totalTokens} tokens ({userSharePercentage.toFixed(1)}%)</p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Chat Messages - Takes remaining space */}
-      <Card className="flex-1 flex flex-col min-h-0">
-        <CardHeader className="flex-shrink-0">
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Group Discussion
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-          {/* Messages Area */}
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div key={message.id} className="space-y-2">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {message.sender === 'AI Moderator' ? 'AI' : message.sender.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{message.sender}</span>
-                        {getMessageIcon(message.type)}
-                        <span className="text-xs text-gray-500">
-                          {formatTimestamp(message.timestamp)}
-                        </span>
-                      </div>
+      {/* Messages Area - Takes remaining space */}
+      <div className="flex-1 flex flex-col min-h-0 mx-4 mb-4">
+        <Card className="flex-1 flex flex-col min-h-0">
+          <CardHeader className="flex-shrink-0 py-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageSquare className="h-4 w-4" />
+              Group Discussion
+              {activeVotes.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {activeVotes.length} active vote{activeVotes.length > 1 ? 's' : ''}
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          
+          {/* Messages */}
+          <div className="flex-1 min-h-0 px-4">
+            <ScrollArea className="h-full">
+              <div className="space-y-4 pb-4">
+                {messages.map((message) => (
+                  <div key={message.id} className="space-y-2">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarFallback>
+                          {message.sender === 'AI Moderator' ? 'AI' : message.sender.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                       
-                      <div className={`p-3 rounded-lg ${
-                        message.type === 'ai_summary' 
-                          ? 'bg-purple-50 border border-purple-200' 
-                          : message.senderId === 'current_user'
-                            ? 'bg-blue-50 border border-blue-200'
-                            : 'bg-gray-50 border border-gray-200'
-                      }`}>
-                        <p className="text-sm">{message.message}</p>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{message.sender}</span>
+                          {getMessageIcon(message.type)}
+                          <span className="text-xs text-gray-500">
+                            {formatTimestamp(message.timestamp)}
+                          </span>
+                        </div>
                         
-                        {/* Voting Component */}
-                        {message.type === 'vote' && message.votes && (
-                          <div className="mt-3 space-y-2">
-                            <Separator />
-                            <div>
-                              <h4 className="font-medium text-sm mb-2">{message.votes.proposal}</h4>
-                              <div className="space-y-2">
-                                {message.votes.options.map((option, index) => (
-                                  <div key={index} className="flex items-center justify-between">
-                                    <span className="text-sm">{option.label}</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm text-gray-600">{option.votes} votes</span>
-                                      {activeVotes.includes(message.id) && (
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => castVote(message.id, index)}
-                                        >
-                                          Vote
-                                        </Button>
-                                      )}
+                        <div className={`p-3 rounded-lg ${
+                          message.type === 'ai_summary' 
+                            ? 'bg-purple-50 border border-purple-200' 
+                            : message.senderId === 'current_user'
+                              ? 'bg-blue-50 border border-blue-200'
+                              : 'bg-gray-50 border border-gray-200'
+                        }`}>
+                          <p className="text-sm">{message.message}</p>
+                          
+                          {/* Voting Component */}
+                          {message.type === 'vote' && message.votes && (
+                            <div className="mt-3 space-y-2">
+                              <Separator />
+                              <div>
+                                <h4 className="font-medium text-sm mb-2">{message.votes.proposal}</h4>
+                                <div className="space-y-2">
+                                  {message.votes.options.map((option, index) => (
+                                    <div key={index} className="flex items-center justify-between">
+                                      <span className="text-sm">{option.label}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">{option.votes} votes</span>
+                                        {activeVotes.includes(message.id) && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => castVote(message.id, index)}
+                                          >
+                                            Vote
+                                          </Button>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                                <span>Total votes: {message.votes.totalVotes}</span>
-                                <span>Deadline: {formatTimestamp(message.votes.deadline)}</span>
+                                  ))}
+                                </div>
+                                <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
+                                  <span>Total votes: {message.votes.totalVotes}</span>
+                                  <span>Deadline: {formatTimestamp(message.votes.deadline)}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </div>
           
-          {/* Message Input */}
-          <div className="flex-shrink-0 p-4 border-t">
+          {/* Message Input - Fixed at bottom */}
+          <div className="flex-shrink-0 p-4 border-t bg-white">
             <div className="flex gap-2">
               <Input
                 placeholder="Type your message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                className="flex-1"
               />
-              <Button onClick={sendMessage} size="icon">
+              <Button onClick={sendMessage} size="icon" className="flex-shrink-0">
                 <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
