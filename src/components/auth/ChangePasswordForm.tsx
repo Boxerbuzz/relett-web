@@ -5,58 +5,47 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AccountTypeSelect } from './AccountTypeSelect';
-import { User, Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
+import { Lock, Eye, EyeSlash } from 'phosphor-react';
 
-const signUpSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
+const changePasswordSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
-  role: z.enum(['landowner', 'verifier']),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
-type SignUpForm = z.infer<typeof signUpSchema>;
+type ChangePasswordForm = z.infer<typeof changePasswordSchema>;
 
-interface SignUpFormProps {
-  onToggleMode: () => void;
+interface ChangePasswordFormProps {
+  onSuccess: () => void;
 }
 
-export function SignUpForm({ onToggleMode }: SignUpFormProps) {
+export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signUp } = useAuth();
   
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
-  } = useForm<SignUpForm>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      role: 'landowner'
-    }
+  } = useForm<ChangePasswordForm>({
+    resolver: zodResolver(changePasswordSchema),
   });
 
-  const role = watch('role');
-
-  const onSubmit = async (data: SignUpForm) => {
+  const onSubmit = async (data: ChangePasswordForm) => {
     try {
       setLoading(true);
-      await signUp(data.email, data.password, data.name, data.role);
+      // TODO: Implement password change with Supabase
+      console.log('Changing password');
+      onSuccess();
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('Password change error:', error);
     } finally {
       setLoading(false);
     }
@@ -65,54 +54,21 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Join LandChain</CardTitle>
+        <CardTitle className="text-2xl font-bold">Set New Password</CardTitle>
         <CardDescription>
-          Create your account to get started
+          Choose a strong password for your account
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="name">Full Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="name"
-                placeholder="Enter your full name"
-                className="pl-10"
-                {...register('name')}
-              />
-            </div>
-            {errors.name && (
-              <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <div className="relative">
-              <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="pl-10"
-                {...register('email')}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">New Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Create a password"
+                placeholder="Enter new password"
                 className="pl-10 pr-10"
                 {...register('password')}
               />
@@ -136,7 +92,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
+                placeholder="Confirm new password"
                 className="pl-10 pr-10"
                 {...register('confirmPassword')}
               />
@@ -153,35 +109,10 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             )}
           </div>
 
-          <div>
-            <Label>Account Type</Label>
-            <div className="mt-2">
-              <AccountTypeSelect
-                value={role}
-                onChange={(value) => setValue('role', value)}
-              />
-            </div>
-            {errors.role && (
-              <p className="text-sm text-red-600 mt-1">{errors.role.message}</p>
-            )}
-          </div>
-
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Updating...' : 'Update Password'}
           </Button>
         </form>
-
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <button
-              onClick={onToggleMode}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Sign in
-            </button>
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
