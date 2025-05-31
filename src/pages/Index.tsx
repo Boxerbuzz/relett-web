@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { Layout } from '@/components/Layout';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
@@ -74,11 +73,9 @@ const Index = () => {
     );
   }
 
-  return (
-    <Layout>
-      <Dashboard />
-    </Layout>
-  );
+  // When user is authenticated, just return the Dashboard
+  // The Layout wrapper is already handled in App.tsx
+  return <Dashboard />;
 };
 
 export default Index;
