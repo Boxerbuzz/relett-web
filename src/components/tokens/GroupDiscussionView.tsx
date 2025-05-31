@@ -25,19 +25,21 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
   const userSharePercentage = (property.ownedTokens / property.totalTokens) * 100;
 
   return (
-    <InvestmentGroupChat 
-      propertyId={property.id}
-      propertyTitle={property.title}
-      propertyLocation={property.location}
-      investorCount={property.investorCount}
-      userSharePercentage={userSharePercentage}
-      tokenPrice={property.tokenPrice}
-      currentValue={property.currentValue}
-      totalValue={property.totalValue}
-      roi={property.roi}
-      ownedTokens={property.ownedTokens}
-      totalTokens={property.totalTokens}
-      onBack={onBack}
-    />
+    <div className="h-screen flex flex-col">
+      <InvestmentGroupChat 
+        propertyId={property.id}
+        propertyTitle={property.title}
+        propertyLocation={property.location}
+        investorCount={property.investorCount}
+        userSharePercentage={userSharePercentage}
+        tokenPrice={property.tokenPrice}
+        currentValue={property.currentValue}
+        totalValue={property.totalValue}
+        roi={property.roi}
+        ownedTokens={property.ownedTokens}
+        totalTokens={property.totalTokens}
+        onBack={onBack}
+      />
+    </div>
   );
 }
