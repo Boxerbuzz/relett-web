@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,30 +9,33 @@ import { MapPin, Eye, MoreHorizontal, Plus } from 'lucide-react';
 const mockProperties = [
   {
     id: 1,
-    title: 'Downtown Commercial Plot',
+    title: 'Downtown Commercial Plaza',
     location: 'Lagos, Nigeria',
     size: '2.5 acres',
     status: 'verified',
     value: '$1.2M',
-    tokenized: true
+    tokenized: true,
+    type: 'commercial'
   },
   {
     id: 2,
-    title: 'Residential Land Parcel',
+    title: 'Luxury Residential Estate',
     location: 'Abuja, Nigeria',
     size: '1.8 acres',
     status: 'verified',
     value: '$800K',
-    tokenized: false
+    tokenized: false,
+    type: 'residential'
   },
   {
     id: 3,
-    title: 'Agricultural Land',
+    title: 'Modern Apartment Complex',
     location: 'Kano, Nigeria',
     size: '5.2 acres',
     status: 'pending',
     value: '$400K',
-    tokenized: false
+    tokenized: false,
+    type: 'residential'
   }
 ];
 
@@ -53,7 +57,7 @@ export function PropertyOverview() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Your Properties</CardTitle>
-            <CardDescription>Manage and track your land assets</CardDescription>
+            <CardDescription>Manage and track your property assets</CardDescription>
           </div>
           <Button size="sm">
             <Plus className="w-4 h-4 mr-2" />

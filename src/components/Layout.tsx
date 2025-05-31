@@ -36,7 +36,7 @@ export function Layout({ children }: LayoutProps) {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="fixed top-4 left-4 z-50 bg-white shadow-sm"
+              className="fixed top-20 left-4 z-40 bg-white shadow-sm border"
             >
               <List size={20} />
             </Button>
@@ -46,7 +46,7 @@ export function Layout({ children }: LayoutProps) {
           </SheetContent>
         </Sheet>
 
-        <main className="flex-1 p-4 md:p-6 min-h-screen">
+        <main className="flex-1 p-4 md:p-6 min-h-screen pt-6">
           {children}
         </main>
       </div>

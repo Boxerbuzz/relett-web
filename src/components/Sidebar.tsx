@@ -21,7 +21,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin'] },
-  { name: 'My Land', href: '/land', icon: FileText, roles: ['landowner'] },
+  { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner'] },
