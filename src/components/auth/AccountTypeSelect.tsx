@@ -63,9 +63,6 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
                   }`}>
                     {option.title}
                   </h3>
-                  {isSelected && (
-                    <Check className="h-4 w-4 text-blue-600" />
-                  )}
                 </div>
               </div>
             </div>
