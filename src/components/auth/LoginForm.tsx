@@ -9,7 +9,6 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
 import { Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
@@ -51,14 +50,15 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
-        <CardDescription className="text-gray-600">
+    <div className="w-full max-w-md">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+        <p className="text-gray-600 mt-2">
           Sign in to your LandChain account
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      
+      <div className="space-y-6">
         <div className="space-y-3">
           <SocialAuthButtons />
           <WalletAuthButton />
@@ -145,7 +145,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
             </button>
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Envelope } from 'phosphor-react';
 
 const forgotPasswordSchema = z.object({
@@ -47,47 +46,46 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
-        <CardDescription>
+    <div className="w-full max-w-md">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold">Reset Password</h1>
+        <p className="text-gray-600 mt-2">
           Enter your email address and we'll send you a reset link
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <div className="relative">
-              <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="pl-10"
-                {...register('email')}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-            )}
+        </p>
+      </div>
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <Label htmlFor="email">Email Address</Label>
+          <div className="relative">
+            <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              className="pl-10"
+              {...register('email')}
+            />
           </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
-          </Button>
-        </form>
-
-        <div className="mt-4 text-center">
-          <button
-            onClick={onBack}
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to sign in
-          </button>
+          {errors.email && (
+            <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Reset Link'}
+        </Button>
+      </form>
+
+      <div className="mt-4 text-center">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Back to sign in
+        </button>
+      </div>
+    </div>
   );
 }

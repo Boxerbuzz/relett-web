@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Timer } from 'phosphor-react';
 
 const otpSchema = z.object({
@@ -59,57 +58,56 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
-        <CardDescription>
+    <div className="w-full max-w-md">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold">Verify Your Email</h1>
+        <p className="text-gray-600 mt-2">
           We've sent a 6-digit code to {email}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="flex flex-col items-center space-y-2">
-            <Label htmlFor="otp">Enter verification code</Label>
-            <InputOTP maxLength={6} value={otp} onChange={handleOTPChange}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-            {errors.otp && (
-              <p className="text-sm text-red-600">{errors.otp.message}</p>
-            )}
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
-            {loading ? 'Verifying...' : 'Verify Code'}
-          </Button>
-        </form>
-
-        <div className="mt-4 text-center space-y-2">
-          <button
-            onClick={resendOTP}
-            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
-          >
-            <Timer className="mr-1 h-4 w-4" />
-            Didn't receive the code? Resend
-          </button>
-          
-          <div>
-            <button
-              onClick={onBack}
-              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back to sign in
-            </button>
-          </div>
+        </p>
+      </div>
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="flex flex-col items-center space-y-2">
+          <Label htmlFor="otp">Enter verification code</Label>
+          <InputOTP maxLength={6} value={otp} onChange={handleOTPChange}>
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+          {errors.otp && (
+            <p className="text-sm text-red-600">{errors.otp.message}</p>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
+          {loading ? 'Verifying...' : 'Verify Code'}
+        </Button>
+      </form>
+
+      <div className="mt-4 text-center space-y-2">
+        <button
+          onClick={resendOTP}
+          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
+        >
+          <Timer className="mr-1 h-4 w-4" />
+          Didn't receive the code? Resend
+        </button>
+        
+        <div>
+          <button
+            onClick={onBack}
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

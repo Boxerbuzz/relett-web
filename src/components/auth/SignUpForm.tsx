@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccountTypeSelect } from './AccountTypeSelect';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
@@ -70,14 +70,15 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900">Join LandChain</CardTitle>
-        <CardDescription className="text-gray-600">
+    <div className="w-full max-w-md">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Join LandChain</h1>
+        <p className="text-gray-600 mt-2">
           Create your account to get started
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      
+      <div className="space-y-6">
         <div className="space-y-3">
           <SocialAuthButtons />
           <WalletAuthButton />
@@ -234,7 +235,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             </button>
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
