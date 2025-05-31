@@ -22,15 +22,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Simulate sign in - replace with Supabase
-    const mockUser: User = {
-      id: '1',
-      email,
-      role: 'landowner',
-      name: 'John Doe',
-      created_at: new Date().toISOString(),
-    };
-    setUser(mockUser);
+    // Simple check - if email and password are provided, log in
+    if (email && password) {
+      const mockUser: User = {
+        id: '1',
+        email,
+        role: 'landowner',
+        name: 'John Doe',
+        created_at: new Date().toISOString(),
+      };
+      setUser(mockUser);
+    }
   };
 
   const signUp = async (email: string, password: string, name: string, role: 'landowner' | 'verifier' | 'agent') => {
