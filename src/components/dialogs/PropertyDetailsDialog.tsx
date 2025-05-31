@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, TrendUp, Heart, Share, Eye } from 'lucide-react';
+import { MapPin, TrendingUp, Heart, Share, Eye } from 'lucide-react';
 
 interface PropertyDetailsDialogProps {
   open: boolean;
@@ -120,7 +120,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <TrendUp size={16} className="text-green-600 mr-1" />
+                        <TrendingUp size={16} className="text-green-600 mr-1" />
                         <span className="text-green-600 font-medium">{property.roi} Expected ROI</span>
                       </div>
                       <span className="text-sm text-gray-600">Annual projected return</span>

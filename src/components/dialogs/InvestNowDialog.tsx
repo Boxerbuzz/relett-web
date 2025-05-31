@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Minus, Plus, TrendUp } from 'lucide-react';
+import { Minus, Plus, TrendingUp } from 'lucide-react';
 
 interface InvestNowDialogProps {
   open: boolean;
@@ -66,7 +66,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm font-medium">{property.tokenPrice}</span>
                     <Badge variant="outline" className="text-xs">
-                      <TrendUp size={10} className="mr-1" />
+                      <TrendingUp size={10} className="mr-1" />
                       {property.roi}
                     </Badge>
                   </div>
