@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MagnifyingGlass, MapPin, Heart, TrendUp, Fire } from 'phosphor-react';
+import { InvestNowDialog } from '@/components/dialogs/InvestNowDialog';
+import { PropertyDetailsDialog } from '@/components/dialogs/PropertyDetailsDialog';
 
 const marketplaceProperties = [
   {
@@ -53,6 +56,20 @@ const marketplaceProperties = [
 ];
 
 const Marketplace = () => {
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [investDialogOpen, setInvestDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+
+  const handleInvestClick = (property: any) => {
+    setSelectedProperty(property);
+    setInvestDialogOpen(true);
+  };
+
+  const handleViewDetails = (property: any) => {
+    setSelectedProperty(property);
+    setDetailsDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -199,8 +216,17 @@ const Marketplace = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button className="flex-1">Invest Now</Button>
-                <Button variant="outline" size="icon">
+                <Button 
+                  className="flex-1"
+                  onClick={() => handleInvestClick(property)}
+                >
+                  Invest Now
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => handleViewDetails(property)}
+                >
                   <Heart size={16} />
                 </Button>
               </div>
@@ -208,6 +234,22 @@ const Marketplace = () => {
           </Card>
         ))}
       </div>
+
+      {/* Dialogs */}
+      {selectedProperty && (
+        <>
+          <InvestNowDialog
+            open={investDialogOpen}
+            onOpenChange={setInvestDialogOpen}
+            property={selectedProperty}
+          />
+          <PropertyDetailsDialog
+            open={detailsDialogOpen}
+            onOpenChange={setDetailsDialogOpen}
+            property={selectedProperty}
+          />
+        </>
+      )}
     </div>
   );
 };
