@@ -7,7 +7,7 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'phosphor-react';
+import { List } from 'phosphor-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -38,7 +38,7 @@ export function Layout({ children }: LayoutProps) {
               size="icon" 
               className="fixed top-4 left-4 z-50 bg-white shadow-sm"
             >
-              <Menu size={20} />
+              <List size={20} />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">

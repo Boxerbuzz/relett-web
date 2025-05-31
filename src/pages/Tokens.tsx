@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Coins, 
-  TrendingUp, 
-  TrendingDown, 
+  TrendUp, 
+  TrendDown, 
   ArrowUpRight, 
   ArrowDownLeft,
   Eye,
@@ -110,7 +109,7 @@ const Tokens = () => {
           <CardContent>
             <div className="text-2xl font-bold">${totalValue.toLocaleString()}</div>
             <p className={`text-xs ${totalChange >= 0 ? 'text-green-600' : 'text-red-600'} flex items-center mt-1`}>
-              {totalChange >= 0 ? <TrendingUp size={12} className="mr-1" /> : <TrendingDown size={12} className="mr-1" />}
+              {totalChange >= 0 ? <TrendUp size={12} className="mr-1" /> : <TrendDown size={12} className="mr-1" />}
               {totalChange >= 0 ? '+' : ''}${Math.abs(totalChange).toLocaleString()} today
             </p>
           </CardContent>

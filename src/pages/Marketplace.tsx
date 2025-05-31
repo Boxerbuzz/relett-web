@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MagnifyingGlass, MapPin, Heart, TrendingUp, Fire } from 'phosphor-react';
+import { MagnifyingGlass, MapPin, Heart, TrendUp, Fire } from 'phosphor-react';
 
 const marketplaceProperties = [
   {
@@ -180,7 +179,7 @@ const Marketplace = () => {
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Expected ROI:</span>
                   <div className="flex items-center">
-                    <TrendingUp size={14} className="mr-1 text-green-600" />
+                    <TrendUp size={14} className="mr-1 text-green-600" />
                     <span className="font-semibold text-green-600">{property.roi}</span>
                   </div>
                 </div>
