@@ -1,14 +1,19 @@
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export function CTA() {
   return (
     <section className="py-20 bg-blue-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <Badge className="mb-4 sm:mb-6 bg-blue-500 text-white border border-blue-400 font-light rounded-full">
+          🎯 Get Started Today
+        </Badge>
+        
         <h2 className="text-4xl font-bold text-white mb-6">
           Ready to Transform Your Real Estate Experience?
         </h2>
-        <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+        <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
           Join thousands of property owners who trust Relett for secure, transparent, and efficient property management.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

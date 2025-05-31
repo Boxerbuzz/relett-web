@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 const faqs = [
   {
@@ -34,8 +35,11 @@ export function FAQ() {
     <section className="py-20 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
+          <Badge className="mb-4 sm:mb-6 bg-blue-50 text-blue-600 border border-blue-200 font-light rounded-full">
+            ❓ FAQ
+          </Badge>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg text-gray-600">
             Everything you need to know about Relett
           </p>
         </div>

@@ -1,4 +1,6 @@
 
+import { Badge } from '@/components/ui/badge';
+
 const sponsors = [
   { name: 'TechCorp', logo: '/placeholder.svg' },
   { name: 'InnovateNow', logo: '/placeholder.svg' },
@@ -21,6 +23,9 @@ export function Sponsors() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
+            <Badge className="mb-4 sm:mb-6 bg-gray-100 text-gray-600 border border-gray-200 font-light rounded-full">
+              🤝 Our Partners
+            </Badge>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Sponsored By</h3>
             <p className="text-gray-600">Backed by leading technology and investment partners</p>
           </div>
@@ -41,6 +46,9 @@ export function Sponsors() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
+            <Badge className="mb-4 sm:mb-6 bg-green-50 text-green-600 border border-green-200 font-light rounded-full">
+              🏛️ Government Recognition
+            </Badge>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Recognized By Government Bodies</h3>
             <p className="text-gray-600">Certified and approved by regulatory authorities</p>
           </div>

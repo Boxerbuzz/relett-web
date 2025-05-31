@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Star, Quote } from 'lucide-react';
 
 const testimonials = [
@@ -31,8 +32,11 @@ export function Testimonials() {
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
+          <Badge className="mb-4 sm:mb-6 bg-gray-100 text-gray-600 border border-gray-200 font-light rounded-full">
+            💬 Customer Stories
+          </Badge>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Clients Say</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Trusted by property owners, developers, and investors worldwide
           </p>
         </div>

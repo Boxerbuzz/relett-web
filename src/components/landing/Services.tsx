@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Home, 
@@ -16,42 +17,42 @@ import {
 const services = [
   {
     name: 'Relett Artisans',
-    description: 'Connect with skilled craftsmen and contractors',
+    description: 'Easily find and hire vetted service professionals — plumbers, electricians, painters, cleaners, and more — anytime, anywhere.',
     icon: Settings,
     href: '/services/artisans',
     color: 'bg-blue-50 text-blue-600'
   },
   {
     name: 'Relett Rentals',
-    description: 'Long-term property rental solutions',
+    description: 'Find long-term rental properties with ease. Verified listings, transparent pricing, and fast, secure processes designed just for you.',
     icon: Home,
     href: '/services/rentals',
     color: 'bg-green-50 text-green-600'
   },
   {
     name: 'Relett Moove',
-    description: 'Professional moving and relocation services',
+    description: 'Reliable logistics and moving services on demand. Schedule moves, transport large items, or relocate hassle-free with trusted professionals.',
     icon: Truck,
     href: '/services/moove',
     color: 'bg-purple-50 text-purple-600'
   },
   {
     name: 'Relett Shortlet',
-    description: 'Short-term accommodation booking',
+    description: 'Book short-stay, furnished apartments perfect for travelers, remote workers, and weekend getaways. Flexible durations, instant booking.',
     icon: Calendar,
     href: '/services/shortlet',
     color: 'bg-orange-50 text-orange-600'
   },
   {
     name: 'Relett Investments',
-    description: 'Property investment and tokenization',
+    description: 'Invest in real estate with as little as ₦50,000. Participate in fractional property ownership, earn rental income, and build wealth.',
     icon: DollarSign,
     href: '/services/investments',
     color: 'bg-yellow-50 text-yellow-600'
   },
   {
     name: 'Relett Manager',
-    description: 'Property management solutions',
+    description: 'Smart tools for property owners and managers — automate rent collection, manage inspections, chat with tenants, and track property.',
     icon: Building,
     href: '/services/manager',
     color: 'bg-red-50 text-red-600'
@@ -65,7 +66,7 @@ const services = [
   },
   {
     name: 'Relett Co-Spaces',
-    description: 'Shared workspace solutions',
+    description: 'Discover co-living and co-working spaces that foster community and productivity. Ideal for young creatives and professionals.',
     icon: Users,
     href: '/services/co-spaces',
     color: 'bg-teal-50 text-teal-600'
@@ -77,9 +78,12 @@ export function Services() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Comprehensive real estate solutions powered by cutting-edge technology
+          <Badge className="mb-4 sm:mb-6 bg-green-50 text-green-600 border border-green-200 font-light rounded-full">
+            🛠️ Our Services
+          </Badge>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our unique services</h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Whether you're renting, managing, moving, or investing — Relett offers all-in-one services designed to make your real estate experience seamless, fast, and trustworthy.
           </p>
         </div>
         
