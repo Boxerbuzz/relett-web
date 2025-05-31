@@ -1,12 +1,14 @@
-
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Plus, MagnifyingGlass, MapPin, Eye, DotsThreeVertical, Heart, Share } from 'phosphor-react';
 import { Link } from 'react-router-dom';
+import { PropertyDetailsDialog } from '@/components/dialogs/PropertyDetailsDialog';
+import { TokenizePropertyDialog } from '@/components/dialogs/TokenizePropertyDialog';
 
 const mockProperties = [
   {
@@ -56,6 +58,20 @@ const mockProperties = [
 ];
 
 const MyProperty = () => {
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+
+  const handleViewDetails = (property: any) => {
+    setSelectedProperty(property);
+    setDetailsDialogOpen(true);
+  };
+
+  const handleTokenizeProperty = (property: any) => {
+    setSelectedProperty(property);
+    setTokenizeDialogOpen(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'verified':
@@ -186,17 +202,38 @@ const MyProperty = () => {
                   <p className="text-lg font-bold text-gray-900">{property.value}</p>
                   <p className="text-xs text-gray-500">Est. value</p>
                 </div>
-                <Link to={`/property/${property.id}`}>
-                  <Button variant="outline" size="sm">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleViewDetails(property)}>
                     <Eye size={14} className="mr-2" />
                     <span className="hidden sm:inline">View</span>
                   </Button>
-                </Link>
+                  {!property.tokenized && (
+                    <Button size="sm" onClick={() => handleTokenizeProperty(property)}>
+                      Tokenize
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Dialogs */}
+      {selectedProperty && (
+        <>
+          <PropertyDetailsDialog
+            open={detailsDialogOpen}
+            onOpenChange={setDetailsDialogOpen}
+            property={selectedProperty}
+          />
+          <TokenizePropertyDialog
+            open={tokenizeDialogOpen}
+            onOpenChange={setTokenizeDialogOpen}
+            property={selectedProperty}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,8 @@ import {
   Eye,
   Plus
 } from 'phosphor-react';
+import { BuyTokenDialog } from '@/components/dialogs/BuyTokenDialog';
+import { TransactionDetailsDialog } from '@/components/dialogs/TransactionDetailsDialog';
 
 const tokenHoldings = [
   {
@@ -77,6 +80,15 @@ const transactionHistory = [
 ];
 
 const Tokens = () => {
+  const [buyTokenDialogOpen, setBuyTokenDialogOpen] = useState(false);
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+
+  const handleViewTransaction = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setTransactionDialogOpen(true);
+  };
+
   const totalValue = tokenHoldings.reduce((sum, holding) => {
     return sum + parseFloat(holding.totalValue.replace('$', '').replace(',', ''));
   }, 0);
@@ -93,7 +105,7 @@ const Tokens = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Tokens</h1>
           <p className="text-gray-600">Track your tokenized land investments</p>
         </div>
-        <Button>
+        <Button onClick={() => setBuyTokenDialogOpen(true)}>
           <Plus size={16} className="mr-2" />
           Buy Tokens
         </Button>
@@ -193,7 +205,7 @@ const Tokens = () => {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm">Buy More</Button>
+                  <Button size="sm" onClick={() => setBuyTokenDialogOpen(true)}>Buy More</Button>
                   <Button variant="outline" size="sm">Sell</Button>
                   <Button variant="ghost" size="sm">View Details</Button>
                 </div>
@@ -204,7 +216,7 @@ const Tokens = () => {
 
         <TabsContent value="transactions" className="space-y-4">
           {transactionHistory.map((transaction) => (
-            <Card key={transaction.id}>
+            <Card key={transaction.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleViewTransaction(transaction)}>
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-4">
@@ -238,6 +250,20 @@ const Tokens = () => {
           ))}
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <BuyTokenDialog
+        open={buyTokenDialogOpen}
+        onOpenChange={setBuyTokenDialogOpen}
+      />
+      
+      {selectedTransaction && (
+        <TransactionDetailsDialog
+          open={transactionDialogOpen}
+          onOpenChange={setTransactionDialogOpen}
+          transaction={selectedTransaction}
+        />
+      )}
     </div>
   );
 };
