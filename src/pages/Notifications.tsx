@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Bell, CheckCircle, XCircle, Clock, Eye, Trash, Settings } from 'phosphor-react';
+import { Bell, CheckCircle, XCircle, Clock, Eye, Trash } from 'phosphor-react';
+import { Settings } from 'lucide-react';
 
 const notifications = [
   {

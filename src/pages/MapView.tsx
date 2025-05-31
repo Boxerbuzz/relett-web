@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MagnifyingGlass, MapPin, Layers, Filter, Eye, FullscreenIcon } from 'phosphor-react';
+import { MagnifyingGlass, MapPin, Eye } from 'phosphor-react';
+import { Layers, Filter, Fullscreen } from 'lucide-react';
 
 const mapProperties = [
   {
@@ -88,7 +88,7 @@ const MapView = () => {
             Layers
           </Button>
           <Button variant="outline" size="sm">
-            <FullscreenIcon size={16} className="mr-2" />
+            <Fullscreen size={16} className="mr-2" />
             Fullscreen
           </Button>
         </div>
