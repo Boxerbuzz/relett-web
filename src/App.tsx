@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import MyLand from "./pages/MyLand";
@@ -28,51 +29,72 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Auth routes - no layout */}
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Protected routes - with layout */}
             <Route path="/" element={
-              <Layout>
-                <Index />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Index />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/land" element={
-              <Layout>
-                <MyLand />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <MyLand />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/add-property" element={
-              <Layout>
-                <AddProperty />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <AddProperty />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/verification" element={
-              <Layout>
-                <Verification />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Verification />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/marketplace" element={
-              <Layout>
-                <Marketplace />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Marketplace />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/tokens" element={
-              <Layout>
-                <Tokens />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Tokens />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/map" element={
-              <Layout>
-                <MapView />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <MapView />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/notifications" element={
-              <Layout>
-                <Notifications />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Notifications />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <Layout>
-                <Settings />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Settings />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>

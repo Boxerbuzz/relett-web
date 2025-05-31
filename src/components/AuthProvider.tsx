@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '@/lib/auth';
 import { User } from '@/types';
 
@@ -12,6 +13,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulate auth check - replace with Supabase integration
@@ -32,6 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         created_at: new Date().toISOString(),
       };
       setUser(mockUser);
+      navigate('/'); // Navigate to dashboard after login
     }
   };
 
@@ -45,10 +48,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       created_at: new Date().toISOString(),
     };
     setUser(mockUser);
+    navigate('/'); // Navigate to dashboard after signup
   };
 
   const signOut = async () => {
     setUser(null);
+    navigate('/auth'); // Navigate to auth page after logout
   };
 
   return (

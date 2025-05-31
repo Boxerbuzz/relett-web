@@ -2,13 +2,10 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { useAuth } from '@/lib/auth';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { List, Plus } from 'lucide-react';
 import { AddPropertyForm } from './property/AddPropertyForm';
 import { useLocation } from 'react-router-dom';
 
@@ -17,14 +14,9 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addPropertyOpen, setAddPropertyOpen] = useState(false);
   const location = useLocation();
-
-  if (!user) {
-    return children;
-  }
 
   const isAddPropertyPage = location.pathname === '/add-property';
 
