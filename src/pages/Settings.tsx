@@ -9,6 +9,9 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { 
   User, 
   Bell, 
@@ -16,10 +19,58 @@ import {
   CreditCard, 
   Palette,
   Globe,
-  Camera
+  Camera,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Clock
 } from 'phosphor-react';
 
 const Settings = () => {
+  // Mock user data based on schema
+  const userData = {
+    id: '123',
+    email: 'john.doe@example.com',
+    firstName: 'John',
+    lastName: 'Doe',
+    fullName: 'John Doe',
+    phone: '+234 123 456 7890',
+    bio: 'Real estate investor and technology enthusiast',
+    avatar: '/placeholder.svg',
+    userType: 'user',
+    isActive: true,
+    isVerified: true,
+    verificationStatus: 'verified',
+    hasSetup: true,
+    createdAt: '2024-01-15',
+    preferences: {
+      country: 'Nigeria',
+      state: 'Lagos',
+      city: 'Lagos',
+      address: '123 Victoria Island, Lagos',
+      interest: 'Commercial Real Estate',
+      coordinates: { lat: 6.4281, lng: 3.4219 }
+    }
+  };
+
+  const getVerificationStatusColor = (status: string) => {
+    switch (status) {
+      case 'verified': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'unverified': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getVerificationIcon = (status: string) => {
+    switch (status) {
+      case 'verified': return <CheckCircle size={16} className="text-green-600" />;
+      case 'pending': return <Clock size={16} className="text-yellow-600" />;
+      case 'unverified': return <XCircle size={16} className="text-red-600" />;
+      default: return <XCircle size={16} className="text-gray-600" />;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -53,54 +104,184 @@ const Settings = () => {
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
+          {/* Profile Header */}
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle className="flex items-center gap-3">
+                Profile Information
+                <div className="flex gap-2">
+                  {getVerificationIcon(userData.verificationStatus)}
+                  <Badge className={getVerificationStatusColor(userData.verificationStatus)} variant="outline">
+                    {userData.verificationStatus}
+                  </Badge>
+                  {userData.isActive && (
+                    <Badge className="bg-green-100 text-green-800" variant="outline">
+                      Active
+                    </Badge>
+                  )}
+                </div>
+              </CardTitle>
               <CardDescription>
-                Update your personal information and profile picture
+                Update your personal information and profile details
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>JD</AvatarFallback>
+              {/* Profile Picture and Basic Info */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={userData.avatar} />
+                  <AvatarFallback className="text-lg">
+                    {userData.firstName[0]}{userData.lastName[0]}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="space-y-2">
+                <div className="space-y-3 flex-1">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">{userData.fullName}</h3>
+                    <p className="text-sm text-gray-600">{userData.email}</p>
+                    <p className="text-sm text-gray-600">User Type: {userData.userType}</p>
+                    <p className="text-sm text-gray-600">Member since: {new Date(userData.createdAt).toLocaleDateString()}</p>
+                  </div>
                   <Button size="sm">
                     <Camera size={16} className="mr-2" />
                     Change Photo
                   </Button>
-                  <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 2MB.</p>
                 </div>
               </div>
 
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="john.doe@example.com" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" defaultValue="+234 123 456 7890" />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Input id="bio" placeholder="Tell us about yourself..." />
+              {/* Personal Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Personal Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" defaultValue={userData.firstName} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" defaultValue={userData.lastName} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" type="email" defaultValue={userData.email} />
+                    <p className="text-xs text-gray-500">Email changes require verification</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input id="phone" defaultValue={userData.phone} />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea id="bio" defaultValue={userData.bio} placeholder="Tell us about yourself..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="userType">Account Type</Label>
+                    <Select defaultValue={userData.userType}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">Investor</SelectItem>
+                        <SelectItem value="agent">Agent</SelectItem>
+                        <SelectItem value="landowner">Land Owner</SelectItem>
+                        <SelectItem value="verifier">Verifier</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="interest">Primary Interest</Label>
+                    <Input id="interest" defaultValue={userData.preferences.interest} placeholder="e.g., Commercial Real Estate" />
+                  </div>
                 </div>
               </div>
 
-              <Button>Save Changes</Button>
+              <Separator />
+
+              {/* Location Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <MapPin size={18} />
+                  Location Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Select defaultValue={userData.preferences.country}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Nigeria">Nigeria</SelectItem>
+                        <SelectItem value="Ghana">Ghana</SelectItem>
+                        <SelectItem value="Kenya">Kenya</SelectItem>
+                        <SelectItem value="South Africa">South Africa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State/Province</Label>
+                    <Input id="state" defaultValue={userData.preferences.state} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input id="city" defaultValue={userData.preferences.city} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" defaultValue={userData.preferences.address} />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Account Status */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Account Status</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Email Verified</p>
+                      <p className="text-sm text-gray-600">Your email is verified</p>
+                    </div>
+                    {userData.isVerified ? (
+                      <CheckCircle size={20} className="text-green-600" />
+                    ) : (
+                      <XCircle size={20} className="text-red-600" />
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Profile Setup</p>
+                      <p className="text-sm text-gray-600">Profile completed</p>
+                    </div>
+                    {userData.hasSetup ? (
+                      <CheckCircle size={20} className="text-green-600" />
+                    ) : (
+                      <XCircle size={20} className="text-red-600" />
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Account Active</p>
+                      <p className="text-sm text-gray-600">Account status</p>
+                    </div>
+                    {userData.isActive ? (
+                      <CheckCircle size={20} className="text-green-600" />
+                    ) : (
+                      <XCircle size={20} className="text-red-600" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button>Save Changes</Button>
+                <Button variant="outline">Reset to Default</Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
