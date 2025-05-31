@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Form } from '@/components/ui/form';
 import { BasicDetailsStep } from './steps/BasicDetailsStep';
 import { LocationStep } from './steps/LocationStep';
 import { SpecificationStep } from './steps/SpecificationStep';
@@ -160,32 +161,34 @@ export function AddPropertyForm() {
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            {renderStep()}
-            
-            <div className="flex justify-between mt-8 pt-6 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 0}
-              >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Button>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              {renderStep()}
               
-              {currentStep === steps.length - 1 ? (
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Adding Property...' : 'Add Property'}
+              <div className="flex justify-between mt-8 pt-6 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-2" />
+                  Previous
                 </Button>
-              ) : (
-                <Button type="button" onClick={nextStep}>
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </form>
+                
+                {currentStep === steps.length - 1 ? (
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Adding Property...' : 'Add Property'}
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={nextStep}>
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
