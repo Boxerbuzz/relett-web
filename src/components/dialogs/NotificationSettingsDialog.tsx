@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -17,6 +16,12 @@ interface NotificationSettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface NotificationTypeSettings {
+  enabled: boolean;
+  channels: string[];
+  priority: string;
+}
+
 export function NotificationSettingsDialog({ open, onOpenChange }: NotificationSettingsDialogProps) {
   const [settings, setSettings] = useState({
     // Notification Channels
@@ -30,47 +35,47 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'medium'
-    },
+    } as NotificationTypeSettings,
     generalNotifications: {
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'low'
-    },
+    } as NotificationTypeSettings,
     paymentNotifications: {
       enabled: true,
       channels: ['push', 'in_app', 'email'],
       priority: 'high'
-    },
+    } as NotificationTypeSettings,
     inspectionNotifications: {
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'medium'
-    },
+    } as NotificationTypeSettings,
     reservationNotifications: {
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'medium'
-    },
+    } as NotificationTypeSettings,
     propertyNotifications: {
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'medium'
-    },
+    } as NotificationTypeSettings,
     verificationNotifications: {
       enabled: true,
       channels: ['push', 'in_app', 'email'],
       priority: 'high'
-    },
+    } as NotificationTypeSettings,
     tokenizationNotifications: {
       enabled: true,
       channels: ['push', 'in_app'],
       priority: 'medium'
-    },
+    } as NotificationTypeSettings,
     
     // Digest Settings
     digestEnabled: false,
     digestFrequency: 'weekly',
-    digestTypes: [],
+    digestTypes: [] as string[],
     
     // Do Not Disturb
     doNotDisturb: false,
@@ -86,13 +91,16 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
   };
 
   const updateNotificationType = (type: string, field: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [type]: {
-        ...prev[type as keyof typeof prev],
-        [field]: value
-      }
-    }));
+    setSettings(prev => {
+      const currentSettings = prev[type as keyof typeof prev] as NotificationTypeSettings;
+      return {
+        ...prev,
+        [type]: {
+          ...currentSettings,
+          [field]: value
+        }
+      };
+    });
   };
 
   const getPriorityColor = (priority: string) => {
