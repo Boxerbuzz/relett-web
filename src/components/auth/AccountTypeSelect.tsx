@@ -5,8 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Check, User, ShieldCheck } from 'phosphor-react';
 
 interface AccountTypeSelectProps {
-  value: 'landowner' | 'verifier';
-  onChange: (value: 'landowner' | 'verifier') => void;
+  value: 'landowner' | 'verifier' | 'agent';
+  onChange: (value: 'landowner' | 'verifier' | 'agent') => void;
 }
 
 export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
@@ -20,6 +20,12 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
     {
       value: 'verifier' as const,
       title: 'Verifier',
+      description: 'Verify land records',
+      icon: ShieldCheck,
+    },
+    {
+      value: 'agent' as const,
+      title: 'Agent',
       description: 'Verify land records',
       icon: ShieldCheck,
     },
