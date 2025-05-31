@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Bell, CheckCircle, XCircle, Clock, Eye, Trash } from 'phosphor-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bell, CheckCircle, XCircle, Clock, Eye, Trash, Filter } from 'phosphor-react';
 import { Settings } from 'lucide-react';
 import { NotificationSettingsDialog } from '@/components/dialogs/NotificationSettingsDialog';
 
@@ -61,6 +61,7 @@ const notifications = [
 
 const Notifications = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -92,12 +93,39 @@ const Notifications = () => {
     }
   };
 
+  const filterNotifications = (notifications: typeof notifications, filter: string) => {
+    switch (filter) {
+      case 'unread':
+        return notifications.filter(n => !n.read);
+      case 'verification':
+        return notifications.filter(n => n.category === 'verification');
+      case 'transaction':
+        return notifications.filter(n => n.category === 'transaction');
+      case 'tokenization':
+        return notifications.filter(n => n.category === 'tokenization');
+      default:
+        return notifications;
+    }
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
+  const filteredNotifications = filterNotifications(notifications, activeFilter);
+
+  const getFilterLabel = (filter: string) => {
+    switch (filter) {
+      case 'all': return 'All Notifications';
+      case 'unread': return `Unread (${unreadCount})`;
+      case 'verification': return 'Verification';
+      case 'transaction': return 'Transactions';
+      case 'tokenization': return 'Tokenization';
+      default: return 'All Notifications';
+    }
+  };
 
   return (
-    <div className="space-y-6 max-w-full overflow-hidden">
+    <div className="min-h-0 flex flex-col max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col gap-4">
+      <div className="flex-shrink-0 space-y-4 mb-6">
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">
             <Bell size={32} className="flex-shrink-0" />
@@ -122,7 +150,7 @@ const Notifications = () => {
       </div>
 
       {/* Notification Settings */}
-      <Card className="w-full">
+      <Card className="flex-shrink-0 w-full mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Notification Preferences</CardTitle>
           <CardDescription className="break-words">
@@ -181,153 +209,70 @@ const Notifications = () => {
         </CardContent>
       </Card>
 
+      {/* Filter Dropdown */}
+      <div className="flex-shrink-0 flex items-center gap-2 mb-4">
+        <Filter size={20} className="text-gray-600" />
+        <Select value={activeFilter} onValueChange={setActiveFilter}>
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="Filter notifications" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Notifications</SelectItem>
+            <SelectItem value="unread">Unread ({unreadCount})</SelectItem>
+            <SelectItem value="verification">Verification</SelectItem>
+            <SelectItem value="transaction">Transactions</SelectItem>
+            <SelectItem value="tokenization">Tokenization</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Notifications List */}
-      <Tabs defaultValue="all" className="space-y-4 w-full">
-        <div className="overflow-x-auto">
-          <TabsList className="w-full min-w-max">
-            <TabsTrigger value="all">All Notifications</TabsTrigger>
-            <TabsTrigger value="unread">Unread ({unreadCount})</TabsTrigger>
-            <TabsTrigger value="verification">Verification</TabsTrigger>
-            <TabsTrigger value="transaction">Transactions</TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="all" className="space-y-4">
-          {notifications.map((notification) => (
-            <Card key={notification.id} className={`hover:shadow-md transition-shadow w-full ${!notification.read ? 'border-l-4 border-l-blue-500 bg-blue-50/30' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 break-words">{notification.title}</h4>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                        )}
-                        <span className="text-xs text-gray-500 whitespace-nowrap">{notification.timestamp}</span>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mb-3 break-words">{notification.message}</p>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <Badge className={`${getNotificationBadge(notification.type)} w-fit`} variant="outline">
-                        {notification.category}
-                      </Badge>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        {!notification.read && (
-                          <Button variant="ghost" size="sm" className="text-xs">
-                            <Eye size={14} className="mr-1" />
-                            Mark as Read
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          <Trash size={14} className="mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+      <div className="flex-1 min-h-0 space-y-4 overflow-y-auto">
+        {filteredNotifications.map((notification) => (
+          <Card key={notification.id} className={`hover:shadow-md transition-shadow w-full ${!notification.read ? 'border-l-4 border-l-blue-500 bg-blue-50/30' : ''}`}>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  {getNotificationIcon(notification.type)}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="unread" className="space-y-4">
-          {notifications.filter(n => !n.read).map((notification) => (
-            <Card key={notification.id} className="border-l-4 border-l-blue-500 bg-blue-50/30 hover:shadow-md transition-shadow w-full">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                    <h4 className="font-medium text-gray-900 break-words">{notification.title}</h4>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {!notification.read && (
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      )}
+                      <span className="text-xs text-gray-500 whitespace-nowrap">{notification.timestamp}</span>
+                    </div>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 break-words">{notification.title}</h4>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">{notification.timestamp}</span>
-                      </div>
-                    </div>
+                  <p className="text-sm text-gray-600 mb-3 break-words">{notification.message}</p>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <Badge className={`${getNotificationBadge(notification.type)} w-fit`} variant="outline">
+                      {notification.category}
+                    </Badge>
                     
-                    <p className="text-sm text-gray-600 mb-3 break-words">{notification.message}</p>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <Badge className={`${getNotificationBadge(notification.type)} w-fit`} variant="outline">
-                        {notification.category}
-                      </Badge>
-                      
-                      <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {!notification.read && (
                         <Button variant="ghost" size="sm" className="text-xs">
                           <Eye size={14} className="mr-1" />
                           Mark as Read
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          <Trash size={14} className="mr-1" />
-                          Delete
-                        </Button>
-                      </div>
+                      )}
+                      <Button variant="ghost" size="sm" className="text-xs">
+                        <Trash size={14} className="mr-1" />
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="verification" className="space-y-4">
-          {notifications.filter(n => n.category === 'verification').map((notification) => (
-            <Card key={notification.id} className={`hover:shadow-md transition-shadow w-full ${!notification.read ? 'border-l-4 border-l-blue-500 bg-blue-50/30' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 break-words">{notification.title}</h4>
-                      <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">{notification.timestamp}</span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 break-words">{notification.message}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="transaction" className="space-y-4">
-          {notifications.filter(n => n.category === 'transaction').map((notification) => (
-            <Card key={notification.id} className={`hover:shadow-md transition-shadow w-full ${!notification.read ? 'border-l-4 border-l-blue-500 bg-blue-50/30' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 break-words">{notification.title}</h4>
-                      <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">{notification.timestamp}</span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 break-words">{notification.message}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Notification Settings Dialog */}
       <NotificationSettingsDialog 

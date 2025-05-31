@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
   Vote, 
@@ -162,9 +163,9 @@ export function InvestmentGroupChat({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col space-y-4">
       {/* Group Info Header */}
-      <Card>
+      <Card className="flex-shrink-0">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -196,85 +197,88 @@ export function InvestmentGroupChat({
         </CardContent>
       </Card>
 
-      {/* Chat Messages */}
-      <Card>
-        <CardHeader>
+      {/* Chat Messages - Takes remaining space */}
+      <Card className="flex-1 flex flex-col min-h-0">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             Group Discussion
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="h-96 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      {message.sender === 'AI Moderator' ? 'AI' : message.sender.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{message.sender}</span>
-                      {getMessageIcon(message.type)}
-                      <span className="text-xs text-gray-500">
-                        {formatTimestamp(message.timestamp)}
-                      </span>
-                    </div>
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          {/* Messages Area */}
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div key={message.id} className="space-y-2">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {message.sender === 'AI Moderator' ? 'AI' : message.sender.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     
-                    <div className={`p-3 rounded-lg ${
-                      message.type === 'ai_summary' 
-                        ? 'bg-purple-50 border border-purple-200' 
-                        : message.senderId === 'current_user'
-                          ? 'bg-blue-50 border border-blue-200'
-                          : 'bg-gray-50 border border-gray-200'
-                    }`}>
-                      <p className="text-sm">{message.message}</p>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{message.sender}</span>
+                        {getMessageIcon(message.type)}
+                        <span className="text-xs text-gray-500">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </div>
                       
-                      {/* Voting Component */}
-                      {message.type === 'vote' && message.votes && (
-                        <div className="mt-3 space-y-2">
-                          <Separator />
-                          <div>
-                            <h4 className="font-medium text-sm mb-2">{message.votes.proposal}</h4>
-                            <div className="space-y-2">
-                              {message.votes.options.map((option, index) => (
-                                <div key={index} className="flex items-center justify-between">
-                                  <span className="text-sm">{option.label}</span>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-600">{option.votes} votes</span>
-                                    {activeVotes.includes(message.id) && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => castVote(message.id, index)}
-                                      >
-                                        Vote
-                                      </Button>
-                                    )}
+                      <div className={`p-3 rounded-lg ${
+                        message.type === 'ai_summary' 
+                          ? 'bg-purple-50 border border-purple-200' 
+                          : message.senderId === 'current_user'
+                            ? 'bg-blue-50 border border-blue-200'
+                            : 'bg-gray-50 border border-gray-200'
+                      }`}>
+                        <p className="text-sm">{message.message}</p>
+                        
+                        {/* Voting Component */}
+                        {message.type === 'vote' && message.votes && (
+                          <div className="mt-3 space-y-2">
+                            <Separator />
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">{message.votes.proposal}</h4>
+                              <div className="space-y-2">
+                                {message.votes.options.map((option, index) => (
+                                  <div key={index} className="flex items-center justify-between">
+                                    <span className="text-sm">{option.label}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-gray-600">{option.votes} votes</span>
+                                      {activeVotes.includes(message.id) && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => castVote(message.id, index)}
+                                        >
+                                          Vote
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                              <span>Total votes: {message.votes.totalVotes}</span>
-                              <span>Deadline: {formatTimestamp(message.votes.deadline)}</span>
+                                ))}
+                              </div>
+                              <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
+                                <span>Total votes: {message.votes.totalVotes}</span>
+                                <span>Deadline: {formatTimestamp(message.votes.deadline)}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
           
           {/* Message Input */}
-          <div className="p-4 border-t">
+          <div className="flex-shrink-0 p-4 border-t">
             <div className="flex gap-2">
               <Input
                 placeholder="Type your message..."
