@@ -12,21 +12,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, User, Settings } from 'lucide-react';
+import { Bell, User, Settings, List, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export function Navbar() {
+interface NavbarProps {
+  onToggleSidebar?: () => void;
+  onAddProperty?: () => void;
+}
+
+export function Navbar({ onToggleSidebar, onAddProperty }: NavbarProps) {
   const { user, signOut } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 md:px-6 py-4 backdrop-blur-sm bg-white/95">
-      <div className="flex items-center justify-between">
+    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 md:px-6 py-4 backdrop-blur-sm bg-white/95 h-16">
+      <div className="flex items-center justify-between h-full">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl md:text-2xl font-bold text-green-600">LandChain</h1>
-          <span className="hidden sm:block text-sm text-gray-500">Decentralized Land Records</span>
+          {/* Mobile Sidebar Toggle */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onToggleSidebar}
+            className="md:hidden"
+          >
+            <List size={20} />
+          </Button>
+          
+          <div className="hidden md:block">
+            <h1 className="text-xl font-bold text-green-600">LandChain</h1>
+            <span className="text-sm text-gray-500">Decentralized Land Records</span>
+          </div>
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* Add Property Button */}
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={onAddProperty}
+            className="hidden sm:flex"
+          >
+            <Plus size={16} className="mr-2" />
+            Add Property
+          </Button>
+          
+          <Button 
+            variant="default" 
+            size="icon" 
+            onClick={onAddProperty}
+            className="sm:hidden"
+          >
+            <Plus size={16} />
+          </Button>
+
           {/* Notifications */}
           <Link to="/notifications">
             <Button variant="ghost" size="icon" className="relative">

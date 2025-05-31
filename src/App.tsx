@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import MyLand from "./pages/MyLand";
 import AddProperty from "./pages/AddProperty";
 import Marketplace from "./pages/Marketplace";
@@ -26,21 +27,55 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/land" element={<MyLand />} />
-              <Route path="/add-property" element={<AddProperty />} />
-              <Route path="/verification" element={<Verification />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/tokens" element={<Tokens />} />
-              <Route path="/map" element={<MapView />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={
+              <Layout>
+                <Index />
+              </Layout>
+            } />
+            <Route path="/land" element={
+              <Layout>
+                <MyLand />
+              </Layout>
+            } />
+            <Route path="/add-property" element={
+              <Layout>
+                <AddProperty />
+              </Layout>
+            } />
+            <Route path="/verification" element={
+              <Layout>
+                <Verification />
+              </Layout>
+            } />
+            <Route path="/marketplace" element={
+              <Layout>
+                <Marketplace />
+              </Layout>
+            } />
+            <Route path="/tokens" element={
+              <Layout>
+                <Tokens />
+              </Layout>
+            } />
+            <Route path="/map" element={
+              <Layout>
+                <MapView />
+              </Layout>
+            } />
+            <Route path="/notifications" element={
+              <Layout>
+                <Notifications />
+              </Layout>
+            } />
+            <Route path="/settings" element={
+              <Layout>
+                <Settings />
+              </Layout>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

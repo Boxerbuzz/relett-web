@@ -14,7 +14,7 @@ import {
   MapPin,
   Bell,
   Plus
-} from 'phosphor-react';
+} from 'lucide-react';
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -42,11 +42,15 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
-      <div className="p-6 border-b">
-        <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
-        <p className="text-sm text-gray-500">Land Tokenization</p>
+      {/* Header - Match main header height */}
+      <div className="p-6 border-b h-16 flex items-center">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
+          <p className="text-sm text-gray-500">Land Tokenization</p>
+        </div>
       </div>
       
+      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {filteredNavigation.map((item) => {
           const Icon = item.icon;
