@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardBody } from '@/components/ui/card';
 import { ArrowRight, CornerUpRight } from 'lucide-react';
 
 const avatars = [
@@ -16,13 +16,6 @@ export function Hero() {
   return (
     <section className="pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Trust Indicators */}
-        <div className="text-center mb-8">
-          <Badge className="mb-4 sm:mb-6 bg-gray-100 dark:bg-gray-900 text-black dark:text-white border border-gray-200 dark:border-gray-800 font-light rounded-full">
-            🚀 Now Live: Blockchain-Powered Land Registry
-          </Badge>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           <div className="lg:col-span-7">
             <Card className="bg-gradient-to-br from-blue-50 to-white overflow-hidden p-0 h-full relative">
@@ -103,9 +96,9 @@ export function Hero() {
         </div>
 
         {/* Trust Indicators */}
-        <div className="mt-12 sm:mt-16 text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-6 font-light text-lg">Join thousands of satisfied users across Africa</p>
-          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 opacity-60">
+        <div className="mt-16 text-center">
+          <p className="text-gray-600 mb-8 font-light text-lg">Join thousands of satisfied users across Africa</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
             <div className="text-gray-400 font-semibold text-lg">🇬🇭 Ghana Land Commission</div>
             <div className="text-gray-400 font-semibold text-lg">🇳🇬 Lagos State Govt</div>
             <div className="text-gray-400 font-semibold text-lg">🇰🇪 Kenya Land Registry</div>
@@ -113,6 +106,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-    </section>
+    </Card>
   );
 }
