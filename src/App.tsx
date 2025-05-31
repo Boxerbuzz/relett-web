@@ -19,12 +19,6 @@ import NotFound from "./pages/NotFound";
 // Service pages
 import Artisans from "./pages/services/Artisans";
 import Rentals from "./pages/services/Rentals";
-import Moove from "./pages/services/Moove";
-import Shortlet from "./pages/services/Shortlet";
-import Investments from "./pages/services/Investments";
-import Manager from "./pages/services/Manager";
-import Verify from "./pages/services/Verify";
-import CoSpaces from "./pages/services/CoSpaces";
 
 const queryClient = new QueryClient();
 
@@ -40,12 +34,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/services/artisans" element={<Artisans />} />
             <Route path="/services/rentals" element={<Rentals />} />
-            <Route path="/services/moove" element={<Moove />} />
-            <Route path="/services/shortlet" element={<Shortlet />} />
-            <Route path="/services/investments" element={<Investments />} />
-            <Route path="/services/manager" element={<Manager />} />
-            <Route path="/services/verify" element={<Verify />} />
-            <Route path="/services/co-spaces" element={<CoSpaces />} />
             
             {/* Protected routes with Layout */}
             <Route path="/land" element={<Layout><MyLand /></Layout>} />
