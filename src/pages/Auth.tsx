@@ -23,14 +23,12 @@ const Auth = () => {
             <LoginForm
               onToggleMode={() => setAuthMode('signup')}
               onForgotPassword={() => setAuthMode('forgot-password')}
-              isMobile={true}
             />
           )}
           
           {authMode === 'signup' && (
             <SignUpForm
               onToggleMode={() => setAuthMode('login')}
-              isMobile={true}
             />
           )}
           
@@ -41,7 +39,6 @@ const Auth = () => {
                 setResetEmail(email);
                 setAuthMode('verify-otp');
               }}
-              isMobile={true}
             />
           )}
           
@@ -50,14 +47,12 @@ const Auth = () => {
               email={resetEmail}
               onBack={() => setAuthMode('login')}
               onSuccess={() => setAuthMode('change-password')}
-              isMobile={true}
             />
           )}
           
           {authMode === 'change-password' && (
             <ChangePasswordForm
               onSuccess={() => setAuthMode('login')}
-              isMobile={true}
             />
           )}
         </div>

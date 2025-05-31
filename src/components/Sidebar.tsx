@@ -8,9 +8,9 @@ import {
   House, 
   FileText, 
   ShieldCheck, 
-  Storefront, 
+  Store, 
   Coins,
-  Gear,
+  Settings,
   MapPin,
   Bell,
   Plus
@@ -25,11 +25,11 @@ const navigation = [
   { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
