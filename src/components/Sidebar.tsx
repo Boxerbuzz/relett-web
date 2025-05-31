@@ -13,7 +13,8 @@ import {
   Settings,
   MapPin,
   Bell,
-  Plus
+  Plus,
+  Search
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner'] },
+  { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner'] },

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,265 +6,279 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InvestmentGroupChat } from '@/components/investment/InvestmentGroupChat';
 import { 
   Coins, 
-  TrendUp, 
-  TrendDown, 
-  ArrowUpRight, 
-  ArrowDownLeft,
-  Eye,
-  Plus
-} from 'phosphor-react';
-import { BuyTokenDialog } from '@/components/dialogs/BuyTokenDialog';
-import { TransactionDetailsDialog } from '@/components/dialogs/TransactionDetailsDialog';
-
-const tokenHoldings = [
-  {
-    id: 1,
-    propertyName: 'Downtown Commercial Plot',
-    location: 'Lagos, Nigeria',
-    tokensOwned: 2500,
-    totalTokens: 100000,
-    currentPrice: '$25.50',
-    purchasePrice: '$25.00',
-    totalValue: '$63,750',
-    change: '+2.0%',
-    changeValue: '+$1,250',
-    isPositive: true
-  },
-  {
-    id: 2,
-    propertyName: 'Residential Land Parcel',
-    location: 'Abuja, Nigeria',
-    tokensOwned: 1800,
-    totalTokens: 100000,
-    currentPrice: '$17.75',
-    purchasePrice: '$18.00',
-    totalValue: '$31,950',
-    change: '-1.4%',
-    changeValue: '-$450',
-    isPositive: false
-  }
-];
-
-const transactionHistory = [
-  {
-    id: 1,
-    type: 'buy',
-    propertyName: 'Downtown Commercial Plot',
-    tokens: 500,
-    price: '$25.00',
-    total: '$12,500',
-    date: '2024-01-15',
-    status: 'completed'
-  },
-  {
-    id: 2,
-    type: 'sell',
-    propertyName: 'Agricultural Land',
-    tokens: 200,
-    price: '$5.50',
-    total: '$1,100',
-    date: '2024-01-10',
-    status: 'completed'
-  },
-  {
-    id: 3,
-    type: 'buy',
-    propertyName: 'Residential Land Parcel',
-    tokens: 1800,
-    price: '$18.00',
-    total: '$32,400',
-    date: '2024-01-05',
-    status: 'completed'
-  }
-];
+  TrendingUp, 
+  DollarSign, 
+  Users, 
+  MessageSquare,
+  BarChart3,
+  Calendar,
+  ArrowUpRight
+} from 'lucide-react';
 
 const Tokens = () => {
-  const [buyTokenDialogOpen, setBuyTokenDialogOpen] = useState(false);
-  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
 
-  const handleViewTransaction = (transaction: any) => {
-    setSelectedTransaction(transaction);
-    setTransactionDialogOpen(true);
-  };
+  const tokenizedProperties = [
+    {
+      id: '1',
+      title: 'Downtown Commercial Plot',
+      location: 'Lagos, Nigeria',
+      totalTokens: 1000,
+      ownedTokens: 150,
+      tokenPrice: 45.0,
+      currentValue: 52.5,
+      totalValue: 7875,
+      roi: 16.7,
+      investorCount: 12,
+      hasGroupChat: true
+    },
+    {
+      id: '2',
+      title: 'Luxury Apartment Complex',
+      location: 'Abuja, Nigeria',
+      totalTokens: 2000,
+      ownedTokens: 75,
+      tokenPrice: 125.0,
+      currentValue: 138.75,
+      totalValue: 10406.25,
+      roi: 11.0,
+      investorCount: 8,
+      hasGroupChat: true
+    },
+    {
+      id: '3',
+      title: 'Industrial Warehouse',
+      location: 'Port Harcourt, Nigeria',
+      totalTokens: 500,
+      ownedTokens: 25,
+      tokenPrice: 200.0,
+      currentValue: 185.0,
+      totalValue: 4625,
+      roi: -7.5,
+      investorCount: 5,
+      hasGroupChat: false
+    }
+  ];
 
-  const totalValue = tokenHoldings.reduce((sum, holding) => {
-    return sum + parseFloat(holding.totalValue.replace('$', '').replace(',', ''));
-  }, 0);
-
-  const totalChange = tokenHoldings.reduce((sum, holding) => {
-    return sum + parseFloat(holding.changeValue.replace(/[\$\+\,]/g, ''));
-  }, 0);
+  const totalPortfolioValue = tokenizedProperties.reduce((sum, prop) => sum + prop.totalValue, 0);
+  const totalROI = tokenizedProperties.reduce((sum, prop) => sum + prop.roi, 0) / tokenizedProperties.length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Tokens</h1>
-          <p className="text-gray-600">Track your tokenized land investments</p>
-        </div>
-        <Button onClick={() => setBuyTokenDialogOpen(true)}>
-          <Plus size={16} className="mr-2" />
-          Buy Tokens
-        </Button>
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Token Portfolio</h1>
+        <p className="text-gray-600">Manage your tokenized property investments</p>
       </div>
 
-      {/* Portfolio Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Portfolio Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
-            <Coins size={20} className="text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalValue.toLocaleString()}</div>
-            <p className={`text-xs ${totalChange >= 0 ? 'text-green-600' : 'text-red-600'} flex items-center mt-1`}>
-              {totalChange >= 0 ? <TrendUp size={12} className="mr-1" /> : <TrendDown size={12} className="mr-1" />}
-              {totalChange >= 0 ? '+' : ''}${Math.abs(totalChange).toLocaleString()} today
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Properties</CardTitle>
-            <Eye size={20} className="text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{tokenHoldings.length}</div>
-            <p className="text-xs text-gray-600 mt-1">Properties with tokens</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tokens</CardTitle>
-            <Coins size={20} className="text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {tokenHoldings.reduce((sum, holding) => sum + holding.tokensOwned, 0).toLocaleString()}
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Portfolio Value</p>
+                <p className="text-2xl font-bold text-green-600">${totalPortfolioValue.toLocaleString()}</p>
+              </div>
+              <DollarSign size={24} className="text-green-600" />
             </div>
-            <p className="text-xs text-gray-600 mt-1">Across all properties</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Average ROI</p>
+                <p className={`text-2xl font-bold ${totalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalROI.toFixed(1)}%
+                </p>
+              </div>
+              <TrendingUp size={24} className={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Properties</p>
+                <p className="text-2xl font-bold text-blue-600">{tokenizedProperties.length}</p>
+              </div>
+              <Coins size={24} className="text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Active Chats</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {tokenizedProperties.filter(p => p.hasGroupChat).length}
+                </p>
+              </div>
+              <MessageSquare size={24} className="text-purple-600" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs for Holdings and Transactions */}
-      <Tabs defaultValue="holdings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="holdings">Token Holdings</TabsTrigger>
-          <TabsTrigger value="transactions">Transaction History</TabsTrigger>
+      {/* Main Content */}
+      <Tabs defaultValue="portfolio" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+          <TabsTrigger value="group-chat">Group Discussions</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="holdings" className="space-y-4">
-          {tokenHoldings.map((holding) => (
-            <Card key={holding.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <TabsContent value="portfolio" className="space-y-4">
+          {tokenizedProperties.map((property) => (
+            <Card key={property.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{holding.propertyName}</h3>
-                    <p className="text-sm text-gray-600">{holding.location}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm">
-                      <span>
-                        <strong>{holding.tokensOwned.toLocaleString()}</strong> tokens 
-                        ({((holding.tokensOwned / holding.totalTokens) * 100).toFixed(2)}% ownership)
-                      </span>
-                    </div>
+                    <CardTitle className="text-lg">{property.title}</CardTitle>
+                    <CardDescription className="flex items-center mt-1">
+                      {property.location}
+                    </CardDescription>
                   </div>
-
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
-                    <div className="text-center lg:text-right">
-                      <p className="text-sm text-gray-600">Current Price</p>
-                      <p className="font-semibold">{holding.currentPrice}</p>
-                    </div>
-                    
-                    <div className="text-center lg:text-right">
-                      <p className="text-sm text-gray-600">Purchase Price</p>
-                      <p className="font-semibold">{holding.purchasePrice}</p>
-                    </div>
-                    
-                    <div className="text-center lg:text-right">
-                      <p className="text-sm text-gray-600">Total Value</p>
-                      <p className="font-semibold text-lg">{holding.totalValue}</p>
-                    </div>
-                    
-                    <div className="text-center lg:text-right">
-                      <p className="text-sm text-gray-600">P&L</p>
-                      <div className={`flex items-center justify-center lg:justify-end ${holding.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                        {holding.isPositive ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
-                        <span className="font-semibold ml-1">{holding.change}</span>
-                      </div>
-                      <p className={`text-sm ${holding.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                        {holding.changeValue}
-                      </p>
-                    </div>
+                  <div className="flex gap-2">
+                    <Badge className={property.roi >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                      {property.roi >= 0 ? '+' : ''}{property.roi}% ROI
+                    </Badge>
+                    {property.hasGroupChat && (
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                        <MessageSquare size={12} className="mr-1" />
+                        Group Chat
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Owned Tokens:</span>
+                    <p className="font-medium">{property.ownedTokens}/{property.totalTokens}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Token Price:</span>
+                    <p className="font-medium">${property.tokenPrice}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Current Value:</span>
+                    <p className="font-medium">${property.currentValue}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Total Value:</span>
+                    <p className="font-medium text-green-600">${property.totalValue.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Investors:</span>
+                    <p className="font-medium">{property.investorCount}</p>
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-4">
-                  <Button size="sm" onClick={() => setBuyTokenDialogOpen(true)}>Buy More</Button>
-                  <Button variant="outline" size="sm">Sell</Button>
-                  <Button variant="ghost" size="sm">View Details</Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button variant="outline" className="flex-1">
+                    <BarChart3 size={16} className="mr-2" />
+                    View Analytics
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Calendar size={16} className="mr-2" />
+                    Payment History
+                  </Button>
+                  {property.hasGroupChat && (
+                    <Button 
+                      className="flex-1"
+                      onClick={() => setSelectedProperty(property.id)}
+                    >
+                      <MessageSquare size={16} className="mr-2" />
+                      Join Discussion
+                    </Button>
+                  )}
+                  <Button variant="outline" className="flex-1">
+                    <ArrowUpRight size={16} className="mr-2" />
+                    Trade Tokens
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </TabsContent>
 
-        <TabsContent value="transactions" className="space-y-4">
-          {transactionHistory.map((transaction) => (
-            <Card key={transaction.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleViewTransaction(transaction)}>
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-full ${transaction.type === 'buy' ? 'bg-green-100' : 'bg-red-100'}`}>
-                      {transaction.type === 'buy' ? 
-                        <ArrowUpRight size={20} className="text-green-600" /> : 
-                        <ArrowDownLeft size={20} className="text-red-600" />
-                      }
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">
-                        {transaction.type === 'buy' ? 'Bought' : 'Sold'} {transaction.tokens} tokens
-                      </h3>
-                      <p className="text-sm text-gray-600">{transaction.propertyName}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:items-end gap-1">
-                    <p className="font-semibold">{transaction.total}</p>
-                    <p className="text-sm text-gray-600">@ {transaction.price} per token</p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-green-600">
-                        {transaction.status}
-                      </Badge>
-                      <span className="text-sm text-gray-500">{transaction.date}</span>
-                    </div>
-                  </div>
+        <TabsContent value="group-chat" className="space-y-4">
+          {selectedProperty ? (
+            (() => {
+              const property = tokenizedProperties.find(p => p.id === selectedProperty);
+              if (!property) return null;
+              
+              const userSharePercentage = (property.ownedTokens / property.totalTokens) * 100;
+              
+              return (
+                <div className="space-y-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSelectedProperty(null)}
+                  >
+                    ← Back to All Properties
+                  </Button>
+                  <InvestmentGroupChat 
+                    propertyId={property.id}
+                    propertyTitle={property.title}
+                    investorCount={property.investorCount}
+                    userSharePercentage={userSharePercentage}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              );
+            })()
+          ) : (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Select a property to join the discussion</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tokenizedProperties.filter(p => p.hasGroupChat).map((property) => (
+                  <Card key={property.id} className="cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => setSelectedProperty(property.id)}>
+                    <CardHeader>
+                      <CardTitle className="text-base">{property.title}</CardTitle>
+                      <CardDescription>{property.location}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users size={16} className="text-gray-500" />
+                          <span className="text-sm">{property.investorCount} investors</span>
+                        </div>
+                        <Badge variant="outline">
+                          <MessageSquare size={12} className="mr-1" />
+                          Active Chat
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <BarChart3 size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
+              <p className="text-gray-600">Detailed analytics and performance metrics coming soon.</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Dialogs */}
-      <BuyTokenDialog
-        open={buyTokenDialogOpen}
-        onOpenChange={setBuyTokenDialogOpen}
-      />
-      
-      {selectedTransaction && (
-        <TransactionDetailsDialog
-          open={transactionDialogOpen}
-          onOpenChange={setTransactionDialogOpen}
-          transaction={selectedTransaction}
-        />
-      )}
     </div>
   );
 };

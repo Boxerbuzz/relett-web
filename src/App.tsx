@@ -15,6 +15,7 @@ import Marketplace from "./pages/Marketplace";
 import Tokens from "./pages/Tokens";
 import Settings from "./pages/Settings";
 import Verification from "./pages/Verification";
+import PropertyVerification from "./pages/PropertyVerification";
 import MapView from "./pages/MapView";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
@@ -58,6 +59,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Verification />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/property-verification" element={
+              <ProtectedRoute>
+                <Layout>
+                  <PropertyVerification />
                 </Layout>
               </ProtectedRoute>
             } />
