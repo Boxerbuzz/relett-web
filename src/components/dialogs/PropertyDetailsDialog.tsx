@@ -16,26 +16,39 @@ interface PropertyDetailsDialogProps {
     title: string;
     location: string;
     size: string;
-    price: string;
-    tokenPrice: string;
-    totalTokens: number;
-    availableTokens: number;
-    roi: string;
-    category: string;
-    featured: boolean;
+    value?: string;
+    price?: string;
+    tokenPrice?: string;
+    totalTokens?: number;
+    availableTokens?: number;
+    roi?: string;
+    category?: string;
+    type?: string;
+    status?: string;
+    featured?: boolean;
+    tokenized?: boolean;
     image: string;
   };
 }
 
 export function PropertyDetailsDialog({ open, onOpenChange, property }: PropertyDetailsDialogProps) {
+  // Provide default values for optional properties
+  const displayPrice = property.value || property.price || 'N/A';
+  const displayTokenPrice = property.tokenPrice || 'N/A';
+  const displayTotalTokens = property.totalTokens || 0;
+  const displayAvailableTokens = property.availableTokens || 0;
+  const displayRoi = property.roi || 'N/A';
+  const displayCategory = property.category || property.type || 'Unknown';
+  const displayFeatured = property.featured || false;
+
   const specs = [
     { label: 'Size', value: property.size },
-    { label: 'Category', value: property.category },
-    { label: 'Total Value', value: property.price },
-    { label: 'Token Price', value: property.tokenPrice },
-    { label: 'Total Tokens', value: property.totalTokens.toLocaleString() },
-    { label: 'Available Tokens', value: property.availableTokens.toLocaleString() },
-    { label: 'Expected ROI', value: property.roi }
+    { label: 'Category', value: displayCategory },
+    { label: 'Total Value', value: displayPrice },
+    { label: 'Token Price', value: displayTokenPrice },
+    { label: 'Total Tokens', value: displayTotalTokens.toLocaleString() },
+    { label: 'Available Tokens', value: displayAvailableTokens.toLocaleString() },
+    { label: 'Expected ROI', value: displayRoi }
   ];
 
   return (
@@ -44,7 +57,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {property.title}
-            {property.featured && <Badge className="bg-orange-500">Featured</Badge>}
+            {displayFeatured && <Badge className="bg-orange-500">Featured</Badge>}
           </DialogTitle>
         </DialogHeader>
 
@@ -99,35 +112,37 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Investment Opportunity</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Available for Investment</span>
-                      <div className="text-right">
-                        <p className="font-semibold">{property.availableTokens.toLocaleString()} tokens</p>
-                        <p className="text-sm text-gray-600">
-                          {((property.availableTokens / property.totalTokens) * 100).toFixed(1)}% available
-                        </p>
+              {displayAvailableTokens > 0 && (
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold mb-4">Investment Opportunity</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span>Available for Investment</span>
+                        <div className="text-right">
+                          <p className="font-semibold">{displayAvailableTokens.toLocaleString()} tokens</p>
+                          <p className="text-sm text-gray-600">
+                            {displayTotalTokens > 0 ? ((displayAvailableTokens / displayTotalTokens) * 100).toFixed(1) : '0'}% available
+                          </p>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full" 
+                          style={{ width: `${displayTotalTokens > 0 ? (displayAvailableTokens / displayTotalTokens) * 100 : 0}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <TrendingUp size={16} className="text-green-600 mr-1" />
+                          <span className="text-green-600 font-medium">{displayRoi} Expected ROI</span>
+                        </div>
+                        <span className="text-sm text-gray-600">Annual projected return</span>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${(property.availableTokens / property.totalTokens) * 100}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <TrendingUp size={16} className="text-green-600 mr-1" />
-                        <span className="text-green-600 font-medium">{property.roi} Expected ROI</span>
-                      </div>
-                      <span className="text-sm text-gray-600">Annual projected return</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="financials" className="space-y-4">
@@ -138,11 +153,11 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Total Property Value</p>
-                        <p className="text-2xl font-bold">{property.price}</p>
+                        <p className="text-2xl font-bold">{displayPrice}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Price per Token</p>
-                        <p className="text-2xl font-bold text-blue-600">{property.tokenPrice}</p>
+                        <p className="text-2xl font-bold text-blue-600">{displayTokenPrice}</p>
                       </div>
                     </div>
                     <div className="pt-4 border-t">
@@ -158,7 +173,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                         </div>
                         <div className="flex justify-between font-semibold border-t pt-2">
                           <span>Total Expected ROI</span>
-                          <span className="text-green-600">{property.roi}</span>
+                          <span className="text-green-600">{displayRoi}</span>
                         </div>
                       </div>
                     </div>
