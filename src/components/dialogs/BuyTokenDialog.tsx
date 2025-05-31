@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { CreditCard, Wallet, DollarSign, ArrowLeft, Check } from 'lucide-react';
+import { WalletCombobox } from '@/components/wallet/WalletCombobox';
 
 interface BuyTokenDialogProps {
   open: boolean;
@@ -185,11 +186,11 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
               </div>
               <div>
                 <Label htmlFor="wallet">Wallet Address</Label>
-                <Input
-                  id="wallet"
-                  placeholder="Enter your wallet address"
+                <WalletCombobox
                   value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
+                  onValueChange={setWalletAddress}
+                  placeholder="Select or enter wallet address"
+                  className="mt-1"
                 />
               </div>
               <Card className="bg-orange-50 border-orange-200">

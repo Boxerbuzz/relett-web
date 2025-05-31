@@ -4,6 +4,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '@/lib/auth';
+import { WalletProvider } from '@/contexts/WalletContext';
 import { User } from '@/types';
 
 interface AuthProviderProps {
@@ -58,7 +59,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
-      {children}
+      <WalletProvider>
+        {children}
+      </WalletProvider>
     </AuthContext.Provider>
   );
 }

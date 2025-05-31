@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Bell, User, Settings, List, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { WalletConnectionIndicator } from '@/components/wallet/WalletConnectionIndicator';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -63,6 +64,9 @@ export function Navbar({ onToggleSidebar, onAddProperty }: NavbarProps) {
           >
             <Plus size={16} />
           </Button>
+
+          {/* Wallet Connection */}
+          <WalletConnectionIndicator />
 
           {/* Notifications */}
           <Link to="/notifications">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Bell, CheckCircle, XCircle, Clock, Eye, Trash } from 'phosphor-react';
 import { Settings } from 'lucide-react';
+import { NotificationSettingsDialog } from '@/components/dialogs/NotificationSettingsDialog';
 
 const notifications = [
   {
@@ -57,6 +59,8 @@ const notifications = [
 ];
 
 const Notifications = () => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
@@ -109,7 +113,7 @@ const Notifications = () => {
           <Button variant="outline" size="sm">
             Mark All as Read
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setIsSettingsOpen(true)}>
             <Settings size={16} className="mr-2" />
             Settings
           </Button>
@@ -120,7 +124,16 @@ const Notifications = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Notification Preferences</CardTitle>
-          <CardDescription>Manage how you receive notifications</CardDescription>
+          <CardDescription>
+            Manage how you receive notifications. 
+            <Button 
+              variant="link" 
+              className="p-0 ml-1 text-blue-600"
+              onClick={() => setIsSettingsOpen(true)}
+            >
+              Advanced settings
+            </Button>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -304,6 +317,12 @@ const Notifications = () => {
           ))}
         </TabsContent>
       </Tabs>
+
+      {/* Notification Settings Dialog */}
+      <NotificationSettingsDialog 
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+      />
     </div>
   );
 };
