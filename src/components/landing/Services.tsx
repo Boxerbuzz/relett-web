@@ -59,7 +59,7 @@ const services = [
   },
   {
     name: 'Relett Verify',
-    description: 'Property verification and documentation',
+    description: 'Property verification and documentation services with blockchain-powered security and transparency.',
     icon: Shield,
     href: '/services/verify',
     color: 'bg-indigo-50 text-indigo-600'
@@ -77,33 +77,35 @@ export function Services() {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <Badge className="mb-4 sm:mb-6 bg-green-50 text-green-600 border border-green-200 font-light rounded-full">
-            🛠️ Our Services
-          </Badge>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our unique services</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Whether you're renting, managing, moving, or investing — Relett offers all-in-one services designed to make your real estate experience seamless, fast, and trustworthy.
-          </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16">
+          <div className="lg:col-span-6">
+            <Badge className="mb-6 bg-green-50 text-green-600 border border-green-200 font-light rounded-full">
+              🛠️ Our Services
+            </Badge>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our unique services</h2>
+            <p className="text-lg text-gray-600">
+              Whether you're renting, managing, moving, or investing — Relett offers all-in-one services designed to make your real estate experience seamless, fast, and trustworthy.
+            </p>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service) => {
             const Icon = service.icon;
             return (
-              <Card key={service.name} className="hover:shadow-lg transition-shadow border border-gray-200">
+              <Card key={service.name} className="hover:shadow-lg transition-all duration-300 border border-gray-200 group hover:border-blue-300">
                 <CardContent className="p-6">
-                  <div className={`w-12 h-12 rounded-lg ${service.color} flex items-center justify-center mb-4`}>
+                  <div className={`w-12 h-12 rounded-lg ${service.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {service.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                     {service.description}
                   </p>
                   <Link to={service.href}>
-                    <Button variant="ghost" className="text-blue-600 hover:text-blue-700 p-0">
+                    <Button variant="ghost" className="text-blue-600 hover:text-blue-700 p-0 h-auto font-medium">
                       Learn More →
                     </Button>
                   </Link>
