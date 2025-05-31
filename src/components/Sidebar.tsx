@@ -41,10 +41,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
+    <div className="w-full h-full bg-white flex flex-col">
       <div className="p-6 border-b">
-        <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
-        <p className="text-sm text-gray-500">Land Tokenization</p>
+        <h2 className="text-xl font-bold text-blue-600">Relett</h2>
+        <p className="text-sm text-gray-500">Land Records</p>
       </div>
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

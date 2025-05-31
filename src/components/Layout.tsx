@@ -22,32 +22,29 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        {/* Desktop Sidebar - Fixed */}
-        <div className="hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-10">
-          <Sidebar />
-        </div>
-        
-        {/* Mobile Sidebar */}
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="fixed top-20 left-4 z-40 bg-white shadow-sm border"
-            >
-              <List size={20} />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <Sidebar onNavigate={() => setSidebarOpen(false)} />
-          </SheetContent>
-        </Sheet>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Desktop Sidebar - Full Height */}
+      <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-10 bg-white border-r border-gray-200">
+        <Sidebar />
+      </div>
+      
+      {/* Mobile Sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <Sidebar onNavigate={() => setSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
-        {/* Main Content Area */}
-        <main className="flex-1 md:ml-64 p-4 md:p-6 min-h-[calc(100vh-4rem)]">
+      {/* Main Content Area */}
+      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+        {/* Header - Full width from sidebar end */}
+        <Navbar 
+          onToggleSidebar={() => setSidebarOpen(true)} 
+          showMobileToggle={true}
+        />
+        
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-6">
           {children}
         </main>
       </div>

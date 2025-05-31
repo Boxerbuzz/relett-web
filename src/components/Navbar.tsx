@@ -13,16 +13,34 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, User, Settings } from 'lucide-react';
+import { List } from 'phosphor-react';
 import { Link } from 'react-router-dom';
 
-export function Navbar() {
+interface NavbarProps {
+  onToggleSidebar?: () => void;
+  showMobileToggle?: boolean;
+}
+
+export function Navbar({ onToggleSidebar, showMobileToggle = false }: NavbarProps) {
   const { user, signOut } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 md:px-6 py-4 backdrop-blur-sm bg-white/95">
+    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 md:px-6 py-4 backdrop-blur-sm bg-white/95">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl md:text-2xl font-bold text-green-600">LandChain</h1>
+          {/* Mobile Sidebar Toggle */}
+          {showMobileToggle && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden"
+              onClick={onToggleSidebar}
+            >
+              <List size={20} />
+            </Button>
+          )}
+          
+          <h1 className="text-xl md:text-2xl font-bold text-blue-600">Relett</h1>
           <span className="hidden sm:block text-sm text-gray-500">Decentralized Land Records</span>
         </div>
         

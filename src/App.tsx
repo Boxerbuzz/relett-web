@@ -8,7 +8,6 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
 import MyLand from "./pages/MyLand";
-import AddProperty from "./pages/AddProperty";
 import Marketplace from "./pages/Marketplace";
 import Tokens from "./pages/Tokens";
 import Settings from "./pages/Settings";
@@ -16,6 +15,10 @@ import Verification from "./pages/Verification";
 import MapView from "./pages/MapView";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+
+// Service pages
+import Artisans from "./pages/services/Artisans";
+import Rentals from "./pages/services/Rentals";
 
 const queryClient = new QueryClient();
 
@@ -26,21 +29,24 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/land" element={<MyLand />} />
-              <Route path="/add-property" element={<AddProperty />} />
-              <Route path="/verification" element={<Verification />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/tokens" element={<Tokens />} />
-              <Route path="/map" element={<MapView />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/services/artisans" element={<Artisans />} />
+            <Route path="/services/rentals" element={<Rentals />} />
+            
+            {/* Protected routes with Layout */}
+            <Route path="/land" element={<Layout><MyLand /></Layout>} />
+            <Route path="/verification" element={<Layout><Verification /></Layout>} />
+            <Route path="/marketplace" element={<Layout><Marketplace /></Layout>} />
+            <Route path="/tokens" element={<Layout><Tokens /></Layout>} />
+            <Route path="/map" element={<Layout><MapView /></Layout>} />
+            <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
