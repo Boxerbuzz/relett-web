@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Eye, MoreHorizontal } from 'lucide-react';
+import { MapPin, Eye, MoreHorizontal, Plus } from 'lucide-react';
 
 const mockProperties = [
   {
