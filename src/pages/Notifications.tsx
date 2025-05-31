@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, CheckCircle, XCircle, Clock, Eye, Trash, Filter } from 'phosphor-react';
+import { Bell, CheckCircle, XCircle, Clock, Eye, Trash, Funnel } from 'phosphor-react';
 import { Settings } from 'lucide-react';
 import { NotificationSettingsDialog } from '@/components/dialogs/NotificationSettingsDialog';
 
@@ -59,6 +59,8 @@ const notifications = [
   }
 ];
 
+type NotificationType = typeof notifications[0];
+
 const Notifications = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -93,18 +95,18 @@ const Notifications = () => {
     }
   };
 
-  const filterNotifications = (notifications: typeof notifications, filter: string) => {
+  const filterNotifications = (notificationsList: NotificationType[], filter: string) => {
     switch (filter) {
       case 'unread':
-        return notifications.filter(n => !n.read);
+        return notificationsList.filter(n => !n.read);
       case 'verification':
-        return notifications.filter(n => n.category === 'verification');
+        return notificationsList.filter(n => n.category === 'verification');
       case 'transaction':
-        return notifications.filter(n => n.category === 'transaction');
+        return notificationsList.filter(n => n.category === 'transaction');
       case 'tokenization':
-        return notifications.filter(n => n.category === 'tokenization');
+        return notificationsList.filter(n => n.category === 'tokenization');
       default:
-        return notifications;
+        return notificationsList;
     }
   };
 
@@ -211,7 +213,7 @@ const Notifications = () => {
 
       {/* Filter Dropdown */}
       <div className="flex-shrink-0 flex items-center gap-2 mb-4">
-        <Filter size={20} className="text-gray-600" />
+        <Funnel size={20} className="text-gray-600" />
         <Select value={activeFilter} onValueChange={setActiveFilter}>
           <SelectTrigger className="w-64">
             <SelectValue placeholder="Filter notifications" />
