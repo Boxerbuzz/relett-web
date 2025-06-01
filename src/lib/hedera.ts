@@ -1,4 +1,3 @@
-
 import {
   Client,
   AccountId,
@@ -11,6 +10,7 @@ import {
   TokenMintTransaction,
   TransferTransaction,
   TokenInfoQuery,
+  AccountBalanceQuery,
   Hbar,
   HbarUnit
 } from '@hashgraph/sdk';
@@ -266,11 +266,12 @@ export class HederaClient {
     }
   }
 
-  // Get account balance
+  // Get account balance - Fixed method
   async getAccountBalance(accountId: string) {
     try {
       const account = AccountId.fromString(accountId);
-      const balance = await this.client.getAccountBalance(account);
+      const query = new AccountBalanceQuery().setAccountId(account);
+      const balance = await query.execute(this.client);
 
       return {
         hbarBalance: balance.hbars.toString(),
