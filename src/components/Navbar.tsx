@@ -1,119 +1,130 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import {
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, User, Settings, List, Plus } from 'lucide-react';
+import { UserAvatar } from './profile/UserAvatar';
+import { Badge } from '@/components/ui/badge';
+import { Bell, Menu, Settings, LogOut, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { WalletConnectionIndicator } from '@/components/wallet/WalletConnectionIndicator';
 
 interface NavbarProps {
-  onToggleSidebar?: () => void;
-  onAddProperty?: () => void;
+  onToggleSidebar: () => void;
 }
 
-export function Navbar({ onToggleSidebar, onAddProperty }: NavbarProps) {
+export function Navbar({ onToggleSidebar }: NavbarProps) {
   const { user, signOut } = useAuth();
+  const { profile } = useUserProfile();
+  const [notificationCount] = useState(3); // Mock notification count
+
+  if (!user) return null;
+
+  const userDisplayName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`
+    : user.email;
+
+  const roleDisplayName = user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
   return (
-    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 md:px-6 py-4 backdrop-blur-sm bg-white/95 h-16">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex items-center space-x-4">
-          {/* Mobile Sidebar Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onToggleSidebar}
-            className="md:hidden"
-          >
-            <List size={20} />
-          </Button>
-        </div>
+    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
+      {/* Left side - Mobile menu toggle */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleSidebar}
+          className="md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         
-        <div className="flex items-center space-x-2 md:space-x-4">
-          {/* Add Property Button */}
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={onAddProperty}
-            className="hidden sm:flex"
-          >
-            <Plus size={16} className="mr-2" />
-            Add Property
-          </Button>
-          
-          <Button 
-            variant="default" 
-            size="icon" 
-            onClick={onAddProperty}
-            className="sm:hidden"
-          >
-            <Plus size={16} />
-          </Button>
-
-          {/* Wallet Connection */}
-          <WalletConnectionIndicator />
-
-          {/* Notifications */}
-          <Link to="/notifications">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell size={20} />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center p-0">
-                3
-              </Badge>
-            </Button>
-          </Link>
-
-          {/* User Profile */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
-              <DropdownMenuItem className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="flex items-center">
-                  <User size={16} className="mr-2" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center">
-                  <Settings size={16} className="mr-2" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut}>
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Desktop: Show page title or breadcrumb */}
+        <div className="hidden md:block">
+          <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
         </div>
       </div>
-    </nav>
+
+      {/* Right side - User menu and notifications */}
+      <div className="flex items-center gap-3">
+        {/* Notifications */}
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-5 w-5" />
+          {notificationCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+            >
+              {notificationCount}
+            </Badge>
+          )}
+        </Button>
+
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 p-2">
+              <UserAvatar size="sm" />
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-medium">{userDisplayName}</p>
+                <p className="text-xs text-gray-500">{roleDisplayName}</p>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div>
+                <p className="font-medium">{userDisplayName}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
+                <Badge variant="outline" className="mt-1 text-xs">
+                  {roleDisplayName}
+                </Badge>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
+                <User className="h-4 w-4" />
+                Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/notifications" className="flex items-center gap-2 cursor-pointer">
+                <Bell className="h-4 w-4" />
+                Notifications
+                {notificationCount > 0 && (
+                  <Badge variant="secondary" className="ml-auto">
+                    {notificationCount}
+                  </Badge>
+                )}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={() => signOut()} 
+              className="flex items-center gap-2 cursor-pointer text-red-600"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
   );
 }

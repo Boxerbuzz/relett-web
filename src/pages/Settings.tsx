@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { UserAvatar } from '@/components/profile/UserAvatar';
+import { EmailVerificationStatus } from '@/components/profile/EmailVerificationStatus';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/lib/auth';
 import { 
   User, 
   Bell, 
@@ -27,28 +29,31 @@ import {
 } from 'phosphor-react';
 
 const Settings = () => {
-  // Mock user data based on schema
+  const { user } = useAuth();
+  const { profile } = useUserProfile();
+
+  // Use real user data from profile
   const userData = {
-    id: '123',
-    email: 'john.doe@example.com',
-    firstName: 'John',
-    lastName: 'Doe',
-    fullName: 'John Doe',
-    phone: '+234 123 456 7890',
-    bio: 'Real estate investor and technology enthusiast',
-    avatar: '/placeholder.svg',
-    userType: 'user',
+    id: user?.id || '',
+    email: user?.email || '',
+    firstName: profile?.first_name || '',
+    lastName: profile?.last_name || '',
+    fullName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User',
+    phone: profile?.phone_number || '',
+    bio: profile?.bio || '',
+    avatar: profile?.avatar || '',
+    userType: user?.role || 'landowner',
     isActive: true,
-    isVerified: true,
-    verificationStatus: 'verified',
-    hasSetup: true,
-    createdAt: '2024-01-15',
+    isVerified: user?.email_confirmed_at != null,
+    verificationStatus: user?.email_confirmed_at ? 'verified' : 'pending',
+    hasSetup: Boolean(profile?.first_name && profile?.last_name),
+    createdAt: user?.created_at || '',
     preferences: {
-      country: 'Nigeria',
-      state: 'Lagos',
-      city: 'Lagos',
-      address: '123 Victoria Island, Lagos',
-      interest: 'Commercial Real Estate',
+      country: profile?.address?.country || '',
+      state: profile?.address?.state || '',
+      city: profile?.address?.city || '',
+      address: profile?.address?.address_line || '',
+      interest: 'Real Estate Investment',
       coordinates: { lat: 6.4281, lng: 3.4219 }
     }
   };
@@ -104,6 +109,9 @@ const Settings = () => {
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
+          {/* Email Verification Status */}
+          <EmailVerificationStatus />
+
           {/* Profile Header */}
           <Card>
             <CardHeader>
@@ -128,12 +136,7 @@ const Settings = () => {
             <CardContent className="space-y-6">
               {/* Profile Picture and Basic Info */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={userData.avatar} />
-                  <AvatarFallback className="text-lg">
-                    {userData.firstName[0]}{userData.lastName[0]}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar size="xl" />
                 <div className="space-y-3 flex-1">
                   <div className="space-y-1">
                     <h3 className="text-lg font-semibold">{userData.fullName}</h3>
@@ -182,10 +185,10 @@ const Settings = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">Investor</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
                         <SelectItem value="landowner">Land Owner</SelectItem>
+                        <SelectItem value="agent">Agent</SelectItem>
                         <SelectItem value="verifier">Verifier</SelectItem>
+                        <SelectItem value="investor">Investor</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
