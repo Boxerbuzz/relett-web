@@ -81,8 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           last_name: last_name || null,
           phone: authUser.user_metadata?.phone || null,
           user_type: authUser.user_metadata?.user_type || "landowner",
-          avatar_url: authUser.user_metadata?.avatar_url || null,
-          created_at: new Date().toISOString(),
+          avatar: authUser.user_metadata?.avatar_url || null,
         };
 
         const { data: createdUser, error: createError } = await supabase

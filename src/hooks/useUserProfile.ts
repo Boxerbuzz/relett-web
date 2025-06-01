@@ -60,7 +60,13 @@ export function useUserProfile() {
       
       // Transform the data to match our TypeScript types
       const transformedRoles: UserRole[] = (data || []).map(role => ({
-        ...role,
+        id: role.id,
+        user_id: role.user_id,
+        role: role.role as AppRole,
+        is_active: role.is_active,
+        expires_at: role.expires_at,
+        assigned_at: role.assigned_at,
+        assigned_by: role.assigned_by,
         metadata: typeof role.metadata === 'string'
           ? JSON.parse(role.metadata)
           : (role.metadata || {})

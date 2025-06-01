@@ -2,18 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-
-export type AppRole = 'admin' | 'verifier' | 'agent' | 'landowner' | 'investor';
-
-export interface UserRole {
-  id: string;
-  user_id: string;
-  role: AppRole;
-  is_active: boolean;
-  expires_at?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { UserRole, AppRole } from '@/types/database';
 
 export function useUserRoles() {
   const { user } = useAuth();
@@ -40,7 +29,21 @@ export function useUserRoles() {
 
       if (error) throw error;
       
-      setRoles(data || []);
+      // Transform the data to match our TypeScript types
+      const transformedRoles: UserRole[] = (data || []).map(role => ({
+        id: role.id,
+        user_id: role.user_id,
+        role: role.role as AppRole,
+        is_active: role.is_active,
+        expires_at: role.expires_at,
+        assigned_at: role.assigned_at,
+        assigned_by: role.assigned_by,
+        metadata: typeof role.metadata === 'string'
+          ? JSON.parse(role.metadata)
+          : (role.metadata || {})
+      }));
+      
+      setRoles(transformedRoles);
     } catch (err) {
       console.error('Error fetching roles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch roles');
