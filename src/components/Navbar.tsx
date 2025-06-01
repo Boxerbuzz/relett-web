@@ -37,11 +37,6 @@ export function Navbar({ onToggleSidebar, onAddProperty }: NavbarProps) {
           >
             <List size={20} />
           </Button>
-          
-          <div className="hidden md:block">
-            <h1 className="text-xl font-bold text-green-600">LandChain</h1>
-            <span className="text-sm text-gray-500">Decentralized Land Records</span>
-          </div>
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4">
