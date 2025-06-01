@@ -199,6 +199,108 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          device_fingerprint: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          performed_by: string | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_by?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      identity_verifications: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          full_name: string
+          id: string
+          identity_number: string
+          identity_type: Database["public"]["Enums"]["identity_type"]
+          last_retry_at: string | null
+          retry_count: number | null
+          updated_at: string
+          user_id: string
+          verification_provider: string | null
+          verification_response: Json | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          full_name: string
+          id?: string
+          identity_number: string
+          identity_type: Database["public"]["Enums"]["identity_type"]
+          last_retry_at?: string | null
+          retry_count?: number | null
+          updated_at?: string
+          user_id: string
+          verification_provider?: string | null
+          verification_response?: Json | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          full_name?: string
+          id?: string
+          identity_number?: string
+          identity_type?: Database["public"]["Enums"]["identity_type"]
+          last_retry_at?: string | null
+          retry_count?: number | null
+          updated_at?: string
+          user_id?: string
+          verification_provider?: string | null
+          verification_response?: Json | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       inspections: {
         Row: {
           agent_id: string
@@ -1034,6 +1136,48 @@ export type Database = {
           },
         ]
       }
+      user_devices: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_fingerprint: string
+          device_name: string | null
+          device_type: string | null
+          id: string
+          ip_address: unknown | null
+          is_trusted: boolean | null
+          last_used: string | null
+          location: Json | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint: string
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_trusted?: boolean | null
+          last_used?: string | null
+          location?: Json | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_trusted?: boolean | null
+          last_used?: string | null
+          location?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           address: string | null
@@ -1102,6 +1246,111 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          address: Json | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          date_of_birth: string | null
+          first_name: string
+          gender: string | null
+          id: string
+          is_active: boolean | null
+          last_login: string | null
+          last_name: string
+          lga: string | null
+          middle_name: string | null
+          nationality: string | null
+          phone_number: string | null
+          state_of_origin: string | null
+          updated_at: string
+          user_id: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Insert: {
+          address?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          first_name: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          last_name: string
+          lga?: string | null
+          middle_name?: string | null
+          nationality?: string | null
+          phone_number?: string | null
+          state_of_origin?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Update: {
+          address?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          first_name?: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          last_name?: string
+          lga?: string | null
+          middle_name?: string | null
+          nationality?: string | null
+          phone_number?: string | null
+          state_of_origin?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           avatar: string | null
@@ -1162,6 +1411,81 @@ export type Database = {
         }
         Relationships: []
       }
+      verifier_credentials: {
+        Row: {
+          created_at: string
+          documents: Json | null
+          expiry_date: string
+          id: string
+          is_active: boolean | null
+          issue_date: string
+          issuing_authority: string
+          license_name: string
+          license_number: string
+          reputation_score: number | null
+          successful_verifications: number | null
+          suspended_until: string | null
+          suspension_reason: string | null
+          total_verifications: number | null
+          updated_at: string
+          user_id: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+          verified_by: string | null
+          verifier_type: Database["public"]["Enums"]["verifier_type"]
+        }
+        Insert: {
+          created_at?: string
+          documents?: Json | null
+          expiry_date: string
+          id?: string
+          is_active?: boolean | null
+          issue_date: string
+          issuing_authority: string
+          license_name: string
+          license_number: string
+          reputation_score?: number | null
+          successful_verifications?: number | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          total_verifications?: number | null
+          updated_at?: string
+          user_id: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+          verifier_type: Database["public"]["Enums"]["verifier_type"]
+        }
+        Update: {
+          created_at?: string
+          documents?: Json | null
+          expiry_date?: string
+          id?: string
+          is_active?: boolean | null
+          issue_date?: string
+          issuing_authority?: string
+          license_name?: string
+          license_number?: string
+          reputation_score?: number | null
+          successful_verifications?: number | null
+          suspended_until?: string | null
+          suspension_reason?: string | null
+          total_verifications?: number | null
+          updated_at?: string
+          user_id?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+          verifier_type?: Database["public"]["Enums"]["verifier_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       user_activities: {
@@ -1195,6 +1519,17 @@ export type Database = {
           updated_at: string
         }
       }
+      get_user_role_priority: {
+        Args: { _user_id: string }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       remove_conversation_participant: {
         Args: { conversation_id: string; user_id: string }
         Returns: {
@@ -1216,6 +1551,8 @@ export type Database = {
     }
     Enums: {
       activity_type: "reservation" | "rental" | "inspection" | "investment"
+      app_role: "admin" | "landowner" | "verifier" | "agent" | "investor"
+      identity_type: "nin" | "bvn" | "cac" | "passport" | "drivers_license"
       notification_type:
         | "reservation"
         | "rental"
@@ -1225,6 +1562,12 @@ export type Database = {
         | "investment"
         | "chat"
       verification_status: "verified" | "pending" | "unverified" | "rejected"
+      verifier_type:
+        | "surveyor"
+        | "lawyer"
+        | "estate_agent"
+        | "government_official"
+        | "chartered_surveyor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1341,6 +1684,8 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["reservation", "rental", "inspection", "investment"],
+      app_role: ["admin", "landowner", "verifier", "agent", "investor"],
+      identity_type: ["nin", "bvn", "cac", "passport", "drivers_license"],
       notification_type: [
         "reservation",
         "rental",
@@ -1351,6 +1696,13 @@ export const Constants = {
         "chat",
       ],
       verification_status: ["verified", "pending", "unverified", "rejected"],
+      verifier_type: [
+        "surveyor",
+        "lawyer",
+        "estate_agent",
+        "government_official",
+        "chartered_surveyor",
+      ],
     },
   },
 } as const
