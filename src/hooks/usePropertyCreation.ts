@@ -55,8 +55,6 @@ export function usePropertyCreation() {
           category: propertyData.basicInfo.category,
           status: propertyData.basicInfo.status,
           location: propertyData.location,
-          valuation_data: propertyData.valuation,
-          verification_status: 'pending',
           specification: {},
           price: {
             amount: propertyData.valuation.estimatedValue,

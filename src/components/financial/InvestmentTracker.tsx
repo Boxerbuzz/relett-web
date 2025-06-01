@@ -4,33 +4,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, Calendar, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface Investment {
-  id: string;
-  tokenized_property_id: string;
-  investment_amount: number;
-  tokens_owned: number;
-  current_value: number;
-  roi_percentage: number;
-  last_dividend_amount: number;
-  last_dividend_date: string;
-  total_dividends_received: number;
-  tokenized_property: {
-    token_name: string;
-    token_symbol: string;
-    property_id: string;
-  };
-}
+import { useFinancialReports } from '@/hooks/useFinancialReports';
+import type { InvestmentTracking } from '@/types/preferences';
 
 export function InvestmentTracker() {
-  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investments, setInvestments] = useState<InvestmentTracking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPortfolioValue, setTotalPortfolioValue] = useState(0);
   const [totalROI, setTotalROI] = useState(0);
   const { toast } = useToast();
+  const { reports, generateReport, isLoading: reportsLoading } = useFinancialReports();
 
   useEffect(() => {
     fetchInvestments();
@@ -76,6 +62,17 @@ export function InvestmentTracker() {
     }
   };
 
+  const handleGenerateReport = async () => {
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    
+    await generateReport(
+      'investment_summary',
+      lastMonth.toISOString().split('T')[0],
+      today.toISOString().split('T')[0]
+    );
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -106,7 +103,7 @@ export function InvestmentTracker() {
   return (
     <div className="space-y-6">
       {/* Portfolio Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
@@ -142,7 +139,51 @@ export function InvestmentTracker() {
             <div className="text-2xl font-bold">{investments.length}</div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Reports</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{reports.length}</div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 w-full"
+              onClick={handleGenerateReport}
+              disabled={reportsLoading}
+            >
+              Generate Report
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Recent Reports */}
+      {reports.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Financial Reports</CardTitle>
+            <CardDescription>Your latest investment performance reports</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {reports.slice(0, 3).map((report) => (
+                <div key={report.id} className="flex items-center justify-between p-2 border rounded">
+                  <div>
+                    <p className="font-medium">{report.report_type.replace(/_/g, ' ').toUpperCase()}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(report.period_start)} - {formatDate(report.period_end)}
+                    </p>
+                  </div>
+                  <Badge variant="outline">{report.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Individual Investments */}
       <div className="space-y-4">

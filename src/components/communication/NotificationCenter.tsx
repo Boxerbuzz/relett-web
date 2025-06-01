@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Bell, Check, Settings, Mail, MessageSquare, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
 
 interface Notification {
   id: string;
@@ -21,40 +23,15 @@ interface Notification {
   action_label?: string;
 }
 
-interface NotificationPreferences {
-  email_notifications: boolean;
-  push_notifications: boolean;
-  sms_notifications: boolean;
-  notification_types: {
-    property_updates: boolean;
-    payment_notifications: boolean;
-    dividend_alerts: boolean;
-    verification_updates: boolean;
-    market_insights: boolean;
-  };
-}
-
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    email_notifications: true,
-    push_notifications: true,
-    sms_notifications: false,
-    notification_types: {
-      property_updates: true,
-      payment_notifications: true,
-      dividend_alerts: true,
-      verification_updates: true,
-      market_insights: false
-    }
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
+  const { preferences, updatePreferences, isLoading: preferencesLoading } = useNotificationPreferences();
 
   useEffect(() => {
     fetchNotifications();
-    fetchPreferences();
     setupRealtimeSubscription();
   }, []);
 
@@ -76,27 +53,6 @@ export function NotificationCenter() {
       console.error('Error fetching notifications:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchPreferences = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data) {
-        setPreferences(data);
-      }
-    } catch (error) {
-      console.error('Error fetching preferences:', error);
     }
   };
 
@@ -171,35 +127,6 @@ export function NotificationCenter() {
     }
   };
 
-  const updatePreferences = async (newPreferences: Partial<NotificationPreferences>) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const updatedPreferences = { ...preferences, ...newPreferences };
-
-      const { error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: user.id,
-          ...updatedPreferences
-        });
-
-      if (error) throw error;
-
-      setPreferences(updatedPreferences);
-      toast({
-        title: 'Preferences updated',
-      });
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-      toast({
-        title: 'Error updating preferences',
-        variant: 'destructive'
-      });
-    }
-  };
-
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'payment':
@@ -215,7 +142,7 @@ export function NotificationCenter() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  if (isLoading) {
+  if (isLoading || preferencesLoading) {
     return <div className="animate-pulse space-y-4">
       {[1, 2, 3].map(i => (
         <Card key={i}>
@@ -295,6 +222,45 @@ export function NotificationCenter() {
                     checked={preferences.sms_notifications}
                     onCheckedChange={(checked) => 
                       updatePreferences({ sms_notifications: checked })
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="dnd">Do not disturb</Label>
+                  <Switch
+                    id="dnd"
+                    checked={preferences.do_not_disturb}
+                    onCheckedChange={(checked) => 
+                      updatePreferences({ do_not_disturb: checked })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Quiet Hours */}
+            <div>
+              <h4 className="font-medium mb-4">Quiet Hours</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="quiet-start">Start time</Label>
+                  <Input
+                    id="quiet-start"
+                    type="time"
+                    value={preferences.quiet_hours_start || '22:00'}
+                    onChange={(e) => 
+                      updatePreferences({ quiet_hours_start: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="quiet-end">End time</Label>
+                  <Input
+                    id="quiet-end"
+                    type="time"
+                    value={preferences.quiet_hours_end || '07:00'}
+                    onChange={(e) => 
+                      updatePreferences({ quiet_hours_end: e.target.value })
                     }
                   />
                 </div>

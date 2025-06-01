@@ -815,6 +815,48 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_reports: {
+        Row: {
+          created_at: string
+          data: Json
+          generated_at: string
+          id: string
+          metadata: Json | null
+          period_end: string
+          period_start: string
+          report_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          generated_at?: string
+          id?: string
+          metadata?: Json | null
+          period_end: string
+          period_start: string
+          report_type?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          generated_at?: string
+          id?: string
+          metadata?: Json | null
+          period_end?: string
+          period_start?: string
+          report_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       identity_audit_logs: {
         Row: {
           action: string
@@ -1162,6 +1204,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investment_tracking: {
+        Row: {
+          created_at: string
+          current_value: number
+          id: string
+          investment_amount: number
+          last_dividend_amount: number
+          last_dividend_date: string | null
+          roi_percentage: number
+          tokenized_property_id: string
+          tokens_owned: number
+          total_dividends_received: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          investment_amount?: number
+          last_dividend_amount?: number
+          last_dividend_date?: string | null
+          roi_percentage?: number
+          tokenized_property_id: string
+          tokens_owned?: number
+          total_dividends_received?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          investment_amount?: number
+          last_dividend_amount?: number
+          last_dividend_date?: string | null
+          roi_percentage?: number
+          tokenized_property_id?: string
+          tokens_owned?: number
+          total_dividends_received?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       kyc_documents: {
         Row: {
@@ -1572,6 +1659,48 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          do_not_disturb: boolean
+          email_notifications: boolean
+          id: string
+          notification_types: Json
+          push_notifications: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          sms_notifications: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          do_not_disturb?: boolean
+          email_notifications?: boolean
+          id?: string
+          notification_types?: Json
+          push_notifications?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_notifications?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          do_not_disturb?: boolean
+          email_notifications?: boolean
+          id?: string
+          notification_types?: Json
+          push_notifications?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_notifications?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_templates: {
         Row: {
           action_text: string | null
@@ -1978,6 +2107,47 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_creation_workflows: {
+        Row: {
+          created_at: string
+          current_step: number
+          id: string
+          property_id: string | null
+          status: string
+          step_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number
+          id?: string
+          property_id?: string | null
+          status?: string
+          step_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number
+          id?: string
+          property_id?: string | null
+          status?: string
+          step_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_creation_workflows_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
