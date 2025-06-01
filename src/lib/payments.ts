@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { HederaClient } from './hedera';
 
@@ -66,6 +65,7 @@ export class PaymentService {
     paymentMethodId: string;
     investorAccountId: string;
     investorPrivateKey: string;
+    paystackReference?: string;
   }): Promise<{ success: boolean; paymentId?: string; error?: string }> {
     try {
       // Get property details
@@ -87,18 +87,20 @@ export class PaymentService {
         .insert({
           user_id: params.userId,
           amount: Math.round(totalAmount * 100), // Convert to cents
-          currency: 'USD',
+          currency: 'NGN', // Changed to Nigerian Naira for Paystack
           type: 'investment',
           property_id: property.property_id,
           related_id: params.tokenizedPropertyId,
           related_type: 'tokenized_property',
           status: 'processing',
           method: 'card',
-          reference: `INV-${Date.now()}`,
+          provider: 'paystack', // Changed from default
+          reference: params.paystackReference || `INV-${Date.now()}`,
           metadata: {
             token_amount: params.tokenAmount,
             token_price: property.token_price,
-            property_title: property.token_name
+            property_title: property.token_name,
+            paystack_reference: params.paystackReference
           }
         })
         .select()
@@ -108,13 +110,19 @@ export class PaymentService {
         throw new Error('Failed to create payment record');
       }
 
-      // Process payment (in a real app, this would integrate with Stripe, PayPal, etc.)
-      const paymentSuccess = await this.processPaymentWithProvider({
-        amount: totalAmount,
-        currency: 'USD',
-        paymentMethodId: params.paymentMethodId,
-        reference: payment.reference
-      });
+      // If we have a Paystack reference, verify the payment
+      let paymentSuccess = false;
+      if (params.paystackReference) {
+        paymentSuccess = await this.verifyPaystackPayment(params.paystackReference);
+      } else {
+        // Fallback to mock payment for other methods
+        paymentSuccess = await this.processPaymentWithProvider({
+          amount: totalAmount,
+          currency: 'NGN',
+          paymentMethodId: params.paymentMethodId,
+          reference: payment.reference
+        });
+      }
 
       if (!paymentSuccess) {
         // Update payment status to failed
@@ -158,6 +166,23 @@ export class PaymentService {
         success: false, 
         error: error instanceof Error ? error.message : 'Payment failed' 
       };
+    }
+  }
+
+  private async verifyPaystackPayment(reference: string): Promise<boolean> {
+    try {
+      // In a real implementation, this would call the Paystack verification endpoint
+      // through a secure backend endpoint
+      console.log('Verifying Paystack payment:', reference);
+      
+      // For now, simulate success
+      // In production, you'd call your backend which would verify with:
+      // GET https://api.paystack.co/transaction/verify/{reference}
+      
+      return true;
+    } catch (error) {
+      console.error('Paystack verification failed:', error);
+      return false;
     }
   }
 
@@ -315,7 +340,7 @@ export class PaymentService {
     paymentMethodId: string;
     reference: string;
   }): Promise<boolean> {
-    // Mock payment processing - in a real app, integrate with Stripe, PayPal, etc.
+    // Mock payment processing for non-Paystack methods
     console.log('Processing payment:', params);
     
     // Simulate processing delay
@@ -331,7 +356,7 @@ export class PaymentService {
     paymentMethodId: string;
     reference: string;
   }): Promise<boolean> {
-    // Mock withdrawal processing
+    // For Paystack withdrawals, this would integrate with Paystack Transfer API
     console.log('Processing withdrawal:', params);
     
     // Simulate processing delay

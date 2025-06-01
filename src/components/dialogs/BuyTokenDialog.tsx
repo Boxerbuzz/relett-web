@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { CreditCard, Wallet, DollarSign, ArrowLeft, Check } from 'lucide-react';
+import { CreditCard, Wallet, DollarSign, ArrowLeft, Check, AlertCircle } from 'lucide-react';
 import { WalletCombobox } from '@/components/wallet/WalletCombobox';
+import { paystackService } from '@/lib/paystack';
+import { toast } from 'sonner';
 
 interface BuyTokenDialogProps {
   open: boolean;
@@ -23,16 +25,12 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  // Card payment fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardName, setCardName] = useState('');
-  
-  // Bank transfer fields
-  const [bankAccount, setBankAccount] = useState('');
-  const [routingNumber, setRoutingNumber] = useState('');
+  // User details for Paystack
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   
   // Crypto fields
   const [walletAddress, setWalletAddress] = useState('');
@@ -53,19 +51,65 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
     }
   };
 
+  const handlePaystackPayment = async () => {
+    if (!paystackService.isConfigured()) {
+      toast.error('Paystack is not configured. Please contact support.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      await paystackService.initializePayment({
+        amount: parseFloat(amount),
+        email: email,
+        metadata: {
+          user_email: email,
+          user_name: `${firstName} ${lastName}`,
+          payment_type: 'token_purchase',
+          amount_usd: amount
+        },
+        onSuccess: async (transaction) => {
+          console.log('Payment successful:', transaction);
+          
+          // Verify transaction
+          const verification = await paystackService.verifyTransaction(transaction.reference);
+          
+          if (verification.status) {
+            toast.success('Payment successful! Tokens will be credited to your account.');
+            handleComplete();
+          } else {
+            toast.error('Payment verification failed. Please contact support.');
+          }
+          
+          setIsProcessing(false);
+        },
+        onCancel: () => {
+          toast.info('Payment cancelled');
+          setIsProcessing(false);
+        },
+        onError: (error) => {
+          console.error('Payment error:', error);
+          toast.error('Payment failed. Please try again.');
+          setIsProcessing(false);
+        }
+      });
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      toast.error('Failed to initialize payment. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
   const handleComplete = () => {
-    console.log('Payment completed:', { amount, paymentMethod });
     onOpenChange(false);
     setCurrentStep(1);
     // Reset form
     setAmount('');
     setPaymentMethod('');
-    setCardNumber('');
-    setExpiryDate('');
-    setCvv('');
-    setCardName('');
-    setBankAccount('');
-    setRoutingNumber('');
+    setEmail('');
+    setFirstName('');
+    setLastName('');
     setWalletAddress('');
     setCryptoType('');
   };
@@ -73,92 +117,55 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
   const renderPaymentStep = () => {
     switch (paymentMethod) {
       case 'card':
-        return (
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <CreditCard size={20} />
-              Credit/Debit Card Payment
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="cardName">Cardholder Name</Label>
-                <Input
-                  id="cardName"
-                  placeholder="John Doe"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  maxLength={19}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="expiry">Expiry Date</Label>
-                  <Input
-                    id="expiry"
-                    placeholder="MM/YY"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                    maxLength={5}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    placeholder="123"
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value)}
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
       case 'bank':
         return (
           <div className="space-y-4">
             <h3 className="font-semibold flex items-center gap-2">
-              <Wallet size={20} />
-              Bank Transfer
+              <CreditCard size={20} />
+              Paystack Payment
             </h3>
             <div className="space-y-3">
-              <div>
-                <Label htmlFor="bankAccount">Bank Account Number</Label>
-                <Input
-                  id="bankAccount"
-                  placeholder="Enter your account number"
-                  value={bankAccount}
-                  onChange={(e) => setBankAccount(e.target.value)}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
               <div>
-                <Label htmlFor="routing">Routing Number</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
-                  id="routing"
-                  placeholder="Enter routing number"
-                  value={routingNumber}
-                  onChange={(e) => setRoutingNumber(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="p-4">
-                  <p className="text-sm text-blue-800">
-                    Bank transfers typically take 1-3 business days to process. You'll receive a confirmation email once the transfer is initiated.
-                  </p>
-                </CardContent>
-              </Card>
             </div>
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <p className="text-sm text-blue-800">
+                  You'll be able to pay with your card, bank transfer, USSD, or mobile money through Paystack's secure payment system.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -214,16 +221,23 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
       case 1:
         return amount && paymentMethod;
       case 2:
-        if (paymentMethod === 'card') {
-          return cardNumber && expiryDate && cvv && cardName;
-        } else if (paymentMethod === 'bank') {
-          return bankAccount && routingNumber;
+        if (paymentMethod === 'card' || paymentMethod === 'bank') {
+          return email && firstName && lastName;
         } else if (paymentMethod === 'crypto') {
           return walletAddress && cryptoType;
         }
         return false;
       default:
         return true;
+    }
+  };
+
+  const getPaymentMethodName = () => {
+    switch (paymentMethod) {
+      case 'card': return 'Card/Bank Payment';
+      case 'bank': return 'Bank Transfer';
+      case 'crypto': return 'Cryptocurrency';
+      default: return '';
     }
   };
 
@@ -246,7 +260,7 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
           {currentStep === 1 && (
             <>
               <div>
-                <Label>Quick Select Amount</Label>
+                <Label>Quick Select Amount (USD)</Label>
                 <div className="grid grid-cols-3 gap-2 mt-2">
                   {quickAmounts.map((quickAmount) => (
                     <Button
@@ -287,13 +301,7 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
                     <SelectItem value="card">
                       <div className="flex items-center gap-2">
                         <CreditCard size={16} />
-                        Credit/Debit Card
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="bank">
-                      <div className="flex items-center gap-2">
-                        <Wallet size={16} />
-                        Bank Transfer
+                        Card/Bank Payment (Paystack)
                       </div>
                     </SelectItem>
                     <SelectItem value="crypto">
@@ -305,6 +313,19 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {!paystackService.isConfigured() && (
+                <Card className="bg-yellow-50 border-yellow-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle size={16} className="text-yellow-600 mt-0.5" />
+                      <p className="text-sm text-yellow-800">
+                        Paystack payment is not configured. Please contact support or use cryptocurrency payment.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
 
@@ -327,12 +348,16 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
                   </div>
                   <div className="flex justify-between">
                     <span>Payment Method:</span>
-                    <span className="font-medium capitalize">
-                      {paymentMethod === 'card' ? 'Credit/Debit Card' : 
-                       paymentMethod === 'bank' ? 'Bank Transfer' : 
-                       'Cryptocurrency'}
+                    <span className="font-medium">
+                      {getPaymentMethodName()}
                     </span>
                   </div>
+                  {(paymentMethod === 'card' || paymentMethod === 'bank') && (
+                    <div className="flex justify-between">
+                      <span>Email:</span>
+                      <span className="font-medium">{email}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Processing Fee:</span>
                     <span className="font-medium">$2.99</span>
@@ -360,7 +385,7 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
           {/* Navigation Buttons */}
           <div className="flex gap-2">
             {currentStep > 1 && (
-              <Button variant="outline" onClick={handleBack} className="flex-1">
+              <Button variant="outline" onClick={handleBack} className="flex-1" disabled={isProcessing}>
                 <ArrowLeft size={16} className="mr-2" />
                 Back
               </Button>
@@ -369,23 +394,24 @@ export function BuyTokenDialog({ open, onOpenChange }: BuyTokenDialogProps) {
             {currentStep < totalSteps ? (
               <Button 
                 onClick={handleNext}
-                disabled={!isStepValid()}
+                disabled={!isStepValid() || isProcessing}
                 className="flex-1"
               >
                 Continue
               </Button>
             ) : (
               <Button 
-                onClick={handleComplete}
-                disabled={!isStepValid()}
+                onClick={paymentMethod === 'crypto' ? handleComplete : handlePaystackPayment}
+                disabled={!isStepValid() || isProcessing}
                 className="flex-1"
               >
-                Complete Purchase
+                {isProcessing ? 'Processing...' : 
+                 paymentMethod === 'crypto' ? 'Complete Purchase' : 'Pay with Paystack'}
               </Button>
             )}
             
             {currentStep === 1 && (
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1" disabled={isProcessing}>
                 Cancel
               </Button>
             )}
