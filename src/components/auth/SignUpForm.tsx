@@ -13,11 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AccountTypeSelect } from './AccountTypeSelect';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
-import { User, Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
+import { User, Envelope, Lock, Eye, EyeSlash, Phone } from 'phosphor-react';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
+  phone: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
   role: z.enum(['landowner', 'verifier', 'agent']),
@@ -124,6 +125,23 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             </div>
             {errors.email && (
               <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="phone" className="text-gray-700">Phone Number (Optional)</Label>
+            <div className="relative mt-1">
+              <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                {...register('phone')}
+              />
+            </div>
+            {errors.phone && (
+              <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
             )}
           </div>
           

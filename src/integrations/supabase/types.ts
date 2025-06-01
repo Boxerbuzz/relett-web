@@ -3165,74 +3165,49 @@ export type Database = {
       user_profiles: {
         Row: {
           address: Json | null
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
           date_of_birth: string | null
-          first_name: string
           gender: string | null
           id: string
-          is_active: boolean | null
           last_login: string | null
-          last_name: string
           lga: string | null
           middle_name: string | null
           nationality: string | null
-          phone_number: string | null
           state_of_origin: string | null
-          updated_at: string
           user_id: string
-          verification_status:
-            | Database["public"]["Enums"]["verification_status"]
-            | null
         }
         Insert: {
           address?: Json | null
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
           date_of_birth?: string | null
-          first_name: string
           gender?: string | null
           id?: string
-          is_active?: boolean | null
           last_login?: string | null
-          last_name: string
           lga?: string | null
           middle_name?: string | null
           nationality?: string | null
-          phone_number?: string | null
           state_of_origin?: string | null
-          updated_at?: string
           user_id: string
-          verification_status?:
-            | Database["public"]["Enums"]["verification_status"]
-            | null
         }
         Update: {
           address?: Json | null
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
           date_of_birth?: string | null
-          first_name?: string
           gender?: string | null
           id?: string
-          is_active?: boolean | null
           last_login?: string | null
-          last_name?: string
           lga?: string | null
           middle_name?: string | null
           nationality?: string | null
-          phone_number?: string | null
           state_of_origin?: string | null
-          updated_at?: string
           user_id?: string
-          verification_status?:
-            | Database["public"]["Enums"]["verification_status"]
-            | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_profiles_user_id"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

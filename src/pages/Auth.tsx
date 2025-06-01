@@ -1,7 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/auth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignUpForm } from '@/components/auth/SignUpForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
@@ -13,6 +15,42 @@ type AuthMode = 'login' | 'signup' | 'forgot-password' | 'verify-otp' | 'change-
 const Auth = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [resetEmail, setResetEmail] = useState('');
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for password recovery flow
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery') {
+      setAuthMode('change-password');
+    }
+  }, []);
+
+  useEffect(() => {
+    // Redirect authenticated users
+    if (user && !loading) {
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    }
+  }, [user, loading, navigate, location]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 md:bg-gray-50 px-4">
@@ -37,7 +75,7 @@ const Auth = () => {
               onBack={() => setAuthMode('login')}
               onSuccess={(email) => {
                 setResetEmail(email);
-                setAuthMode('verify-otp');
+                setAuthMode('login'); // Go back to login after sending reset email
               }}
             />
           )}

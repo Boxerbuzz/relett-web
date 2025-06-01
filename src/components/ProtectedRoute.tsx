@@ -3,14 +3,16 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  requiredRole?: 'admin' | 'verifier' | 'agent' | 'landowner' | 'investor';
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -24,7 +26,20 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    // Save the attempted location for redirecting after login
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Check role-based access if required
+  if (requiredRole && user.role !== requiredRole && user.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to access this page.</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
