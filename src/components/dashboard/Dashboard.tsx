@@ -1,105 +1,67 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { StatsCard } from './StatsCard';
-import { RecentActivity } from './RecentActivity';
-import { QuickActions } from './QuickActions';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { WelcomeCard } from './WelcomeCard';
-import { PropertyOverview } from './PropertyOverview';
-import { MarketInsights } from './MarketInsights';
-import { 
-  FileText, 
-  Shield, 
-  Coins, 
-  TrendingUp,
-  MapPin,
-  DollarSign
-} from 'lucide-react';
+import { LandownerDashboard } from './LandownerDashboard';
+import { VerifierDashboard } from './VerifierDashboard';
+import { AgentDashboard } from './AgentDashboard';
+import { EmailVerificationStatus } from '../profile/EmailVerificationStatus';
+import { ProfileCompletionBanner } from '../profile/ProfileCompletionBanner';
+import { ProfileCompletionWizard } from '../profile/ProfileCompletionWizard';
 
 export function Dashboard() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
+  const [showProfileWizard, setShowProfileWizard] = useState(false);
 
-  const landownerStats = [
-    {
-      title: 'Total Properties',
-      value: 3,
-      icon: <MapPin className="h-4 w-4" />,
-      description: '2 verified, 1 pending',
-      trend: { value: 50, isPositive: true }
-    },
-    {
-      title: 'Verified Properties',
-      value: 2,
-      icon: <Shield className="h-4 w-4" />,
-      description: 'Ready for tokenization'
-    },
-    {
-      title: 'Active Tokens',
-      value: 1,
-      icon: <Coins className="h-4 w-4" />,
-      description: '1 listed for sale'
-    },
-    {
-      title: 'Portfolio Value',
-      value: '$2.4M',
-      icon: <DollarSign className="h-4 w-4" />,
-      description: 'Based on market estimates',
-      trend: { value: 12, isPositive: true }
+  // Show loading state while profile is loading
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const handleCompleteProfile = () => {
+    setShowProfileWizard(true);
+  };
+
+  const renderRoleSpecificDashboard = () => {
+    switch (user.role) {
+      case 'landowner':
+        return <LandownerDashboard />;
+      case 'verifier':
+        return <VerifierDashboard />;
+      case 'agent':
+        return <AgentDashboard />;
+      default:
+        return <LandownerDashboard />; // Default fallback
     }
-  ];
-
-  const verifierStats = [
-    {
-      title: 'Pending Reviews',
-      value: 8,
-      icon: <FileText className="h-4 w-4" />,
-      description: 'Awaiting verification'
-    },
-    {
-      title: 'Completed Reviews',
-      value: 24,
-      icon: <Shield className="h-4 w-4" />,
-      description: 'This month',
-      trend: { value: 15, isPositive: true }
-    },
-    {
-      title: 'Average Review Time',
-      value: '2.3 days',
-      icon: <TrendingUp className="h-4 w-4" />,
-      description: 'Industry leading'
-    },
-    {
-      title: 'Monthly Earnings',
-      value: '$4,200',
-      icon: <DollarSign className="h-4 w-4" />,
-      description: 'From verification fees',
-      trend: { value: 8, isPositive: true }
-    }
-  ];
-
-  const stats = user?.role === 'landowner' ? landownerStats : verifierStats;
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Email Verification Status */}
+      <EmailVerificationStatus />
+      
+      {/* Profile Completion Banner */}
+      <ProfileCompletionBanner onCompleteProfile={handleCompleteProfile} />
+      
+      {/* Welcome Card */}
       <WelcomeCard />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatsCard key={index} {...stat} />
-        ))}
-      </div>
+      {/* Role-specific Dashboard Content */}
+      {renderRoleSpecificDashboard()}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {user?.role === 'landowner' && <PropertyOverview />}
-          <RecentActivity />
-        </div>
-        <div className="space-y-6">
-          <QuickActions />
-          <MarketInsights />
-        </div>
-      </div>
+      {/* Profile Completion Wizard */}
+      <ProfileCompletionWizard 
+        open={showProfileWizard} 
+        onOpenChange={setShowProfileWizard}
+      />
     </div>
   );
 }
