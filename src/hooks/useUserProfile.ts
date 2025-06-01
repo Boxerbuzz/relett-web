@@ -31,12 +31,17 @@ export function useUserProfile() {
         .single();
 
       if (error) throw error;
-      setProfile({
+      
+      // Transform the data to match our TypeScript types
+      const transformedProfile: UserProfile = {
         ...data,
         address: typeof data.address === 'string'
           ? JSON.parse(data.address)
-          : (data.address || {})
-      });
+          : (data.address || {}),
+        gender: data.gender as UserProfile['gender']
+      };
+      
+      setProfile(transformedProfile);
     } catch (err) {
       console.error('Error fetching profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch profile');
@@ -52,14 +57,16 @@ export function useUserProfile() {
         .eq('is_active', true);
 
       if (error) throw error;
-      setRoles(
-        (data || []).map(role => ({
-          ...role,
-          metadata: typeof role.metadata === 'string'
-            ? JSON.parse(role.metadata)
-            : (role.metadata || {})
-        }))
-      );
+      
+      // Transform the data to match our TypeScript types
+      const transformedRoles: UserRole[] = (data || []).map(role => ({
+        ...role,
+        metadata: typeof role.metadata === 'string'
+          ? JSON.parse(role.metadata)
+          : (role.metadata || {})
+      }));
+      
+      setRoles(transformedRoles);
     } catch (err) {
       console.error('Error fetching roles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch roles');
@@ -78,13 +85,18 @@ export function useUserProfile() {
         .single();
 
       if (error) throw error;
-      setProfile({
+      
+      // Transform the data to match our TypeScript types
+      const transformedProfile: UserProfile = {
         ...data,
         address: typeof data.address === 'string'
           ? JSON.parse(data.address)
-          : (data.address || {})
-      });
-      return { data, error: null };
+          : (data.address || {}),
+        gender: data.gender as UserProfile['gender']
+      };
+      
+      setProfile(transformedProfile);
+      return { data: transformedProfile, error: null };
     } catch (err) {
       console.error('Error updating profile:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';

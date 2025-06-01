@@ -28,7 +28,16 @@ export function useIdentityVerification() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setVerifications(data || []);
+      
+      // Transform the data to match our TypeScript types
+      const transformedVerifications: IdentityVerification[] = (data || []).map(verification => ({
+        ...verification,
+        verification_response: typeof verification.verification_response === 'string'
+          ? JSON.parse(verification.verification_response)
+          : (verification.verification_response || {})
+      }));
+      
+      setVerifications(transformedVerifications);
     } catch (err) {
       console.error('Error fetching verifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch verifications');
@@ -53,8 +62,17 @@ export function useIdentityVerification() {
         .single();
 
       if (error) throw error;
-      setVerifications(prev => [result, ...prev]);
-      return { data: result, error: null };
+      
+      // Transform the data to match our TypeScript types
+      const transformedVerification: IdentityVerification = {
+        ...result,
+        verification_response: typeof result.verification_response === 'string'
+          ? JSON.parse(result.verification_response)
+          : (result.verification_response || {})
+      };
+      
+      setVerifications(prev => [transformedVerification, ...prev]);
+      return { data: transformedVerification, error: null };
     } catch (err) {
       console.error('Error creating verification:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create verification';
