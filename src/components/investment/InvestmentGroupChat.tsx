@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -176,7 +177,7 @@ export function InvestmentGroupChat({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-screen flex flex-col bg-white">
       {/* Fixed Header */}
       <div className="flex-shrink-0 border-b bg-white">
         {/* Top row with back button and title */}

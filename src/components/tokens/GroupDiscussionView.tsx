@@ -25,7 +25,7 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
   const userSharePercentage = (property.ownedTokens / property.totalTokens) * 100;
 
   return (
-    <div className="fixed inset-0 bg-white">
+    <div className="absolute inset-0 bg-white z-50">
       <InvestmentGroupChat 
         propertyId={property.id}
         propertyTitle={property.title}
