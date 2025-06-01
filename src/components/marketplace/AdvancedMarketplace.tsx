@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, MapPin, Bed, Bath, Square, Heart, Compare, BookmarkPlus } from 'lucide-react';
+import { Search, Filter, MapPin, Bed, Bath, Square, Heart, GitCompare, BookmarkPlus } from 'lucide-react';
 import { usePropertySearch } from '@/hooks/usePropertySearch';
 import { PropertyComparison } from './PropertyComparison';
 import { useToast } from '@/hooks/use-toast';
@@ -98,7 +99,12 @@ export function AdvancedMarketplace() {
     try {
       await saveSearch(searchName, {
         query: searchQuery,
-        ...filters
+        priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
+        priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
+        category: filters.category,
+        type: filters.type,
+        location: filters.location,
+        sortBy: filters.sortBy
       });
       setShowSaveSearch(false);
       setSearchName('');
@@ -256,7 +262,7 @@ export function AdvancedMarketplace() {
               </Button>
               {comparisonProperties.length > 0 && (
                 <Button variant="outline" onClick={() => setShowComparison(true)}>
-                  <Compare className="h-4 w-4 mr-2" />
+                  <GitCompare className="h-4 w-4 mr-2" />
                   Compare ({comparisonProperties.length})
                 </Button>
               )}
@@ -327,7 +333,7 @@ export function AdvancedMarketplace() {
                         onClick={() => toggleComparison(property)}
                         className={isInComparison ? 'bg-blue-600 text-white' : ''}
                       >
-                        <Compare className="h-4 w-4" />
+                        <GitCompare className="h-4 w-4" />
                       </Button>
                       <Button variant="secondary" size="sm">
                         <Heart className="h-4 w-4" />

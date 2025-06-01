@@ -104,7 +104,14 @@ export function useRealtimeChat(conversationId: string) {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      const processedMessages = (data || []).map(msg => ({
+        ...msg,
+        message_type: msg.message_type as ChatMessage['message_type'],
+        sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender
+      }));
+      
+      setMessages(processedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -134,11 +141,14 @@ export function useRealtimeChat(conversationId: string) {
 
       if (error) throw error;
       
-      const typing = (data || []).map(item => ({
-        user_id: item.user_id,
-        first_name: item.users?.first_name || '',
-        last_name: item.users?.last_name || ''
-      }));
+      const typing = (data || []).map(item => {
+        const userData = Array.isArray(item.users) ? item.users[0] : item.users;
+        return {
+          user_id: item.user_id,
+          first_name: userData?.first_name || '',
+          last_name: userData?.last_name || ''
+        };
+      });
       
       setTypingUsers(typing);
     } catch (error) {

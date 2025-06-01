@@ -27,9 +27,11 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
   return (
     <div className="absolute inset-0 bg-white z-50">
       <InvestmentGroupChat 
-        propertyId={property.id}
-        propertyTitle={property.title}
-        propertyLocation={property.location}
+        property={{
+          id: property.id,
+          title: property.title,
+          location: property.location,
+        }}
         investorCount={property.investorCount}
         userSharePercentage={userSharePercentage}
         tokenPrice={property.tokenPrice}

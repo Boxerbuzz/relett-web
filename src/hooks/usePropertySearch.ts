@@ -29,6 +29,7 @@ interface Property {
   location: any;
   amenities: string[];
   features: string[];
+  specification: any;
   created_at: string;
   is_featured: boolean;
   property_images: Array<{ url: string; is_primary: boolean }>;
@@ -49,7 +50,7 @@ export function usePropertySearch() {
         .from('properties')
         .select(`
           *,
-          property_images(url, is_primary)
+          property_images!inner(url, is_primary)
         `, { count: 'exact' })
         .eq('status', 'active')
         .eq('is_deleted', false);
@@ -120,7 +121,12 @@ export function usePropertySearch() {
 
       if (error) throw error;
 
-      setProperties(filters.offset === 0 ? data || [] : prev => [...prev, ...(data || [])]);
+      const processedData = (data || []).map(item => ({
+        ...item,
+        property_images: Array.isArray(item.property_images) ? item.property_images : []
+      }));
+
+      setProperties(filters.offset === 0 ? processedData : prev => [...prev, ...processedData]);
       setTotalCount(count || 0);
       setHasMore((data?.length || 0) === limit);
 
@@ -146,7 +152,7 @@ export function usePropertySearch() {
         .insert({
           user_id: user.id,
           name,
-          search_criteria: filters,
+          search_criteria: filters as any,
           alert_enabled: alertEnabled
         });
 
