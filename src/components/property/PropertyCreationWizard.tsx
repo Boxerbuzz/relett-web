@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +15,7 @@ import { PropertyReview } from './creation-steps/PropertyReview';
 import { usePropertyCreation } from '@/hooks/usePropertyCreation';
 import { useToast } from '@/hooks/use-toast';
 
-interface PropertyData {
+interface PropertyWizardData {
   basicInfo: {
     title: string;
     description: string;
@@ -55,7 +54,7 @@ const steps = [
 
 export function PropertyCreationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [propertyData, setPropertyData] = useState<PropertyData>({
+  const [propertyData, setPropertyData] = useState<PropertyWizardData>({
     basicInfo: {
       title: '',
       description: '',
@@ -88,7 +87,7 @@ export function PropertyCreationWizard() {
   const { toast } = useToast();
   const { createProperty, isLoading: isSubmitting } = usePropertyCreation();
 
-  const updatePropertyData = (section: keyof PropertyData, data: any) => {
+  const updatePropertyData = (section: keyof PropertyWizardData, data: any) => {
     setPropertyData(prev => ({
       ...prev,
       [section]: { ...prev[section], ...data }
@@ -137,7 +136,15 @@ export function PropertyCreationWizard() {
 
   const handleSubmit = async () => {
     try {
-      const property = await createProperty(propertyData);
+      // Transform wizard data to match createProperty expected format
+      const transformedData = {
+        basicInfo: propertyData.basicInfo,
+        location: propertyData.location,
+        documents: [] as any[], // Will be populated by file processing
+        valuation: propertyData.valuation
+      };
+
+      const property = await createProperty(transformedData);
       navigate('/my-land');
     } catch (error) {
       // Error handling is done in the hook
