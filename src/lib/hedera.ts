@@ -274,17 +274,17 @@ export class HederaClient {
       const query = new AccountBalanceQuery().setAccountId(account);
       const balance = await query.execute(this.client);
 
-      // Fix: Convert TokenBalanceMap to array properly
+      // Fix: Convert TokenBalanceMap to array properly using Map.entries()
       const tokenBalances: Array<{tokenId: string, balance: string}> = [];
       
       if (balance.tokens) {
-        // TokenBalanceMap doesn't have entries() method, iterate differently
-        balance.tokens.forEach((amount, tokenId) => {
+        // Use Map.entries() to iterate over the TokenBalanceMap
+        for (const [tokenId, amount] of balance.tokens.entries()) {
           tokenBalances.push({
             tokenId: tokenId.toString(),
             balance: amount.toString()
           });
-        });
+        }
       }
 
       return {
