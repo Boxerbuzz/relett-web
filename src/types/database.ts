@@ -53,7 +53,7 @@ export interface IdentityVerification {
   full_name: string;
   verification_status: VerificationStatus;
   verification_provider?: string;
-  verification_response?: Record<string, any>;
+  verification_response?: Json | Record<string, any>;
   verified_at?: string;
   expires_at?: string;
   retry_count: number;
