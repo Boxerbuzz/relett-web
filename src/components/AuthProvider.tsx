@@ -89,23 +89,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const fetchOrCreateUserProfile = async (authUser: User) => {
+    console.log("=== STARTING fetchOrCreateUserProfile ===");
     try {
-      console.log("Fetching user profile for:", authUser.email);
+      console.log("Step 1: Fetching user profile for:", authUser.email);
       
-      // Try users table first since that's what most of the app expects
-      let { data: userData, error: userError } = await supabase
+      console.log("Step 2: Querying users table...");
+      const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authUser.id)
         .single();
 
+      console.log("Step 3: Query completed. UserData:", userData, "Error:", userError);
+
       if (userError && userError.code !== "PGRST116") {
-        console.error("Error fetching from users table:", userError);
+        console.error("Step 4: Error fetching from users table:", userError);
       }
 
       // If user doesn't exist in users table, create them
       if (!userData) {
-        console.log("Creating new user in users table");
+        console.log("Step 5: User not found, creating new user in users table");
         const [first_name, ...rest] = (
           authUser.user_metadata?.name ||
           authUser.email?.split("@")[0] ||
@@ -123,18 +126,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           avatar: authUser.user_metadata?.avatar_url || null,
         };
 
+        console.log("Step 6: Inserting new user:", newUser);
         const { data: createdUser, error: createError } = await supabase
           .from("users")
           .insert([newUser])
           .select()
           .single();
 
+        console.log("Step 7: User creation completed. CreatedUser:", createdUser, "Error:", createError);
+
         if (createError) {
-          console.error("Error creating user:", createError);
+          console.error("Step 8: Error creating user:", createError);
           throw createError;
         }
         userData = createdUser;
 
+        console.log("Step 9: Creating user role...");
         // Create default user role
         const { error: roleError } = await supabase.from("user_roles").insert([
           {
@@ -143,11 +150,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           },
         ]);
 
+        console.log("Step 10: Role creation completed. Error:", roleError);
         if (roleError) {
           console.error("Error creating user role:", roleError);
         }
+      } else {
+        console.log("Step 5: User found in database:", userData);
       }
 
+      console.log("Step 11: Transforming to AppUser type...");
       // Transform to AppUser type
       const appUser: AppUser = {
         id: userData.id,
@@ -158,10 +169,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         phone: userData.phone,
       };
 
-      console.log("Setting user:", appUser);
+      console.log("Step 12: Setting user:", appUser);
       setUser(appUser);
+      console.log("Step 13: User set successfully");
     } catch (error) {
-      console.error("Error fetching/creating user profile:", error);
+      console.error("=== ERROR in fetchOrCreateUserProfile ===", error);
       toast({
         title: "Error",
         description: "Failed to load user profile",
@@ -181,7 +193,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(fallbackUser);
     } finally {
       // Always set loading to false after user profile operation completes
-      console.log("Setting loading to false - profile fetch complete");
+      console.log("=== FINALLY: Setting loading to false - profile fetch complete ===");
       setLoading(false);
     }
   };
