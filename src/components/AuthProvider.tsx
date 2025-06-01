@@ -23,6 +23,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     let isMounted = true;
+    
+    console.log("AuthProvider: Setting up auth listeners");
 
     // Set up auth state listener FIRST
     const {
@@ -35,9 +37,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setSession(session);
 
       if (session?.user) {
+        console.log("Session exists, fetching user profile...");
         // Don't set loading false yet - wait for profile fetch
         await fetchOrCreateUserProfile(session.user);
       } else {
+        console.log("No session, setting user to null and loading to false");
         setUser(null);
         setLoading(false);
       }
@@ -46,14 +50,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // THEN check for existing session
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initializing auth - checking for existing session");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
         
         if (!isMounted) return;
         
         if (session?.user) {
+          console.log("Found existing session for:", session.user.email);
           setSession(session);
           await fetchOrCreateUserProfile(session.user);
         } else {
+          console.log("No existing session found");
           setLoading(false);
         }
       } catch (error) {
@@ -67,6 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
 
     return () => {
+      console.log("AuthProvider: Cleaning up");
       isMounted = false;
       subscription.unsubscribe();
     };
@@ -76,15 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       console.log("Fetching user profile for:", authUser.email);
       
-      // Check if we should use user_profiles table instead of users table
-      // First try user_profiles table (which seems to match the hooks)
-      let { data: profileData, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .single();
-
-      // If user_profiles doesn't exist or fails, try users table
+      // Try users table first since that's what most of the app expects
       let { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
@@ -93,10 +101,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (userError && userError.code !== "PGRST116") {
         console.error("Error fetching from users table:", userError);
-      }
-
-      if (profileError && profileError.code !== "PGRST116") {
-        console.error("Error fetching from user_profiles table:", profileError);
       }
 
       // If user doesn't exist in users table, create them
@@ -132,12 +136,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         userData = createdUser;
 
         // Create default user role
-        await supabase.from("user_roles").insert([
+        const { error: roleError } = await supabase.from("user_roles").insert([
           {
             user_id: authUser.id,
             role: newUser.user_type as any,
           },
         ]);
+
+        if (roleError) {
+          console.error("Error creating user role:", roleError);
+        }
       }
 
       // Transform to AppUser type
@@ -169,10 +177,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email_confirmed_at: authUser.email_confirmed_at,
         phone: null,
       };
+      console.log("Setting fallback user:", fallbackUser);
       setUser(fallbackUser);
     } finally {
       // Always set loading to false after user profile operation completes
-      console.log("Setting loading to false");
+      console.log("Setting loading to false - profile fetch complete");
       setLoading(false);
     }
   };
@@ -290,6 +299,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
     }
   };
+
+  console.log("AuthProvider render - loading:", loading, "user:", user?.email);
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
