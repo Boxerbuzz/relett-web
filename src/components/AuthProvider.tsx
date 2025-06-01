@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
@@ -21,40 +22,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { toast } = useToast();
 
   useEffect(() => {
+    let isMounted = true;
+
     // Set up auth state listener FIRST
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.email);
+      
+      if (!isMounted) return;
+      
       setSession(session);
 
       if (session?.user) {
-        // Fetch or create user profile
+        // Don't set loading false yet - wait for profile fetch
         await fetchOrCreateUserProfile(session.user);
       } else {
         setUser(null);
-      }
-
-      setLoading(false);
-    });
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setTimeout(() => {
-          fetchOrCreateUserProfile(session.user);
-        }, 0);
-      } else {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // THEN check for existing session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isMounted) return;
+        
+        if (session?.user) {
+          setSession(session);
+          await fetchOrCreateUserProfile(session.user);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchOrCreateUserProfile = async (authUser: User) => {
     try {
-      // First, check if user exists in our users table
+      console.log("Fetching user profile for:", authUser.email);
+      
+      // Check if we should use user_profiles table instead of users table
+      // First try user_profiles table (which seems to match the hooks)
+      let { data: profileData, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .single();
+
+      // If user_profiles doesn't exist or fails, try users table
       let { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
@@ -62,11 +92,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .single();
 
       if (userError && userError.code !== "PGRST116") {
-        throw userError;
+        console.error("Error fetching from users table:", userError);
       }
 
-      // If user doesn't exist, create them
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Error fetching from user_profiles table:", profileError);
+      }
+
+      // If user doesn't exist in users table, create them
       if (!userData) {
+        console.log("Creating new user in users table");
         const [first_name, ...rest] = (
           authUser.user_metadata?.name ||
           authUser.email?.split("@")[0] ||
@@ -90,7 +125,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           .select()
           .single();
 
-        if (createError) throw createError;
+        if (createError) {
+          console.error("Error creating user:", createError);
+          throw createError;
+        }
         userData = createdUser;
 
         // Create default user role
@@ -112,6 +150,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         phone: userData.phone,
       };
 
+      console.log("Setting user:", appUser);
       setUser(appUser);
     } catch (error) {
       console.error("Error fetching/creating user profile:", error);
@@ -120,6 +159,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         description: "Failed to load user profile",
         variant: "destructive",
       });
+      
+      // Even on error, we should set a basic user object to avoid infinite loading
+      const fallbackUser: AppUser = {
+        id: authUser.id,
+        email: authUser.email!,
+        role: "landowner",
+        created_at: new Date().toISOString(),
+        email_confirmed_at: authUser.email_confirmed_at,
+        phone: null,
+      };
+      setUser(fallbackUser);
+    } finally {
+      // Always set loading to false after user profile operation completes
+      console.log("Setting loading to false");
+      setLoading(false);
     }
   };
 
@@ -154,7 +208,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      // Don't set loading false here - let the auth state change handle it
     }
   };
 
@@ -210,7 +264,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      // Don't set loading false here - let the auth state change handle it
     }
   };
 
