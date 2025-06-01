@@ -68,18 +68,18 @@ export interface InvestmentTracking {
   } | null;
 }
 
-// Updated interfaces to match actual database schema
 export interface DocumentVerificationRequest {
   id: string;
   document_id: string;
   requested_by: string;
   assigned_verifier?: string;
-  priority: string; // Changed from union type to string to match database
-  status: string; // Changed from union type to string to match database
+  priority: string;
+  status: string;
   verification_checklist: any;
   notes?: string;
   completed_at?: string;
   created_at: string;
+  updated_at: string;
   property_documents: {
     id: string;
     document_name: string;

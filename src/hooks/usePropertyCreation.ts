@@ -44,7 +44,6 @@ export function usePropertyCreation() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Create property record
       const { data: property, error: propertyError } = await supabase
         .from('properties')
         .insert({
@@ -66,20 +65,18 @@ export function usePropertyCreation() {
 
       if (propertyError) throw propertyError;
 
-      // Create workflow record with proper JSON serialization
       const { error: workflowError } = await supabase
         .from('property_creation_workflows')
         .insert({
           user_id: user.id,
           property_id: property.id,
           current_step: 5,
-          step_data: JSON.parse(JSON.stringify(propertyData)), // Ensure JSON serializable
+          step_data: JSON.parse(JSON.stringify(propertyData)),
           status: 'completed'
         });
 
       if (workflowError) throw workflowError;
 
-      // Upload documents if provided
       if (propertyData.documents.titleDeed || propertyData.documents.surveyPlan) {
         await uploadDocuments(property.id, propertyData.documents);
       }
@@ -114,11 +111,8 @@ export function usePropertyCreation() {
     for (const doc of documentsToUpload) {
       if (!doc.file) continue;
 
-      // Upload file to storage (you'll need to create a storage bucket)
       const fileName = `${propertyId}/${doc.type}_${Date.now()}_${doc.file.name}`;
       
-      // For now, we'll store document metadata without actual file upload
-      // In production, you'd upload to Supabase Storage first
       const { error } = await supabase
         .from('property_documents')
         .insert({

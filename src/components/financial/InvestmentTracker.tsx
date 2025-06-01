@@ -27,7 +27,6 @@ export function InvestmentTracker() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Simplified query without complex joins that might fail
       const { data, error } = await supabase
         .from('investment_tracking')
         .select('*')
@@ -35,15 +34,13 @@ export function InvestmentTracker() {
 
       if (error) throw error;
 
-      // Transform data to match expected interface
       const transformedData: InvestmentTracking[] = (data || []).map(item => ({
         ...item,
-        tokenized_property: null // Set to null since we can't guarantee the join works
+        tokenized_property: null
       }));
 
       setInvestments(transformedData);
       
-      // Calculate portfolio metrics
       const totalValue = transformedData.reduce((sum, inv) => sum + inv.current_value, 0);
       const totalInvested = transformedData.reduce((sum, inv) => sum + inv.investment_amount, 0);
       const overallROI = totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0;
@@ -85,24 +82,25 @@ export function InvestmentTracker() {
   };
 
   if (isLoading) {
-    return <div className="grid gap-4">
-      {[1, 2, 3].map(i => (
-        <Card key={i} className="animate-pulse">
-          <CardHeader>
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-20 bg-gray-200 rounded"></div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>;
+    return (
+      <div className="grid gap-4">
+        {[1, 2, 3].map(i => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader>
+              <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-20 bg-gray-200 rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      {/* Portfolio Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -160,7 +158,6 @@ export function InvestmentTracker() {
         </Card>
       </div>
 
-      {/* Recent Reports */}
       {reports.length > 0 && (
         <Card>
           <CardHeader>
@@ -185,75 +182,94 @@ export function InvestmentTracker() {
         </Card>
       )}
 
-      {/* Individual Investments */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Your Investments</h3>
-        {investments.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center text-muted-foreground">
-                <PieChart className="mx-auto h-12 w-12 mb-4" />
-                <p>No investments found. Start investing in tokenized properties!</p>
-                <Button className="mt-4" onClick={() => window.location.href = '/marketplace'}>
-                  Browse Properties
-                </Button>
+      <InvestmentList 
+        investments={investments}
+        formatCurrency={formatCurrency}
+        formatDate={formatDate}
+      />
+    </div>
+  );
+}
+
+function InvestmentList({ 
+  investments, 
+  formatCurrency, 
+  formatDate 
+}: { 
+  investments: InvestmentTracking[];
+  formatCurrency: (amount: number) => string;
+  formatDate: (dateString: string) => string;
+}) {
+  if (investments.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center text-muted-foreground">
+            <PieChart className="mx-auto h-12 w-12 mb-4" />
+            <p>No investments found. Start investing in tokenized properties!</p>
+            <Button className="mt-4" onClick={() => window.location.href = '/marketplace'}>
+              Browse Properties
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Your Investments</h3>
+      {investments.map((investment) => (
+        <Card key={investment.id}>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-lg">
+                  Investment {investment.id.slice(0, 8)}
+                </CardTitle>
+                <CardDescription>
+                  {investment.tokens_owned} tokens
+                </CardDescription>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          investments.map((investment) => (
-            <Card key={investment.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">
-                      {investment.tokenized_property?.token_name || `Investment ${investment.id.slice(0, 8)}`}
-                    </CardTitle>
-                    <CardDescription>
-                      {investment.tokenized_property?.token_symbol || 'TOKEN'} • {investment.tokens_owned} tokens
-                    </CardDescription>
-                  </div>
-                  <Badge variant={investment.roi_percentage >= 0 ? 'default' : 'destructive'}>
-                    {investment.roi_percentage >= 0 ? '+' : ''}{investment.roi_percentage.toFixed(2)}%
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Initial Investment</p>
-                    <p className="font-semibold">{formatCurrency(investment.investment_amount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Current Value</p>
-                    <p className="font-semibold">{formatCurrency(investment.current_value)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last Dividend</p>
-                    <p className="font-semibold">{formatCurrency(investment.last_dividend_amount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Dividends</p>
-                    <p className="font-semibold">{formatCurrency(investment.total_dividends_received)}</p>
-                  </div>
-                </div>
+              <Badge variant={investment.roi_percentage >= 0 ? 'default' : 'destructive'}>
+                {investment.roi_percentage >= 0 ? '+' : ''}{investment.roi_percentage.toFixed(2)}%
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Initial Investment</p>
+                <p className="font-semibold">{formatCurrency(investment.investment_amount)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Current Value</p>
+                <p className="font-semibold">{formatCurrency(investment.current_value)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Last Dividend</p>
+                <p className="font-semibold">{formatCurrency(investment.last_dividend_amount)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Dividends</p>
+                <p className="font-semibold">{formatCurrency(investment.total_dividends_received)}</p>
+              </div>
+            </div>
 
-                {investment.last_dividend_date && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    Last dividend: {formatDate(investment.last_dividend_date)}
-                  </div>
-                )}
+            {investment.last_dividend_date && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Last dividend: {formatDate(investment.last_dividend_date)}
+              </div>
+            )}
 
-                <Progress 
-                  value={Math.max(0, Math.min(100, investment.roi_percentage + 50))} 
-                  className="h-2" 
-                />
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+            <Progress 
+              value={Math.max(0, Math.min(100, investment.roi_percentage + 50))} 
+              className="h-2" 
+            />
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
