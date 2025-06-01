@@ -1,16 +1,20 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GoogleLogo, GithubLogo, TwitterLogo } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export function SocialAuthButtons() {
   const { toast } = useToast();
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const handleSocialAuth = async (provider: 'google' | 'github' | 'twitter') => {
     try {
+      setLoadingProvider(provider);
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -34,6 +38,8 @@ export function SocialAuthButtons() {
         description: "An unexpected error occurred during authentication",
         variant: "destructive",
       });
+    } finally {
+      setLoadingProvider(null);
     }
   };
 
@@ -45,8 +51,13 @@ export function SocialAuthButtons() {
         onClick={() => handleSocialAuth('google')}
         className="border-gray-300 hover:bg-gray-50"
         title="Sign in with Google"
+        disabled={loadingProvider !== null}
       >
-        <GoogleLogo className="h-4 w-4" />
+        {loadingProvider === 'google' ? (
+          <Loader className="h-4 w-4 animate-spin" />
+        ) : (
+          <GoogleLogo className="h-4 w-4" />
+        )}
       </Button>
       
       <Button
@@ -55,8 +66,13 @@ export function SocialAuthButtons() {
         onClick={() => handleSocialAuth('github')}
         className="border-gray-300 hover:bg-gray-50"
         title="Sign in with GitHub"
+        disabled={loadingProvider !== null}
       >
-        <GithubLogo className="h-4 w-4" />
+        {loadingProvider === 'github' ? (
+          <Loader className="h-4 w-4 animate-spin" />
+        ) : (
+          <GithubLogo className="h-4 w-4" />
+        )}
       </Button>
       
       <Button
@@ -65,8 +81,13 @@ export function SocialAuthButtons() {
         onClick={() => handleSocialAuth('twitter')}
         className="border-gray-300 hover:bg-gray-50"
         title="Sign in with Twitter"
+        disabled={loadingProvider !== null}
       >
-        <TwitterLogo className="h-4 w-4" />
+        {loadingProvider === 'twitter' ? (
+          <Loader className="h-4 w-4 animate-spin" />
+        ) : (
+          <TwitterLogo className="h-4 w-4" />
+        )}
       </Button>
     </div>
   );

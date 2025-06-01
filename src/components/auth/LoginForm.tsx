@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
 import { Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -83,6 +84,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
                 type="email"
                 placeholder="Enter your email"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('email')}
               />
             </div>
@@ -100,12 +102,14 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('password')}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -120,6 +124,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
               type="button"
               onClick={onForgotPassword}
               className="text-sm text-blue-600 hover:text-blue-700"
+              disabled={loading}
             >
               Forgot password?
             </button>
@@ -130,7 +135,14 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
             className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              'Sign In'
+            )}
           </Button>
         </form>
 
@@ -140,6 +152,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
             <button
               onClick={onToggleMode}
               className="text-blue-600 hover:text-blue-700 font-medium"
+              disabled={loading}
             >
               Sign up
             </button>

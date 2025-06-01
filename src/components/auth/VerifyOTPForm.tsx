@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Timer } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 
 const otpSchema = z.object({
   otp: z.string().min(6, 'Please enter the complete OTP'),
@@ -24,6 +25,7 @@ interface VerifyOTPFormProps {
 
 export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) {
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [otp, setOtp] = useState('');
   
   const {
@@ -53,8 +55,16 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
   };
 
   const resendOTP = async () => {
-    // TODO: Implement resend OTP
-    console.log('Resending OTP to:', email);
+    try {
+      setResendLoading(true);
+      // TODO: Implement resend OTP
+      console.log('Resending OTP to:', email);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
@@ -69,7 +79,7 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex flex-col items-center space-y-2">
           <Label htmlFor="otp">Enter verification code</Label>
-          <InputOTP maxLength={6} value={otp} onChange={handleOTPChange}>
+          <InputOTP maxLength={6} value={otp} onChange={handleOTPChange} disabled={loading}>
             <InputOTPGroup>
               <InputOTPSlot index={0} />
               <InputOTPSlot index={1} />
@@ -85,7 +95,14 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
         </div>
 
         <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
-          {loading ? 'Verifying...' : 'Verify Code'}
+          {loading ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Verifying...
+            </>
+          ) : (
+            'Verify Code'
+          )}
         </Button>
       </form>
 
@@ -93,15 +110,26 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
         <button
           onClick={resendOTP}
           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
+          disabled={loading || resendLoading}
         >
-          <Timer className="mr-1 h-4 w-4" />
-          Didn't receive the code? Resend
+          {resendLoading ? (
+            <>
+              <Loader className="mr-1 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            <>
+              <Timer className="mr-1 h-4 w-4" />
+              Didn't receive the code? Resend
+            </>
+          )}
         </button>
         
         <div>
           <button
             onClick={onBack}
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+            disabled={loading}
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to sign in

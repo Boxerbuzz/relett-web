@@ -14,6 +14,7 @@ import { AccountTypeSelect } from './AccountTypeSelect';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
 import { User, Envelope, Lock, Eye, EyeSlash, Phone } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -103,6 +104,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 id="name"
                 placeholder="Enter your full name"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('name')}
               />
             </div>
@@ -120,6 +122,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type="email"
                 placeholder="Enter your email"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('email')}
               />
             </div>
@@ -137,6 +140,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type="tel"
                 placeholder="Enter your phone number"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('phone')}
               />
             </div>
@@ -154,12 +158,14 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Create a password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('password')}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -178,12 +184,14 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={loading}
                 {...register('confirmPassword')}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showConfirmPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -199,6 +207,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               <AccountTypeSelect
                 value={role}
                 onChange={(value) => setValue('role', value)}
+                disabled={loading}
               />
             </div>
             {errors.role && (
@@ -212,6 +221,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               checked={acceptTerms}
               onCheckedChange={(checked) => setValue('acceptTerms', checked as boolean)}
               className="mt-1"
+              disabled={loading}
             />
             <div className="grid gap-1.5 leading-none">
               <Label
@@ -238,7 +248,14 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              'Create Account'
+            )}
           </Button>
         </form>
 
@@ -248,6 +265,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             <button
               onClick={onToggleMode}
               className="text-blue-600 hover:text-blue-700 font-medium"
+              disabled={loading}
             >
               Sign in
             </button>

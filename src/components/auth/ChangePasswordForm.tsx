@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock, Eye, EyeSlash } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -109,12 +110,14 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter new password"
               className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              disabled={loading}
               {...register('password')}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              disabled={loading}
             >
               {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -133,12 +136,14 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Confirm new password"
               className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              disabled={loading}
               {...register('confirmPassword')}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              disabled={loading}
             >
               {showConfirmPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -153,7 +158,14 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
           className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
           disabled={loading}
         >
-          {loading ? 'Updating...' : 'Update Password'}
+          {loading ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            'Update Password'
+          )}
         </Button>
       </form>
     </div>

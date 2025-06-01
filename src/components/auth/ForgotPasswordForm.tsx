@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Envelope } from 'phosphor-react';
+import { Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -90,6 +91,7 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
               type="email"
               placeholder="Enter your email"
               className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              disabled={loading}
               {...register('email')}
             />
           </div>
@@ -103,7 +105,14 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
           className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
           disabled={loading}
         >
-          {loading ? 'Sending...' : 'Send Reset Link'}
+          {loading ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            'Send Reset Link'
+          )}
         </Button>
       </form>
 
@@ -111,6 +120,7 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
         <button
           onClick={onBack}
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          disabled={loading}
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to sign in
