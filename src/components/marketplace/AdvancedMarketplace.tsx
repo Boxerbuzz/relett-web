@@ -25,8 +25,8 @@ interface MarketplaceFilters {
 export function AdvancedMarketplace() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
-    category: '',
-    type: '',
+    category: 'all',
+    type: 'all',
     priceMin: '',
     priceMax: '',
     location: '',
@@ -56,8 +56,8 @@ export function AdvancedMarketplace() {
   const handleSearch = () => {
     const searchFilters = {
       query: searchQuery,
-      category: filters.category || undefined,
-      type: filters.type || undefined,
+      category: filters.category !== 'all' ? filters.category : undefined,
+      type: filters.type !== 'all' ? filters.type : undefined,
       priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
       priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
       location: filters.location || undefined,
@@ -73,8 +73,8 @@ export function AdvancedMarketplace() {
   const handleLoadMore = () => {
     const searchFilters = {
       query: searchQuery,
-      category: filters.category || undefined,
-      type: filters.type || undefined,
+      category: filters.category !== 'all' ? filters.category : undefined,
+      type: filters.type !== 'all' ? filters.type : undefined,
       priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
       priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
       location: filters.location || undefined,
@@ -101,8 +101,8 @@ export function AdvancedMarketplace() {
         query: searchQuery,
         priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
         priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
-        category: filters.category,
-        type: filters.type,
+        category: filters.category !== 'all' ? filters.category : undefined,
+        type: filters.type !== 'all' ? filters.type : undefined,
         location: filters.location,
         sortBy: filters.sortBy
       });
@@ -200,7 +200,7 @@ export function AdvancedMarketplace() {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="residential">Residential</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
                 <SelectItem value="land">Land</SelectItem>
@@ -212,7 +212,7 @@ export function AdvancedMarketplace() {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="house">House</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="condo">Condo</SelectItem>
