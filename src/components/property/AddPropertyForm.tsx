@@ -149,7 +149,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     <div className="max-w-4xl mx-auto">
       <Card className="shadow-lg">
         {/* Header */}
-        <CardHeader className="border-b bg-white">
+        <CardHeader className="rounded-t-md border-b bg-white">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl font-bold">Add New Property</CardTitle>
@@ -201,7 +201,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         </CardContent>
 
         {/* Footer */}
-        <div className="flex justify-between p-6 border-t bg-gray-50">
+        <div className="flex justify-between p-6 border-t bg-gray-50 rounded-b-md">
           <Button
             type="button"
             variant="outline"
