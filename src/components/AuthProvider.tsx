@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
@@ -94,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log("Step 1: Fetching user profile for:", authUser.email);
       
       console.log("Step 2: Querying users table...");
-      const { data: userData, error: userError } = await supabase
+      let { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authUser.id)
