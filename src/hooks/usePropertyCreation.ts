@@ -19,12 +19,13 @@ interface PropertyData {
     country: string;
     coordinates: { lat: number; lng: number } | null;
   };
-  documents: {
-    titleDeed: File | null;
-    surveyPlan: File | null;
-    taxClearance: File | null;
-    other: File[];
-  };
+  documents: Array<{
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+    size: number;
+  }>;
   valuation: {
     estimatedValue: number;
     currency: string;
@@ -77,8 +78,9 @@ export function usePropertyCreation() {
 
       if (workflowError) throw workflowError;
 
-      if (propertyData.documents.titleDeed || propertyData.documents.surveyPlan) {
-        await uploadDocuments(property.id, propertyData.documents);
+      // Store uploaded documents in property_documents table
+      if (propertyData.documents && propertyData.documents.length > 0) {
+        await storePropertyDocuments(property.id, propertyData.documents);
       }
 
       toast({
@@ -100,40 +102,69 @@ export function usePropertyCreation() {
     }
   };
 
-  const uploadDocuments = async (propertyId: string, documents: PropertyData['documents']) => {
-    const documentsToUpload = [
-      { file: documents.titleDeed, type: 'deed', name: 'Title Deed' },
-      { file: documents.surveyPlan, type: 'survey', name: 'Survey Plan' },
-      { file: documents.taxClearance, type: 'tax_clearance', name: 'Tax Clearance' },
-      ...documents.other.map((file, index) => ({ file, type: 'other', name: `Document ${index + 1}` }))
-    ].filter(doc => doc.file);
-
-    for (const doc of documentsToUpload) {
-      if (!doc.file) continue;
-
-      const fileName = `${propertyId}/${doc.type}_${Date.now()}_${doc.file.name}`;
-      
+  const storePropertyDocuments = async (propertyId: string, documents: PropertyData['documents']) => {
+    for (const doc of documents) {
       const { error } = await supabase
         .from('property_documents')
         .insert({
           property_id: propertyId,
           document_type: doc.type as any,
           document_name: doc.name,
-          file_url: `placeholder_${fileName}`,
-          file_size: doc.file.size,
-          mime_type: doc.file.type,
-          document_hash: `hash_${Date.now()}`,
+          file_url: doc.url,
+          file_size: doc.size,
+          mime_type: 'application/pdf', // Default, should be detected during upload
+          document_hash: `hash_${Date.now()}`, // Should be calculated during upload
           status: 'pending'
         });
 
       if (error) {
-        console.error('Error uploading document:', error);
+        console.error('Error storing document:', error);
       }
+    }
+  };
+
+  const createPaymentSession = async (amount: number, purpose: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment-session', {
+        body: {
+          amount,
+          currency: 'USD',
+          purpose,
+          metadata: { timestamp: Date.now() }
+        }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Payment session error:', error);
+      throw error;
+    }
+  };
+
+  const tokenizeProperty = async (propertyId: string, tokenDetails: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-hedera-token', {
+        body: {
+          tokenizedPropertyId: propertyId,
+          tokenName: tokenDetails.name,
+          tokenSymbol: tokenDetails.symbol,
+          totalSupply: tokenDetails.supply
+        }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Tokenization error:', error);
+      throw error;
     }
   };
 
   return {
     createProperty,
+    createPaymentSession,
+    tokenizeProperty,
     isLoading
   };
 }

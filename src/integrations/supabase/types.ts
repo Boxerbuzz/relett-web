@@ -395,6 +395,63 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          attachment_url: string | null
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          edited_at: string | null
+          id: string
+          message_type: string | null
+          metadata: Json | null
+          reply_to_id: string | null
+          sender_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attachment_url?: string | null
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          reply_to_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attachment_url?: string | null
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          reply_to_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_records: {
         Row: {
           authority: string
@@ -1848,6 +1905,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_sessions: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          payment_provider: string | null
+          purpose: string
+          session_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string | null
+          purpose: string
+          session_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string | null
+          purpose?: string
+          session_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           agent_id: string | null
@@ -2843,6 +2948,39 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_searches: {
+        Row: {
+          alert_enabled: boolean | null
+          created_at: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          search_criteria: Json
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          alert_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          search_criteria: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          alert_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          search_criteria?: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       smart_contracts: {
         Row: {
           abi: Json
@@ -3221,6 +3359,35 @@ export type Database = {
           transaction_type?: string
         }
         Relationships: []
+      }
+      typing_indicators: {
+        Row: {
+          conversation_id: string | null
+          id: string
+          last_typed_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          id?: string
+          last_typed_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          id?: string
+          last_typed_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_devices: {
         Row: {
@@ -3693,6 +3860,10 @@ export type Database = {
       can_access_property: {
         Args: { _property_id: string; _user_id?: string }
         Returns: boolean
+      }
+      cleanup_typing_indicators: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>

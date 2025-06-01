@@ -1,343 +1,243 @@
 
-'use client';
-
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Send, 
-  Vote, 
-  Bell, 
-  Users, 
-  TrendingUp, 
-  MessageSquare,
-  ArrowLeft,
-  MapPin,
-  DollarSign
-} from 'lucide-react';
-
-interface ChatMessage {
-  id: string;
-  sender: string;
-  senderId: string;
-  message: string;
-  timestamp: string;
-  type: 'message' | 'vote' | 'update' | 'ai_summary';
-  votes?: {
-    proposal: string;
-    options: { label: string; votes: number }[];
-    totalVotes: number;
-    deadline: string;
-  };
-}
+import { Send, Paperclip, Users, MoreVertical } from 'lucide-react';
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
+import { TypingIndicator } from '@/components/chat/TypingIndicator';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { useToast } from '@/hooks/use-toast';
 
 interface InvestmentGroupChatProps {
-  propertyId: string;
-  propertyTitle: string;
-  propertyLocation: string;
-  investorCount: number;
-  userSharePercentage: number;
-  tokenPrice: number;
-  currentValue: number;
-  totalValue: number;
-  roi: number;
-  ownedTokens: number;
-  totalTokens: number;
-  onBack: () => void;
+  conversationId: string;
+  groupName: string;
+  participantCount?: number;
 }
 
 export function InvestmentGroupChat({ 
-  propertyId, 
-  propertyTitle,
-  propertyLocation,
-  investorCount, 
-  userSharePercentage,
-  tokenPrice,
-  currentValue,
-  totalValue,
-  roi,
-  ownedTokens,
-  totalTokens,
-  onBack
+  conversationId, 
+  groupName, 
+  participantCount = 0 
 }: InvestmentGroupChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      sender: 'AI Moderator',
-      senderId: 'ai',
-      message: 'Welcome to the Downtown Commercial Plot investor group. I will help moderate discussions and provide updates about your investment.',
-      timestamp: '2024-01-20T10:00:00Z',
-      type: 'ai_summary'
-    },
-    {
-      id: '2',
-      sender: 'John Doe',
-      senderId: 'user1',
-      message: 'Excited to be part of this investment! Looking forward to the quarterly updates.',
-      timestamp: '2024-01-20T10:15:00Z',
-      type: 'message'
-    },
-    {
-      id: '3',
-      sender: 'AI Moderator',
-      senderId: 'ai',
-      message: 'Proposal: Should we approve the renovation budget of $25,000 for the building facade?',
-      timestamp: '2024-01-20T11:00:00Z',
-      type: 'vote',
-      votes: {
-        proposal: 'Approve renovation budget of $25,000',
-        options: [
-          { label: 'Yes, approve', votes: 7 },
-          { label: 'No, reject', votes: 2 },
-          { label: 'Need more info', votes: 1 }
-        ],
-        totalVotes: 10,
-        deadline: '2024-01-25T23:59:59Z'
-      }
-    },
-    {
-      id: '4',
-      sender: 'Sarah Wilson',
-      senderId: 'user2',
-      message: 'I think the renovation will increase property value. Count me in for approval.',
-      timestamp: '2024-01-20T11:30:00Z',
-      type: 'message'
-    }
-  ]);
-
   const [newMessage, setNewMessage] = useState('');
-  const [activeVotes, setActiveVotes] = useState<string[]>(['3']);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  const { messages, typingUsers, isLoading, sendMessage, updateTypingStatus } = useRealtimeChat(conversationId);
+  const { uploadFile, isUploading } = useFileUpload();
+  const { toast } = useToast();
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = () => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    const message: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'You',
-      senderId: 'current_user',
-      message: newMessage,
-      timestamp: new Date().toISOString(),
-      type: 'message'
-    };
-
-    setMessages(prev => [...prev, message]);
+    const messageContent = newMessage.trim();
     setNewMessage('');
+    setIsTyping(false);
 
-    // Simulate AI response after user message
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'AI Moderator',
-        senderId: 'ai',
-        message: 'Thank you for your input. I will include this in the discussion summary for all investors.',
-        timestamp: new Date().toISOString(),
-        type: 'ai_summary'
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 2000);
-  };
-
-  const castVote = (messageId: string, optionIndex: number) => {
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId && msg.votes) {
-        const updatedVotes = { ...msg.votes };
-        updatedVotes.options[optionIndex].votes += 1;
-        updatedVotes.totalVotes += 1;
-        return { ...msg, votes: updatedVotes };
-      }
-      return msg;
-    }));
-    
-    setActiveVotes(prev => prev.filter(id => id !== messageId));
-  };
-
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString();
-  };
-
-  const getMessageIcon = (type: string) => {
-    switch (type) {
-      case 'vote': return <Vote className="h-4 w-4 text-blue-600" />;
-      case 'update': return <Bell className="h-4 w-4 text-green-600" />;
-      case 'ai_summary': return <MessageSquare className="h-4 w-4 text-purple-600" />;
-      default: return null;
+    try {
+      await sendMessage(messageContent);
+    } catch (error) {
+      console.error('Failed to send message:', error);
     }
   };
 
+  const handleTyping = (value: string) => {
+    setNewMessage(value);
+    
+    if (!isTyping && value.length > 0) {
+      setIsTyping(true);
+      updateTypingStatus();
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+
+    // Update typing status periodically while typing
+    if (value.length > 0) {
+      updateTypingStatus();
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await uploadFile(file, {
+        bucket: 'chat-attachments',
+        path: `conversation-${conversationId}`,
+        maxSize: 25 * 1024 * 1024, // 25MB limit for chat files
+      });
+
+      await sendMessage(file.name, 'file', result.url);
+      
+      toast({
+        title: 'File shared',
+        description: `${file.name} has been shared with the group.`,
+      });
+    } catch (error) {
+      console.error('File upload failed:', error);
+    }
+
+    // Reset input
+    event.target.value = '';
+  };
+
+  const formatMessageTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="h-screen flex flex-col bg-white">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 border-b bg-white">
-        {/* Top row with back button and title */}
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={onBack}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">Back</span>
-            </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold flex items-center gap-2 truncate">
-                <Users className="h-5 w-5 flex-shrink-0" />
-                <span className="truncate">{propertyTitle}</span>
-                <Badge variant="outline" className="flex-shrink-0">{investorCount} investors</Badge>
-              </h1>
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="flex-shrink-0 border-b">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {groupName}
+            </CardTitle>
+            <CardDescription>
+              {participantCount} participants • Investment Group Discussion
+            </CardDescription>
+          </div>
+          <Button variant="ghost" size="sm">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+
+      {/* Messages Area */}
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            <div className="text-center">
+              <Users className="h-12 w-12 mx-auto mb-4" />
+              <p>No messages yet. Start the conversation!</p>
             </div>
           </div>
-        </div>
-
-        {/* Investment Details Row */}
-        <div className="px-4 py-3 bg-gray-50">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-600">Location</p>
-                <p className="font-medium truncate">{propertyLocation}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-gray-500 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-600">Your Investment</p>
-                <p className="font-medium text-green-600">${totalValue.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-gray-500 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-600">ROI</p>
-                <p className={`font-medium ${roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-500 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs text-gray-600">Your Share</p>
-                <p className="font-medium">{ownedTokens}/{totalTokens} tokens ({userSharePercentage.toFixed(1)}%)</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Title Row */}
-        <div className="px-4 py-2">
-          <div className="flex items-center gap-2 text-base font-medium">
-            <MessageSquare className="h-4 w-4" />
-            Group Discussion
-            {activeVotes.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {activeVotes.length} active vote{activeVotes.length > 1 ? 's' : ''}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className="space-y-2">
-              <div className="flex items-start gap-3">
+        ) : (
+          <>
+            {messages.map((message) => (
+              <div key={message.id} className="flex gap-3">
                 <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarFallback>
-                    {message.sender === 'AI Moderator' ? 'AI' : message.sender.charAt(0)}
+                  <AvatarFallback className="text-xs">
+                    {getInitials(
+                      message.sender?.first_name || '', 
+                      message.sender?.last_name || ''
+                    )}
                   </AvatarFallback>
                 </Avatar>
-                
-                <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{message.sender}</span>
-                    {getMessageIcon(message.type)}
-                    <span className="text-xs text-gray-500">
-                      {formatTimestamp(message.timestamp)}
+                    <span className="font-medium text-sm">
+                      {message.sender?.first_name} {message.sender?.last_name}
                     </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatMessageTime(message.created_at)}
+                    </span>
+                    {message.message_type !== 'text' && (
+                      <Badge variant="outline" className="text-xs">
+                        {message.message_type}
+                      </Badge>
+                    )}
                   </div>
-                  
-                  <div className={`p-3 rounded-lg ${
-                    message.type === 'ai_summary' 
-                      ? 'bg-purple-50 border border-purple-200' 
-                      : message.senderId === 'current_user'
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'bg-gray-50 border border-gray-200'
-                  }`}>
-                    <p className="text-sm">{message.message}</p>
-                    
-                    {/* Voting Component */}
-                    {message.type === 'vote' && message.votes && (
-                      <div className="mt-3 space-y-2">
-                        <Separator />
-                        <div>
-                          <h4 className="font-medium text-sm mb-2">{message.votes.proposal}</h4>
-                          <div className="space-y-2">
-                            {message.votes.options.map((option, index) => (
-                              <div key={index} className="flex items-center justify-between">
-                                <span className="text-sm">{option.label}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600">{option.votes} votes</span>
-                                  {activeVotes.includes(message.id) && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => castVote(message.id, index)}
-                                    >
-                                      Vote
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                            <span>Total votes: {message.votes.totalVotes}</span>
-                            <span>Deadline: {formatTimestamp(message.votes.deadline)}</span>
-                          </div>
-                        </div>
+                  <div className="text-sm">
+                    {message.message_type === 'file' && message.attachment_url ? (
+                      <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
+                        <Paperclip className="h-4 w-4" />
+                        <a 
+                          href={message.attachment_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {message.content}
+                        </a>
                       </div>
+                    ) : (
+                      <p className="text-gray-900">{message.content}</p>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-      
-      {/* Fixed Message Input */}
-      <div className="flex-shrink-0 p-4 border-t bg-white">
+            ))}
+            <TypingIndicator typingUsers={typingUsers} />
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </CardContent>
+
+      {/* Message Input */}
+      <div className="flex-shrink-0 p-4 border-t">
         <div className="flex gap-2">
-          <Input
-            placeholder="Type your message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            className="flex-1"
-          />
-          <Button onClick={sendMessage} size="icon" className="flex-shrink-0">
+          <div className="flex-1 flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => handleTyping(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Type your message..."
+              disabled={isUploading}
+            />
+            <label>
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              <Button variant="outline" size="icon" disabled={isUploading} asChild>
+                <div>
+                  <Paperclip className="h-4 w-4" />
+                </div>
+              </Button>
+            </label>
+          </div>
+          <Button 
+            onClick={handleSendMessage} 
+            disabled={!newMessage.trim() || isUploading}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
