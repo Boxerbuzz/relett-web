@@ -66,14 +66,14 @@ export function usePropertyCreation() {
 
       if (propertyError) throw propertyError;
 
-      // Create workflow record
+      // Create workflow record with proper JSON serialization
       const { error: workflowError } = await supabase
         .from('property_creation_workflows')
         .insert({
           user_id: user.id,
           property_id: property.id,
           current_step: 5,
-          step_data: propertyData,
+          step_data: JSON.parse(JSON.stringify(propertyData)), // Ensure JSON serializable
           status: 'completed'
         });
 

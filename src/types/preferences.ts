@@ -65,5 +65,50 @@ export interface InvestmentTracking {
     token_name: string;
     token_symbol: string;
     property_id: string;
+  } | null;
+}
+
+// Updated interfaces to match actual database schema
+export interface DocumentVerificationRequest {
+  id: string;
+  document_id: string;
+  requested_by: string;
+  assigned_verifier?: string;
+  priority: string; // Changed from union type to string to match database
+  status: string; // Changed from union type to string to match database
+  verification_checklist: any;
+  notes?: string;
+  completed_at?: string;
+  created_at: string;
+  property_documents: {
+    id: string;
+    document_name: string;
+    document_type: string;
+    file_url: string;
+    properties?: {
+      id: string;
+      title: string;
+      user_profiles?: {
+        first_name: string;
+        last_name: string;
+      };
+    };
   };
+}
+
+export interface TokenizedProperty {
+  id: string;
+  token_name: string;
+  token_symbol: string;
+  total_supply: string;
+  total_value_usd: number;
+  token_holdings?: Array<{
+    id: string;
+    holder_id: string;
+    tokens_owned: string;
+    user_profiles?: {
+      first_name: string;
+      last_name: string;
+    };
+  }>;
 }

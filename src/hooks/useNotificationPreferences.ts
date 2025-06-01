@@ -49,9 +49,11 @@ export function useNotificationPreferences() {
           email_notifications: data.email_notifications,
           push_notifications: data.push_notifications,
           sms_notifications: data.sms_notifications,
-          notification_types: data.notification_types,
-          quiet_hours_start: data.quiet_hours_start,
-          quiet_hours_end: data.quiet_hours_end,
+          notification_types: typeof data.notification_types === 'object' && data.notification_types !== null 
+            ? data.notification_types as NotificationPreferences['notification_types']
+            : preferences.notification_types,
+          quiet_hours_start: data.quiet_hours_start || '22:00',
+          quiet_hours_end: data.quiet_hours_end || '07:00',
           do_not_disturb: data.do_not_disturb,
         });
       }

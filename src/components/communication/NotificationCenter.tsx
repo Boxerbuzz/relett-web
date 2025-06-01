@@ -56,8 +56,8 @@ export function NotificationCenter() {
     }
   };
 
-  const setupRealtimeSubscription = () => {
-    const { data: { user } } = supabase.auth.getUser();
+  const setupRealtimeSubscription = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const channel = supabase
@@ -131,9 +131,9 @@ export function NotificationCenter() {
     switch (type) {
       case 'payment':
         return <DollarSign className="h-4 w-4" />;
-      case 'message':
+      case 'chat':
         return <MessageSquare className="h-4 w-4" />;
-      case 'verification':
+      case 'general':
         return <Check className="h-4 w-4" />;
       default:
         return <Bell className="h-4 w-4" />;
