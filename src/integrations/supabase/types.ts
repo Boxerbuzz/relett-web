@@ -1561,7 +1561,12 @@ export type Database = {
         | "general"
         | "investment"
         | "chat"
-      verification_status: "verified" | "pending" | "unverified" | "rejected"
+      verification_status:
+        | "verified"
+        | "pending"
+        | "unverified"
+        | "rejected"
+        | "expired"
       verifier_type:
         | "surveyor"
         | "lawyer"
@@ -1695,7 +1700,13 @@ export const Constants = {
         "investment",
         "chat",
       ],
-      verification_status: ["verified", "pending", "unverified", "rejected"],
+      verification_status: [
+        "verified",
+        "pending",
+        "unverified",
+        "rejected",
+        "expired",
+      ],
       verifier_type: [
         "surveyor",
         "lawyer",

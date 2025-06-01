@@ -31,7 +31,12 @@ export function useUserProfile() {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      setProfile({
+        ...data,
+        address: typeof data.address === 'string'
+          ? JSON.parse(data.address)
+          : (data.address || {})
+      });
     } catch (err) {
       console.error('Error fetching profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch profile');
@@ -47,7 +52,14 @@ export function useUserProfile() {
         .eq('is_active', true);
 
       if (error) throw error;
-      setRoles(data || []);
+      setRoles(
+        (data || []).map(role => ({
+          ...role,
+          metadata: typeof role.metadata === 'string'
+            ? JSON.parse(role.metadata)
+            : (role.metadata || {})
+        }))
+      );
     } catch (err) {
       console.error('Error fetching roles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch roles');
@@ -66,7 +78,12 @@ export function useUserProfile() {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      setProfile({
+        ...data,
+        address: typeof data.address === 'string'
+          ? JSON.parse(data.address)
+          : (data.address || {})
+      });
       return { data, error: null };
     } catch (err) {
       console.error('Error updating profile:', err);

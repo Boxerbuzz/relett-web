@@ -14,7 +14,7 @@ export interface UserProfile {
   middle_name?: string;
   phone_number?: string;
   date_of_birth?: string;
-  gender?: 'male' | 'female' | 'other';
+  gender?: 'male' | 'female' | 'other'| string;
   nationality?: string;
   state_of_origin?: string;
   lga?: string; // Local Government Area
@@ -53,7 +53,7 @@ export interface IdentityVerification {
   full_name: string;
   verification_status: VerificationStatus;
   verification_provider?: string;
-  verification_response?: Json | Record<string, any>;
+  verification_response?: Record<string, any>;
   verified_at?: string;
   expires_at?: string;
   retry_count: number;
