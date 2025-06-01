@@ -1,3 +1,4 @@
+
 import {
   Client,
   AccountId,
@@ -22,12 +23,12 @@ export class HederaClient {
   private operatorKey: PrivateKey;
 
   constructor() {
-    // Use environment variables for configuration
+    // Use import.meta.env for Vite environment variables
     const accountId =
-      process.env.HEDERA_ACCOUNT_ID || process.env.HEDERA_TESTNET_ACCOUNT_ID;
+      import.meta.env.VITE_HEDERA_ACCOUNT_ID || import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
     const privateKey =
-      process.env.HEDERA_PRIVATE_KEY || process.env.HEDERA_TESTNET_PRIVATE_KEY;
-    const network = process.env.HEDERA_NETWORK || "testnet";
+      import.meta.env.VITE_HEDERA_PRIVATE_KEY || import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
+    const network = import.meta.env.VITE_HEDERA_NETWORK || "testnet";
 
     if (!accountId || !privateKey) {
       throw new Error("Hedera account credentials not configured");

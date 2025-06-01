@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { HederaClient } from './hedera';
 
@@ -137,13 +138,21 @@ export class PaymentService {
       // Transfer tokens on Hedera (if payment successful)
       if (property.hedera_token_id) {
         try {
-          await this.hederaClient.transferTokens({
-            tokenId: property.hedera_token_id,
-            fromAccountId: process.env.HEDERA_ACCOUNT_ID!,
-            toAccountId: params.investorAccountId,
-            amount: params.tokenAmount,
-            fromPrivateKey: process.env.HEDERA_PRIVATE_KEY!
-          });
+          // Use environment variables with proper Vite format
+          const treasuryAccountId = import.meta.env.VITE_HEDERA_ACCOUNT_ID || import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
+          const treasuryPrivateKey = import.meta.env.VITE_HEDERA_PRIVATE_KEY || import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
+          
+          if (!treasuryAccountId || !treasuryPrivateKey) {
+            console.warn('Hedera treasury credentials not configured, skipping token transfer');
+          } else {
+            await this.hederaClient.transferTokens({
+              tokenId: property.hedera_token_id,
+              fromAccountId: treasuryAccountId,
+              toAccountId: params.investorAccountId,
+              amount: params.tokenAmount,
+              fromPrivateKey: treasuryPrivateKey
+            });
+          }
         } catch (hederaError) {
           console.error('Hedera transfer failed:', hederaError);
           // In a real system, you'd need to reverse the payment or handle this error
