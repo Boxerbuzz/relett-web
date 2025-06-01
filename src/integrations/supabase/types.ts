@@ -74,6 +74,62 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_records: {
+        Row: {
+          authority: string
+          compliance_type: Database["public"]["Enums"]["compliance_type"]
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string
+          land_title_id: string
+          metadata: Json | null
+          reference_number: string
+          renewal_reminder_sent: boolean | null
+          status: Database["public"]["Enums"]["compliance_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          authority: string
+          compliance_type: Database["public"]["Enums"]["compliance_type"]
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date: string
+          land_title_id: string
+          metadata?: Json | null
+          reference_number: string
+          renewal_reminder_sent?: boolean | null
+          status?: Database["public"]["Enums"]["compliance_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          authority?: string
+          compliance_type?: Database["public"]["Enums"]["compliance_type"]
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          land_title_id?: string
+          metadata?: Json | null
+          reference_number?: string
+          renewal_reminder_sent?: boolean | null
+          status?: Database["public"]["Enums"]["compliance_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_records_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts_us: {
         Row: {
           created_at: string | null
@@ -156,6 +212,56 @@ export type Database = {
             columns: ["admin_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_verification_requests: {
+        Row: {
+          assigned_verifier: string | null
+          completed_at: string | null
+          created_at: string
+          document_id: string
+          id: string
+          notes: string | null
+          priority: string | null
+          requested_by: string
+          status: string | null
+          updated_at: string
+          verification_checklist: Json | null
+        }
+        Insert: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          document_id: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          requested_by: string
+          status?: string | null
+          updated_at?: string
+          verification_checklist?: Json | null
+        }
+        Update: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          requested_by?: string
+          status?: string | null
+          updated_at?: string
+          verification_checklist?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_verification_requests_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "property_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -374,6 +480,139 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      land_titles: {
+        Row: {
+          acquisition_date: string
+          acquisition_method: string
+          area_sqm: number
+          blockchain_hash: string | null
+          blockchain_transaction_id: string | null
+          coordinates: Json
+          created_at: string
+          description: string
+          id: string
+          land_use: string
+          lga: string
+          location_address: string
+          owner_id: string
+          previous_title_id: string | null
+          state: string
+          status: Database["public"]["Enums"]["land_title_status"] | null
+          title_number: string
+          title_type: string
+          updated_at: string
+          verification_metadata: Json | null
+        }
+        Insert: {
+          acquisition_date: string
+          acquisition_method: string
+          area_sqm: number
+          blockchain_hash?: string | null
+          blockchain_transaction_id?: string | null
+          coordinates: Json
+          created_at?: string
+          description: string
+          id?: string
+          land_use: string
+          lga: string
+          location_address: string
+          owner_id: string
+          previous_title_id?: string | null
+          state: string
+          status?: Database["public"]["Enums"]["land_title_status"] | null
+          title_number: string
+          title_type: string
+          updated_at?: string
+          verification_metadata?: Json | null
+        }
+        Update: {
+          acquisition_date?: string
+          acquisition_method?: string
+          area_sqm?: number
+          blockchain_hash?: string | null
+          blockchain_transaction_id?: string | null
+          coordinates?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          land_use?: string
+          lga?: string
+          location_address?: string
+          owner_id?: string
+          previous_title_id?: string | null
+          state?: string
+          status?: Database["public"]["Enums"]["land_title_status"] | null
+          title_number?: string
+          title_type?: string
+          updated_at?: string
+          verification_metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "land_titles_previous_title_id_fkey"
+            columns: ["previous_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legal_agreements: {
+        Row: {
+          agreement_type: Database["public"]["Enums"]["agreement_type"]
+          blockchain_record: string | null
+          created_at: string
+          end_date: string | null
+          financial_terms: Json
+          id: string
+          land_title_id: string
+          parties: Json
+          signed_document_url: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["agreement_status"] | null
+          terms: Json
+          updated_at: string
+        }
+        Insert: {
+          agreement_type: Database["public"]["Enums"]["agreement_type"]
+          blockchain_record?: string | null
+          created_at?: string
+          end_date?: string | null
+          financial_terms: Json
+          id?: string
+          land_title_id: string
+          parties: Json
+          signed_document_url?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["agreement_status"] | null
+          terms: Json
+          updated_at?: string
+        }
+        Update: {
+          agreement_type?: Database["public"]["Enums"]["agreement_type"]
+          blockchain_record?: string | null
+          created_at?: string
+          end_date?: string | null
+          financial_terms?: Json
+          id?: string
+          land_title_id?: string
+          parties?: Json
+          signed_document_url?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["agreement_status"] | null
+          terms?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_agreements_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
             referencedColumns: ["id"]
           },
         ]
@@ -744,7 +983,9 @@ export type Database = {
           is_deleted: boolean | null
           is_exclusive: boolean | null
           is_featured: boolean | null
+          is_tokenized: boolean | null
           is_verified: boolean | null
+          land_title_id: string | null
           likes: number | null
           location: Json
           max_guest: number | null
@@ -756,6 +997,7 @@ export type Database = {
           status: string
           tags: string[] | null
           title: string | null
+          tokenized_property_id: string | null
           type: string
           updated_at: string | null
           user_id: string
@@ -778,7 +1020,9 @@ export type Database = {
           is_deleted?: boolean | null
           is_exclusive?: boolean | null
           is_featured?: boolean | null
+          is_tokenized?: boolean | null
           is_verified?: boolean | null
+          land_title_id?: string | null
           likes?: number | null
           location: Json
           max_guest?: number | null
@@ -790,6 +1034,7 @@ export type Database = {
           status: string
           tags?: string[] | null
           title?: string | null
+          tokenized_property_id?: string | null
           type: string
           updated_at?: string | null
           user_id: string
@@ -812,7 +1057,9 @@ export type Database = {
           is_deleted?: boolean | null
           is_exclusive?: boolean | null
           is_featured?: boolean | null
+          is_tokenized?: boolean | null
           is_verified?: boolean | null
+          land_title_id?: string | null
           likes?: number | null
           location?: Json
           max_guest?: number | null
@@ -824,6 +1071,7 @@ export type Database = {
           status?: string
           tags?: string[] | null
           title?: string | null
+          tokenized_property_id?: string | null
           type?: string
           updated_at?: string | null
           user_id?: string
@@ -832,10 +1080,99 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "properties_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "properties_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_documents: {
+        Row: {
+          created_at: string
+          document_hash: string
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          expires_at: string | null
+          file_size: number
+          file_url: string
+          id: string
+          land_title_id: string | null
+          metadata: Json | null
+          mime_type: string
+          property_id: string | null
+          status: Database["public"]["Enums"]["document_status"] | null
+          updated_at: string
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_hash: string
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          expires_at?: string | null
+          file_size: number
+          file_url: string
+          id?: string
+          land_title_id?: string | null
+          metadata?: Json | null
+          mime_type: string
+          property_id?: string | null
+          status?: Database["public"]["Enums"]["document_status"] | null
+          updated_at?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_hash?: string
+          document_name?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          expires_at?: string | null
+          file_size?: number
+          file_url?: string
+          id?: string
+          land_title_id?: string | null
+          metadata?: Json | null
+          mime_type?: string
+          property_id?: string | null
+          status?: Database["public"]["Enums"]["document_status"] | null
+          updated_at?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_documents_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -936,6 +1273,72 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_valuations: {
+        Row: {
+          comparable_properties: Json | null
+          created_at: string
+          id: string
+          land_title_id: string
+          market_conditions: Json | null
+          property_id: string | null
+          report_url: string | null
+          updated_at: string
+          valid_until: string
+          valuation_amount: number
+          valuation_currency: string | null
+          valuation_date: string
+          valuation_method: string
+          valuer_id: string
+        }
+        Insert: {
+          comparable_properties?: Json | null
+          created_at?: string
+          id?: string
+          land_title_id: string
+          market_conditions?: Json | null
+          property_id?: string | null
+          report_url?: string | null
+          updated_at?: string
+          valid_until: string
+          valuation_amount: number
+          valuation_currency?: string | null
+          valuation_date: string
+          valuation_method: string
+          valuer_id: string
+        }
+        Update: {
+          comparable_properties?: Json | null
+          created_at?: string
+          id?: string
+          land_title_id?: string
+          market_conditions?: Json | null
+          property_id?: string | null
+          report_url?: string | null
+          updated_at?: string
+          valid_until?: string
+          valuation_amount?: number
+          valuation_currency?: string | null
+          valuation_date?: string
+          valuation_method?: string
+          valuer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_valuations_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_valuations_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -1132,6 +1535,249 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_distributions: {
+        Row: {
+          blockchain_transaction_hash: string | null
+          created_at: string
+          distribution_date: string
+          distribution_type: string
+          id: string
+          metadata: Json | null
+          revenue_per_token: number
+          source_description: string
+          tokenized_property_id: string
+          total_revenue: number
+        }
+        Insert: {
+          blockchain_transaction_hash?: string | null
+          created_at?: string
+          distribution_date: string
+          distribution_type: string
+          id?: string
+          metadata?: Json | null
+          revenue_per_token: number
+          source_description: string
+          tokenized_property_id: string
+          total_revenue: number
+        }
+        Update: {
+          blockchain_transaction_hash?: string | null
+          created_at?: string
+          distribution_date?: string
+          distribution_type?: string
+          id?: string
+          metadata?: Json | null
+          revenue_per_token?: number
+          source_description?: string
+          tokenized_property_id?: string
+          total_revenue?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_distributions_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_holdings: {
+        Row: {
+          acquisition_date: string
+          created_at: string
+          holder_id: string
+          id: string
+          purchase_price_per_token: number
+          tokenized_property_id: string
+          tokens_owned: string
+          total_investment: number
+          updated_at: string
+          vesting_schedule: Json | null
+        }
+        Insert: {
+          acquisition_date: string
+          created_at?: string
+          holder_id: string
+          id?: string
+          purchase_price_per_token: number
+          tokenized_property_id: string
+          tokens_owned: string
+          total_investment: number
+          updated_at?: string
+          vesting_schedule?: Json | null
+        }
+        Update: {
+          acquisition_date?: string
+          created_at?: string
+          holder_id?: string
+          id?: string
+          purchase_price_per_token?: number
+          tokenized_property_id?: string
+          tokens_owned?: string
+          total_investment?: number
+          updated_at?: string
+          vesting_schedule?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_holdings_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_transactions: {
+        Row: {
+          blockchain_hash: string | null
+          created_at: string
+          from_holder: string | null
+          hedera_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          price_per_token: number
+          status: Database["public"]["Enums"]["transaction_status"] | null
+          to_holder: string
+          token_amount: string
+          tokenized_property_id: string
+          total_value: number
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          blockchain_hash?: string | null
+          created_at?: string
+          from_holder?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          price_per_token: number
+          status?: Database["public"]["Enums"]["transaction_status"] | null
+          to_holder: string
+          token_amount: string
+          tokenized_property_id: string
+          total_value: number
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          blockchain_hash?: string | null
+          created_at?: string
+          from_holder?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          price_per_token?: number
+          status?: Database["public"]["Enums"]["transaction_status"] | null
+          to_holder?: string
+          token_amount?: string
+          tokenized_property_id?: string
+          total_value?: number
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_transactions_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tokenized_properties: {
+        Row: {
+          blockchain_network: string
+          created_at: string
+          expected_roi: number
+          hedera_token_id: string | null
+          id: string
+          investment_terms: Database["public"]["Enums"]["investment_terms"]
+          land_title_id: string
+          legal_structure: Json | null
+          lock_up_period_months: number
+          metadata: Json | null
+          minimum_investment: number
+          property_id: string | null
+          revenue_distribution_frequency: string
+          status: Database["public"]["Enums"]["tokenization_status"] | null
+          token_contract_address: string | null
+          token_id: string | null
+          token_name: string
+          token_price: number
+          token_symbol: string
+          token_type: Database["public"]["Enums"]["token_type"]
+          total_supply: string
+          total_value_usd: number
+          updated_at: string
+        }
+        Insert: {
+          blockchain_network: string
+          created_at?: string
+          expected_roi: number
+          hedera_token_id?: string | null
+          id?: string
+          investment_terms: Database["public"]["Enums"]["investment_terms"]
+          land_title_id: string
+          legal_structure?: Json | null
+          lock_up_period_months: number
+          metadata?: Json | null
+          minimum_investment: number
+          property_id?: string | null
+          revenue_distribution_frequency: string
+          status?: Database["public"]["Enums"]["tokenization_status"] | null
+          token_contract_address?: string | null
+          token_id?: string | null
+          token_name: string
+          token_price: number
+          token_symbol: string
+          token_type: Database["public"]["Enums"]["token_type"]
+          total_supply: string
+          total_value_usd: number
+          updated_at?: string
+        }
+        Update: {
+          blockchain_network?: string
+          created_at?: string
+          expected_roi?: number
+          hedera_token_id?: string | null
+          id?: string
+          investment_terms?: Database["public"]["Enums"]["investment_terms"]
+          land_title_id?: string
+          legal_structure?: Json | null
+          lock_up_period_months?: number
+          metadata?: Json | null
+          minimum_investment?: number
+          property_id?: string | null
+          revenue_distribution_frequency?: string
+          status?: Database["public"]["Enums"]["tokenization_status"] | null
+          token_contract_address?: string | null
+          token_id?: string | null
+          token_name?: string
+          token_price?: number
+          token_symbol?: string
+          token_type?: Database["public"]["Enums"]["token_type"]
+          total_supply?: string
+          total_value_usd?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tokenized_properties_land_title_id_fkey"
+            columns: ["land_title_id"]
+            isOneToOne: false
+            referencedRelation: "land_titles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokenized_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -1551,8 +2197,36 @@ export type Database = {
     }
     Enums: {
       activity_type: "reservation" | "rental" | "inspection" | "investment"
+      agreement_status:
+        | "draft"
+        | "active"
+        | "completed"
+        | "cancelled"
+        | "disputed"
+      agreement_type: "sale" | "lease" | "transfer" | "mortgage" | "easement"
       app_role: "admin" | "landowner" | "verifier" | "agent" | "investor"
+      compliance_status: "compliant" | "non_compliant" | "pending" | "expired"
+      compliance_type:
+        | "tax_payment"
+        | "land_use_approval"
+        | "environmental_clearance"
+        | "building_permit"
+      document_status: "pending" | "verified" | "rejected" | "expired"
+      document_type:
+        | "deed"
+        | "survey"
+        | "certificate_of_occupancy"
+        | "government_consent"
+        | "tax_clearance"
+        | "other"
       identity_type: "nin" | "bvn" | "cac" | "passport" | "drivers_license"
+      investment_terms: "fixed" | "variable" | "hybrid"
+      land_title_status:
+        | "draft"
+        | "pending_verification"
+        | "verified"
+        | "disputed"
+        | "revoked"
       notification_type:
         | "reservation"
         | "rental"
@@ -1561,6 +2235,17 @@ export type Database = {
         | "general"
         | "investment"
         | "chat"
+      token_type: "erc20" | "erc721" | "hts_fungible" | "hts_nft"
+      tokenization_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "minted"
+        | "active"
+        | "paused"
+        | "retired"
+      transaction_status: "pending" | "confirmed" | "failed"
+      transaction_type: "mint" | "transfer" | "burn" | "split"
       verification_status:
         | "verified"
         | "pending"
@@ -1689,8 +2374,40 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["reservation", "rental", "inspection", "investment"],
+      agreement_status: [
+        "draft",
+        "active",
+        "completed",
+        "cancelled",
+        "disputed",
+      ],
+      agreement_type: ["sale", "lease", "transfer", "mortgage", "easement"],
       app_role: ["admin", "landowner", "verifier", "agent", "investor"],
+      compliance_status: ["compliant", "non_compliant", "pending", "expired"],
+      compliance_type: [
+        "tax_payment",
+        "land_use_approval",
+        "environmental_clearance",
+        "building_permit",
+      ],
+      document_status: ["pending", "verified", "rejected", "expired"],
+      document_type: [
+        "deed",
+        "survey",
+        "certificate_of_occupancy",
+        "government_consent",
+        "tax_clearance",
+        "other",
+      ],
       identity_type: ["nin", "bvn", "cac", "passport", "drivers_license"],
+      investment_terms: ["fixed", "variable", "hybrid"],
+      land_title_status: [
+        "draft",
+        "pending_verification",
+        "verified",
+        "disputed",
+        "revoked",
+      ],
       notification_type: [
         "reservation",
         "rental",
@@ -1700,6 +2417,18 @@ export const Constants = {
         "investment",
         "chat",
       ],
+      token_type: ["erc20", "erc721", "hts_fungible", "hts_nft"],
+      tokenization_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "minted",
+        "active",
+        "paused",
+        "retired",
+      ],
+      transaction_status: ["pending", "confirmed", "failed"],
+      transaction_type: ["mint", "transfer", "burn", "split"],
       verification_status: [
         "verified",
         "pending",
