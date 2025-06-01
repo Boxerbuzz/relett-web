@@ -7,9 +7,10 @@ import { Check, User, ShieldCheck } from 'phosphor-react';
 interface AccountTypeSelectProps {
   value: 'landowner' | 'verifier' | 'agent';
   onChange: (value: 'landowner' | 'verifier' | 'agent') => void;
+  disabled?: boolean;
 }
 
-export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
+export function AccountTypeSelect({ value, onChange, disabled = false }: AccountTypeSelectProps) {
   const options = [
     {
       value: 'landowner' as const,
@@ -40,12 +41,16 @@ export function AccountTypeSelect({ value, onChange }: AccountTypeSelectProps) {
         return (
           <Card
             key={option.value}
-            className={`p-4 cursor-pointer transition-all border-2 ${
+            className={`p-4 transition-all border-2 ${
+              disabled 
+                ? 'cursor-not-allowed opacity-50' 
+                : 'cursor-pointer'
+            } ${
               isSelected
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
-            onClick={() => onChange(option.value)}
+            onClick={() => !disabled && onChange(option.value)}
           >
             <div className="text-center">
               <div className={`mx-auto mb-2 p-2 rounded-lg w-fit ${
