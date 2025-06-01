@@ -2,12 +2,19 @@
 'use client';
 
 import { useAuth } from '@/lib/auth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText } from 'lucide-react';
 
 export function WelcomeCard() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
+
+  // Get user's display name from profile or fallback to email
+  const displayName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`
+    : user?.email?.split('@')[0] || 'User';
 
   return (
     <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
@@ -15,7 +22,7 @@ export function WelcomeCard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
-              Welcome back, {user?.name}!
+              Welcome back, {displayName}!
             </h1>
             <p className="text-blue-100 mb-4">
               {user?.role === 'landowner' 

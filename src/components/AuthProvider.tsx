@@ -107,8 +107,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         id: userData.id,
         email: userData.email,
         role: userData.user_type as AppUser["role"],
-        name: `${userData.first_name || ""} ${userData.last_name || ""}`.trim(),
         created_at: userData.created_at,
+        email_confirmed_at: authUser.email_confirmed_at,
+        phone: userData.phone,
       };
 
       setUser(appUser);
