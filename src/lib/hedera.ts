@@ -1,4 +1,3 @@
-
 import {
   Client,
   AccountId,
@@ -13,8 +12,8 @@ import {
   TokenInfoQuery,
   AccountBalanceQuery,
   Hbar,
-  HbarUnit
-} from '@hashgraph/sdk';
+  HbarUnit,
+} from "@hashgraph/sdk";
 
 // Hedera Client Configuration
 export class HederaClient {
@@ -24,19 +23,21 @@ export class HederaClient {
 
   constructor() {
     // Use environment variables for configuration
-    const accountId = process.env.HEDERA_ACCOUNT_ID || process.env.HEDERA_TESTNET_ACCOUNT_ID;
-    const privateKey = process.env.HEDERA_PRIVATE_KEY || process.env.HEDERA_TESTNET_PRIVATE_KEY;
-    const network = process.env.HEDERA_NETWORK || 'testnet';
+    const accountId =
+      process.env.HEDERA_ACCOUNT_ID || process.env.HEDERA_TESTNET_ACCOUNT_ID;
+    const privateKey =
+      process.env.HEDERA_PRIVATE_KEY || process.env.HEDERA_TESTNET_PRIVATE_KEY;
+    const network = process.env.HEDERA_NETWORK || "testnet";
 
     if (!accountId || !privateKey) {
-      throw new Error('Hedera account credentials not configured');
+      throw new Error("Hedera account credentials not configured");
     }
 
     this.operatorId = AccountId.fromString(accountId);
-    this.operatorKey = PrivateKey.fromString(privateKey);
+    this.operatorKey = PrivateKey.fromStringECDSA(privateKey);
 
     // Configure client for testnet or mainnet
-    if (network === 'mainnet') {
+    if (network === "mainnet") {
       this.client = Client.forMainnet();
     } else {
       this.client = Client.forTestnet();
@@ -76,14 +77,14 @@ export class HederaClient {
 
       const response = await transaction.execute(this.client);
       const receipt = await response.getReceipt(this.client);
-      
+
       return {
         tokenId: receipt.tokenId?.toString(),
         transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error('Error creating property token:', error);
+      console.error("Error creating property token:", error);
       throw error;
     }
   }
@@ -116,22 +117,26 @@ export class HederaClient {
 
       const response = await transaction.execute(this.client);
       const receipt = await response.getReceipt(this.client);
-      
+
       return {
         tokenId: receipt.tokenId?.toString(),
         transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error('Error creating property NFT:', error);
+      console.error("Error creating property NFT:", error);
       throw error;
     }
   }
 
   // Associate account with token (required before receiving tokens)
-  async associateToken(accountId: string, tokenId: string, accountPrivateKey: string) {
+  async associateToken(
+    accountId: string,
+    tokenId: string,
+    accountPrivateKey: string
+  ) {
     try {
-      const accountKey = PrivateKey.fromString(accountPrivateKey);
+      const accountKey = PrivateKey.fromStringECDSA(accountPrivateKey);
       const account = AccountId.fromString(accountId);
       const token = TokenId.fromString(tokenId);
 
@@ -146,19 +151,25 @@ export class HederaClient {
 
       return {
         transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error('Error associating token:', error);
+      console.error("Error associating token:", error);
       throw error;
     }
   }
 
   // Mint tokens for property investment
-  async mintTokens(tokenId: string, amount: number, receiverAccountId?: string) {
+  async mintTokens(
+    tokenId: string,
+    amount: number,
+    receiverAccountId?: string
+  ) {
     try {
       const token = TokenId.fromString(tokenId);
-      const receiver = receiverAccountId ? AccountId.fromString(receiverAccountId) : this.operatorId;
+      const receiver = receiverAccountId
+        ? AccountId.fromString(receiverAccountId)
+        : this.operatorId;
 
       const transaction = new TokenMintTransaction()
         .setTokenId(token)
@@ -170,10 +181,10 @@ export class HederaClient {
       return {
         transactionId: response.transactionId.toString(),
         status: receipt.status.toString(),
-        serialNumbers: receipt.serials
+        serialNumbers: receipt.serials,
       };
     } catch (error) {
-      console.error('Error minting tokens:', error);
+      console.error("Error minting tokens:", error);
       throw error;
     }
   }
@@ -190,7 +201,7 @@ export class HederaClient {
       const token = TokenId.fromString(params.tokenId);
       const fromAccount = AccountId.fromString(params.fromAccountId);
       const toAccount = AccountId.fromString(params.toAccountId);
-      const fromKey = PrivateKey.fromString(params.fromPrivateKey);
+      const fromKey = PrivateKey.fromStringECDSA(params.fromPrivateKey);
 
       const transaction = new TransferTransaction()
         .addTokenTransfer(token, fromAccount, -params.amount)
@@ -203,10 +214,10 @@ export class HederaClient {
 
       return {
         transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error('Error transferring tokens:', error);
+      console.error("Error transferring tokens:", error);
       throw error;
     }
   }
@@ -228,10 +239,10 @@ export class HederaClient {
         adminKey: tokenInfo.adminKey?.toString(),
         supplyKey: tokenInfo.supplyKey?.toString(),
         isDeleted: tokenInfo.isDeleted,
-        tokenType: tokenInfo.tokenType.toString()
+        tokenType: tokenInfo.tokenType.toString(),
       };
     } catch (error) {
-      console.error('Error getting token info:', error);
+      console.error("Error getting token info:", error);
       throw error;
     }
   }
@@ -246,7 +257,7 @@ export class HederaClient {
     try {
       const fromAccount = AccountId.fromString(params.fromAccountId);
       const toAccount = AccountId.fromString(params.toAccountId);
-      const fromKey = PrivateKey.fromString(params.fromPrivateKey);
+      const fromKey = PrivateKey.fromStringECDSA(params.fromPrivateKey);
 
       const transaction = new TransferTransaction()
         .addHbarTransfer(fromAccount, Hbar.from(-params.amount, HbarUnit.Hbar))
@@ -259,10 +270,10 @@ export class HederaClient {
 
       return {
         transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error('Error transferring HBAR:', error);
+      console.error("Error transferring HBAR:", error);
       throw error;
     }
   }
@@ -275,24 +286,24 @@ export class HederaClient {
       const balance = await query.execute(this.client);
 
       // Fix: Convert TokenBalanceMap to array properly using Map.entries()
-      const tokenBalances: Array<{tokenId: string, balance: string}> = [];
-      
+      const tokenBalances: Array<{ tokenId: string; balance: string }> = [];
+
       if (balance.tokens) {
         // Use Map.entries() to iterate over the TokenBalanceMap
-        for (const [tokenId, amount] of balance.tokens.entries()) {
+        Object.entries(balance.tokens).forEach(([tokenId, amount]) => {
           tokenBalances.push({
             tokenId: tokenId.toString(),
-            balance: amount.toString()
+            balance: amount.toString(),
           });
-        }
+        });
       }
 
       return {
         hbarBalance: balance.hbars.toString(),
-        tokens: tokenBalances
+        tokens: tokenBalances,
       };
     } catch (error) {
-      console.error('Error getting account balance:', error);
+      console.error("Error getting account balance:", error);
       throw error;
     }
   }
@@ -307,7 +318,7 @@ export class HederaClient {
 export const hederaUtils = {
   // Generate a unique token symbol for a property
   generateTokenSymbol: (propertyTitle: string, propertyId: string) => {
-    const cleaned = propertyTitle.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const cleaned = propertyTitle.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     const truncated = cleaned.substring(0, 4);
     const idSuffix = propertyId.substring(0, 4).toUpperCase();
     return `${truncated}${idSuffix}`;
@@ -338,5 +349,5 @@ export const hederaUtils = {
   // Convert tinybar to HBAR
   tinybarToHbar: (tinybar: number) => {
     return tinybar / 100000000;
-  }
+  },
 };
