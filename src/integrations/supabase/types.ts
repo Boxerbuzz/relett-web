@@ -3520,6 +3520,69 @@ export type Database = {
           updated_at: string
         }
       }
+      can_access_property: {
+        Args: { _property_id: string; _user_id?: string }
+        Returns: boolean
+      }
+      get_current_user_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: Json | null
+          date_of_birth: string | null
+          gender: string | null
+          id: string
+          last_login: string | null
+          lga: string | null
+          middle_name: string | null
+          nationality: string | null
+          state_of_origin: string | null
+          user_id: string
+        }
+      }
+      get_property_secure: {
+        Args: { _property_id: string }
+        Returns: {
+          amenities: string[] | null
+          backdrop: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          description: string | null
+          documents: Json | null
+          favorites: number | null
+          features: string[] | null
+          garages: number | null
+          id: string
+          is_ad: boolean | null
+          is_deleted: boolean | null
+          is_exclusive: boolean | null
+          is_featured: boolean | null
+          is_tokenized: boolean | null
+          is_verified: boolean | null
+          land_title_id: string | null
+          likes: number | null
+          location: Json
+          max_guest: number | null
+          price: Json
+          ratings: number | null
+          review_count: number | null
+          specification: Json
+          sqrft: string | null
+          status: string
+          tags: string[] | null
+          title: string | null
+          tokenized_property_id: string | null
+          type: string
+          updated_at: string | null
+          user_id: string
+          views: number | null
+          year_built: string | null
+        }
+      }
+      get_user_active_roles: {
+        Args: { _user_id?: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
       get_user_role_priority: {
         Args: { _user_id: string }
         Returns: number
@@ -3529,6 +3592,10 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      is_user_verified: {
+        Args: { _user_id?: string }
         Returns: boolean
       }
       remove_conversation_participant: {

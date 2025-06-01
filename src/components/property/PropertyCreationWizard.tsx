@@ -13,6 +13,7 @@ import { PropertyLocation } from './creation-steps/PropertyLocation';
 import { PropertyDocuments } from './creation-steps/PropertyDocuments';
 import { PropertyValuation } from './creation-steps/PropertyValuation';
 import { PropertyReview } from './creation-steps/PropertyReview';
+import { usePropertyCreation } from '@/hooks/usePropertyCreation';
 import { useToast } from '@/hooks/use-toast';
 
 interface PropertyData {
@@ -54,7 +55,6 @@ const steps = [
 
 export function PropertyCreationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [propertyData, setPropertyData] = useState<PropertyData>({
     basicInfo: {
       title: '',
@@ -86,6 +86,7 @@ export function PropertyCreationWizard() {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { createProperty, isLoading: isSubmitting } = usePropertyCreation();
 
   const updatePropertyData = (section: keyof PropertyData, data: any) => {
     setPropertyData(prev => ({
@@ -135,26 +136,11 @@ export function PropertyCreationWizard() {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     try {
-      // TODO: Implement property creation API call
-      console.log('Submitting property data:', propertyData);
-      
-      toast({
-        title: 'Property Created Successfully',
-        description: 'Your property has been submitted for verification.',
-      });
-
+      const property = await createProperty(propertyData);
       navigate('/my-land');
     } catch (error) {
-      console.error('Error creating property:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create property. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Error handling is done in the hook
     }
   };
 
