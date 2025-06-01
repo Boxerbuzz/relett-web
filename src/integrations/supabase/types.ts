@@ -53,6 +53,327 @@ export type Database = {
           },
         ]
       }
+      aml_checks: {
+        Row: {
+          alerts: Json | null
+          check_type: string
+          created_at: string
+          id: string
+          provider: string
+          request_payload: Json
+          response_payload: Json
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: string | null
+          risk_score: number | null
+          status: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          alerts?: Json | null
+          check_type: string
+          created_at?: string
+          id?: string
+          provider: string
+          request_payload: Json
+          response_payload: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string | null
+          risk_score?: number | null
+          status?: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          alerts?: Json | null
+          check_type?: string
+          created_at?: string
+          id?: string
+          provider?: string
+          request_payload?: Json
+          response_payload?: Json
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string | null
+          risk_score?: number | null
+          status?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          permissions: Json
+          rate_limit_per_day: number | null
+          rate_limit_per_hour: number | null
+          rate_limit_per_minute: number | null
+          updated_at: string
+          usage_count: number
+          user_id: string
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          permissions?: Json
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          rate_limit_per_minute?: number | null
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          rate_limit_per_minute?: number | null
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      auction_listings: {
+        Row: {
+          auction_type: string
+          auctioneer_id: string
+          auto_extend: boolean
+          bid_increment: number
+          created_at: string
+          current_bid: number | null
+          end_time: string
+          extension_time_minutes: number | null
+          high_bidder_id: string | null
+          id: string
+          property_id: string
+          reserve_price: number | null
+          start_time: string
+          starting_price: number
+          status: string
+          terms_and_conditions: string | null
+          tokenized_property_id: string | null
+          total_bids: number
+          updated_at: string
+        }
+        Insert: {
+          auction_type?: string
+          auctioneer_id: string
+          auto_extend?: boolean
+          bid_increment?: number
+          created_at?: string
+          current_bid?: number | null
+          end_time: string
+          extension_time_minutes?: number | null
+          high_bidder_id?: string | null
+          id?: string
+          property_id: string
+          reserve_price?: number | null
+          start_time: string
+          starting_price: number
+          status?: string
+          terms_and_conditions?: string | null
+          tokenized_property_id?: string | null
+          total_bids?: number
+          updated_at?: string
+        }
+        Update: {
+          auction_type?: string
+          auctioneer_id?: string
+          auto_extend?: boolean
+          bid_increment?: number
+          created_at?: string
+          current_bid?: number | null
+          end_time?: string
+          extension_time_minutes?: number | null
+          high_bidder_id?: string | null
+          id?: string
+          property_id?: string
+          reserve_price?: number | null
+          start_time?: string
+          starting_price?: number
+          status?: string
+          terms_and_conditions?: string | null
+          tokenized_property_id?: string | null
+          total_bids?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_listings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_listings_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_trails: {
+        Row: {
+          action: string
+          api_endpoint: string | null
+          created_at: string
+          flag_reason: string | null
+          flagged: boolean
+          http_method: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          processing_time_ms: number | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          response_status: number | null
+          risk_score: number | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          api_endpoint?: string | null
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          http_method?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          processing_time_ms?: number | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          response_status?: number | null
+          risk_score?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          api_endpoint?: string | null
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          http_method?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          processing_time_ms?: number | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          response_status?: number | null
+          risk_score?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      backup_recovery: {
+        Row: {
+          backup_hash: string | null
+          backup_location: string
+          backup_scope: string
+          backup_size_bytes: number | null
+          backup_type: string
+          completed_at: string | null
+          compression_enabled: boolean
+          compression_ratio: number | null
+          created_by: string | null
+          encryption_enabled: boolean
+          error_message: string | null
+          id: string
+          last_recovery_test: string | null
+          recovery_tested: boolean
+          retention_until: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          backup_hash?: string | null
+          backup_location: string
+          backup_scope: string
+          backup_size_bytes?: number | null
+          backup_type: string
+          completed_at?: string | null
+          compression_enabled?: boolean
+          compression_ratio?: number | null
+          created_by?: string | null
+          encryption_enabled?: boolean
+          error_message?: string | null
+          id?: string
+          last_recovery_test?: string | null
+          recovery_tested?: boolean
+          retention_until: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          backup_hash?: string | null
+          backup_location?: string
+          backup_scope?: string
+          backup_size_bytes?: number | null
+          backup_type?: string
+          completed_at?: string | null
+          compression_enabled?: boolean
+          compression_ratio?: number | null
+          created_by?: string | null
+          encryption_enabled?: boolean
+          error_message?: string | null
+          id?: string
+          last_recovery_test?: string | null
+          recovery_tested?: boolean
+          retention_until?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       bank_cache: {
         Row: {
           created_at: string
@@ -129,6 +450,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      compliance_reports: {
+        Row: {
+          acknowledgment_received_at: string | null
+          created_at: string
+          file_url: string | null
+          id: string
+          jurisdiction: string
+          regulator: string | null
+          report_data: Json
+          report_type: string
+          reporting_period_end: string
+          reporting_period_start: string
+          status: string
+          submission_reference: string | null
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledgment_received_at?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          jurisdiction: string
+          regulator?: string | null
+          report_data: Json
+          report_type: string
+          reporting_period_end: string
+          reporting_period_start: string
+          status?: string
+          submission_reference?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledgment_received_at?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          jurisdiction?: string
+          regulator?: string | null
+          report_data?: Json
+          report_type?: string
+          reporting_period_end?: string
+          reporting_period_start?: string
+          status?: string
+          submission_reference?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       contacts_us: {
         Row: {
@@ -216,6 +591,69 @@ export type Database = {
           },
         ]
       }
+      dividend_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          external_transaction_id: string | null
+          id: string
+          net_amount: number
+          paid_at: string | null
+          payment_method: string
+          recipient_id: string
+          revenue_distribution_id: string
+          status: string
+          tax_withholding: number | null
+          token_holding_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          id?: string
+          net_amount: number
+          paid_at?: string | null
+          payment_method?: string
+          recipient_id: string
+          revenue_distribution_id: string
+          status?: string
+          tax_withholding?: number | null
+          token_holding_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          id?: string
+          net_amount?: number
+          paid_at?: string | null
+          payment_method?: string
+          recipient_id?: string
+          revenue_distribution_id?: string
+          status?: string
+          tax_withholding?: number | null
+          token_holding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividend_payments_revenue_distribution_id_fkey"
+            columns: ["revenue_distribution_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_distributions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividend_payments_token_holding_id_fkey"
+            columns: ["token_holding_id"]
+            isOneToOne: false
+            referencedRelation: "token_holdings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_verification_requests: {
         Row: {
           assigned_verifier: string | null
@@ -262,6 +700,78 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "property_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_accounts: {
+        Row: {
+          buyer_id: string
+          conditions: Json
+          created_at: string
+          currency: string
+          dispute_reason: string | null
+          escrow_amount: number
+          expires_at: string
+          id: string
+          mediator_id: string | null
+          property_id: string | null
+          release_conditions_met: boolean
+          seller_id: string
+          status: string
+          tokenized_property_id: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          conditions?: Json
+          created_at?: string
+          currency?: string
+          dispute_reason?: string | null
+          escrow_amount: number
+          expires_at: string
+          id?: string
+          mediator_id?: string | null
+          property_id?: string | null
+          release_conditions_met?: boolean
+          seller_id: string
+          status?: string
+          tokenized_property_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          conditions?: Json
+          created_at?: string
+          currency?: string
+          dispute_reason?: string | null
+          escrow_amount?: number
+          expires_at?: string
+          id?: string
+          mediator_id?: string | null
+          property_id?: string | null
+          release_conditions_met?: boolean
+          seller_id?: string
+          status?: string
+          tokenized_property_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_accounts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_accounts_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
             referencedColumns: ["id"]
           },
         ]
@@ -484,6 +994,241 @@ export type Database = {
           },
         ]
       }
+      investment_analytics: {
+        Row: {
+          calculation_date: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+          tokenized_property_id: string
+          user_id: string
+        }
+        Insert: {
+          calculation_date: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+          tokenized_property_id: string
+          user_id: string
+        }
+        Update: {
+          calculation_date?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number
+          period_end?: string
+          period_start?: string
+          tokenized_property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_analytics_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_discussions: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          id: string
+          investment_group_id: string
+          is_pinned: boolean
+          is_private: boolean
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+          vote_count: number
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          investment_group_id: string
+          is_pinned?: boolean
+          is_private?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+          vote_count?: number
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          investment_group_id?: string
+          is_pinned?: boolean
+          is_private?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_discussions_investment_group_id_fkey"
+            columns: ["investment_group_id"]
+            isOneToOne: false
+            referencedRelation: "investment_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_discussions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "investment_discussions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_groups: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          current_amount: number
+          description: string | null
+          id: string
+          investment_terms: Json
+          investor_count: number
+          lead_investor_id: string
+          max_investors: number | null
+          minimum_investment: number
+          name: string
+          status: string
+          target_amount: number
+          tokenized_property_id: string
+          updated_at: string
+          voting_power_distribution: Json | null
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          investment_terms?: Json
+          investor_count?: number
+          lead_investor_id: string
+          max_investors?: number | null
+          minimum_investment: number
+          name: string
+          status?: string
+          target_amount: number
+          tokenized_property_id: string
+          updated_at?: string
+          voting_power_distribution?: Json | null
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          investment_terms?: Json
+          investor_count?: number
+          lead_investor_id?: string
+          max_investors?: number | null
+          minimum_investment?: number
+          name?: string
+          status?: string
+          target_amount?: number
+          tokenized_property_id?: string
+          updated_at?: string
+          voting_power_distribution?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_groups_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          document_side: string | null
+          document_type: string
+          expires_at: string | null
+          extracted_data: Json | null
+          file_hash: string
+          file_size: number
+          file_url: string
+          id: string
+          mime_type: string
+          rejection_reason: string | null
+          retry_count: number
+          updated_at: string
+          user_id: string
+          verification_provider: string | null
+          verification_response: Json | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_side?: string | null
+          document_type: string
+          expires_at?: string | null
+          extracted_data?: Json | null
+          file_hash: string
+          file_size: number
+          file_url: string
+          id?: string
+          mime_type: string
+          rejection_reason?: string | null
+          retry_count?: number
+          updated_at?: string
+          user_id: string
+          verification_provider?: string | null
+          verification_response?: Json | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_side?: string | null
+          document_type?: string
+          expires_at?: string | null
+          extracted_data?: Json | null
+          file_hash?: string
+          file_size?: number
+          file_url?: string
+          id?: string
+          mime_type?: string
+          rejection_reason?: string | null
+          retry_count?: number
+          updated_at?: string
+          user_id?: string
+          verification_provider?: string | null
+          verification_response?: Json | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       land_titles: {
         Row: {
           acquisition_date: string
@@ -616,6 +1361,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      market_analytics: {
+        Row: {
+          calculation_date: string
+          confidence_level: number | null
+          created_at: string
+          currency: string
+          id: string
+          location_id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number
+          period_type: string
+          property_type: string
+          sample_size: number
+        }
+        Insert: {
+          calculation_date: string
+          confidence_level?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          location_id: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value: number
+          period_type?: string
+          property_type: string
+          sample_size?: number
+        }
+        Update: {
+          calculation_date?: string
+          confidence_level?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          location_id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number
+          period_type?: string
+          property_type?: string
+          sample_size?: number
+        }
+        Relationships: []
       }
       message_attachments: {
         Row: {
@@ -881,6 +1671,54 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          created_at: string
+          details: Json
+          expires_at: string | null
+          external_id: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          is_verified: boolean
+          last_used_at: string | null
+          provider: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          expires_at?: string | null
+          external_id: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          is_verified?: boolean
+          last_used_at?: string | null
+          provider?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          expires_at?: string | null
+          external_id?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          is_verified?: boolean
+          last_used_at?: string | null
+          provider?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           agent_id: string | null
@@ -965,6 +1803,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      portfolio_allocations: {
+        Row: {
+          allocation_type: string
+          category: string
+          created_at: string
+          current_percentage: number
+          current_value: number
+          id: string
+          last_rebalanced_at: string | null
+          rebalance_threshold: number | null
+          target_percentage: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocation_type: string
+          category: string
+          created_at?: string
+          current_percentage?: number
+          current_value?: number
+          id?: string
+          last_rebalanced_at?: string | null
+          rebalance_threshold?: number | null
+          target_percentage?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocation_type?: string
+          category?: string
+          created_at?: string
+          current_percentage?: number
+          current_value?: number
+          id?: string
+          last_rebalanced_at?: string | null
+          rebalance_threshold?: number | null
+          target_percentage?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       properties: {
         Row: {
@@ -1177,6 +2057,41 @@ export type Database = {
           },
         ]
       }
+      property_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          list_name: string | null
+          notes: string | null
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          list_name?: string | null
+          notes?: string | null
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          list_name?: string | null
+          notes?: string | null
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_images: {
         Row: {
           category: string | null
@@ -1209,6 +2124,71 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      property_inquiries: {
+        Row: {
+          agent_id: string | null
+          contact_preferences: Json | null
+          conversion_type: string | null
+          converted_at: string | null
+          created_at: string
+          id: string
+          inquirer_id: string
+          inquiry_type: string
+          last_contact_at: string | null
+          message: string
+          property_id: string
+          response_count: number
+          status: string
+          subject: string
+          updated_at: string
+          urgency_level: string
+        }
+        Insert: {
+          agent_id?: string | null
+          contact_preferences?: Json | null
+          conversion_type?: string | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          inquirer_id: string
+          inquiry_type?: string
+          last_contact_at?: string | null
+          message: string
+          property_id: string
+          response_count?: number
+          status?: string
+          subject: string
+          updated_at?: string
+          urgency_level?: string
+        }
+        Update: {
+          agent_id?: string | null
+          contact_preferences?: Json | null
+          conversion_type?: string | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          inquirer_id?: string
+          inquiry_type?: string
+          last_contact_at?: string | null
+          message?: string
+          property_id?: string
+          response_count?: number
+          status?: string
+          subject?: string
+          updated_at?: string
+          urgency_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_inquiries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_likes: {
         Row: {
@@ -1339,6 +2319,59 @@ export type Database = {
           },
           {
             foreignKeyName: "property_valuations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_views: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_address: unknown | null
+          location_data: Json | null
+          pages_viewed: Json | null
+          property_id: string
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          view_duration: number | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location_data?: Json | null
+          pages_viewed?: Json | null
+          property_id: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          view_duration?: number | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location_data?: Json | null
+          pages_viewed?: Json | null
+          property_id?: string
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          view_duration?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_views_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -1586,6 +2619,195 @@ export type Database = {
           },
         ]
       }
+      sanctions_screening: {
+        Row: {
+          confidence_scores: Json | null
+          created_at: string
+          exemption_approved_by: string | null
+          exemption_reason: string | null
+          false_positive: boolean | null
+          id: string
+          last_screened_at: string
+          lists_checked: Json
+          matches_found: Json | null
+          next_screening_due: string | null
+          screening_frequency: string | null
+          screening_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_scores?: Json | null
+          created_at?: string
+          exemption_approved_by?: string | null
+          exemption_reason?: string | null
+          false_positive?: boolean | null
+          id?: string
+          last_screened_at?: string
+          lists_checked: Json
+          matches_found?: Json | null
+          next_screening_due?: string | null
+          screening_frequency?: string | null
+          screening_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_scores?: Json | null
+          created_at?: string
+          exemption_approved_by?: string | null
+          exemption_reason?: string | null
+          false_positive?: boolean | null
+          id?: string
+          last_screened_at?: string
+          lists_checked?: Json
+          matches_found?: Json | null
+          next_screening_due?: string | null
+          screening_frequency?: string | null
+          screening_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      smart_contracts: {
+        Row: {
+          abi: Json
+          bytecode: string | null
+          compiler_version: string | null
+          contract_address: string
+          contract_type: string
+          created_at: string
+          deployer_id: string
+          deployment_cost: number | null
+          deployment_transaction_hash: string
+          gas_used: number | null
+          id: string
+          network: string
+          related_property_id: string | null
+          related_tokenized_property_id: string | null
+          source_code: string | null
+          status: string
+          updated_at: string
+          verification_status: string | null
+        }
+        Insert: {
+          abi: Json
+          bytecode?: string | null
+          compiler_version?: string | null
+          contract_address: string
+          contract_type: string
+          created_at?: string
+          deployer_id: string
+          deployment_cost?: number | null
+          deployment_transaction_hash: string
+          gas_used?: number | null
+          id?: string
+          network?: string
+          related_property_id?: string | null
+          related_tokenized_property_id?: string | null
+          source_code?: string | null
+          status?: string
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Update: {
+          abi?: Json
+          bytecode?: string | null
+          compiler_version?: string | null
+          contract_address?: string
+          contract_type?: string
+          created_at?: string
+          deployer_id?: string
+          deployment_cost?: number | null
+          deployment_transaction_hash?: string
+          gas_used?: number | null
+          id?: string
+          network?: string
+          related_property_id?: string | null
+          related_tokenized_property_id?: string | null
+          source_code?: string | null
+          status?: string
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_contracts_related_property_id_fkey"
+            columns: ["related_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_contracts_related_tokenized_property_id_fkey"
+            columns: ["related_tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_notifications: {
+        Row: {
+          action_label: string | null
+          action_required: boolean
+          action_url: string | null
+          auto_dismiss_after: unknown | null
+          created_at: string
+          created_by: string
+          display_from: string
+          display_until: string | null
+          id: string
+          is_dismissible: boolean
+          message: string
+          notification_type: string
+          severity: string
+          target_audience: string
+          target_users: string[] | null
+          title: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_required?: boolean
+          action_url?: string | null
+          auto_dismiss_after?: unknown | null
+          created_at?: string
+          created_by: string
+          display_from?: string
+          display_until?: string | null
+          id?: string
+          is_dismissible?: boolean
+          message: string
+          notification_type: string
+          severity?: string
+          target_audience?: string
+          target_users?: string[] | null
+          title: string
+        }
+        Update: {
+          action_label?: string | null
+          action_required?: boolean
+          action_url?: string | null
+          auto_dismiss_after?: unknown | null
+          created_at?: string
+          created_by?: string
+          display_from?: string
+          display_until?: string | null
+          id?: string
+          is_dismissible?: boolean
+          message?: string
+          notification_type?: string
+          severity?: string
+          target_audience?: string
+          target_users?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       token_holdings: {
         Row: {
           acquisition_date: string
@@ -1781,6 +3003,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      transaction_fees: {
+        Row: {
+          base_fee: number
+          created_at: string
+          currency: string
+          effective_from: string
+          effective_until: string | null
+          fee_type: string
+          id: string
+          is_active: boolean
+          max_fee: number | null
+          min_fee: number
+          percentage_fee: number
+          tier_thresholds: Json | null
+          transaction_type: string
+        }
+        Insert: {
+          base_fee?: number
+          created_at?: string
+          currency?: string
+          effective_from?: string
+          effective_until?: string | null
+          fee_type: string
+          id?: string
+          is_active?: boolean
+          max_fee?: number | null
+          min_fee?: number
+          percentage_fee?: number
+          tier_thresholds?: Json | null
+          transaction_type: string
+        }
+        Update: {
+          base_fee?: number
+          created_at?: string
+          currency?: string
+          effective_from?: string
+          effective_until?: string | null
+          fee_type?: string
+          id?: string
+          is_active?: boolean
+          max_fee?: number | null
+          min_fee?: number
+          percentage_fee?: number
+          tier_thresholds?: Json | null
+          transaction_type?: string
+        }
+        Relationships: []
       }
       user_devices: {
         Row: {
@@ -2131,6 +3401,116 @@ export type Database = {
           verifier_type?: Database["public"]["Enums"]["verifier_type"]
         }
         Relationships: []
+      }
+      wallets: {
+        Row: {
+          address: string
+          balance_hbar: number | null
+          created_at: string
+          encrypted_private_key: string | null
+          id: string
+          is_primary: boolean
+          is_verified: boolean
+          last_sync_at: string | null
+          metadata: Json
+          public_key: string | null
+          updated_at: string
+          user_id: string
+          wallet_type: string
+        }
+        Insert: {
+          address: string
+          balance_hbar?: number | null
+          created_at?: string
+          encrypted_private_key?: string | null
+          id?: string
+          is_primary?: boolean
+          is_verified?: boolean
+          last_sync_at?: string | null
+          metadata?: Json
+          public_key?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_type: string
+        }
+        Update: {
+          address?: string
+          balance_hbar?: number | null
+          created_at?: string
+          encrypted_private_key?: string | null
+          id?: string
+          is_primary?: boolean
+          is_verified?: boolean
+          last_sync_at?: string | null
+          metadata?: Json
+          public_key?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_type?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          external_transaction_id: string | null
+          failure_reason: string | null
+          fee_amount: number
+          id: string
+          net_amount: number
+          payment_method_id: string
+          processed_at: string | null
+          processor_response: Json | null
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          failure_reason?: string | null
+          fee_amount?: number
+          id?: string
+          net_amount: number
+          payment_method_id: string
+          processed_at?: string | null
+          processor_response?: Json | null
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          failure_reason?: string | null
+          fee_amount?: number
+          id?: string
+          net_amount?: number
+          payment_method_id?: string
+          processed_at?: string | null
+          processor_response?: Json | null
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

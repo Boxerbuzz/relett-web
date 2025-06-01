@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   MagnifyingGlass, 
   SlidersHorizontal, 
-  TrendingUp, 
+  TrendUp, 
   MapPin, 
   Calendar,
   Users,
@@ -335,7 +335,7 @@ export function AdvancedMarketplace() {
                 <div>
                   <span className="text-gray-600">Expected ROI:</span>
                   <div className="flex items-center">
-                    <TrendingUp size={14} className="mr-1 text-green-600" />
+                    <TrendUp size={14} className="mr-1 text-green-600" />
                     <span className="font-semibold text-green-600">{opportunity.expectedROI}%</span>
                   </div>
                 </div>

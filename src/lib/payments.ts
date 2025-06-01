@@ -278,8 +278,8 @@ export class PaymentService {
         propertyTitle: payment.property?.title,
         status: payment.status === 'completed' ? 'completed' : payment.status === 'failed' ? 'failed' : 'pending',
         reference: payment.reference,
-        paymentMethodId: payment.metadata?.payment_method_id,
-        blockchainTxHash: payment.metadata?.blockchain_tx_hash,
+        paymentMethodId: this.getMetadataValue(payment.metadata, 'payment_method_id'),
+        blockchainTxHash: this.getMetadataValue(payment.metadata, 'blockchain_tx_hash'),
         createdAt: payment.created_at
       })) || [];
     } catch (error) {
@@ -342,18 +342,36 @@ export class PaymentService {
   }
 
   private getTransactionDescription(payment: any): string {
+    const metadata = payment.metadata || {};
+    
     switch (payment.type) {
       case 'investment':
-        return `Investment in ${payment.metadata?.property_title || 'Property'}`;
+        return `Investment in ${this.getMetadataValue(metadata, 'property_title') || 'Property'}`;
       case 'dividend':
-        return `Dividend payment from ${payment.metadata?.property_title || 'Property'}`;
+        return `Dividend payment from ${this.getMetadataValue(metadata, 'property_title') || 'Property'}`;
       case 'fee':
-        return `Platform fee for ${payment.metadata?.description || 'service'}`;
+        return `Platform fee for ${this.getMetadataValue(metadata, 'description') || 'service'}`;
       case 'withdrawal':
         return 'Withdrawal to bank account';
       default:
         return 'Transaction';
     }
+  }
+
+  private getMetadataValue(metadata: any, key: string): string | undefined {
+    if (!metadata) return undefined;
+    
+    // Handle both object and string metadata
+    if (typeof metadata === 'string') {
+      try {
+        const parsed = JSON.parse(metadata);
+        return parsed[key];
+      } catch {
+        return undefined;
+      }
+    }
+    
+    return metadata[key];
   }
 
   close() {
