@@ -21,68 +21,63 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    let isMounted = true;
-    
-    console.log("AuthProvider: Setting up auth listeners");
+    const initAuth = async () => {
+      console.log("Initializing auth - checking for existing session");
+      setLoading(true);
 
-    // Set up auth state listener FIRST
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email);
-      
-      if (!isMounted) return;
-      
-      setSession(session);
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Error getting session:", error);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
       if (session?.user) {
         console.log("Session exists, fetching user profile...");
-        // Don't set loading false yet - wait for profile fetch
         await fetchOrCreateUserProfile(session.user);
       } else {
+        console.log("No existing session found");
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    // Set up initial auth state check
+    initAuth();
+
+    // Set up listener for future auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
+
+      if (event === "SIGNED_IN" && session?.user) {
+        fetchOrCreateUserProfile(session.user);
+      }
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setLoading(false);
+      }
+
+      if (event === "INITIAL_SESSION" && session?.user) {
+        fetchOrCreateUserProfile(session.user);
+      }
+
+      if (event === "INITIAL_SESSION" && !session?.user) {
         console.log("No session, setting user to null and loading to false");
         setUser(null);
         setLoading(false);
       }
     });
 
-    // THEN check for existing session
-    const initializeAuth = async () => {
-      try {
-        console.log("Initializing auth - checking for existing session");
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Error getting session:", error);
-          if (isMounted) {
-            setLoading(false);
-          }
-          return;
-        }
-        
-        if (!isMounted) return;
-        
-        if (session?.user) {
-          console.log("Found existing session for:", session.user.email);
-          setSession(session);
-          await fetchOrCreateUserProfile(session.user);
-        } else {
-          console.log("No existing session found");
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
-
     return () => {
       console.log("AuthProvider: Cleaning up");
-      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -91,23 +86,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log("=== STARTING fetchOrCreateUserProfile ===");
     try {
       console.log("Step 1: Fetching user profile for:", authUser.email);
-      
       console.log("Step 2: Querying users table...");
-      let { data: userData, error: userError } = await supabase
+      console.log("Querying for user ID:", authUser.id);
+
+      const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", authUser.id)
-        .single();
+        .maybeSingle(); // safer than .single()
 
-      console.log("Step 3: Query completed. UserData:", userData, "Error:", userError);
+      console.log("Step 3: Query result:", { userData, userError });
 
-      if (userError && userError.code !== "PGRST116") {
+      // If there's an error and no data, treat it as a real failure
+      if (userError && !userData) {
         console.error("Step 4: Error fetching from users table:", userError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user profile",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
 
-      // If user doesn't exist in users table, create them
       if (!userData) {
-        console.log("Step 5: User not found, creating new user in users table");
+        console.log("Step 5: User not found, creating new user...");
+
         const [first_name, ...rest] = (
           authUser.user_metadata?.name ||
           authUser.email?.split("@")[0] ||
@@ -130,18 +134,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
           .from("users")
           .insert([newUser])
           .select()
-          .single();
+          .maybeSingle(); // use maybeSingle again
 
-        console.log("Step 7: User creation completed. CreatedUser:", createdUser, "Error:", createError);
+        console.log("Step 7: User creation result:", {
+          createdUser,
+          createError,
+        });
 
-        if (createError) {
+        if (createError || !createdUser) {
           console.error("Step 8: Error creating user:", createError);
-          throw createError;
+          toast({
+            title: "Error",
+            description: "Failed to create user",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
         }
-        userData = createdUser;
 
         console.log("Step 9: Creating user role...");
-        // Create default user role
         const { error: roleError } = await supabase.from("user_roles").insert([
           {
             user_id: authUser.id,
@@ -152,34 +163,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log("Step 10: Role creation completed. Error:", roleError);
         if (roleError) {
           console.error("Error creating user role:", roleError);
+          toast({
+            title: "Error",
+            description: "Failed to create user role",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
         }
+
+        console.log("Step 11: Setting created user as appUser");
+        const appUser: AppUser = {
+          id: createdUser.id,
+          email: createdUser.email,
+          role: createdUser.user_type as AppUser["role"],
+          created_at: createdUser.created_at,
+          email_confirmed_at: authUser.email_confirmed_at,
+          phone: createdUser.phone,
+        };
+
+        setUser(appUser);
+        console.log("Step 12: Created user set successfully");
       } else {
+        // User already exists
         console.log("Step 5: User found in database:", userData);
+        const appUser: AppUser = {
+          id: userData.id,
+          email: userData.email,
+          role: userData.user_type as AppUser["role"],
+          created_at: userData.created_at,
+          email_confirmed_at: authUser.email_confirmed_at,
+          phone: userData.phone,
+        };
+
+        setUser(appUser);
+        console.log("Step 6: Existing user set successfully");
       }
-
-      console.log("Step 11: Transforming to AppUser type...");
-      // Transform to AppUser type
-      const appUser: AppUser = {
-        id: userData.id,
-        email: userData.email,
-        role: userData.user_type as AppUser["role"],
-        created_at: userData.created_at,
-        email_confirmed_at: authUser.email_confirmed_at,
-        phone: userData.phone,
-      };
-
-      console.log("Step 12: Setting user:", appUser);
-      setUser(appUser);
-      console.log("Step 13: User set successfully");
     } catch (error) {
       console.error("=== ERROR in fetchOrCreateUserProfile ===", error);
       toast({
         title: "Error",
-        description: "Failed to load user profile",
+        description: "Unexpected error while loading user profile",
         variant: "destructive",
       });
-      
-      // Even on error, we should set a basic user object to avoid infinite loading
+
       const fallbackUser: AppUser = {
         id: authUser.id,
         email: authUser.email!,
@@ -188,11 +215,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email_confirmed_at: authUser.email_confirmed_at,
         phone: null,
       };
-      console.log("Setting fallback user:", fallbackUser);
+
       setUser(fallbackUser);
+      console.log("Fallback user set:", fallbackUser);
     } finally {
-      // Always set loading to false after user profile operation completes
-      console.log("=== FINALLY: Setting loading to false - profile fetch complete ===");
+      console.log("=== FINALLY: Setting loading to false ===");
       setLoading(false);
     }
   };
@@ -311,7 +338,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  console.log("AuthProvider render - loading:", loading, "user:", user?.email);
+  console.log("AuthProvider render - loading:", loading, "user:", user);
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
