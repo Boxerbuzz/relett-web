@@ -19,10 +19,12 @@ export function Layout({ children }: LayoutProps) {
   const isAddPropertyPage = location.pathname === '/add-property';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Desktop Sidebar - Full Height */}
-      <div className="hidden md:block w-64 fixed left-0 top-0 h-screen z-10">
-        <Sidebar />
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
+      {/* Desktop Sidebar - Fixed positioning with proper z-index */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <div className="flex flex-col w-64">
+          <Sidebar />
+        </div>
       </div>
       
       {/* Mobile Sidebar */}
@@ -32,20 +34,22 @@ export function Layout({ children }: LayoutProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Main Content Area */}
-      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+      {/* Main Content Area - Flexible with proper overflow handling */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         {/* Header - Full Width of Content Area */}
         <Navbar 
           onToggleSidebar={() => setSidebarOpen(true)}
         />
         
-        {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6">
-          {isAddPropertyPage ? (
-            <AddPropertyForm />
-          ) : (
-            children
-          )}
+        {/* Page Content - Proper container with overflow handling */}
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+          <div className="max-w-full">
+            {isAddPropertyPage ? (
+              <AddPropertyForm />
+            ) : (
+              children
+            )}
+          </div>
         </main>
       </div>
     </div>

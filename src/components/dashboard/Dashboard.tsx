@@ -44,7 +44,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 w-full min-w-0">
       {/* Email Verification Status */}
       <EmailVerificationStatus />
       
@@ -55,7 +55,9 @@ export function Dashboard() {
       <WelcomeCard />
 
       {/* Role-specific Dashboard Content */}
-      {renderRoleSpecificDashboard()}
+      <div className="w-full min-w-0">
+        {renderRoleSpecificDashboard()}
+      </div>
 
       {/* Profile Completion Wizard */}
       <ProfileCompletionWizard 
