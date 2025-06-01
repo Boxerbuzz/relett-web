@@ -11,5 +11,13 @@ export const config = {
   currency: {
     default: 'NGN',
     supported: ['NGN', 'USD']
+  },
+  maps: {
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    isConfigured: () => !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  },
+  ipfs: {
+    gatewayUrl: import.meta.env.VITE_IPFS_GATEWAY_URL || 'https://gateway.pinata.cloud/ipfs/',
+    isConfigured: () => !!import.meta.env.VITE_IPFS_GATEWAY_URL,
   }
 };
