@@ -9,6 +9,11 @@ export type Gender = 'male' | 'female' | 'other'
 export interface UserProfile {
   id: string;
   user_id: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  bio?: string;
+  avatar?: string;
   date_of_birth?: string;
   address?: {
     street?: string;
@@ -16,6 +21,7 @@ export interface UserProfile {
     state?: string;
     postal_code?: string;
     country?: string;
+    address_line?: string;
   };
   nationality?: string;
   state_of_origin?: string;
