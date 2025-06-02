@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Check,
   X,
-  AlertTriangle
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 
 interface Annotation {

@@ -53,6 +53,7 @@ export function PropertyChatIntegration({
   const [messageInput, setMessageInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -65,6 +66,17 @@ export function PropertyChatIntegration({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    getCurrentUserId();
+  }, []);
+
+  const getCurrentUserId = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
 
   const initializeChat = async () => {
     try {
@@ -243,7 +255,7 @@ export function PropertyChatIntegration({
         <ScrollArea className="h-96 p-4">
           <div className="space-y-4">
             {messages.map((message) => {
-              const isOwn = message.sender_id === supabase.auth.getUser().then(u => u.data.user?.id);
+              const isOwn = message.sender_id === currentUserId;
               
               return (
                 <div
