@@ -219,7 +219,7 @@ const MapView = () => {
               ))}
             </TabsContent>
 
-            <TabsContent value="verified">
+            <TabsContent value="verified" className="space-y-4">
               {mapProperties.filter(p => p.status === 'verified').map((property) => (
                 <Card key={property.id} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-4">
@@ -246,7 +246,7 @@ const MapView = () => {
               ))}
             </TabsContent>
 
-            <TabsContent value="tokenized">
+            <TabsContent value="tokenized" className="space-y-4">
               {mapProperties.filter(p => p.tokenized).map((property) => (
                 <Card key={property.id} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-4">

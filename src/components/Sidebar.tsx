@@ -1,45 +1,94 @@
+"use client";
 
-'use client';
-
-import { useLocation, Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/lib/auth';
-import { 
-  House, 
-  FileText, 
-  ShieldCheck, 
-  Store, 
+import { useLocation, Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import {
+  House,
+  FileText,
+  ShieldCheck,
+  Store,
   Coins,
   Settings,
   MapPin,
   Bell,
   Plus,
-  Search
-} from 'lucide-react';
+  Search,
+} from "lucide-react";
 
 interface SidebarProps {
   onNavigate?: () => void;
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner'] },
-  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner'] },
-  { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner'] },
-  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  {
+    name: "Dashboard",
+    href: "/",
+    icon: House,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
+  {
+    name: "My Property",
+    href: "/land",
+    icon: FileText,
+    roles: ["landowner", "admin"],
+  },
+  {
+    name: "Add Property",
+    href: "/add-property",
+    icon: Plus,
+    roles: ["landowner", "admin"],
+  },
+  {
+    name: "Property Verification",
+    href: "/property-verification",
+    icon: Search,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
+  {
+    name: "Verification",
+    href: "/verification",
+    icon: ShieldCheck,
+    roles: ["verifier", "admin"],
+  },
+  {
+    name: "Marketplace",
+    href: "/marketplace",
+    icon: Store,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
+  {
+    name: "Tokens",
+    href: "/tokens",
+    icon: Coins,
+    roles: ["landowner", "admin"],
+  },
+  {
+    name: "Map View",
+    href: "/map",
+    icon: MapPin,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
+  {
+    name: "Notifications",
+    href: "/notifications",
+    icon: Bell,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+    roles: ["landowner", "verifier", "admin", "agent"],
+  },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
   const { user } = useAuth();
 
-  const filteredNavigation = navigation.filter(item => 
-    user?.role && item.roles.includes(user.role)
+  const filteredNavigation = navigation.filter(
+    (item) => user?.role && item.roles.includes(user.role)
   );
 
   return (
@@ -51,13 +100,13 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           <p className="text-sm text-gray-500">Land Tokenization</p>
         </div>
       </div>
-      
+
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {filteredNavigation.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
-          
+
           return (
             <Link
               key={item.name}
@@ -70,12 +119,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               )}
             >
-              <Icon 
-                size={20} 
+              <Icon
+                size={20}
                 className={cn(
                   "mr-3",
                   isActive ? "text-blue-700" : "text-gray-500"
-                )} 
+                )}
               />
               {item.name}
             </Link>
