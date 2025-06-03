@@ -1,44 +1,57 @@
 
 import { HederaClient } from './hedera';
-import { ContractExecuteTransaction, ContractFunctionParameters, ContractCallQuery } from '@hashgraph/sdk';
+import { 
+  ContractCallQuery, 
+  ContractExecuteTransaction, 
+  ContractFunctionParameters,
+  ContractId,
+  Hbar
+} from '@hashgraph/sdk';
 
-// Contract addresses - these would be set after deployment
-const CONTRACT_ADDRESSES = {
-  PROPERTY_REGISTRY: import.meta.env.VITE_PROPERTY_REGISTRY_CONTRACT || '',
-  PROPERTY_MARKETPLACE: import.meta.env.VITE_PROPERTY_MARKETPLACE_CONTRACT || '',
-  REVENUE_DISTRIBUTOR: import.meta.env.VITE_REVENUE_DISTRIBUTOR_CONTRACT || ''
-};
+export interface PropertyTokenData {
+  propertyId: string;
+  landTitleId: string;
+  tokenName: string;
+  tokenSymbol: string;
+  totalSupply: number;
+  totalValue: number;
+  minimumInvestment: number;
+  expectedROI: number;
+  lockupPeriod: number;
+}
 
-export class PropertyContractService {
+export interface ContractAddresses {
+  propertyRegistry: string;
+  propertyMarketplace: string;
+  revenueDistributor: string;
+}
+
+export class PropertyContracts {
   private hederaClient: HederaClient;
+  private contractAddresses: ContractAddresses;
 
-  constructor() {
+  constructor(contractAddresses: ContractAddresses) {
     this.hederaClient = new HederaClient();
+    this.contractAddresses = contractAddresses;
   }
 
-  // PropertyRegistry Contract Functions
-  async registerProperty(params: {
-    propertyId: string;
-    landTitleId: string;
-    name: string;
-    symbol: string;
-    totalSupply: number;
-    totalValue: number;
-    propertyDetails: any;
-  }) {
+  // Register a new property in the registry
+  async registerProperty(propertyData: PropertyTokenData) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addString(params.propertyId)
-        .addString(params.landTitleId)
-        .addString(params.name)
-        .addString(params.symbol)
-        .addUint256(params.totalSupply)
-        .addUint256(params.totalValue);
-
+      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.PROPERTY_REGISTRY)
-        .setGas(500000)
-        .setFunction("registerProperty", functionParams);
+        .setContractId(contractId)
+        .setGas(1000000)
+        .setFunction("registerProperty", 
+          new ContractFunctionParameters()
+            .addString(propertyData.propertyId)
+            .addString(propertyData.landTitleId)
+            .addString(propertyData.tokenName)
+            .addString(propertyData.tokenSymbol)
+            .addUint256(propertyData.totalSupply)
+            .addUint256(propertyData.totalValue)
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -54,15 +67,17 @@ export class PropertyContractService {
     }
   }
 
+  // Verify a property (only authorized verifiers)
   async verifyProperty(propertyId: string) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addString(propertyId);
-
+      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.PROPERTY_REGISTRY)
-        .setGas(100000)
-        .setFunction("verifyProperty", functionParams);
+        .setContractId(contractId)
+        .setGas(300000)
+        .setFunction("verifyProperty", 
+          new ContractFunctionParameters().addString(propertyId)
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -78,41 +93,42 @@ export class PropertyContractService {
     }
   }
 
+  // Get property information
   async getProperty(propertyId: string) {
     try {
+      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      
       const query = new ContractCallQuery()
-        .setContractId(CONTRACT_ADDRESSES.PROPERTY_REGISTRY)
-        .setGas(50000)
-        .setFunction("getProperty", new ContractFunctionParameters().addString(propertyId));
+        .setContractId(contractId)
+        .setGas(100000)
+        .setFunction("getProperty", 
+          new ContractFunctionParameters().addString(propertyId)
+        );
 
       const result = await query.execute(this.hederaClient.client);
       
-      return {
-        success: true,
-        data: result
-      };
+      // Parse the result based on your contract's return structure
+      return result;
     } catch (error) {
       console.error('Error getting property:', error);
       throw error;
     }
   }
 
-  // PropertyMarketplace Contract Functions
-  async listTokensForSale(params: {
-    tokenContract: string;
-    tokenAmount: number;
-    pricePerToken: number;
-  }) {
+  // Create a marketplace listing
+  async createListing(propertyId: string, price: number, tokenAmount: number) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addAddress(params.tokenContract)
-        .addUint256(params.tokenAmount)
-        .addUint256(params.pricePerToken);
-
+      const contractId = ContractId.fromString(this.contractAddresses.propertyMarketplace);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.PROPERTY_MARKETPLACE)
-        .setGas(300000)
-        .setFunction("listTokens", functionParams);
+        .setContractId(contractId)
+        .setGas(500000)
+        .setFunction("createListing", 
+          new ContractFunctionParameters()
+            .addString(propertyId)
+            .addUint256(price)
+            .addUint256(tokenAmount)
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -123,21 +139,23 @@ export class PropertyContractService {
         status: receipt.status.toString()
       };
     } catch (error) {
-      console.error('Error listing tokens:', error);
+      console.error('Error creating listing:', error);
       throw error;
     }
   }
 
-  async buyTokens(listingId: number, paymentAmount: number) {
+  // Purchase tokens from marketplace
+  async purchaseTokens(listingId: string, amount: number) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addUint256(listingId);
-
+      const contractId = ContractId.fromString(this.contractAddresses.propertyMarketplace);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.PROPERTY_MARKETPLACE)
-        .setGas(300000)
-        .setFunction("buyTokens", functionParams)
-        .setPayableAmount(paymentAmount);
+        .setContractId(contractId)
+        .setGas(800000)
+        .setPayableAmount(Hbar.fromTinybars(amount))
+        .setFunction("purchaseTokens", 
+          new ContractFunctionParameters().addString(listingId)
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -148,27 +166,25 @@ export class PropertyContractService {
         status: receipt.status.toString()
       };
     } catch (error) {
-      console.error('Error buying tokens:', error);
+      console.error('Error purchasing tokens:', error);
       throw error;
     }
   }
 
-  // RevenueDistributor Contract Functions
-  async createRevenueDistribution(params: {
-    tokenContract: string;
-    revenueAmount: number;
-    revenueSource: string;
-  }) {
+  // Distribute revenue to token holders
+  async distributeRevenue(propertyId: string, amount: number, source: string) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addAddress(params.tokenContract)
-        .addString(params.revenueSource);
-
+      const contractId = ContractId.fromString(this.contractAddresses.revenueDistributor);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.REVENUE_DISTRIBUTOR)
-        .setGas(200000)
-        .setFunction("createDistribution", functionParams)
-        .setPayableAmount(params.revenueAmount);
+        .setContractId(contractId)
+        .setGas(1000000)
+        .setPayableAmount(Hbar.fromTinybars(amount))
+        .setFunction("createDistribution", 
+          new ContractFunctionParameters()
+            .addString(propertyId)
+            .addString(source)
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -179,20 +195,22 @@ export class PropertyContractService {
         status: receipt.status.toString()
       };
     } catch (error) {
-      console.error('Error creating revenue distribution:', error);
+      console.error('Error distributing revenue:', error);
       throw error;
     }
   }
 
-  async claimRevenue(distributionId: number) {
+  // Claim revenue distribution
+  async claimRevenue(distributionId: string) {
     try {
-      const functionParams = new ContractFunctionParameters()
-        .addUint256(distributionId);
-
+      const contractId = ContractId.fromString(this.contractAddresses.revenueDistributor);
+      
       const transaction = new ContractExecuteTransaction()
-        .setContractId(CONTRACT_ADDRESSES.REVENUE_DISTRIBUTOR)
-        .setGas(150000)
-        .setFunction("claimRevenue", functionParams);
+        .setContractId(contractId)
+        .setGas(500000)
+        .setFunction("claimRevenue", 
+          new ContractFunctionParameters().addUint256(parseInt(distributionId))
+        );
 
       const response = await transaction.execute(this.hederaClient.client);
       const receipt = await response.getReceipt(this.hederaClient.client);
@@ -208,28 +226,28 @@ export class PropertyContractService {
     }
   }
 
-  async getUnclaimedDistributions(holderAddress: string) {
-    try {
-      const query = new ContractCallQuery()
-        .setContractId(CONTRACT_ADDRESSES.REVENUE_DISTRIBUTOR)
-        .setGas(100000)
-        .setFunction("getUnclaimedDistributions", new ContractFunctionParameters().addAddress(holderAddress));
-
-      const result = await query.execute(this.hederaClient.client);
-      
-      return {
-        success: true,
-        data: result
-      };
-    } catch (error) {
-      console.error('Error getting unclaimed distributions:', error);
-      throw error;
-    }
-  }
-
+  // Close the Hedera client connection
   close() {
     this.hederaClient.close();
   }
 }
 
-export { CONTRACT_ADDRESSES };
+// Utility functions for contract integration
+export const contractUtils = {
+  // Format token amounts for contract calls
+  formatTokenAmount: (amount: number, decimals: number = 8) => {
+    return Math.floor(amount * Math.pow(10, decimals));
+  },
+
+  // Parse contract responses
+  parseContractResult: (result: any) => {
+    // Implement based on your contract return formats
+    return result;
+  },
+
+  // Validate contract addresses
+  isValidContractId: (contractId: string) => {
+    const pattern = /^\d+\.\d+\.\d+$/;
+    return pattern.test(contractId);
+  }
+};
