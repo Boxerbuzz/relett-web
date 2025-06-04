@@ -2,107 +2,147 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile, UserRole, AppRole } from '@/types/database';
+
+export interface UserProfileData {
+  // From users table
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  user_type: string;
+  avatar: string | null;
+  bio: string | null;
+  full_name: string | null;
+  is_active: boolean | null;
+  is_verified: boolean | null;
+  verification_status: string | null;
+  created_at: string;
+  updated_at: string | null;
+  
+  // From user_profiles table
+  date_of_birth?: string | null;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+    address_line?: string;
+  } | null;
+  nationality?: string | null;
+  state_of_origin?: string | null;
+  lga?: string | null;
+  middle_name?: string | null;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null;
+  last_login?: string | null;
+}
 
 export function useUserProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchRoles();
     } else {
       setProfile(null);
-      setRoles([]);
       setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch from users table (main user data)
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Fetch from user_profiles table (additional profile data)
+      const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle since profile might not exist yet
 
-      if (error) throw error;
-      
-      // Transform the data to match our TypeScript types
-      const transformedProfile: UserProfile = {
-        ...data,
-        address: typeof data.address === 'string'
-          ? JSON.parse(data.address)
-          : (data.address || {}),
-        gender: data.gender as UserProfile['gender']
+      // Combine the data
+      const combinedProfile: UserProfileData = {
+        ...userData,
+        // Add profile data if it exists
+        date_of_birth: profileData?.date_of_birth,
+        address: typeof profileData?.address === 'string'
+          ? JSON.parse(profileData.address)
+          : (profileData?.address || null),
+        nationality: profileData?.nationality,
+        state_of_origin: profileData?.state_of_origin,
+        lga: profileData?.lga,
+        middle_name: profileData?.middle_name,
+        gender: profileData?.gender,
+        last_login: profileData?.last_login,
       };
-      
-      setProfile(transformedProfile);
+
+      setProfile(combinedProfile);
     } catch (err) {
       console.error('Error fetching profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch profile');
-    }
-  };
-
-  const fetchRoles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('is_active', true);
-
-      if (error) throw error;
-      
-      // Transform the data to match our TypeScript types
-      const transformedRoles: UserRole[] = (data || []).map(role => ({
-        id: role.id,
-        user_id: role.user_id,
-        role: role.role as AppRole,
-        is_active: role.is_active,
-        expires_at: role.expires_at,
-        assigned_at: role.assigned_at,
-        assigned_by: role.assigned_by,
-        metadata: typeof role.metadata === 'string'
-          ? JSON.parse(role.metadata)
-          : (role.metadata || {})
-      }));
-      
-      setRoles(transformedRoles);
-    } catch (err) {
-      console.error('Error fetching roles:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch roles');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: Partial<UserProfileData>) => {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(updates)
-        .eq('user_id', user?.id)
-        .select()
-        .single();
+      // Separate updates for users table and user_profiles table
+      const userUpdates: any = {};
+      const profileUpdates: any = {};
 
-      if (error) throw error;
-      
-      // Transform the data to match our TypeScript types
-      const transformedProfile: UserProfile = {
-        ...data,
-        address: typeof data.address === 'string'
-          ? JSON.parse(data.address)
-          : (data.address || {}),
-        gender: data.gender as UserProfile['gender']
-      };
-      
-      setProfile(transformedProfile);
-      return { data: transformedProfile, error: null };
+      // Fields that go to users table
+      if (updates.first_name !== undefined) userUpdates.first_name = updates.first_name;
+      if (updates.last_name !== undefined) userUpdates.last_name = updates.last_name;
+      if (updates.phone !== undefined) userUpdates.phone = updates.phone;
+      if (updates.avatar !== undefined) userUpdates.avatar = updates.avatar;
+      if (updates.bio !== undefined) userUpdates.bio = updates.bio;
+
+      // Fields that go to user_profiles table
+      if (updates.date_of_birth !== undefined) profileUpdates.date_of_birth = updates.date_of_birth;
+      if (updates.address !== undefined) profileUpdates.address = updates.address;
+      if (updates.nationality !== undefined) profileUpdates.nationality = updates.nationality;
+      if (updates.state_of_origin !== undefined) profileUpdates.state_of_origin = updates.state_of_origin;
+      if (updates.lga !== undefined) profileUpdates.lga = updates.lga;
+      if (updates.middle_name !== undefined) profileUpdates.middle_name = updates.middle_name;
+      if (updates.gender !== undefined) profileUpdates.gender = updates.gender;
+
+      // Update users table if there are user updates
+      if (Object.keys(userUpdates).length > 0) {
+        const { error: userError } = await supabase
+          .from('users')
+          .update(userUpdates)
+          .eq('id', user?.id);
+
+        if (userError) throw userError;
+      }
+
+      // Update user_profiles table if there are profile updates
+      if (Object.keys(profileUpdates).length > 0) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            user_id: user?.id,
+            ...profileUpdates
+          });
+
+        if (profileError) throw profileError;
+      }
+
+      // Refetch the updated profile
+      await fetchProfile();
+      return { data: profile, error: null };
     } catch (err) {
       console.error('Error updating profile:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
@@ -111,41 +151,21 @@ export function useUserProfile() {
     }
   };
 
-  const hasRole = (role: AppRole): boolean => {
-    return roles.some(r => r.role === role && r.is_active && 
-      (!r.expires_at || new Date(r.expires_at) > new Date()));
+  const hasRole = (role: string): boolean => {
+    return profile?.user_type === role;
   };
 
-  const getPrimaryRole = (): AppRole | null => {
-    const activeRoles = roles.filter(r => r.is_active && 
-      (!r.expires_at || new Date(r.expires_at) > new Date()));
-    
-    // Return highest priority role
-    const rolePriority: Record<AppRole, number> = {
-      'admin': 1,
-      'verifier': 2,
-      'agent': 3,
-      'landowner': 4,
-      'investor': 5
-    };
-
-    return activeRoles.reduce((highest, current) => {
-      if (!highest) return current.role;
-      return rolePriority[current.role] < rolePriority[highest] ? current.role : highest;
-    }, null as AppRole | null);
+  const getPrimaryRole = (): string | null => {
+    return profile?.user_type || null;
   };
 
   return {
     profile,
-    roles,
     loading,
     error,
     updateProfile,
     hasRole,
     getPrimaryRole,
-    refetch: () => {
-      fetchProfile();
-      fetchRoles();
-    }
+    refetch: fetchProfile
   };
 }

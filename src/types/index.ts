@@ -2,7 +2,7 @@
 export interface User {
   id: string;
   email: string;
-  role: 'landowner' | 'verifier' | 'agent';
+  role: 'landowner' | 'verifier' | 'agent' | 'admin' | 'investor';
   created_at: string;
   email_confirmed_at?: string;
   phone?: string;
