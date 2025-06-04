@@ -26,7 +26,7 @@ export function useUserProfile() {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select('*, user:user_id(*)')
         .eq('user_id', user?.id)
         .single();
 

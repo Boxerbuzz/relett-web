@@ -1,22 +1,21 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { useAuth } from '@/lib/auth';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { Button } from '@/components/ui/button';
-import { 
+import { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { Button } from "@/components/ui/button";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { UserAvatar } from './profile/UserAvatar';
-import { Badge } from '@/components/ui/badge';
-import { Bell, Menu, Settings, LogOut, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "./profile/UserAvatar";
+import { Badge } from "@/components/ui/badge";
+import { Bell, Menu, Settings, LogOut, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -29,11 +28,13 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
 
   if (!user) return null;
 
-  const userDisplayName = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}`
-    : user.email;
+  const userDisplayName =
+    profile?.first_name && profile?.last_name
+      ? `${profile.first_name} ${profile.last_name}`
+      : user.email;
 
-  const roleDisplayName = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  const roleDisplayName =
+    user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
@@ -47,7 +48,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        
+
         {/* Desktop: Show page title or breadcrumb */}
         <div className="hidden md:block">
           <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
@@ -60,8 +61,8 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
               {notificationCount}
@@ -92,19 +93,28 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
+              <Link
+                to="/settings"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <User className="h-4 w-4" />
                 Profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex items-center gap-2 cursor-pointer">
+              <Link
+                to="/settings"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <Settings className="h-4 w-4" />
                 Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/notifications" className="flex items-center gap-2 cursor-pointer">
+              <Link
+                to="/notifications"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <Bell className="h-4 w-4" />
                 Notifications
                 {notificationCount > 0 && (
@@ -115,8 +125,8 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => signOut()} 
+            <DropdownMenuItem
+              onClick={() => signOut()}
               className="flex items-center gap-2 cursor-pointer text-red-600"
             >
               <LogOut className="h-4 w-4" />
