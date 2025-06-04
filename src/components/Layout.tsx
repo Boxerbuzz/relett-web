@@ -19,9 +19,9 @@ export function Layout({ children }: LayoutProps) {
   const isAddPropertyPage = location.pathname === '/add-property';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
-      {/* Desktop Sidebar - Fixed positioning with proper z-index */}
-      <div className="hidden md:flex md:flex-shrink-0">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Desktop Sidebar - Fixed positioning */}
+      <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-50">
         <div className="flex flex-col w-64">
           <Sidebar />
         </div>
@@ -34,15 +34,17 @@ export function Layout({ children }: LayoutProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Main Content Area - Flexible with proper overflow handling */}
-      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
-        {/* Header - Full Width of Content Area */}
-        <Navbar 
-          onToggleSidebar={() => setSidebarOpen(true)}
-        />
+      {/* Main Content Area with proper spacing for fixed sidebar */}
+      <div className="flex-1 flex flex-col min-h-screen md:ml-64">
+        {/* Header - Fixed positioning */}
+        <div className="sticky top-0 z-40">
+          <Navbar 
+            onToggleSidebar={() => setSidebarOpen(true)}
+          />
+        </div>
         
-        {/* Page Content - Proper container with overflow handling */}
-        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+        {/* Page Content - Scrollable */}
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
           <div className="max-w-full">
             {isAddPropertyPage ? (
               <AddPropertyForm />

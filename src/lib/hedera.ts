@@ -17,7 +17,9 @@ import {
   FileAppendTransaction,
   FileContentsQuery,
   FileId,
-  FileInfoQuery
+  FileInfoQuery,
+  KeyList,
+  PublicKey
 } from "@hashgraph/sdk";
 
 // Hedera Client Configuration with File Service Support
@@ -182,44 +184,51 @@ export class HederaClient {
   }
 
   // Create a fungible token for fractional property ownership
-  async createPropertyToken(params: {
-    name: string;
-    symbol: string;
-    totalSupply: number;
-    decimals: number;
-    memo?: string;
-  }) {
+  async createPropertyToken(
+    name: string,
+    symbol: string,
+    totalSupply: number,
+    adminKeys?: string[]
+  ): Promise<{ tokenId: string; transactionId: string }> {
     try {
-      const transaction = new TokenCreateTransaction()
-        .setTokenName(params.name)
-        .setTokenSymbol(params.symbol)
+      // Create the token creation transaction
+      let tokenCreateTx = new TokenCreateTransaction()
+        .setTokenName(name)
+        .setTokenSymbol(symbol)
         .setTokenType(TokenType.FungibleCommon)
-        .setDecimals(params.decimals)
-        .setInitialSupply(params.totalSupply)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(params.totalSupply)
+        .setDecimals(2)
+        .setInitialSupply(totalSupply)
         .setTreasuryAccountId(this.operatorId)
-        .setAdminKey(this.operatorKey)
-        .setSupplyKey(this.operatorKey)
-        .setFreezeKey(this.operatorKey)
-        .setWipeKey(this.operatorKey)
-        .setFeeScheduleKey(this.operatorKey)
-        .setPauseKey(this.operatorKey);
+        .setAdminKey(this.operatorKey.publicKey)
+        .setSupplyKey(this.operatorKey.publicKey)
+        .freezeWith(this.client);
 
-      if (params.memo) {
-        transaction.setTokenMemo(params.memo);
+      // Handle admin keys if provided
+      if (adminKeys && adminKeys.length > 0) {
+        const keyList = new KeyList();
+        for (const keyString of adminKeys) {
+          const publicKey = PublicKey.fromString(keyString);
+          keyList.push(publicKey);
+        }
+        tokenCreateTx = tokenCreateTx.setAdminKey(keyList);
       }
 
-      const response = await transaction.execute(this.client);
-      const receipt = await response.getReceipt(this.client);
+      // Sign and execute
+      const tokenCreateSign = await tokenCreateTx.sign(this.operatorKey);
+      const tokenCreateSubmit = await tokenCreateSign.execute(this.client);
+      const tokenCreateRx = await tokenCreateSubmit.getReceipt(this.client);
+      
+      const tokenId = tokenCreateRx.tokenId;
+      if (!tokenId) {
+        throw new Error('Token creation failed - no token ID returned');
+      }
 
       return {
-        tokenId: receipt.tokenId?.toString(),
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString(),
+        tokenId: tokenId.toString(),
+        transactionId: tokenCreateSubmit.transactionId.toString()
       };
     } catch (error) {
-      console.error("Error creating property token:", error);
+      console.error('Error creating property token:', error);
       throw error;
     }
   }

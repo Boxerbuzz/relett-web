@@ -43,16 +43,16 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
-      {/* Header - Match main header height */}
-      <div className="p-6 border-b h-16 flex items-center">
+    <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed md:sticky top-0">
+      {/* Header */}
+      <div className="p-6 border-b h-16 flex items-center flex-shrink-0">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
           <p className="text-sm text-gray-500">Land Tokenization</p>
         </div>
       </div>
       
-      {/* Navigation */}
+      {/* Navigation - Scrollable */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {filteredNavigation.map((item) => {
           const Icon = item.icon;
