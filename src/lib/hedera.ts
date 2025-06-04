@@ -139,7 +139,7 @@ export class HederaClient {
         size: fileInfo.size.toString(),
         expirationTime: fileInfo.expirationTime?.toDate(),
         isDeleted: fileInfo.isDeleted,
-        keys: fileInfo.keys?.map(key => key.toString()),
+        keys: fileInfo.keys ? Array.from(fileInfo.keys).map(key => key.toString()) : [],
       };
     } catch (error) {
       console.error("Error getting file info:", error);

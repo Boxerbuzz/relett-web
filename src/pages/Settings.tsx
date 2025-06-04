@@ -27,8 +27,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Edit,
-  Save,
+  PencilSimple,
+  FloppyDisk,
   X
 } from 'phosphor-react';
 
@@ -148,7 +148,7 @@ const Settings = () => {
                     </>
                   ) : (
                     <>
-                      <Edit size={16} />
+                      <PencilSimple size={16} />
                       Edit Profile
                     </>
                   )}
@@ -269,7 +269,7 @@ const Settings = () => {
 
                   <div className="flex gap-3">
                     <Button onClick={() => setIsEditingProfile(false)}>
-                      <Save size={16} className="mr-2" />
+                      <FloppyDisk size={16} className="mr-2" />
                       Save Changes
                     </Button>
                     <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
