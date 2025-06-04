@@ -1,4 +1,3 @@
-
 import { HederaClient, hederaUtils } from './hedera';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,14 +38,12 @@ export class PropertyTokenizationService {
       // Step 2: Calculate token price
       const tokenPrice = params.totalValue / params.totalSupply;
 
-      // Step 3: Create token on Hedera
-      const tokenResult = await this.hederaClient.createPropertyToken({
-        name: params.tokenName,
-        symbol: tokenSymbol,
-        totalSupply: params.totalSupply,
-        decimals: 8, // Standard for fractional ownership
-        memo: `Property tokenization for land title: ${params.landTitleId}`
-      });
+      // Step 3: Create token on Hedera - Fix the function call to match the expected signature
+      const tokenResult = await this.hederaClient.createPropertyToken(
+        params.tokenName,
+        tokenSymbol,
+        params.totalSupply
+      );
 
       if (!tokenResult.tokenId) {
         throw new Error('Failed to create token on Hedera');

@@ -25,7 +25,7 @@ export function ProfileCompletionBanner({ onDismiss, onCompleteProfile }: Profil
     const fields = [
       profile.first_name,
       profile.last_name,
-      profile.phone_number,
+      profile.phone, // Changed from phone_number to phone
       profile.date_of_birth,
       profile.address?.country,
       profile.address?.state,

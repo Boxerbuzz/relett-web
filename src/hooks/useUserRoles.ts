@@ -2,7 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole, AppRole } from '@/types/database';
+
+export type AppRole = 'admin' | 'landowner' | 'verifier' | 'agent' | 'investor';
+
+export interface UserRole {
+  id: string;
+  user_id: string;
+  role: AppRole;
+  is_active: boolean;
+  expires_at?: string;
+  assigned_at: string;
+  assigned_by?: string;
+  metadata?: any;
+}
 
 export function useUserRoles() {
   const { user } = useAuth();
@@ -21,29 +33,57 @@ export function useUserRoles() {
 
   const fetchRoles = async () => {
     try {
-      const { data, error } = await supabase
+      // Get user's primary role from users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_type')
+        .eq('id', user?.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Also fetch any additional roles from user_roles table
+      const { data: additionalRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('*')
         .eq('user_id', user?.id)
         .eq('is_active', true);
 
-      if (error) throw error;
+      if (rolesError) throw rolesError;
+
+      // Combine primary role with additional roles
+      const allRoles: UserRole[] = [];
       
-      // Transform the data to match our TypeScript types
-      const transformedRoles: UserRole[] = (data || []).map(role => ({
-        id: role.id,
-        user_id: role.user_id,
-        role: role.role as AppRole,
-        is_active: role.is_active,
-        expires_at: role.expires_at,
-        assigned_at: role.assigned_at,
-        assigned_by: role.assigned_by,
-        metadata: typeof role.metadata === 'string'
-          ? JSON.parse(role.metadata)
-          : (role.metadata || {})
-      }));
+      // Add primary role from users table
+      if (userData.user_type) {
+        allRoles.push({
+          id: `primary-${user?.id}`,
+          user_id: user?.id || '',
+          role: userData.user_type as AppRole,
+          is_active: true,
+          assigned_at: new Date().toISOString(),
+          metadata: { primary: true }
+        });
+      }
+
+      // Add additional roles from user_roles table
+      if (additionalRoles) {
+        const transformedRoles: UserRole[] = additionalRoles.map(role => ({
+          id: role.id,
+          user_id: role.user_id,
+          role: role.role as AppRole,
+          is_active: role.is_active,
+          expires_at: role.expires_at,
+          assigned_at: role.assigned_at,
+          assigned_by: role.assigned_by,
+          metadata: typeof role.metadata === 'string'
+            ? JSON.parse(role.metadata)
+            : (role.metadata || {})
+        }));
+        allRoles.push(...transformedRoles);
+      }
       
-      setRoles(transformedRoles);
+      setRoles(allRoles);
     } catch (err) {
       console.error('Error fetching roles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch roles');
@@ -58,6 +98,9 @@ export function useUserRoles() {
   };
 
   const getPrimaryRole = (): AppRole | null => {
+    const primaryRole = roles.find(r => r.metadata?.primary === true);
+    if (primaryRole) return primaryRole.role;
+
     const activeRoles = roles.filter(r => r.is_active && 
       (!r.expires_at || new Date(r.expires_at) > new Date()));
     

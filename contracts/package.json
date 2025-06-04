@@ -1,0 +1,24 @@
+
+{
+  "name": "property-tokenization-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for property tokenization on Hedera",
+  "main": "deploy.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "node deploy.js",
+    "deploy:testnet": "node deploy.js --network testnet",
+    "deploy:mainnet": "node deploy.js --network mainnet",
+    "test": "hardhat test",
+    "verify": "hardhat verify"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.65.1",
+    "@openzeppelin/contracts": "^4.9.3",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.2",
+    "hardhat": "^2.17.1"
+  }
+}

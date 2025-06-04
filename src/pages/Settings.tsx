@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,12 +26,16 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  PencilSimple,
+  FloppyDisk,
+  X
 } from 'phosphor-react';
 
 const Settings = () => {
   const { user } = useAuth();
   const { profile } = useUserProfile();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Use real user data from profile
   const userData = {
@@ -39,15 +44,15 @@ const Settings = () => {
     firstName: profile?.first_name || '',
     lastName: profile?.last_name || '',
     fullName: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User',
-    phone: profile?.phone_number || '',
+    phone: profile?.phone || '',
     bio: profile?.bio || '',
     avatar: profile?.avatar || '',
-    userType: user?.role || 'landowner',
-    isActive: true,
-    isVerified: user?.email_confirmed_at != null,
-    verificationStatus: user?.email_confirmed_at ? 'verified' : 'pending',
+    userType: profile?.user_type || 'landowner',
+    isActive: profile?.is_active ?? true,
+    isVerified: profile?.is_verified ?? false,
+    verificationStatus: profile?.verification_status || 'pending',
     hasSetup: Boolean(profile?.first_name && profile?.last_name),
-    createdAt: user?.created_at || '',
+    createdAt: profile?.created_at || '',
     preferences: {
       country: profile?.address?.country || '',
       state: profile?.address?.state || '',
@@ -112,29 +117,49 @@ const Settings = () => {
           {/* Email Verification Status */}
           <EmailVerificationStatus />
 
-          {/* Profile Header */}
+          {/* Profile Information Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                Profile Information
-                <div className="flex gap-2">
-                  {getVerificationIcon(userData.verificationStatus)}
-                  <Badge className={getVerificationStatusColor(userData.verificationStatus)} variant="outline">
-                    {userData.verificationStatus}
-                  </Badge>
-                  {userData.isActive && (
-                    <Badge className="bg-green-100 text-green-800" variant="outline">
-                      Active
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CardTitle>Profile Information</CardTitle>
+                  <div className="flex gap-2">
+                    {getVerificationIcon(userData.verificationStatus)}
+                    <Badge className={getVerificationStatusColor(userData.verificationStatus)} variant="outline">
+                      {userData.verificationStatus}
                     </Badge>
-                  )}
+                    {userData.isActive && (
+                      <Badge className="bg-green-100 text-green-800" variant="outline">
+                        Active
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </CardTitle>
+                <Button
+                  variant={isEditingProfile ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  className="flex items-center gap-2"
+                >
+                  {isEditingProfile ? (
+                    <>
+                      <X size={16} />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <PencilSimple size={16} />
+                      Edit Profile
+                    </>
+                  )}
+                </Button>
+              </div>
               <CardDescription>
-                Update your personal information and profile details
+                {isEditingProfile ? 'Update your personal information and profile details' : 'View your profile information'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Profile Picture and Basic Info */}
+              {/* Profile Picture and Basic Info Display */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <UserAvatar size="xl" />
                 <div className="space-y-3 flex-1">
@@ -144,102 +169,119 @@ const Settings = () => {
                     <p className="text-sm text-gray-600">User Type: {userData.userType}</p>
                     <p className="text-sm text-gray-600">Member since: {new Date(userData.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <Button size="sm">
-                    <Camera size={16} className="mr-2" />
-                    Change Photo
-                  </Button>
+                  {isEditingProfile && (
+                    <Button size="sm">
+                      <Camera size={16} className="mr-2" />
+                      Change Photo
+                    </Button>
+                  )}
                 </div>
               </div>
 
+              {/* Editable Profile Information */}
+              {isEditingProfile && (
+                <>
+                  <Separator />
+
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Personal Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input id="firstName" defaultValue={userData.firstName} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input id="lastName" defaultValue={userData.lastName} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input id="email" type="email" defaultValue={userData.email} />
+                        <p className="text-xs text-gray-500">Email changes require verification</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" defaultValue={userData.phone} />
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea id="bio" defaultValue={userData.bio} placeholder="Tell us about yourself..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="userType">Account Type</Label>
+                        <Select defaultValue={userData.userType}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="landowner">Land Owner</SelectItem>
+                            <SelectItem value="agent">Agent</SelectItem>
+                            <SelectItem value="verifier">Verifier</SelectItem>
+                            <SelectItem value="investor">Investor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="interest">Primary Interest</Label>
+                        <Input id="interest" defaultValue={userData.preferences.interest} placeholder="e.g., Commercial Real Estate" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Location Information */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <MapPin size={18} />
+                      Location Information
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Select defaultValue={userData.preferences.country}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Nigeria">Nigeria</SelectItem>
+                            <SelectItem value="Ghana">Ghana</SelectItem>
+                            <SelectItem value="Kenya">Kenya</SelectItem>
+                            <SelectItem value="South Africa">South Africa</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State/Province</Label>
+                        <Input id="state" defaultValue={userData.preferences.state} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" defaultValue={userData.preferences.city} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" defaultValue={userData.preferences.address} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button onClick={() => setIsEditingProfile(false)}>
+                      <FloppyDisk size={16} className="mr-2" />
+                      Save Changes
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Account Status - Always visible */}
               <Separator />
-
-              {/* Personal Information */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">Personal Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue={userData.firstName} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue={userData.lastName} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue={userData.email} />
-                    <p className="text-xs text-gray-500">Email changes require verification</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" defaultValue={userData.phone} />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" defaultValue={userData.bio} placeholder="Tell us about yourself..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="userType">Account Type</Label>
-                    <Select defaultValue={userData.userType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="landowner">Land Owner</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="verifier">Verifier</SelectItem>
-                        <SelectItem value="investor">Investor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="interest">Primary Interest</Label>
-                    <Input id="interest" defaultValue={userData.preferences.interest} placeholder="e.g., Commercial Real Estate" />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Location Information */}
-              <div className="space-y-4">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <MapPin size={18} />
-                  Location Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Select defaultValue={userData.preferences.country}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Nigeria">Nigeria</SelectItem>
-                        <SelectItem value="Ghana">Ghana</SelectItem>
-                        <SelectItem value="Kenya">Kenya</SelectItem>
-                        <SelectItem value="South Africa">South Africa</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State/Province</Label>
-                    <Input id="state" defaultValue={userData.preferences.state} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" defaultValue={userData.preferences.city} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" defaultValue={userData.preferences.address} />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Account Status */}
+              
               <div className="space-y-4">
                 <h4 className="font-semibold">Account Status</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -279,11 +321,6 @@ const Settings = () => {
                     )}
                   </div>
                 </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button>Save Changes</Button>
-                <Button variant="outline">Reset to Default</Button>
               </div>
             </CardContent>
           </Card>

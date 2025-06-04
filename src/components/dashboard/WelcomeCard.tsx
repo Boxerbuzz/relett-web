@@ -16,6 +16,8 @@ export function WelcomeCard() {
     ? `${profile.first_name} ${profile.last_name}`
     : user?.email?.split('@')[0] || 'User';
 
+  const userRole = profile?.user_type || 'landowner';
+
   return (
     <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white w-full">
       <CardContent className="p-4 md:p-6">
@@ -25,7 +27,7 @@ export function WelcomeCard() {
               Welcome back, {displayName}!
             </h1>
             <p className="text-blue-100 mb-4 text-sm md:text-base">
-              {user?.role === 'landowner' 
+              {userRole === 'landowner' 
                 ? "Ready to manage your land portfolio and explore new opportunities?"
                 : "Ready to review land records and help secure property ownership?"
               }
@@ -33,7 +35,7 @@ export function WelcomeCard() {
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
               <Button variant="secondary" size="sm" className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-                {user?.role === 'landowner' ? 'Add Property' : 'Start Review'}
+                {userRole === 'landowner' ? 'Add Property' : 'Start Review'}
               </Button>
               <Button variant="outline" size="sm" className="w-full sm:w-auto text-blue-600 border-white hover:bg-white">
                 <FileText className="w-4 h-4 mr-2 flex-shrink-0" />

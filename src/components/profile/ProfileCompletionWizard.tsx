@@ -19,9 +19,9 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 const profileSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
-  phone_number: z.string().min(1, 'Phone number is required'),
+  phone: z.string().min(1, 'Phone number is required'), // Changed from phone_number to phone
   date_of_birth: z.string().min(1, 'Date of birth is required'),
-  gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+  gender: z.enum(['male', 'female', 'other']).optional(), // Removed prefer_not_to_say
   bio: z.string().optional(),
   country: z.string().min(1, 'Country is required'),
   state: z.string().min(1, 'State is required'),
@@ -37,7 +37,7 @@ interface ProfileCompletionWizardProps {
 }
 
 const STEPS = [
-  { id: 'personal', title: 'Personal Information', fields: ['first_name', 'last_name', 'phone_number', 'date_of_birth'] },
+  { id: 'personal', title: 'Personal Information', fields: ['first_name', 'last_name', 'phone', 'date_of_birth'] },
   { id: 'additional', title: 'Additional Details', fields: ['gender', 'bio'] },
   { id: 'location', title: 'Location', fields: ['country', 'state', 'city', 'address_line'] },
 ];
@@ -53,9 +53,9 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
     defaultValues: {
       first_name: profile?.first_name || '',
       last_name: profile?.last_name || '',
-      phone_number: profile?.phone_number || '',
+      phone: profile?.phone || '', // Changed from phone_number to phone
       date_of_birth: profile?.date_of_birth || '',
-      gender: profile?.gender || 'prefer_not_to_say',
+      gender: profile?.gender || 'other', // Changed default to 'other' instead of 'prefer_not_to_say'
       bio: profile?.bio || '',
       country: profile?.address?.country || '',
       state: profile?.address?.state || '',
@@ -71,7 +71,7 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
       const updateData = {
         first_name: data.first_name,
         last_name: data.last_name,
-        phone_number: data.phone_number,
+        phone: data.phone, // Changed from phone_number to phone
         date_of_birth: data.date_of_birth,
         gender: data.gender,
         bio: data.bio,
@@ -164,10 +164,10 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="phone_number">Phone Number</Label>
-                  <Input {...form.register('phone_number')} placeholder="+1 (555) 123-4567" />
-                  {form.formState.errors.phone_number && (
-                    <p className="text-sm text-red-600">{form.formState.errors.phone_number.message}</p>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input {...form.register('phone')} placeholder="+1 (555) 123-4567" />
+                  {form.formState.errors.phone && (
+                    <p className="text-sm text-red-600">{form.formState.errors.phone.message}</p>
                   )}
                 </div>
                 <div>
@@ -192,7 +192,6 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

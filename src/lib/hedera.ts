@@ -1,4 +1,3 @@
-
 import {
   Client,
   AccountId,
@@ -14,11 +13,18 @@ import {
   AccountBalanceQuery,
   Hbar,
   HbarUnit,
+  FileCreateTransaction,
+  FileAppendTransaction,
+  FileContentsQuery,
+  FileId,
+  FileInfoQuery,
+  KeyList,
+  PublicKey
 } from "@hashgraph/sdk";
 
-// Hedera Client Configuration
+// Hedera Client Configuration with File Service Support
 export class HederaClient {
-  private client: Client;
+  public client: Client; // Made public to fix TypeScript errors
   private operatorId: AccountId;
   private operatorKey: PrivateKey;
 
@@ -47,45 +53,182 @@ export class HederaClient {
     this.client.setOperator(this.operatorId, this.operatorKey);
   }
 
-  // Create a fungible token for fractional property ownership
-  async createPropertyToken(params: {
-    name: string;
-    symbol: string;
-    totalSupply: number;
-    decimals: number;
-    memo?: string;
-  }) {
+  // Hedera File Service - Store documents/metadata
+  async createFile(content: Uint8Array | string, keys?: PrivateKey[]) {
     try {
-      const transaction = new TokenCreateTransaction()
-        .setTokenName(params.name)
-        .setTokenSymbol(params.symbol)
-        .setTokenType(TokenType.FungibleCommon)
-        .setDecimals(params.decimals)
-        .setInitialSupply(params.totalSupply)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(params.totalSupply)
-        .setTreasuryAccountId(this.operatorId)
-        .setAdminKey(this.operatorKey)
-        .setSupplyKey(this.operatorKey)
-        .setFreezeKey(this.operatorKey)
-        .setWipeKey(this.operatorKey)
-        .setFeeScheduleKey(this.operatorKey)
-        .setPauseKey(this.operatorKey);
+      const fileKeys = keys || [this.operatorKey];
+      
+      // Convert string to Uint8Array if needed
+      const fileContent = typeof content === 'string' 
+        ? new TextEncoder().encode(content) 
+        : content;
 
-      if (params.memo) {
-        transaction.setTokenMemo(params.memo);
-      }
+      const transaction = new FileCreateTransaction()
+        .setContents(fileContent)
+        .setKeys(fileKeys)
+        .setMaxTransactionFee(new Hbar(2));
 
       const response = await transaction.execute(this.client);
       const receipt = await response.getReceipt(this.client);
 
       return {
-        tokenId: receipt.tokenId?.toString(),
+        fileId: receipt.fileId?.toString(),
         transactionId: response.transactionId.toString(),
         status: receipt.status.toString(),
       };
     } catch (error) {
-      console.error("Error creating property token:", error);
+      console.error("Error creating file:", error);
+      throw error;
+    }
+  }
+
+  // Append content to existing file
+  async appendToFile(fileId: string, content: Uint8Array | string) {
+    try {
+      const file = FileId.fromString(fileId);
+      
+      // Convert string to Uint8Array if needed
+      const fileContent = typeof content === 'string' 
+        ? new TextEncoder().encode(content) 
+        : content;
+
+      const transaction = new FileAppendTransaction()
+        .setFileId(file)
+        .setContents(fileContent)
+        .setMaxTransactionFee(new Hbar(2));
+
+      const response = await transaction.execute(this.client);
+      const receipt = await response.getReceipt(this.client);
+
+      return {
+        transactionId: response.transactionId.toString(),
+        status: receipt.status.toString(),
+      };
+    } catch (error) {
+      console.error("Error appending to file:", error);
+      throw error;
+    }
+  }
+
+  // Retrieve file contents
+  async getFileContents(fileId: string) {
+    try {
+      const file = FileId.fromString(fileId);
+      const query = new FileContentsQuery().setFileId(file);
+      const contents = await query.execute(this.client);
+
+      return {
+        contents: contents,
+        contentsAsString: new TextDecoder().decode(contents)
+      };
+    } catch (error) {
+      console.error("Error getting file contents:", error);
+      throw error;
+    }
+  }
+
+  // Get file information
+  async getFileInfo(fileId: string) {
+    try {
+      const file = FileId.fromString(fileId);
+      const query = new FileInfoQuery().setFileId(file);
+      const fileInfo = await query.execute(this.client);
+
+      return {
+        fileId: fileInfo.fileId.toString(),
+        size: fileInfo.size.toString(),
+        expirationTime: fileInfo.expirationTime?.toDate(),
+        isDeleted: fileInfo.isDeleted,
+        keys: fileInfo.keys ? Array.from(fileInfo.keys).map(key => key.toString()) : [],
+      };
+    } catch (error) {
+      console.error("Error getting file info:", error);
+      throw error;
+    }
+  }
+
+  // Store property document on Hedera File Service
+  async storePropertyDocument(document: {
+    name: string;
+    content: Uint8Array;
+    propertyId: string;
+    documentType: string;
+    metadata?: any;
+  }) {
+    try {
+      // Create metadata object
+      const metadata = {
+        name: document.name,
+        propertyId: document.propertyId,
+        documentType: document.documentType,
+        uploadedAt: new Date().toISOString(),
+        ...document.metadata
+      };
+
+      // Store metadata as JSON
+      const metadataJson = JSON.stringify(metadata);
+      const metadataResult = await this.createFile(metadataJson);
+
+      // Store actual document content
+      const documentResult = await this.createFile(document.content);
+
+      return {
+        documentFileId: documentResult.fileId,
+        metadataFileId: metadataResult.fileId,
+        transactionIds: [documentResult.transactionId, metadataResult.transactionId]
+      };
+    } catch (error) {
+      console.error("Error storing property document:", error);
+      throw error;
+    }
+  }
+
+  // Create a fungible token for fractional property ownership
+  async createPropertyToken(
+    name: string,
+    symbol: string,
+    totalSupply: number,
+    adminKeys?: string[]
+  ): Promise<{ tokenId: string; transactionId: string }> {
+    try {
+      // Create the token creation transaction
+      let tokenCreateTx = new TokenCreateTransaction()
+        .setTokenName(name)
+        .setTokenSymbol(symbol)
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(2)
+        .setInitialSupply(totalSupply)
+        .setTreasuryAccountId(this.operatorId)
+        .setAdminKey(this.operatorKey.publicKey)
+        .setSupplyKey(this.operatorKey.publicKey)
+        .freezeWith(this.client);
+
+      // Handle admin keys if provided
+      if (adminKeys && adminKeys.length > 0) {
+        const keyList = new KeyList();
+        for (const keyString of adminKeys) {
+          const publicKey = PublicKey.fromString(keyString);
+          keyList.push(publicKey);
+        }
+        tokenCreateTx = tokenCreateTx.setAdminKey(keyList);
+      }
+
+      // Sign and execute
+      const tokenCreateSign = await tokenCreateTx.sign(this.operatorKey);
+      const tokenCreateSubmit = await tokenCreateSign.execute(this.client);
+      const tokenCreateRx = await tokenCreateSubmit.getReceipt(this.client);
+      
+      const tokenId = tokenCreateRx.tokenId;
+      if (!tokenId) {
+        throw new Error('Token creation failed - no token ID returned');
+      }
+
+      return {
+        tokenId: tokenId.toString(),
+        transactionId: tokenCreateSubmit.transactionId.toString()
+      };
+    } catch (error) {
+      console.error('Error creating property token:', error);
       throw error;
     }
   }
@@ -342,6 +485,12 @@ export const hederaUtils = {
     return pattern.test(tokenId);
   },
 
+  // Validate Hedera file ID format
+  isValidFileId: (fileId: string) => {
+    const pattern = /^\d+\.\d+\.\d+$/;
+    return pattern.test(fileId);
+  },
+
   // Convert HBAR to tinybar (smallest unit)
   hbarToTinybar: (hbar: number) => {
     return Math.floor(hbar * 100000000); // 1 HBAR = 100,000,000 tinybars
@@ -351,4 +500,30 @@ export const hederaUtils = {
   tinybarToHbar: (tinybar: number) => {
     return tinybar / 100000000;
   },
+
+  // Generate file URL for Hedera File Service
+  generateHFSUrl: (fileId: string, network: string = 'testnet') => {
+    const baseUrl = network === 'mainnet' 
+      ? 'https://mainnet.mirrornode.hedera.com' 
+      : 'https://testnet.mirrornode.hedera.com';
+    return `${baseUrl}/api/v1/files/${fileId}`;
+  },
+
+  // Prepare document for HFS storage
+  prepareDocumentForHFS: async (file: File, propertyId: string, documentType: string) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const content = new Uint8Array(arrayBuffer);
+    
+    return {
+      name: file.name,
+      content,
+      propertyId,
+      documentType,
+      metadata: {
+        originalSize: file.size,
+        mimeType: file.type,
+        lastModified: new Date(file.lastModified).toISOString()
+      }
+    };
+  }
 };
