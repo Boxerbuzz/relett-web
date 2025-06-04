@@ -9,7 +9,7 @@ export interface UserProfileData {
   email: string;
   first_name: string;
   last_name: string;
-  phone: string | null;
+  phone: string | null; // Changed from phone_number to phone
   user_type: string;
   avatar: string | null;
   bio: string | null;
@@ -34,7 +34,7 @@ export interface UserProfileData {
   state_of_origin?: string | null;
   lga?: string | null;
   middle_name?: string | null;
-  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null;
+  gender?: 'male' | 'female' | 'other' | null; // Removed prefer_not_to_say to match schema
   last_login?: string | null;
 }
 
@@ -83,7 +83,7 @@ export function useUserProfile() {
         state_of_origin: profileData?.state_of_origin,
         lga: profileData?.lga,
         middle_name: profileData?.middle_name,
-        gender: profileData?.gender,
+        gender: profileData?.gender as 'male' | 'female' | 'other' | null,
         last_login: profileData?.last_login,
       };
 
@@ -105,7 +105,7 @@ export function useUserProfile() {
       // Fields that go to users table
       if (updates.first_name !== undefined) userUpdates.first_name = updates.first_name;
       if (updates.last_name !== undefined) userUpdates.last_name = updates.last_name;
-      if (updates.phone !== undefined) userUpdates.phone = updates.phone;
+      if (updates.phone !== undefined) userUpdates.phone = updates.phone; // Changed from phone_number
       if (updates.avatar !== undefined) userUpdates.avatar = updates.avatar;
       if (updates.bio !== undefined) userUpdates.bio = updates.bio;
 
