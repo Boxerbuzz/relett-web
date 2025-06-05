@@ -10,9 +10,11 @@ import { useNotificationDelivery } from '@/hooks/useNotificationDelivery';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+type NotificationType = 'reservation' | 'rental' | 'inspection' | 'payment' | 'general' | 'investment' | 'chat';
+
 export function NotificationTester() {
   const [formData, setFormData] = useState({
-    type: 'general',
+    type: 'general' as NotificationType,
     title: '',
     message: '',
     actionUrl: '',
@@ -74,7 +76,7 @@ export function NotificationTester() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="type">Type</Label>
-            <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
+            <Select value={formData.type} onValueChange={(value: NotificationType) => setFormData(prev => ({ ...prev, type: value }))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
