@@ -19,7 +19,7 @@ export function Layout({ children }: LayoutProps) {
   const isAddPropertyPage = location.pathname === '/add-property';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex">
       {/* Desktop Sidebar - Fixed positioning */}
       <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-50">
         <div className="flex flex-col w-64">
@@ -29,7 +29,7 @@ export function Layout({ children }: LayoutProps) {
       
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 bg-gradient-to-b from-white to-blue-50">
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
         </SheetContent>
       </Sheet>

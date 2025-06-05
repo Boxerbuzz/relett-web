@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -37,33 +38,33 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
     user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
   return (
-    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
+    <header className="bg-gradient-to-r from-blue-600 to-purple-600 border-b border-blue-300 h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 shadow-lg backdrop-blur-sm">
       {/* Left side - Mobile menu toggle */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className="md:hidden"
+          className="md:hidden text-white hover:bg-white/20"
         >
           <Menu className="h-5 w-5" />
         </Button>
 
         {/* Desktop: Show page title or breadcrumb */}
         <div className="hidden md:block">
-          <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+          <h1 className="text-lg font-semibold text-white">Dashboard</h1>
         </div>
       </div>
 
       {/* Right side - User menu and notifications */}
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <Button variant="ghost" size="sm" className="relative">
+        <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/20">
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-yellow-400 text-yellow-900"
             >
               {notificationCount}
             </Badge>
@@ -73,20 +74,20 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 p-2">
+            <Button variant="ghost" className="flex items-center gap-2 p-2 text-white hover:bg-white/20">
               <UserAvatar size="sm" />
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium">{userDisplayName}</p>
-                <p className="text-xs text-gray-500">{roleDisplayName}</p>
+                <p className="text-sm font-medium text-white">{userDisplayName}</p>
+                <p className="text-xs text-blue-100">{roleDisplayName}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-sm border-blue-200">
             <DropdownMenuLabel>
               <div>
                 <p className="font-medium">{userDisplayName}</p>
                 <p className="text-xs text-gray-500">{user.email}</p>
-                <Badge variant="outline" className="mt-1 text-xs">
+                <Badge variant="outline" className="mt-1 text-xs border-blue-300 text-blue-700">
                   {roleDisplayName}
                 </Badge>
               </div>
