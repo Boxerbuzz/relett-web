@@ -117,7 +117,7 @@ export function GooglePlacesAutocomplete({
       
       const request = {
         input: newValue,
-        types: ['address', 'establishment'],
+        types: ['address'],
         componentRestrictions: { country: 'ng' } // Restrict to Nigeria, change as needed
       };
 
