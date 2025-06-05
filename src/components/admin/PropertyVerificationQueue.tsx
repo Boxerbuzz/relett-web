@@ -25,14 +25,15 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, FileCheck, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Json } from '@/types/database';
 
 interface Property {
   id: string;
-  title: string;
+  title: string | null;
   type: string;
   category: string;
   status: string;
-  is_verified: boolean;
+  is_verified: boolean | null;
   created_at: string;
   user_id: string;
   users?: {
@@ -40,15 +41,8 @@ interface Property {
     last_name: string;
     email: string;
   };
-  price?: {
-    amount: number;
-    currency: string;
-  };
-  location?: {
-    address: string;
-    city: string;
-    state: string;
-  };
+  price: Json;
+  location: Json;
 }
 
 export function PropertyVerificationQueue() {
@@ -129,10 +123,11 @@ export function PropertyVerificationQueue() {
   };
 
   const filteredProperties = properties.filter(property => {
+    const locationData = property.location as any;
     const matchesSearch = 
       property.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.users?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.location?.city?.toLowerCase().includes(searchTerm.toLowerCase());
+      locationData?.city?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' || 
       (filterStatus === 'verified' && property.is_verified) ||
@@ -173,9 +168,17 @@ export function PropertyVerificationQueue() {
     );
   };
 
-  const formatPrice = (price: any) => {
-    if (!price || !price.amount) return 'N/A';
-    return `${price.currency || '₦'}${price.amount.toLocaleString()}`;
+  const formatPrice = (price: Json) => {
+    if (!price || typeof price !== 'object') return 'N/A';
+    const priceObj = price as any;
+    if (!priceObj.amount) return 'N/A';
+    return `${priceObj.currency || '₦'}${priceObj.amount.toLocaleString()}`;
+  };
+
+  const getLocationCity = (location: Json) => {
+    if (!location || typeof location !== 'object') return 'Location not specified';
+    const locationObj = location as any;
+    return locationObj.city || 'Location not specified';
   };
 
   if (loading) {
@@ -242,38 +245,38 @@ export function PropertyVerificationQueue() {
         </div>
 
         {/* Properties Table */}
-        <div className="w-full">
+        <div className="w-full overflow-hidden">
           <ScrollArea className="w-full">
             <div className="min-w-[900px]">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Property</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="min-w-[200px]">Property</TableHead>
+                    <TableHead className="min-w-[150px]">Owner</TableHead>
+                    <TableHead className="min-w-[100px]">Type</TableHead>
+                    <TableHead className="min-w-[120px]">Price</TableHead>
+                    <TableHead className="min-w-[100px]">Status</TableHead>
+                    <TableHead className="min-w-[100px]">Created</TableHead>
+                    <TableHead className="min-w-[150px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredProperties.map((property) => (
                     <TableRow key={property.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{property.title || 'Untitled Property'}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                            {property.location?.city || 'Location not specified'}
+                        <div className="max-w-[200px]">
+                          <div className="font-medium truncate">{property.title || 'Untitled Property'}</div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {getLocationCity(property.location)}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">
+                        <div className="max-w-[150px]">
+                          <div className="font-medium truncate">
                             {property.users?.first_name} {property.users?.last_name}
                           </div>
-                          <div className="text-sm text-gray-500 truncate max-w-[150px]">
+                          <div className="text-sm text-gray-500 truncate">
                             {property.users?.email}
                           </div>
                         </div>
@@ -282,13 +285,17 @@ export function PropertyVerificationQueue() {
                         {getTypeBadge(property.type)}
                       </TableCell>
                       <TableCell>
-                        {formatPrice(property.price)}
+                        <div className="truncate max-w-[120px]">
+                          {formatPrice(property.price)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(property)}
                       </TableCell>
                       <TableCell>
-                        {new Date(property.created_at).toLocaleDateString()}
+                        <div className="text-sm">
+                          {new Date(property.created_at).toLocaleDateString()}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
