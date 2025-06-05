@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { agentManager } from '@/lib/agents/AgentManager';
 import { AgentContext, AgentResponse } from '@/lib/agents/BaseAgent';
 
@@ -17,6 +17,8 @@ interface Message {
   sender: 'user' | 'agent';
   timestamp: Date;
   agentId?: string;
+  interactionId?: string;
+  metadata?: Record<string, any>;
 }
 
 interface AgentChatProps {
@@ -74,7 +76,8 @@ export function AgentChat({ agentId, context, className = "" }: AgentChatProps) 
           content: response.message,
           sender: 'agent',
           timestamp: new Date(),
-          agentId
+          agentId,
+          metadata: response.metadata
         };
         
         setMessages(prev => [...prev, agentMessage]);
@@ -96,6 +99,32 @@ export function AgentChat({ agentId, context, className = "" }: AgentChatProps) 
     }
   };
 
+  const handleFeedback = async (messageId: string, isPositive: boolean) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message || !message.interactionId) return;
+
+    try {
+      // Update the message to show feedback was given
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, metadata: { ...m.metadata, feedback_given: isPositive ? 'positive' : 'negative' }}
+          : m
+      ));
+
+      // If using a learning agent, provide feedback
+      const learningAgent = agent as any;
+      if (learningAgent.provideFeedback) {
+        await learningAgent.provideFeedback(
+          message.interactionId,
+          isPositive ? 5 : 2,
+          isPositive ? 'satisfied' : 'unsatisfied'
+        );
+      }
+    } catch (error) {
+      console.error('Error providing feedback:', error);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -113,6 +142,8 @@ export function AgentChat({ agentId, context, className = "" }: AgentChatProps) 
     );
   }
 
+  const isAdaptiveAgent = agentId === 'adaptive-property-agent';
+
   return (
     <Card className={`flex flex-col h-[600px] ${className}`}>
       <CardHeader className="flex-shrink-0 pb-3">
@@ -120,9 +151,14 @@ export function AgentChat({ agentId, context, className = "" }: AgentChatProps) 
           <Bot className="w-5 h-5" />
           {agent.getConfig().name}
           <Badge variant="outline" className="ml-auto">
-            AI Agent
+            {isAdaptiveAgent ? 'AI Learning' : 'AI Agent'}
           </Badge>
         </CardTitle>
+        {isAdaptiveAgent && (
+          <p className="text-sm text-gray-500">
+            This agent learns from your interactions to provide personalized responses
+          </p>
+        )}
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
@@ -149,11 +185,56 @@ export function AgentChat({ agentId, context, className = "" }: AgentChatProps) 
                     )}
                     <div className="flex-1">
                       <p className="whitespace-pre-wrap">{message.content}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-                      }`}>
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className={`text-xs ${
+                          message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          {message.timestamp.toLocaleTimeString()}
+                        </p>
+                        
+                        {/* Feedback buttons for agent messages */}
+                        {message.sender === 'agent' && isAdaptiveAgent && !message.metadata?.feedback_given && (
+                          <div className="flex gap-1 ml-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-gray-200"
+                              onClick={() => handleFeedback(message.id, true)}
+                            >
+                              <ThumbsUp className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-gray-200"
+                              onClick={() => handleFeedback(message.id, false)}
+                            >
+                              <ThumbsDown className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Show feedback given */}
+                        {message.metadata?.feedback_given && (
+                          <Badge variant="outline" className="text-xs">
+                            {message.metadata.feedback_given === 'positive' ? '👍' : '👎'}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Show personalization info for adaptive agent */}
+                      {message.metadata?.personalization_applied && (
+                        <div className="mt-2 text-xs text-gray-400 border-t pt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            Personalized response
+                          </Badge>
+                          {message.metadata.user_profile_type && (
+                            <span className="ml-2">
+                              Profile: {message.metadata.user_profile_type}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -53,6 +53,108 @@ export type Database = {
           },
         ]
       }
+      agent_interactions: {
+        Row: {
+          agent_id: string
+          agent_response: string
+          context_data: Json | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          interaction_type: string
+          outcome: string | null
+          property_id: string | null
+          response_time_ms: number | null
+          updated_at: string
+          user_id: string
+          user_message: string
+          user_satisfaction_score: number | null
+        }
+        Insert: {
+          agent_id: string
+          agent_response: string
+          context_data?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          interaction_type: string
+          outcome?: string | null
+          property_id?: string | null
+          response_time_ms?: number | null
+          updated_at?: string
+          user_id: string
+          user_message: string
+          user_satisfaction_score?: number | null
+        }
+        Update: {
+          agent_id?: string
+          agent_response?: string
+          context_data?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          outcome?: string | null
+          property_id?: string | null
+          response_time_ms?: number | null
+          updated_at?: string
+          user_id?: string
+          user_message?: string
+          user_satisfaction_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_interactions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_interactions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_performance_metrics: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number | null
+          period_end: string
+          period_start: string
+          sample_size: number | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value?: number | null
+          period_end: string
+          period_start: string
+          sample_size?: number | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number | null
+          period_end?: string
+          period_start?: string
+          sample_size?: number | null
+        }
+        Relationships: []
+      }
       aml_checks: {
         Row: {
           alerts: Json | null
@@ -591,6 +693,53 @@ export type Database = {
           phone_number?: string
         }
         Relationships: []
+      }
+      conversation_contexts: {
+        Row: {
+          agent_id: string
+          context_data: Json
+          conversation_id: string | null
+          current_intent: string | null
+          id: string
+          is_active: boolean | null
+          last_interaction: string
+          search_history: Json | null
+          session_start: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          context_data: Json
+          conversation_id?: string | null
+          current_intent?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_interaction?: string
+          search_history?: Json | null
+          session_start?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          context_data?: Json
+          conversation_id?: string | null
+          current_intent?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_interaction?: string
+          search_history?: Json | null
+          session_start?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_contexts_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -1449,6 +1598,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      learning_patterns: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          id: string
+          last_applied_at: string | null
+          pattern_data: Json
+          pattern_type: string
+          success_rate: number | null
+          updated_at: string
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          last_applied_at?: string | null
+          pattern_data: Json
+          pattern_type: string
+          success_rate?: number | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          last_applied_at?: string | null
+          pattern_data?: Json
+          pattern_type?: string
+          success_rate?: number | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       legal_agreements: {
         Row: {
@@ -3451,6 +3639,48 @@ export type Database = {
           },
         ]
       }
+      user_behavior_profiles: {
+        Row: {
+          characteristics: Json
+          confidence_score: number | null
+          created_at: string
+          id: string
+          interaction_style: string | null
+          last_updated: string
+          optimal_response_length: string | null
+          preferences: Json | null
+          preferred_communication_time: string[] | null
+          profile_type: string
+          user_id: string
+        }
+        Insert: {
+          characteristics: Json
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          interaction_style?: string | null
+          last_updated?: string
+          optimal_response_length?: string | null
+          preferences?: Json | null
+          preferred_communication_time?: string[] | null
+          profile_type: string
+          user_id: string
+        }
+        Update: {
+          characteristics?: Json
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          interaction_style?: string | null
+          last_updated?: string
+          optimal_response_length?: string | null
+          preferences?: Json | null
+          preferred_communication_time?: string[] | null
+          profile_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_devices: {
         Row: {
           browser: string | null
@@ -3988,6 +4218,21 @@ export type Database = {
           updated_at: string
         }
       }
+      track_agent_interaction: {
+        Args: {
+          p_user_id: string
+          p_agent_id: string
+          p_conversation_id: string
+          p_property_id: string
+          p_interaction_type: string
+          p_user_message: string
+          p_agent_response: string
+          p_response_time_ms: number
+          p_outcome?: string
+          p_context_data?: Json
+        }
+        Returns: string
+      }
       track_property_interaction: {
         Args: {
           p_property_id: string
@@ -3996,6 +4241,16 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: undefined
+      }
+      update_conversation_context: {
+        Args: {
+          p_user_id: string
+          p_agent_id: string
+          p_conversation_id: string
+          p_context_data: Json
+          p_current_intent?: string
+        }
+        Returns: string
       }
       update_property_analytics: {
         Args: Record<PropertyKey, never>
