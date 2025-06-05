@@ -3848,6 +3848,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_investment_tracking: {
+        Args: {
+          p_user_id: string
+          p_tokenized_property_id: string
+          p_tokens_owned: number
+          p_investment_amount: number
+          p_purchase_price_per_token: number
+        }
+        Returns: string
+      }
       create_notification_with_delivery: {
         Args: {
           p_user_id: string
@@ -3973,6 +3983,28 @@ export type Database = {
           type: string
           updated_at: string
         }
+      }
+      track_property_interaction: {
+        Args: {
+          p_property_id: string
+          p_user_id: string
+          p_interaction_type: string
+          p_metadata?: Json
+        }
+        Returns: undefined
+      }
+      update_property_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_user_defaults: {
+        Args: {
+          p_user_id: string
+          p_preferences?: Json
+          p_notification_types?: Json
+          p_portfolio_targets?: Json
+        }
+        Returns: boolean
       }
     }
     Enums: {
