@@ -1,12 +1,17 @@
+"use client";
 
-'use client';
-
-import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { GooglePlacesAutocomplete } from '@/components/ui/google-places-autocomplete';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Info } from 'lucide-react';
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {GooglePlacesAutocomplete} from "@/components/ui/google-places-autocomplete";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MapPin, Info } from "lucide-react";
 
 interface LocationStepProps {
   form: UseFormReturn<any>;
@@ -16,25 +21,30 @@ export function LocationStep({ form }: LocationStepProps) {
   const handlePlaceSelect = (place: any) => {
     if (place) {
       // Update all location fields automatically
-      form.setValue('location.address', place.address);
-      form.setValue('location.city', place.city);
-      form.setValue('location.state', place.state);
-      form.setValue('location.country', place.country);
-      
+      form.setValue("location.address", place.address);
+      form.setValue("location.city", place.city);
+      form.setValue("location.state", place.state);
+      form.setValue("location.country", place.country);
+
       // Set coordinates if available
       if (place.coordinates) {
-        form.setValue('location.coordinates.lat', place.coordinates.lat);
-        form.setValue('location.coordinates.lng', place.coordinates.lng);
+        form.setValue("location.coordinates.lat", place.coordinates.lat);
+        form.setValue("location.coordinates.lng", place.coordinates.lng);
       }
 
       // Trigger validation
-      form.trigger(['location.address', 'location.city', 'location.state', 'location.country']);
+      form.trigger([
+        "location.address",
+        "location.city",
+        "location.state",
+        "location.country",
+      ]);
     }
   };
 
   const handleAddressInputChange = (value: string) => {
     // Update the address field as user types
-    form.setValue('location.address', value);
+    form.setValue("location.address", value);
   };
 
   return (
@@ -50,7 +60,7 @@ export function LocationStep({ form }: LocationStepProps) {
         <CardContent>
           <div className="space-y-3">
             <GooglePlacesAutocomplete
-              value={form.watch('location.address') || ''}
+              value={form.watch("location.address") || ""}
               onChange={handlePlaceSelect}
               onInputChange={handleAddressInputChange}
               placeholder="Start typing your property address..."
@@ -59,7 +69,7 @@ export function LocationStep({ form }: LocationStepProps) {
             <div className="flex items-start gap-2 text-sm text-blue-600">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
-                Start typing your address above and select from the suggestions. 
+                Start typing your address above and select from the suggestions.
                 This will automatically fill in the location details below.
               </p>
             </div>
@@ -72,7 +82,7 @@ export function LocationStep({ form }: LocationStepProps) {
         <h3 className="text-sm font-medium text-gray-700 border-b pb-2">
           Location Details
         </h3>
-        
+
         <FormField
           control={form.control}
           name="location.address"
@@ -139,12 +149,14 @@ export function LocationStep({ form }: LocationStepProps) {
               <FormItem>
                 <FormLabel>Latitude (Auto-filled)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     step="any"
-                    placeholder="e.g., 6.5244" 
+                    placeholder="e.g., 6.5244"
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || undefined)
+                    }
                     className="bg-gray-50"
                     readOnly
                   />
@@ -161,12 +173,14 @@ export function LocationStep({ form }: LocationStepProps) {
               <FormItem>
                 <FormLabel>Longitude (Auto-filled)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     step="any"
-                    placeholder="e.g., 3.3792" 
+                    placeholder="e.g., 3.3792"
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value) || undefined)
+                    }
                     className="bg-gray-50"
                     readOnly
                   />
@@ -178,19 +192,22 @@ export function LocationStep({ form }: LocationStepProps) {
         </div>
 
         {/* Location Preview */}
-        {form.watch('location.coordinates.lat') && form.watch('location.coordinates.lng') && (
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-sm text-green-700">
-                <MapPin className="h-4 w-4" />
-                <span className="font-medium">Location Confirmed</span>
-              </div>
-              <p className="text-sm text-green-600 mt-1">
-                Coordinates: {form.watch('location.coordinates.lat')?.toFixed(6)}, {form.watch('location.coordinates.lng')?.toFixed(6)}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        {form.watch("location.coordinates.lat") &&
+          form.watch("location.coordinates.lng") && (
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm text-green-700">
+                  <MapPin className="h-4 w-4" />
+                  <span className="font-medium">Location Confirmed</span>
+                </div>
+                <p className="text-sm text-green-600 mt-1">
+                  Coordinates:{" "}
+                  {form.watch("location.coordinates.lat")?.toFixed(6)},{" "}
+                  {form.watch("location.coordinates.lng")?.toFixed(6)}
+                </p>
+              </CardContent>
+            </Card>
+          )}
       </div>
     </div>
   );

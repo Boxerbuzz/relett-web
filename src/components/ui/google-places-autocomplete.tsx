@@ -1,10 +1,9 @@
+"use client";
 
-'use client';
-
-import { useState, useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { MapPin, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { MapPin, Loader2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -36,71 +35,58 @@ interface GooglePlacesAutocompleteProps {
 }
 
 export function GooglePlacesAutocomplete({
-  value = '',
+  value = "",
   onChange,
   onInputChange,
   placeholder = "Enter a location...",
   className,
-  disabled = false
+  disabled = false,
 }: GooglePlacesAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const sessionToken = useRef<any>(null);
   const autocompleteService = useRef<any>(null);
+  const placesService = useRef<any>(null);
+  const sessionToken = useRef<any>(null);
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY!;
     if (!apiKey) {
-      console.warn('Google Maps API key not found. Please add VITE_GOOGLE_MAPS_API_KEY to your environment variables.');
+      console.warn("Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
       return;
     }
 
-    loadGoogleMapsAPI();
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.onload = () => {
+      if (!window.google) return;
+
+      autocompleteService.current =
+        new window.google.maps.places.AutocompleteService();
+      sessionToken.current =
+        new window.google.maps.places.AutocompleteSessionToken();
+
+      const mapDiv = document.createElement("div");
+      placesService.current = new window.google.maps.places.PlacesService(
+        mapDiv
+      );
+
+      setIsScriptLoaded(true);
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
   }, []);
-
-  const loadGoogleMapsAPI = async () => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    
-    try {
-      // Load Google Maps script
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
-      script.async = true;
-      script.defer = true;
-
-      script.onload = async () => {
-        try {
-          // Import the places library using the new API
-          const { AutocompleteSuggestion, AutocompleteSessionToken } = await window.google.maps.importLibrary("places");
-          
-          autocompleteService.current = AutocompleteSuggestion;
-          
-          // Create a session token for this autocomplete session
-          sessionToken.current = new AutocompleteSessionToken();
-          
-          setIsScriptLoaded(true);
-        } catch (error) {
-          console.error('Error loading Google Places library:', error);
-        }
-      };
-
-      document.head.appendChild(script);
-
-      return () => {
-        if (document.head.contains(script)) {
-          document.head.removeChild(script);
-        }
-      };
-    } catch (error) {
-      console.error('Error loading Google Maps API:', error);
-    }
-  };
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -114,108 +100,99 @@ export function GooglePlacesAutocomplete({
       return;
     }
 
-    if (isScriptLoaded && autocompleteService.current && sessionToken.current) {
-      setIsLoading(true);
-      
-      try {
-        const request = {
-          input: newValue,
-          includedPrimaryTypes: ['address'],
-          includedRegionCodes: ['ng'], // Restrict to Nigeria, change as needed
-          language: 'en',
-          sessionToken: sessionToken.current
-        };
+    if (!autocompleteService.current) return;
 
-        const { suggestions } = await autocompleteService.current.fetchAutocompleteSuggestions(request);
-        
-        if (suggestions && suggestions.length > 0) {
-          setPredictions(suggestions);
+    setIsLoading(true);
+
+    autocompleteService.current.getPlacePredictions(
+      {
+        input: newValue,
+        types: ["address"],
+        componentRestrictions: { country: ["ng"] },
+        sessionToken: sessionToken.current,
+      },
+      (predictions: any[], status: string) => {
+        if (status === "OK" && predictions?.length) {
+          setPredictions(predictions);
           setShowPredictions(true);
         } else {
           setPredictions([]);
           setShowPredictions(false);
         }
-      } catch (error) {
-        console.error('Error fetching autocomplete suggestions:', error);
-        setPredictions([]);
-        setShowPredictions(false);
-      } finally {
         setIsLoading(false);
       }
-    }
+    );
   };
 
-  const handlePredictionClick = async (suggestion: any) => {
-    if (!suggestion.placePrediction) return;
-
-    const displayText = suggestion.placePrediction.text?.text || suggestion.placePrediction.mainText?.text || 'Unknown location';
-    setInputValue(displayText);
+  const handlePredictionClick = (prediction: any) => {
+    setInputValue(prediction.description);
     setShowPredictions(false);
     setIsLoading(true);
 
-    try {
-      // Use the new API to get place details
-      const place = suggestion.placePrediction.toPlace();
-      
-      // Fetch detailed place information
-      await place.fetchFields({
-        fields: ['addressComponents', 'formattedAddress', 'location', 'displayName']
-      });
+    if (!placesService.current) return;
 
-      const placeDetails = extractPlaceDetails(place, suggestion.placePrediction.placeId);
-      onChange(placeDetails);
-    } catch (error) {
-      console.error('Error fetching place details:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    placesService.current.getDetails(
+      {
+        placeId: prediction.place_id,
+        fields: ["address_components", "formatted_address", "geometry"],
+        sessionToken: sessionToken.current,
+      },
+      (place: any, status: string) => {
+        setIsLoading(false);
+        if (status !== "OK" || !place) {
+          console.error("Place details fetch failed:", status);
+          return;
+        }
+
+        const placeDetails = extractPlaceDetails(place);
+        onChange(placeDetails);
+      }
+    );
   };
 
-  const extractPlaceDetails = (place: any, placeId: string): PlaceDetails => {
-    const components = place.addressComponents || [];
-    
-    let address = '';
-    let city = '';
-    let state = '';
-    let country = '';
-    let postalCode = '';
+  const extractPlaceDetails = (place: any): PlaceDetails => {
+    const components = place.address_components || [];
+    let address = "";
+    let city = "";
+    let state = "";
+    let country = "";
+    let postalCode = "";
 
     components.forEach((component: any) => {
       const types = component.types;
-      
-      if (types.includes('street_number') || types.includes('route')) {
-        address += component.longText + ' ';
-      } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
-        city = component.longText;
-      } else if (types.includes('administrative_area_level_1')) {
-        state = component.longText;
-      } else if (types.includes('country')) {
-        country = component.longText;
-      } else if (types.includes('postal_code')) {
-        postalCode = component.longText;
+
+      if (types.includes("street_number") || types.includes("route")) {
+        address += component.long_name + " ";
+      } else if (types.includes("locality")) {
+        city = component.long_name;
+      } else if (types.includes("administrative_area_level_2") && !city) {
+        city = component.long_name; // fallback
+      } else if (types.includes("administrative_area_level_1")) {
+        state = component.long_name;
+      } else if (types.includes("country")) {
+        country = component.long_name;
+      } else if (types.includes("postal_code")) {
+        postalCode = component.long_name;
       }
     });
 
     return {
-      address: address.trim() || place.displayName || '',
+      address: address.trim() || place.formatted_address,
       city,
       state,
       country,
       postalCode,
       coordinates: {
-        lat: place.location?.lat() || 0,
-        lng: place.location?.lng() || 0
+        lat: place.geometry?.location.lat() || 0,
+        lng: place.geometry?.location.lng() || 0,
       },
-      placeId,
-      formattedAddress: place.formattedAddress || ''
+      placeId: place.place_id,
+      formattedAddress: place.formatted_address || "",
     };
   };
 
   const handleBlur = () => {
-    // Delay hiding predictions to allow click events
-    setTimeout(() => {
-      setShowPredictions(false);
-    }, 200);
+    setTimeout(() => setShowPredictions(false), 200);
   };
 
   return (
@@ -242,32 +219,28 @@ export function GooglePlacesAutocomplete({
 
       {showPredictions && predictions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {predictions.map((suggestion, index) => {
-            const mainText = suggestion.placePrediction?.mainText?.text || suggestion.placePrediction?.text?.text || 'Unknown location';
-            const secondaryText = suggestion.placePrediction?.secondaryText?.text || '';
-            
-            return (
-              <div
-                key={suggestion.placePrediction?.placeId || index}
-                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                onClick={() => handlePredictionClick(suggestion)}
-              >
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {mainText}
+          {predictions.map((suggestion, index) => (
+            <div
+              key={suggestion.place_id || index}
+              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              onClick={() => handlePredictionClick(suggestion)}
+            >
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {suggestion.structured_formatting?.main_text ||
+                      suggestion.description}
+                  </p>
+                  {suggestion.structured_formatting?.secondary_text && (
+                    <p className="text-xs text-gray-500 truncate">
+                      {suggestion.structured_formatting.secondary_text}
                     </p>
-                    {secondaryText && (
-                      <p className="text-xs text-gray-500 truncate">
-                        {secondaryText}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
