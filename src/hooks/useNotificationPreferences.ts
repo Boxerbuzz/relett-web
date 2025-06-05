@@ -10,15 +10,40 @@ export function useNotificationPreferences() {
     push_notifications: true,
     sms_notifications: false,
     notification_types: {
+      // Property related
       property_updates: true,
+      property_verification: true,
+      property_viewing: true,
+      property_inspection: true,
+      
+      // Financial
       payment_notifications: true,
       dividend_alerts: true,
-      verification_updates: true,
-      market_insights: false,
+      transaction_alerts: true,
+      
+      // Investment
       investment_opportunities: true,
       tokenization_updates: true,
       auction_notifications: true,
+      
+      // Rental & Booking
+      rental_requests: true,
+      rental_approvals: true,
+      reservation_updates: true,
+      
+      // Communication
+      chat_messages: true,
+      inquiry_responses: true,
+      
+      // System
+      verification_updates: true,
       system_announcements: true,
+      market_insights: false,
+      
+      // Purchase related
+      purchase_confirmations: true,
+      purchase_updates: true,
+      delivery_notifications: false,
     },
     quiet_hours_start: '22:00',
     quiet_hours_end: '07:00',
@@ -50,7 +75,7 @@ export function useNotificationPreferences() {
           push_notifications: data.push_notifications,
           sms_notifications: data.sms_notifications,
           notification_types: typeof data.notification_types === 'object' && data.notification_types !== null 
-            ? data.notification_types as NotificationPreferences['notification_types']
+            ? { ...preferences.notification_types, ...data.notification_types }
             : preferences.notification_types,
           quiet_hours_start: data.quiet_hours_start || '22:00',
           quiet_hours_end: data.quiet_hours_end || '07:00',

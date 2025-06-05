@@ -19,14 +19,14 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 const profileSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
-  phone: z.string().min(1, 'Phone number is required'), // Changed from phone_number to phone
+  phone: z.string().min(1, 'Phone number is required'),
   date_of_birth: z.string().min(1, 'Date of birth is required'),
-  gender: z.enum(['male', 'female', 'other']).optional(), // Removed prefer_not_to_say
+  gender: z.enum(['male', 'female', 'other']).optional(),
   bio: z.string().optional(),
   country: z.string().min(1, 'Country is required'),
-  state: z.string().min(1, 'State is required'),
   city: z.string().min(1, 'City is required'),
-  address_line: z.string().min(1, 'Address is required'),
+  state_of_origin: z.string().min(1, 'State is required'),
+  address: z.string().min(1, 'Address is required'),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -39,7 +39,7 @@ interface ProfileCompletionWizardProps {
 const STEPS = [
   { id: 'personal', title: 'Personal Information', fields: ['first_name', 'last_name', 'phone', 'date_of_birth'] },
   { id: 'additional', title: 'Additional Details', fields: ['gender', 'bio'] },
-  { id: 'location', title: 'Location', fields: ['country', 'state', 'city', 'address_line'] },
+  { id: 'location', title: 'Location', fields: ['country', 'state_of_origin', 'city', 'address'] },
 ];
 
 export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletionWizardProps) {
@@ -53,14 +53,14 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
     defaultValues: {
       first_name: profile?.first_name || '',
       last_name: profile?.last_name || '',
-      phone: profile?.phone || '', // Changed from phone_number to phone
+      phone: profile?.phone || '',
       date_of_birth: profile?.date_of_birth || '',
-      gender: profile?.gender || 'other', // Changed default to 'other' instead of 'prefer_not_to_say'
+      gender: profile?.gender || 'other',
       bio: profile?.bio || '',
-      country: profile?.address?.country || '',
-      state: profile?.address?.state || '',
-      city: profile?.address?.city || '',
-      address_line: profile?.address?.address_line || '',
+      country: profile?.country || '',
+      state_of_origin: profile?.state_of_origin || '',
+      city: profile?.city || '',
+      address: typeof profile?.address === 'object' ? profile?.address?.address_line : (profile?.address || ''),
     },
   });
 
@@ -71,16 +71,20 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
       const updateData = {
         first_name: data.first_name,
         last_name: data.last_name,
-        phone: data.phone, // Changed from phone_number to phone
+        phone: data.phone,
         date_of_birth: data.date_of_birth,
         gender: data.gender,
         bio: data.bio,
+        country: data.country,
+        state_of_origin: data.state_of_origin,
+        city: data.city,
         address: {
-          country: data.country,
-          state: data.state,
+          address_line: data.address,
           city: data.city,
-          address_line: data.address_line,
+          state: data.state_of_origin,
+          country: data.country,
         },
+        has_setup_preference: true,
       };
 
       const { error } = await updateProfile(updateData);
@@ -165,7 +169,7 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input {...form.register('phone')} placeholder="+1 (555) 123-4567" />
+                  <Input {...form.register('phone')} placeholder="+234 (555) 123-4567" />
                   {form.formState.errors.phone && (
                     <p className="text-sm text-red-600">{form.formState.errors.phone.message}</p>
                   )}
@@ -213,10 +217,10 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input {...form.register('state')} placeholder="e.g., Lagos" />
-                    {form.formState.errors.state && (
-                      <p className="text-sm text-red-600">{form.formState.errors.state.message}</p>
+                    <Label htmlFor="state_of_origin">State</Label>
+                    <Input {...form.register('state_of_origin')} placeholder="e.g., Lagos" />
+                    {form.formState.errors.state_of_origin && (
+                      <p className="text-sm text-red-600">{form.formState.errors.state_of_origin.message}</p>
                     )}
                   </div>
                   <div>
@@ -228,10 +232,10 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="address_line">Address</Label>
-                  <Input {...form.register('address_line')} placeholder="Street address" />
-                  {form.formState.errors.address_line && (
-                    <p className="text-sm text-red-600">{form.formState.errors.address_line.message}</p>
+                  <Label htmlFor="address">Address</Label>
+                  <Input {...form.register('address')} placeholder="Street address" />
+                  {form.formState.errors.address && (
+                    <p className="text-sm text-red-600">{form.formState.errors.address.message}</p>
                   )}
                 </div>
               </>

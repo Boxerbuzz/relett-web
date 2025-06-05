@@ -4,6 +4,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { 
   House, 
   FileText, 
@@ -14,7 +15,9 @@ import {
   MapPin,
   Bell,
   Plus,
-  Search
+  Search,
+  Users,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,25 +25,33 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Admin Dashboard', href: '/admin', icon: BarChart3, roles: ['admin'] },
   { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner', 'admin'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
   { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin'] },
-  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent'] },
-  { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'User Management', href: '/admin/users', icon: Users, roles: ['admin'] },
+  { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
+  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
   const { user } = useAuth();
+  const { hasRole } = useUserRoles();
 
-  const filteredNavigation = navigation.filter(item => 
-    user?.role && item.roles.includes(user.role)
-  );
+  const filteredNavigation = navigation.filter(item => {
+    // Allow admin to see all items
+    if (hasRole('admin')) {
+      return true;
+    }
+    // For other roles, check if they have access
+    return user?.role && item.roles.includes(user.role);
+  });
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed md:sticky top-0">

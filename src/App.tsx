@@ -18,6 +18,7 @@ import Verification from "./pages/Verification";
 import PropertyVerification from "./pages/PropertyVerification";
 import MapView from "./pages/MapView";
 import Notifications from "./pages/Notifications";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Index />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Admin />
                 </Layout>
               </ProtectedRoute>
             } />

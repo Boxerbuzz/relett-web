@@ -3431,121 +3431,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_preferences: {
-        Row: {
-          address: string | null
-          city: string | null
-          coordinates: Json | null
-          country: string | null
-          created_at: string
-          digest: Json | null
-          do_not_disturb: boolean | null
-          enabled: boolean | null
-          has_setup_preference: boolean | null
-          interest: string | null
-          notification_channels: Json | null
-          notification_types: Json | null
-          quiet_hours_end: string | null
-          quiet_hours_start: string | null
-          state: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          address?: string | null
-          city?: string | null
-          coordinates?: Json | null
-          country?: string | null
-          created_at?: string
-          digest?: Json | null
-          do_not_disturb?: boolean | null
-          enabled?: boolean | null
-          has_setup_preference?: boolean | null
-          interest?: string | null
-          notification_channels?: Json | null
-          notification_types?: Json | null
-          quiet_hours_end?: string | null
-          quiet_hours_start?: string | null
-          state?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          address?: string | null
-          city?: string | null
-          coordinates?: Json | null
-          country?: string | null
-          created_at?: string
-          digest?: Json | null
-          do_not_disturb?: boolean | null
-          enabled?: boolean | null
-          has_setup_preference?: boolean | null
-          interest?: string | null
-          notification_channels?: Json | null
-          notification_types?: Json | null
-          quiet_hours_end?: string | null
-          quiet_hours_start?: string | null
-          state?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_preferences_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_profiles: {
-        Row: {
-          address: Json | null
-          date_of_birth: string | null
-          gender: string | null
-          id: string
-          last_login: string | null
-          lga: string | null
-          middle_name: string | null
-          nationality: string | null
-          state_of_origin: string | null
-          user_id: string
-        }
-        Insert: {
-          address?: Json | null
-          date_of_birth?: string | null
-          gender?: string | null
-          id?: string
-          last_login?: string | null
-          lga?: string | null
-          middle_name?: string | null
-          nationality?: string | null
-          state_of_origin?: string | null
-          user_id: string
-        }
-        Update: {
-          address?: Json | null
-          date_of_birth?: string | null
-          gender?: string | null
-          id?: string
-          last_login?: string | null
-          lga?: string | null
-          middle_name?: string | null
-          nationality?: string | null
-          state_of_origin?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_user_profiles_user_id"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -3581,18 +3466,31 @@ export type Database = {
       }
       users: {
         Row: {
+          address: Json | null
           avatar: string | null
           bio: string | null
+          city: string | null
+          coordinates: Json | null
+          country: string | null
           created_at: string
+          date_of_birth: string | null
           email: string
           first_name: string
           full_name: string | null
+          gender: string | null
           has_setup: boolean | null
+          has_setup_preference: boolean | null
           id: string
+          interest: string | null
           is_active: boolean | null
           is_verified: boolean | null
+          last_login: string | null
           last_name: string
+          lga: string | null
+          middle_name: string | null
+          nationality: string | null
           phone: string | null
+          state_of_origin: string | null
           updated_at: string | null
           user_type: string
           verification_status:
@@ -3600,18 +3498,31 @@ export type Database = {
             | null
         }
         Insert: {
+          address?: Json | null
           avatar?: string | null
           bio?: string | null
+          city?: string | null
+          coordinates?: Json | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email: string
           first_name: string
           full_name?: string | null
+          gender?: string | null
           has_setup?: boolean | null
+          has_setup_preference?: boolean | null
           id?: string
+          interest?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          last_login?: string | null
           last_name: string
+          lga?: string | null
+          middle_name?: string | null
+          nationality?: string | null
           phone?: string | null
+          state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
           verification_status?:
@@ -3619,18 +3530,31 @@ export type Database = {
             | null
         }
         Update: {
+          address?: Json | null
           avatar?: string | null
           bio?: string | null
+          city?: string | null
+          coordinates?: Json | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string
           first_name?: string
           full_name?: string | null
+          gender?: string | null
           has_setup?: boolean | null
+          has_setup_preference?: boolean | null
           id?: string
+          interest?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          last_login?: string | null
           last_name?: string
+          lga?: string | null
+          middle_name?: string | null
+          nationality?: string | null
           phone?: string | null
+          state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
           verification_status?:
@@ -3869,16 +3793,36 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           address: Json | null
+          avatar: string | null
+          bio: string | null
+          city: string | null
+          coordinates: Json | null
+          country: string | null
+          created_at: string
           date_of_birth: string | null
+          email: string
+          first_name: string
+          full_name: string | null
           gender: string | null
+          has_setup: boolean | null
+          has_setup_preference: boolean | null
           id: string
+          interest: string | null
+          is_active: boolean | null
+          is_verified: boolean | null
           last_login: string | null
+          last_name: string
           lga: string | null
           middle_name: string | null
           nationality: string | null
+          phone: string | null
           state_of_origin: string | null
-          user_id: string
-        }
+          updated_at: string | null
+          user_type: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+        }[]
       }
       get_property_secure: {
         Args: { _property_id: string }
