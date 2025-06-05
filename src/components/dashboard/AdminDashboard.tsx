@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { PropertyVerificationQueue } from '@/components/admin/PropertyVerificationQueue';
 import { useToast } from '@/hooks/use-toast';
@@ -109,9 +110,9 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-full overflow-hidden">
+    <div className="space-y-6 w-full max-w-full">
       {/* Header */}
-      <div className="min-w-0">
+      <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-600">Manage users, properties, and system operations</p>
       </div>
@@ -164,19 +165,19 @@ export function AdminDashboard() {
       </div>
 
       {/* Main Content Tabs */}
-      <div className="w-full max-w-full overflow-hidden">
+      <div className="w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 w-full">
-          <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-4 min-w-fit">
-              <TabsTrigger value="overview" className="whitespace-nowrap">Overview</TabsTrigger>
-              <TabsTrigger value="users" className="whitespace-nowrap">Users</TabsTrigger>
-              <TabsTrigger value="properties" className="whitespace-nowrap">Properties</TabsTrigger>
-              <TabsTrigger value="verification" className="whitespace-nowrap">Verification</TabsTrigger>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="properties">Properties</TabsTrigger>
+              <TabsTrigger value="verification">Verification</TabsTrigger>
             </TabsList>
-          </div>
+          </ScrollArea>
 
-          <div className="w-full max-w-full overflow-hidden">
-            <TabsContent value="overview" className="space-y-6 w-full max-w-full">
+          <div className="w-full">
+            <TabsContent value="overview" className="space-y-6 w-full">
               {/* System Health */}
               <Card>
                 <CardHeader>
@@ -187,17 +188,17 @@ export function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center justify-between p-3 border rounded-lg min-w-0">
-                      <span className="text-sm font-medium truncate">API Status</span>
-                      <Badge className="bg-green-100 text-green-800 ml-2 flex-shrink-0">Healthy</Badge>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">API Status</span>
+                      <Badge className="bg-green-100 text-green-800">Healthy</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg min-w-0">
-                      <span className="text-sm font-medium truncate">Database</span>
-                      <Badge className="bg-green-100 text-green-800 ml-2 flex-shrink-0">Connected</Badge>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">Database</span>
+                      <Badge className="bg-green-100 text-green-800">Connected</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg min-w-0">
-                      <span className="text-sm font-medium truncate">Storage</span>
-                      <Badge className="bg-yellow-100 text-yellow-800 ml-2 flex-shrink-0">85% Used</Badge>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">Storage</span>
+                      <Badge className="bg-yellow-100 text-yellow-800">85% Used</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -217,12 +218,12 @@ export function AdminDashboard() {
                       { action: 'Token purchase', user: 'sarah@example.com', time: '1 hour ago' },
                       { action: 'Document uploaded', user: 'mike@example.com', time: '2 hours ago' },
                     ].map((activity, index) => (
-                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0 min-w-0">
-                        <div className="min-w-0 flex-1">
+                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{activity.action}</p>
                           <p className="text-xs text-gray-500 truncate">{activity.user}</p>
                         </div>
-                        <span className="text-xs text-gray-500 ml-2 flex-shrink-0">{activity.time}</span>
+                        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">{activity.time}</span>
                       </div>
                     ))}
                   </div>
@@ -230,15 +231,19 @@ export function AdminDashboard() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="users" className="space-y-6 w-full max-w-full overflow-hidden">
-              <UserManagement />
+            <TabsContent value="users" className="space-y-6 w-full">
+              <div className="w-full">
+                <UserManagement />
+              </div>
             </TabsContent>
 
-            <TabsContent value="properties" className="space-y-6 w-full max-w-full overflow-hidden">
-              <PropertyVerificationQueue />
+            <TabsContent value="properties" className="space-y-6 w-full">
+              <div className="w-full">
+                <PropertyVerificationQueue />
+              </div>
             </TabsContent>
 
-            <TabsContent value="verification" className="space-y-6 w-full max-w-full overflow-hidden">
+            <TabsContent value="verification" className="space-y-6 w-full">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -249,34 +254,34 @@ export function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center p-4 border rounded-lg min-w-0">
-                      <div className="min-w-0 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium">Identity Verifications</h4>
                         <p className="text-sm text-gray-600">Pending user identity verification</p>
                       </div>
-                      <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge variant="destructive">{stats.pendingVerifications}</Badge>
                         <Button size="sm">Review</Button>
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center p-4 border rounded-lg min-w-0">
-                      <div className="min-w-0 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium">Document Reviews</h4>
                         <p className="text-sm text-gray-600">Property documents awaiting review</p>
                       </div>
-                      <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge variant="destructive">{stats.pendingDocuments}</Badge>
                         <Button size="sm">Review</Button>
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center p-4 border rounded-lg min-w-0">
-                      <div className="min-w-0 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium">Property Verifications</h4>
                         <p className="text-sm text-gray-600">Properties pending verification</p>
                       </div>
-                      <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge variant="secondary">8</Badge>
                         <Button size="sm">Review</Button>
                       </div>
