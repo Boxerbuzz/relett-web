@@ -25,6 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, UserCheck, UserX, MoreHorizontal } from 'lucide-react';
+import { UserMobileCard } from './UserMobileCard';
 
 interface User {
   id: string;
@@ -207,58 +208,65 @@ export function UserManagement() {
           </Select>
         </div>
 
-        {/* Users Table */}
-        <div className="w-full">
-          <ScrollArea className="w-full">
-            <div className="min-w-[800px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{user.first_name} {user.last_name}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-[200px]">{user.email}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getRoleBadge(user.user_type)}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(user)}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant={user.is_active ? "destructive" : "default"}
-                            onClick={() => toggleUserStatus(user.id, user.is_active)}
-                          >
-                            {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+        {/* Mobile Cards - Show on small screens */}
+        <div className="md:hidden space-y-4">
+          {filteredUsers.map((user) => (
+            <UserMobileCard
+              key={user.id}
+              user={user}
+              onToggleStatus={toggleUserStatus}
+            />
+          ))}
+        </div>
+
+        {/* Desktop Table - Hide on small screens */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{user.first_name} {user.last_name}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-[200px]">{user.email}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getRoleBadge(user.user_type)}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(user)}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant={user.is_active ? "destructive" : "default"}
+                        onClick={() => toggleUserStatus(user.id, user.is_active)}
+                      >
+                        {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
 
         {filteredUsers.length === 0 && (

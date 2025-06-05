@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, FileCheck, Eye, CheckCircle, XCircle } from 'lucide-react';
 import { Json } from '@/types/database';
+import { PropertyMobileCard } from './PropertyMobileCard';
 
 interface Property {
   id: string;
@@ -244,90 +245,97 @@ export function PropertyVerificationQueue() {
           </Select>
         </div>
 
-        {/* Properties Table */}
-        <div className="w-full overflow-hidden">
-          <ScrollArea className="w-full">
-            <div className="min-w-[900px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[200px]">Property</TableHead>
-                    <TableHead className="min-w-[150px]">Owner</TableHead>
-                    <TableHead className="min-w-[100px]">Type</TableHead>
-                    <TableHead className="min-w-[120px]">Price</TableHead>
-                    <TableHead className="min-w-[100px]">Status</TableHead>
-                    <TableHead className="min-w-[100px]">Created</TableHead>
-                    <TableHead className="min-w-[150px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProperties.map((property) => (
-                    <TableRow key={property.id}>
-                      <TableCell>
-                        <div className="max-w-[200px]">
-                          <div className="font-medium truncate">{property.title || 'Untitled Property'}</div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {getLocationCity(property.location)}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-[150px]">
-                          <div className="font-medium truncate">
-                            {property.users?.first_name} {property.users?.last_name}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {property.users?.email}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getTypeBadge(property.type)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="truncate max-w-[120px]">
-                          {formatPrice(property.price)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(property)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {new Date(property.created_at).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
+        {/* Mobile Cards - Show on small screens */}
+        <div className="md:hidden space-y-4">
+          {filteredProperties.map((property) => (
+            <PropertyMobileCard
+              key={property.id}
+              property={property}
+              onUpdateStatus={updatePropertyStatus}
+            />
+          ))}
+        </div>
+
+        {/* Desktop Table - Hide on small screens */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Property</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProperties.map((property) => (
+                <TableRow key={property.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium truncate">{property.title || 'Untitled Property'}</div>
+                      <div className="text-sm text-gray-500 truncate">
+                        {getLocationCity(property.location)}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium truncate">
+                        {property.users?.first_name} {property.users?.last_name}
+                      </div>
+                      <div className="text-sm text-gray-500 truncate">
+                        {property.users?.email}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getTypeBadge(property.type)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="truncate">
+                      {formatPrice(property.price)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(property)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {new Date(property.created_at).toLocaleDateString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {!property.is_verified && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => updatePropertyStatus(property.id, true)}
+                          >
+                            <CheckCircle className="h-4 w-4" />
                           </Button>
-                          {!property.is_verified && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                                onClick={() => updatePropertyStatus(property.id, true)}
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => updatePropertyStatus(property.id, false)}
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => updatePropertyStatus(property.id, false)}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
 
         {filteredProperties.length === 0 && (
