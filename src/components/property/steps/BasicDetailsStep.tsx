@@ -11,7 +11,44 @@ interface BasicDetailsStepProps {
   form: UseFormReturn<any>;
 }
 
+const propertySubTypes = {
+  residential: [
+    { value: 'apartment', label: 'Apartment' },
+    { value: 'villa', label: 'Villa' },
+    { value: 'house', label: 'House' },
+    { value: 'condo', label: 'Condo' },
+    { value: 'townhouse', label: 'Townhouse' },
+    { value: 'duplex', label: 'Duplex' },
+    { value: 'penthouse', label: 'Penthouse' },
+    { value: 'studio', label: 'Studio' },
+  ],
+  commercial: [
+    { value: 'office', label: 'Office' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'warehouse', label: 'Warehouse' },
+    { value: 'hotel', label: 'Hotel' },
+    { value: 'restaurant', label: 'Restaurant' },
+    { value: 'shop', label: 'Shop' },
+    { value: 'mall', label: 'Mall' },
+  ],
+  industrial: [
+    { value: 'factory', label: 'Factory' },
+    { value: 'manufacturing', label: 'Manufacturing' },
+    { value: 'logistics', label: 'Logistics' },
+    { value: 'warehouse', label: 'Industrial Warehouse' },
+  ],
+  land: [
+    { value: 'residential_land', label: 'Residential Land' },
+    { value: 'commercial_land', label: 'Commercial Land' },
+    { value: 'industrial_land', label: 'Industrial Land' },
+    { value: 'farmland', label: 'Farmland' },
+    { value: 'agricultural', label: 'Agricultural Land' },
+  ],
+};
+
 export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
+  const selectedType = form.watch('type');
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -31,21 +68,25 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
 
         <FormField
           control={form.control}
-          name="category"
+          name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormLabel>Property Type</FormLabel>
+              <Select onValueChange={(value) => {
+                field.onChange(value);
+                // Reset sub_type when type changes
+                form.setValue('sub_type', '');
+              }} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="residential">Residential</SelectItem>
                   <SelectItem value="commercial">Commercial</SelectItem>
                   <SelectItem value="industrial">Industrial</SelectItem>
-                  <SelectItem value="agricultural">Agricultural</SelectItem>
+                  <SelectItem value="land">Land</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -55,13 +96,48 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
 
         <FormField
           control={form.control}
-          name="type"
+          name="sub_type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Property Type</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Villa, Apartment, Office" {...field} />
-              </FormControl>
+              <FormLabel>Property Sub-Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedType}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sub-type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {selectedType && propertySubTypes[selectedType as keyof typeof propertySubTypes]?.map((subType) => (
+                    <SelectItem key={subType.value} value={subType.value}>
+                      {subType.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Listing Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="sell">For Sale</SelectItem>
+                  <SelectItem value="rent">For Rent</SelectItem>
+                  <SelectItem value="shortlet">Short Let</SelectItem>
+                  <SelectItem value="lease">Lease</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -84,30 +160,6 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
                   <SelectItem value="renovated">Recently Renovated</SelectItem>
                   <SelectItem value="good">Good Condition</SelectItem>
                   <SelectItem value="needs_renovation">Needs Renovation</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Listing Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="for_sale">For Sale</SelectItem>
-                  <SelectItem value="for_rent">For Rent</SelectItem>
-                  <SelectItem value="tokenized">Tokenized</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

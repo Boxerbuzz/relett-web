@@ -13,6 +13,55 @@ interface ReviewStepProps {
 export function ReviewStep({ form }: ReviewStepProps) {
   const formData = form.getValues();
 
+  const getSubTypeLabel = (type: string, subType: string) => {
+    const subTypeLabels: Record<string, Record<string, string>> = {
+      residential: {
+        apartment: 'Apartment',
+        villa: 'Villa',
+        house: 'House',
+        condo: 'Condo',
+        townhouse: 'Townhouse',
+        duplex: 'Duplex',
+        penthouse: 'Penthouse',
+        studio: 'Studio',
+      },
+      commercial: {
+        office: 'Office',
+        retail: 'Retail',
+        warehouse: 'Warehouse',
+        hotel: 'Hotel',
+        restaurant: 'Restaurant',
+        shop: 'Shop',
+        mall: 'Mall',
+      },
+      industrial: {
+        factory: 'Factory',
+        manufacturing: 'Manufacturing',
+        logistics: 'Logistics',
+        warehouse: 'Industrial Warehouse',
+      },
+      land: {
+        residential_land: 'Residential Land',
+        commercial_land: 'Commercial Land',
+        industrial_land: 'Industrial Land',
+        farmland: 'Farmland',
+        agricultural: 'Agricultural Land',
+      },
+    };
+
+    return subTypeLabels[type]?.[subType] || subType;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const categoryLabels = {
+      sell: 'For Sale',
+      rent: 'For Rent',
+      shortlet: 'Short Let',
+      lease: 'Lease',
+    };
+    return categoryLabels[category as keyof typeof categoryLabels] || category;
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -21,11 +70,11 @@ export function ReviewStep({ form }: ReviewStepProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div><strong>Title:</strong> {formData.title}</div>
-          <div><strong>Category:</strong> <Badge variant="outline">{formData.category}</Badge></div>
-          <div><strong>Type:</strong> {formData.type}</div>
-          <div><strong>Status:</strong> <Badge>{formData.status?.replace('_', ' ')}</Badge></div>
+          <div><strong>Type:</strong> <Badge variant="outline">{formData.type}</Badge></div>
+          <div><strong>Sub-Type:</strong> <Badge variant="secondary">{getSubTypeLabel(formData.type, formData.sub_type)}</Badge></div>
+          <div><strong>Category:</strong> <Badge>{getCategoryLabel(formData.category)}</Badge></div>
           <div><strong>Condition:</strong> {formData.condition}</div>
-          <div><strong>Price:</strong> ${formData.price?.amount?.toLocaleString()} ({formData.price?.type})</div>
+          <div><strong>Price:</strong> ₦{formData.price?.amount?.toLocaleString()} ({getCategoryLabel(formData.category)})</div>
           <div><strong>Description:</strong> {formData.description}</div>
         </CardContent>
       </Card>

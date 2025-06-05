@@ -2168,6 +2168,7 @@ export type Database = {
           specification: Json
           sqrft: string | null
           status: string
+          sub_type: string | null
           tags: string[] | null
           title: string | null
           tokenized_property_id: string | null
@@ -2205,6 +2206,7 @@ export type Database = {
           specification: Json
           sqrft?: string | null
           status: string
+          sub_type?: string | null
           tags?: string[] | null
           title?: string | null
           tokenized_property_id?: string | null
@@ -2242,6 +2244,7 @@ export type Database = {
           specification?: Json
           sqrft?: string | null
           status?: string
+          sub_type?: string | null
           tags?: string[] | null
           title?: string | null
           tokenized_property_id?: string | null
@@ -3937,6 +3940,7 @@ export type Database = {
           specification: Json
           sqrft: string | null
           status: string
+          sub_type: string | null
           tags: string[] | null
           title: string | null
           tokenized_property_id: string | null

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +6,7 @@ interface SearchFilters {
   query?: string;
   category?: string;
   type?: string;
+  sub_type?: string;
   priceMin?: number;
   priceMax?: number;
   location?: string;
@@ -25,6 +25,7 @@ interface Property {
   description: string;
   category: string;
   type: string;
+  sub_type: string;
   price: any;
   location: any;
   amenities: string[];
@@ -68,6 +69,11 @@ export function usePropertySearch() {
       // Apply type filter
       if (filters.type && filters.type !== 'all') {
         query = query.eq('type', filters.type);
+      }
+
+      // Apply sub_type filter
+      if (filters.sub_type && filters.sub_type !== 'all') {
+        query = query.eq('sub_type', filters.sub_type);
       }
 
       // Apply price range filter
