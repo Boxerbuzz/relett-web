@@ -1,6 +1,7 @@
 
 import { BaseAgent, AgentConfig, AgentContext, AgentResponse } from './BaseAgent';
 import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
 
 export interface LearningContext extends AgentContext {
   userBehaviorProfile?: UserBehaviorProfile;
@@ -47,7 +48,10 @@ export interface AgentInteraction {
 }
 
 export abstract class LearningAgent extends BaseAgent {
-  protected learningContext: LearningContext = {};
+  protected learningContext: LearningContext = {
+    userId: '',
+    metadata: {}
+  };
 
   async processMessage(
     message: string, 
@@ -80,14 +84,14 @@ export abstract class LearningAgent extends BaseAgent {
 
     try {
       // Load user behavior profile
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from('user_behavior_profiles')
         .select('*')
         .eq('user_id', context.userId)
         .maybeSingle();
 
       // Load recent learning patterns
-      const { data: patterns } = await supabase
+      const { data: patternsData } = await supabase
         .from('learning_patterns')
         .select('*')
         .eq('user_id', context.userId)
@@ -95,7 +99,7 @@ export abstract class LearningAgent extends BaseAgent {
         .limit(10);
 
       // Load recent conversation history
-      const { data: history } = await supabase
+      const { data: historyData } = await supabase
         .from('agent_interactions')
         .select('*')
         .eq('user_id', context.userId)
@@ -103,15 +107,68 @@ export abstract class LearningAgent extends BaseAgent {
         .order('created_at', { ascending: false })
         .limit(5);
 
+      // Transform database types to our interface types
+      const profile: UserBehaviorProfile | undefined = profileData ? {
+        id: profileData.id,
+        user_id: profileData.user_id,
+        profile_type: profileData.profile_type,
+        confidence_score: profileData.confidence_score,
+        characteristics: this.parseJsonField(profileData.characteristics),
+        preferences: this.parseJsonField(profileData.preferences),
+        interaction_style: profileData.interaction_style as any,
+        optimal_response_length: profileData.optimal_response_length as any,
+        preferred_communication_time: profileData.preferred_communication_time || []
+      } : undefined;
+
+      const patterns: LearningPattern[] = (patternsData || []).map(p => ({
+        id: p.id,
+        user_id: p.user_id || '',
+        pattern_type: p.pattern_type,
+        pattern_data: this.parseJsonField(p.pattern_data),
+        confidence_score: p.confidence_score || 0,
+        usage_count: p.usage_count || 0,
+        success_rate: p.success_rate || 0
+      }));
+
+      const history: AgentInteraction[] = (historyData || []).map(h => ({
+        id: h.id,
+        user_id: h.user_id,
+        agent_id: h.agent_id,
+        conversation_id: h.conversation_id || undefined,
+        property_id: h.property_id || undefined,
+        interaction_type: h.interaction_type,
+        user_message: h.user_message,
+        agent_response: h.agent_response,
+        response_time_ms: h.response_time_ms || undefined,
+        user_satisfaction_score: h.user_satisfaction_score || undefined,
+        outcome: h.outcome || undefined,
+        context_data: this.parseJsonField(h.context_data),
+        created_at: h.created_at
+      }));
+
       this.learningContext = {
         ...context,
-        userBehaviorProfile: profile || undefined,
-        learningPatterns: patterns || [],
-        conversationHistory: history || []
+        userBehaviorProfile: profile,
+        learningPatterns: patterns,
+        conversationHistory: history
       };
     } catch (error) {
       console.error('Error loading learning context:', error);
     }
+  }
+
+  private parseJsonField(field: any): Record<string, any> {
+    if (typeof field === 'object' && field !== null) {
+      return field as Record<string, any>;
+    }
+    if (typeof field === 'string') {
+      try {
+        return JSON.parse(field);
+      } catch {
+        return {};
+      }
+    }
+    return {};
   }
 
   protected async analyzeUserIntent(message: string, context: AgentContext): Promise<string> {
