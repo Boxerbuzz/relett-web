@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { PropertyVerificationQueue } from '@/components/admin/PropertyVerificationQueue';
+import { PropertyManagement } from '@/components/admin/PropertyManagement';
 import { 
   Users, 
   FileCheck, 
@@ -89,10 +92,11 @@ export function AdminDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="property-management">Property Mgmt</TabsTrigger>
           <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -152,74 +156,15 @@ export function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage user accounts and permissions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">Active Users</h3>
-                    <p className="text-sm text-gray-600">Users currently active on the platform</p>
-                  </div>
-                  <Button variant="outline">View All Users</Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Landowners</h4>
-                    <p className="text-2xl font-bold">892</p>
-                    <p className="text-xs text-gray-500">+5% this month</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Investors</h4>
-                    <p className="text-2xl font-bold">234</p>
-                    <p className="text-xs text-gray-500">+15% this month</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Agents</h4>
-                    <p className="text-2xl font-bold">121</p>
-                    <p className="text-xs text-gray-500">+3% this month</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <UserManagement />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Property Management</CardTitle>
-              <CardDescription>Monitor and manage property listings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Total Properties</h4>
-                    <p className="text-2xl font-bold">{stats.totalProperties}</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Verified</h4>
-                    <p className="text-2xl font-bold">287</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Pending</h4>
-                    <p className="text-2xl font-bold">32</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">Tokenized</h4>
-                    <p className="text-2xl font-bold">{stats.activeTokens}</p>
-                  </div>
-                </div>
-                
-                <Button className="w-full">View Property Queue</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <PropertyVerificationQueue />
+        </TabsContent>
+
+        <TabsContent value="property-management" className="space-y-6">
+          <PropertyManagement />
         </TabsContent>
 
         <TabsContent value="verification" className="space-y-6">
