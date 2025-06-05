@@ -1,3 +1,4 @@
+
 import { HederaClient, hederaUtils } from './hedera';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -63,6 +64,21 @@ export class PropertyTokenizationService {
 
       // Step 5: Store tokenization record in database
       console.log('Storing tokenization record in database...');
+      
+      // Serialize tokenization parameters to ensure JSON compatibility
+      const serializedParams = {
+        landTitleId: params.landTitleId,
+        propertyId: params.propertyId || null,
+        tokenName: params.tokenName,
+        totalValue: params.totalValue,
+        totalSupply: params.totalSupply,
+        minimumInvestment: params.minimumInvestment,
+        expectedROI: params.expectedROI,
+        lockUpPeriodMonths: params.lockUpPeriodMonths,
+        revenueDistributionFrequency: params.revenueDistributionFrequency,
+        investmentTerms: params.investmentTerms
+      };
+
       const { data: tokenizedProperty, error: dbError } = await supabase
         .from('tokenized_properties')
         .insert({
@@ -86,7 +102,7 @@ export class PropertyTokenizationService {
             creation_transaction: tokenResult.transactionId,
             decimals: 8,
             created_at: new Date().toISOString(),
-            tokenization_parameters: params
+            tokenization_parameters: serializedParams
           },
           legal_structure: {
             ownership_type: 'fractional',

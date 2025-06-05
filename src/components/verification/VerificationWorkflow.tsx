@@ -63,7 +63,14 @@ export function VerificationWorkflow() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Type assertion to ensure proper typing
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'in_review' | 'completed'
+      })) as VerificationRequest[];
+      
+      setRequests(typedData);
     } catch (error) {
       console.error('Error fetching verification requests:', error);
       toast({

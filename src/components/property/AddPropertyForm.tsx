@@ -120,6 +120,14 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     try {
       console.log('Submitting property:', data);
 
+      // Ensure coordinates are either complete or null
+      const coordinates = data.location.coordinates?.lat && data.location.coordinates?.lng 
+        ? {
+            lat: data.location.coordinates.lat,
+            lng: data.location.coordinates.lng
+          }
+        : null;
+
       // Transform form data to match the expected structure
       const propertyData = {
         basicInfo: {
@@ -134,7 +142,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
           city: data.location.city,
           state: data.location.state,
           country: data.location.country,
-          coordinates: data.location.coordinates || null
+          coordinates
         },
         documents: data.documents.map(doc => ({
           id: crypto.randomUUID(),
