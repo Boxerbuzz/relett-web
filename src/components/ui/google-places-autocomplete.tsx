@@ -51,7 +51,6 @@ export function GooglePlacesAutocomplete({
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteService = useRef<any>(null);
   const placesService = useRef<any>(null);
 
   useEffect(() => {
@@ -93,14 +92,13 @@ export function GooglePlacesAutocomplete({
 
   const initializeServices = () => {
     if (window.google && window.google.maps) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
       // Create a dummy div for PlacesService
       const dummyDiv = document.createElement('div');
       placesService.current = new window.google.maps.places.PlacesService(dummyDiv);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     onInputChange?.(newValue);
@@ -112,36 +110,46 @@ export function GooglePlacesAutocomplete({
       return;
     }
 
-    if (isScriptLoaded && autocompleteService.current) {
+    if (isScriptLoaded && window.google && window.google.maps.places) {
       setIsLoading(true);
       
-      const request = {
-        input: newValue,
-        types: ['address'],
-        componentRestrictions: { country: 'ng' } // Restrict to Nigeria, change as needed
-      };
+      try {
+        // Use the new AutocompleteSuggestion API
+        const request = {
+          input: newValue,
+          includedPrimaryTypes: ['address'],
+          includedRegionCodes: ['ng'], // Restrict to Nigeria, change as needed
+          language: 'en'
+        };
 
-      autocompleteService.current.getPlacePredictions(request, (predictions: any[], status: any) => {
-        setIsLoading(false);
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          setPredictions(predictions);
+        const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+        
+        if (suggestions && suggestions.length > 0) {
+          setPredictions(suggestions);
           setShowPredictions(true);
         } else {
           setPredictions([]);
           setShowPredictions(false);
         }
-      });
+      } catch (error) {
+        console.error('Error fetching autocomplete suggestions:', error);
+        setPredictions([]);
+        setShowPredictions(false);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handlePredictionClick = (prediction: any) => {
-    setInputValue(prediction.description);
+  const handlePredictionClick = async (suggestion: any) => {
+    const displayText = suggestion.placePrediction?.text?.text || suggestion.text?.text || 'Unknown location';
+    setInputValue(displayText);
     setShowPredictions(false);
     setIsLoading(true);
 
-    if (placesService.current) {
+    if (placesService.current && suggestion.placePrediction?.placeId) {
       const request = {
-        placeId: prediction.place_id,
+        placeId: suggestion.placePrediction.placeId,
         fields: ['address_components', 'formatted_address', 'geometry', 'name']
       };
 
@@ -153,6 +161,8 @@ export function GooglePlacesAutocomplete({
           onChange(placeDetails);
         }
       });
+    } else {
+      setIsLoading(false);
     }
   };
 
@@ -227,25 +237,32 @@ export function GooglePlacesAutocomplete({
 
       {showPredictions && predictions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {predictions.map((prediction) => (
-            <div
-              key={prediction.place_id}
-              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-              onClick={() => handlePredictionClick(prediction)}
-            >
-              <div className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {prediction.structured_formatting?.main_text || prediction.description}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {prediction.structured_formatting?.secondary_text || ''}
-                  </p>
+          {predictions.map((suggestion, index) => {
+            const mainText = suggestion.placePrediction?.text?.text || suggestion.text?.text || 'Unknown location';
+            const secondaryText = suggestion.placePrediction?.structuredFormat?.secondaryText?.text || '';
+            
+            return (
+              <div
+                key={suggestion.placePrediction?.placeId || index}
+                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                onClick={() => handlePredictionClick(suggestion)}
+              >
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {mainText}
+                    </p>
+                    {secondaryText && (
+                      <p className="text-xs text-gray-500 truncate">
+                        {secondaryText}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
