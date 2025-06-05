@@ -7,8 +7,12 @@ interface NotificationDeliveryStatus {
   id: string;
   channel: 'email' | 'sms' | 'push';
   status: 'pending' | 'delivered' | 'failed';
-  delivered_at?: string;
-  error_message?: string;
+  delivered_at?: string | null;
+  error_message?: string | null;
+  notification_id: string;
+  external_id?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useNotificationDelivery() {
@@ -18,7 +22,7 @@ export function useNotificationDelivery() {
 
   const sendNotification = async (
     userId: string,
-    type: string,
+    type: 'reservation' | 'rental' | 'inspection' | 'payment' | 'general' | 'investment' | 'chat',
     title: string,
     message: string,
     metadata?: any,
@@ -86,8 +90,22 @@ export function useNotificationDelivery() {
         .eq('notification_id', notificationId);
 
       if (error) throw error;
-      setDeliveryStatuses(data || []);
-      return data;
+      
+      // Type the data properly to match our interface
+      const typedData = data?.map(delivery => ({
+        id: delivery.id,
+        channel: delivery.channel as 'email' | 'sms' | 'push',
+        status: delivery.status as 'pending' | 'delivered' | 'failed',
+        delivered_at: delivery.delivered_at,
+        error_message: delivery.error_message,
+        notification_id: delivery.notification_id,
+        external_id: delivery.external_id,
+        created_at: delivery.created_at,
+        updated_at: delivery.updated_at,
+      })) || [];
+      
+      setDeliveryStatuses(typedData);
+      return typedData;
     } catch (error) {
       console.error('Error fetching delivery status:', error);
       return [];
