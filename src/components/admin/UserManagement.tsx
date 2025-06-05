@@ -23,14 +23,14 @@ interface User {
   user_type: string;
   is_active: boolean;
   is_verified: boolean;
-  verification_status: string;
+  verification_status: 'pending' | 'verified' | 'rejected' | 'unverified' | 'expired';
   created_at: string;
   phone: string | null;
 }
 
 interface UserRole {
   id: string;
-  role: string;
+  role: 'admin' | 'landowner' | 'verifier' | 'agent' | 'investor';
   is_active: boolean;
   assigned_at: string;
 }
@@ -85,9 +85,15 @@ export function UserManagement() {
 
   const updateUserStatus = async (userId: string, updates: Partial<User>) => {
     try {
+      // Ensure verification_status is properly typed
+      const cleanUpdates = {
+        ...updates,
+        verification_status: updates.verification_status as 'pending' | 'verified' | 'rejected' | 'unverified' | 'expired'
+      };
+
       const { error } = await supabase
         .from('users')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', userId);
 
       if (error) throw error;
@@ -110,13 +116,13 @@ export function UserManagement() {
     }
   };
 
-  const assignRole = async (userId: string, role: string) => {
+  const assignRole = async (userId: string, role: 'admin' | 'landowner' | 'verifier' | 'agent' | 'investor') => {
     try {
       const { error } = await supabase
         .from('user_roles')
         .upsert({
           user_id: userId,
-          role,
+          role: role,
           is_active: true
         });
 
@@ -280,7 +286,7 @@ export function UserManagement() {
                                 <div>
                                   <Label className="text-base font-medium">Assign Additional Role</Label>
                                   <div className="flex gap-2 mt-2">
-                                    <Select onValueChange={(role) => assignRole(selectedUser.id, role)}>
+                                    <Select onValueChange={(role: 'admin' | 'landowner' | 'verifier' | 'agent' | 'investor') => assignRole(selectedUser.id, role)}>
                                       <SelectTrigger className="w-48">
                                         <SelectValue placeholder="Select role" />
                                       </SelectTrigger>

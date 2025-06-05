@@ -8,15 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { PropertyVerificationQueue } from '@/components/admin/PropertyVerificationQueue';
-import { PropertyManagement } from '@/components/admin/PropertyManagement';
 import { 
   Users, 
   FileCheck, 
-  TrendingUp, 
   Shield, 
   AlertTriangle, 
   BarChart3,
-  Settings,
   Home,
   DollarSign,
   Activity
@@ -92,13 +89,11 @@ export function AdminDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="property-management">Property Mgmt</TabsTrigger>
           <TabsTrigger value="verification">Verification</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -163,10 +158,6 @@ export function AdminDashboard() {
           <PropertyVerificationQueue />
         </TabsContent>
 
-        <TabsContent value="property-management" className="space-y-6">
-          <PropertyManagement />
-        </TabsContent>
-
         <TabsContent value="verification" className="space-y-6">
           <Card>
             <CardHeader>
@@ -208,35 +199,6 @@ export function AdminDashboard() {
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">8</Badge>
                     <Button size="sm">Review</Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                System Analytics
-              </CardTitle>
-              <CardDescription>Platform performance and usage metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium">User Growth</h4>
-                  <div className="h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-500">Chart placeholder</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-medium">Revenue Trends</h4>
-                  <div className="h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-500">Chart placeholder</p>
                   </div>
                 </div>
               </div>

@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, XCircle, Clock, FileText, MapPin, User } from 'lucide-react';
@@ -48,7 +47,6 @@ export function PropertyVerificationQueue() {
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [verificationNotes, setVerificationNotes] = useState('');
-  const [verificationStatus, setVerificationStatus] = useState<string>('');
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -158,6 +156,8 @@ export function PropertyVerificationQueue() {
     return <Badge className="bg-blue-100 text-blue-800">Normal</Badge>;
   };
 
+  const documentsCount = documents.length;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -168,7 +168,7 @@ export function PropertyVerificationQueue() {
         <div className="flex gap-2">
           <Button variant="outline">
             <FileText className="h-4 w-4 mr-2" />
-            Documents ({documents.length})
+            Documents ({documentsCount})
           </Button>
         </div>
       </div>
@@ -210,7 +210,7 @@ export function PropertyVerificationQueue() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">With Documents</p>
                 <p className="text-2xl font-bold">
-                  {properties.filter(p => p.documents && p.documents.length > 0).length}
+                  {properties.filter(p => documentsCount > 0).length}
                 </p>
               </div>
             </div>
