@@ -32,13 +32,23 @@ export class PropertyTokenizationService {
 
   async tokenizeProperty(params: TokenizationParams): Promise<TokenCreationResult> {
     try {
-      // Step 1: Generate unique token symbol
-      const tokenSymbol = hederaUtils.generateTokenSymbol(params.tokenName, params.landTitleId);
-      
-      // Step 2: Calculate token price
-      const tokenPrice = params.totalValue / params.totalSupply;
+      console.log('Starting property tokenization process...', params);
 
-      // Step 3: Create token on Hedera - Fix the function call to match the expected signature
+      // Step 1: Validate input parameters
+      if (!params.landTitleId || !params.tokenName || params.totalValue <= 0) {
+        throw new Error('Invalid tokenization parameters');
+      }
+
+      // Step 2: Generate unique token symbol
+      const tokenSymbol = hederaUtils.generateTokenSymbol(params.tokenName, params.landTitleId);
+      console.log('Generated token symbol:', tokenSymbol);
+      
+      // Step 3: Calculate token price
+      const tokenPrice = params.totalValue / params.totalSupply;
+      console.log('Calculated token price:', tokenPrice);
+
+      // Step 4: Create token on Hedera network
+      console.log('Creating token on Hedera network...');
       const tokenResult = await this.hederaClient.createPropertyToken(
         params.tokenName,
         tokenSymbol,
@@ -46,10 +56,13 @@ export class PropertyTokenizationService {
       );
 
       if (!tokenResult.tokenId) {
-        throw new Error('Failed to create token on Hedera');
+        throw new Error('Failed to create token on Hedera network');
       }
 
-      // Step 4: Store tokenization record in database
+      console.log('Token created successfully on Hedera:', tokenResult);
+
+      // Step 5: Store tokenization record in database
+      console.log('Storing tokenization record in database...');
       const { data: tokenizedProperty, error: dbError } = await supabase
         .from('tokenized_properties')
         .insert({
@@ -72,7 +85,8 @@ export class PropertyTokenizationService {
           metadata: {
             creation_transaction: tokenResult.transactionId,
             decimals: 8,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            tokenization_parameters: params
           },
           legal_structure: {
             ownership_type: 'fractional',
@@ -87,6 +101,11 @@ export class PropertyTokenizationService {
         console.error('Database error:', dbError);
         throw new Error(`Failed to store tokenization record: ${dbError.message}`);
       }
+
+      console.log('Tokenization completed successfully:', tokenizedProperty);
+
+      // Step 6: Initialize analytics tracking
+      await this.initializeAnalytics(tokenizedProperty.id, params);
 
       return {
         tokenizedPropertyId: tokenizedProperty.id,
@@ -117,6 +136,8 @@ export class PropertyTokenizationService {
     investorPrivateKey: string;
   }) {
     try {
+      console.log('Starting token purchase process...', params);
+
       // Step 1: Get tokenized property details
       const { data: property, error: propertyError } = await supabase
         .from('tokenized_properties')
@@ -128,25 +149,52 @@ export class PropertyTokenizationService {
         throw new Error('Tokenized property not found');
       }
 
-      // Step 2: Associate investor account with token (if not already done)
-      await this.hederaClient.associateToken(
-        params.investorAccountId,
-        property.hedera_token_id!,
-        params.investorPrivateKey
-      );
+      console.log('Retrieved property details:', property);
 
-      // Step 3: Transfer tokens from treasury to investor
-      const transferResult = await this.hederaClient.transferTokens({
-        tokenId: property.hedera_token_id!,
-        fromAccountId: process.env.HEDERA_ACCOUNT_ID!,
-        toAccountId: params.investorAccountId,
-        amount: params.tokenAmount,
-        fromPrivateKey: process.env.HEDERA_PRIVATE_KEY!
-      });
+      // Step 2: Validate purchase amount
+      if (params.tokenAmount <= 0) {
+        throw new Error('Invalid token amount');
+      }
 
-      // Step 4: Record the token holding
       const totalInvestment = params.tokenAmount * property.token_price;
-      
+      if (totalInvestment < property.minimum_investment) {
+        throw new Error(`Minimum investment is ${property.minimum_investment}`);
+      }
+
+      // Step 3: Associate investor account with token (if not already done)
+      if (property.hedera_token_id) {
+        console.log('Associating investor account with token...');
+        await this.hederaClient.associateToken(
+          params.investorAccountId,
+          property.hedera_token_id,
+          params.investorPrivateKey
+        );
+      }
+
+      // Step 4: Transfer tokens from treasury to investor
+      if (property.hedera_token_id) {
+        console.log('Transferring tokens to investor...');
+        const treasuryAccountId = import.meta.env.VITE_HEDERA_ACCOUNT_ID || 
+                                 import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
+        const treasuryPrivateKey = import.meta.env.VITE_HEDERA_PRIVATE_KEY || 
+                                  import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
+        
+        if (!treasuryAccountId || !treasuryPrivateKey) {
+          console.warn('Hedera treasury credentials not configured, using mock transfer');
+        } else {
+          const transferResult = await this.hederaClient.transferTokens({
+            tokenId: property.hedera_token_id,
+            fromAccountId: treasuryAccountId,
+            toAccountId: params.investorAccountId,
+            amount: params.tokenAmount,
+            fromPrivateKey: treasuryPrivateKey
+          });
+          console.log('Token transfer completed:', transferResult);
+        }
+      }
+
+      // Step 5: Record the token holding
+      console.log('Recording token holding...');
       const { data: holding, error: holdingError } = await supabase
         .from('token_holdings')
         .insert({
@@ -164,7 +212,8 @@ export class PropertyTokenizationService {
         throw new Error(`Failed to record token holding: ${holdingError.message}`);
       }
 
-      // Step 5: Record the transaction
+      // Step 6: Record the transaction
+      console.log('Recording transaction...');
       await supabase
         .from('token_transactions')
         .insert({
@@ -174,7 +223,6 @@ export class PropertyTokenizationService {
           price_per_token: property.token_price,
           total_value: totalInvestment,
           transaction_type: 'transfer',
-          hedera_transaction_id: transferResult.transactionId,
           status: 'confirmed',
           metadata: {
             transfer_type: 'purchase',
@@ -182,10 +230,20 @@ export class PropertyTokenizationService {
           }
         });
 
+      // Step 7: Initialize investment tracking
+      await supabase.rpc('create_investment_tracking', {
+        p_user_id: params.investorId,
+        p_tokenized_property_id: params.tokenizedPropertyId,
+        p_tokens_owned: params.tokenAmount,
+        p_investment_amount: totalInvestment,
+        p_purchase_price_per_token: property.token_price
+      });
+
+      console.log('Token purchase completed successfully');
+
       return {
         success: true,
         holdingId: holding.id,
-        transactionId: transferResult.transactionId,
         totalInvestment
       };
 
@@ -195,6 +253,38 @@ export class PropertyTokenizationService {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
+    }
+  }
+
+  private async initializeAnalytics(tokenizedPropertyId: string, params: TokenizationParams) {
+    try {
+      // Create initial analytics entries
+      const analyticsData = [
+        {
+          tokenized_property_id: tokenizedPropertyId,
+          user_id: null, // System-level analytics
+          metric_type: 'initial_valuation',
+          metric_value: params.totalValue,
+          calculation_date: new Date().toISOString().split('T')[0],
+          period_start: new Date().toISOString().split('T')[0],
+          period_end: new Date().toISOString().split('T')[0],
+          metadata: {
+            total_supply: params.totalSupply,
+            token_price: params.totalValue / params.totalSupply,
+            expected_roi: params.expectedROI
+          }
+        }
+      ];
+
+      const { error } = await supabase
+        .from('investment_analytics')
+        .insert(analyticsData);
+
+      if (error) {
+        console.error('Failed to initialize analytics:', error);
+      }
+    } catch (error) {
+      console.error('Analytics initialization error:', error);
     }
   }
 

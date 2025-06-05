@@ -1,13 +1,17 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Form } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { usePropertyCreation } from '@/hooks/usePropertyCreation';
 import { BasicDetailsStep } from './steps/BasicDetailsStep';
 import { LocationStep } from './steps/LocationStep';
 import { SpecificationStep } from './steps/SpecificationStep';
@@ -76,7 +80,9 @@ interface AddPropertyFormProps {
 
 export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { createProperty, isLoading } = usePropertyCreation();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -111,16 +117,58 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
   };
 
   const onSubmit = async (data: PropertyFormData) => {
-    setIsSubmitting(true);
     try {
       console.log('Submitting property:', data);
-      // TODO: Integrate with Supabase
-      alert('Property added successfully!');
+
+      // Transform form data to match the expected structure
+      const propertyData = {
+        basicInfo: {
+          title: data.title,
+          description: data.description,
+          propertyType: data.type,
+          category: data.category,
+          status: 'pending'
+        },
+        location: {
+          address: data.location.address,
+          city: data.location.city,
+          state: data.location.state,
+          country: data.location.country,
+          coordinates: data.location.coordinates || null
+        },
+        documents: data.documents.map(doc => ({
+          id: crypto.randomUUID(),
+          name: doc.filename,
+          type: doc.type,
+          url: doc.url,
+          size: 0
+        })),
+        valuation: {
+          estimatedValue: data.price.amount,
+          currency: data.price.currency,
+          valuationMethod: 'user_estimate',
+          marketAnalysis: ''
+        }
+      };
+
+      const property = await createProperty(propertyData);
+      
+      toast({
+        title: 'Success!',
+        description: 'Property has been created successfully.',
+      });
+
+      // Redirect to property details or list
+      navigate('/land');
+      
       if (onClose) onClose();
     } catch (error) {
       console.error('Error submitting property:', error);
-    } finally {
-      setIsSubmitting(false);
+      toast({
+        title: 'Error',
+        description: 'Failed to create property. Please try again.',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -216,10 +264,10 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
           {currentStep === steps.length - 1 ? (
             <Button 
               onClick={form.handleSubmit(onSubmit)} 
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="min-w-32"
             >
-              {isSubmitting ? 'Adding Property...' : 'Add Property'}
+              {isLoading ? 'Creating Property...' : 'Create Property'}
             </Button>
           ) : (
             <Button type="button" onClick={nextStep} className="min-w-24">
