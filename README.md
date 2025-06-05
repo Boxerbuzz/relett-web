@@ -10,11 +10,13 @@ This document describes the comprehensive backend system for managing user defau
 ### User Management Functions
 
 #### `handle_new_user()`
+
 **Type:** Database Trigger Function  
 **Trigger:** `auth.users` table on INSERT  
 **Purpose:** Creates default records for new users
 
 **Created Records:**
+
 - Default notification preferences
 - Default account (wallet)
 - Default user role (landowner)
@@ -22,10 +24,12 @@ This document describes the comprehensive backend system for managing user defau
 - Default user preferences
 
 #### `update_user_defaults(p_user_id, p_preferences, p_notification_types, p_portfolio_targets)`
+
 **Type:** Database RPC Function  
 **Purpose:** Updates user preference defaults via API calls
 
 **Parameters:**
+
 - `p_user_id` (uuid): User ID
 - `p_preferences` (jsonb): Notification preferences
 - `p_notification_types` (jsonb): Specific notification type settings
@@ -34,11 +38,13 @@ This document describes the comprehensive backend system for managing user defau
 ### Property Management Functions
 
 #### `handle_new_property()`
+
 **Type:** Database Trigger Function  
 **Trigger:** `properties` table on INSERT  
 **Purpose:** Sets default values for new properties
 
 **Default Values Set:**
+
 - views: 0
 - likes: 0
 - favorites: 0
@@ -52,10 +58,12 @@ This document describes the comprehensive backend system for managing user defau
 - is_exclusive: false
 
 #### `track_property_interaction(p_property_id, p_user_id, p_interaction_type, p_metadata)`
+
 **Type:** Database RPC Function  
 **Purpose:** Tracks user interactions with properties
 
 **Interaction Types:**
+
 - `view`: Property page visits
 - `like`: Property likes
 - `favorite`: Adding to favorites
@@ -64,10 +72,12 @@ This document describes the comprehensive backend system for managing user defau
 - `contact`: Contacting property owner
 
 #### `update_property_analytics()`
+
 **Type:** Database RPC Function  
 **Purpose:** Updates aggregated property statistics
 
 **Updates:**
+
 - Average ratings from reviews
 - Total review counts
 - Favorite counts
@@ -76,6 +86,7 @@ This document describes the comprehensive backend system for managing user defau
 ### Investment Functions
 
 #### `create_investment_tracking(p_user_id, p_tokenized_property_id, p_tokens_owned, p_investment_amount, p_purchase_price_per_token)`
+
 **Type:** Database RPC Function  
 **Purpose:** Creates investment tracking records
 
@@ -84,16 +95,19 @@ This document describes the comprehensive backend system for managing user defau
 ### Notification Functions
 
 #### `notify_property_price_change()`
+
 **Type:** Database Trigger Function  
 **Trigger:** `properties` table on UPDATE  
 **Purpose:** Notifies users when property prices change
 
 #### `notify_verification_status_change()`
+
 **Type:** Database Trigger Function  
 **Trigger:** `identity_verifications` table on UPDATE  
 **Purpose:** Notifies users when verification status changes
 
 #### `create_notification_with_delivery(p_user_id, p_type, p_title, p_message, p_metadata, p_action_url, p_action_label, p_sender_id)`
+
 **Type:** Database RPC Function  
 **Purpose:** Creates notifications and triggers delivery processing
 
@@ -102,17 +116,21 @@ This document describes the comprehensive backend system for managing user defau
 ### User Management
 
 #### `user-created-webhook`
+
 **Purpose:** Handles post-user creation setup  
 **Trigger:** Called by database trigger after user creation  
 **Actions:**
+
 - Sends welcome notification
 - Logs user creation event
 - Additional custom processing
 
 #### `update-user-defaults`
+
 **Purpose:** API endpoint for updating user defaults  
 **Method:** POST  
 **Body:**
+
 ```json
 {
   "user_id": "uuid",
@@ -141,9 +159,11 @@ This document describes the comprehensive backend system for managing user defau
 ### Property Interactions
 
 #### `track-interaction`
+
 **Purpose:** API endpoint for tracking property interactions  
 **Method:** POST  
 **Body:**
+
 ```json
 {
   "property_id": "uuid",
@@ -161,8 +181,10 @@ This document describes the comprehensive backend system for managing user defau
 ### Notifications
 
 #### `process-notification`
+
 **Purpose:** Processes notification delivery across multiple channels  
 **Features:**
+
 - Multi-channel delivery (email, SMS, push)
 - Respects user preferences
 - Handles quiet hours
@@ -170,17 +192,21 @@ This document describes the comprehensive backend system for managing user defau
 - Integration with OneSignal and Twilio
 
 #### `send-chat-notification`
+
 **Purpose:** Handles chat message notifications  
 **Trigger:** New messages in conversations  
 **Features:**
+
 - Notifies all conversation participants except sender
 - Includes message preview
 - Deep linking to conversation
 
 #### `send-booking-notification`
+
 **Purpose:** Handles booking-related notifications  
 **Trigger:** New bookings, status changes  
 **Features:**
+
 - Notifies users, property owners, and agents
 - Handles reservations, rentals, and inspections
 - Status change notifications
@@ -188,18 +214,22 @@ This document describes the comprehensive backend system for managing user defau
 ## Frontend Hooks
 
 ### `useDefaultsManager`
+
 **Purpose:** Manages user defaults and preferences
 
 **Methods:**
+
 - `updateUserDefaults(userId, updates)`: Updates user preferences
 - `trackInteraction(propertyId, userId, type, metadata)`: Tracks interactions
 - `createInvestmentTracking(...)`: Creates investment records
 - `updatePropertyAnalytics()`: Updates property analytics
 
 ### `useInteractionTracker`
+
 **Purpose:** Simplified interaction tracking
 
 **Methods:**
+
 - `trackPropertyView(propertyId, metadata)`
 - `trackPropertyLike(propertyId)`
 - `trackPropertyFavorite(propertyId, listName, notes)`
@@ -210,41 +240,49 @@ This document describes the comprehensive backend system for managing user defau
 ## Notification Types
 
 ### User Lifecycle
+
 - `general`: Welcome messages, announcements
 - `verification_updates`: Identity verification status changes
 
 ### Property Related
+
 - `property_updates`: Price changes, status updates
 - `property_verification`: Property verification status
 - `property_viewing`: Viewing requests and confirmations
 - `property_inspection`: Inspection scheduling and results
 
 ### Financial
+
 - `payment_notifications`: Payment confirmations and failures
 - `dividend_alerts`: Investment dividend distributions
 - `transaction_alerts`: Transaction confirmations
 
 ### Investment
+
 - `investment_opportunities`: New investment offerings
 - `tokenization_updates`: Property tokenization status
 - `auction_notifications`: Auction start, end, bid updates
 
 ### Rental & Booking
+
 - `rental_requests`: New rental applications
 - `rental_approvals`: Rental application status
 - `reservation_updates`: Booking confirmations and changes
 
 ### Communication
+
 - `chat_messages`: New messages in conversations
 - `inquiry_responses`: Responses to property inquiries
 
 ### System
+
 - `system_announcements`: Platform updates and maintenance
 - `market_insights`: Market analysis and trends (optional)
 
 ## Default User Preferences
 
 ### Notification Preferences
+
 ```json
 {
   "email_notifications": true,
@@ -280,6 +318,7 @@ This document describes the comprehensive backend system for managing user defau
 ```
 
 ### Portfolio Allocations
+
 ```json
 {
   "property_type": {
@@ -296,6 +335,7 @@ This document describes the comprehensive backend system for managing user defau
 ```
 
 ### Account Defaults
+
 - Type: "wallet"
 - Amount: 0
 - Points: 0
@@ -305,6 +345,7 @@ This document describes the comprehensive backend system for managing user defau
 ## Environment Variables Required
 
 ### Notification Services
+
 - `ONESIGNAL_APP_ID`: OneSignal application ID
 - `ONESIGNAL_API_KEY`: OneSignal API key
 - `TWILIO_ACCOUNT_SID`: Twilio account SID
@@ -313,12 +354,14 @@ This document describes the comprehensive backend system for managing user defau
 - `TWILIO_EMAIL_API_KEY`: Twilio email API key
 
 ### Supabase
+
 - `SUPABASE_URL`: Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY`: Service role key for admin operations
 
 ## Testing the System
 
 ### User Creation
+
 1. Create a new user account
 2. Check that default records are created in:
    - `notification_preferences`
@@ -328,17 +371,20 @@ This document describes the comprehensive backend system for managing user defau
    - `user_preferences`
 
 ### Property Interactions
+
 1. View a property (should increment view count)
 2. Like a property (should create record in `property_likes`)
 3. Favorite a property (should create record in `property_favorites`)
 4. Make an inquiry (should notify property owner)
 
 ### Notifications
+
 1. Change a property price (should notify users who favorited it)
 2. Update verification status (should notify the user)
 3. Send a chat message (should notify conversation participants)
 
 ### Analytics
+
 1. Run `update_property_analytics()` function
 2. Check that property stats are updated correctly
 
@@ -352,6 +398,7 @@ This document describes the comprehensive backend system for managing user defau
 4. **Function timeouts**: Check for complex queries or external API delays
 
 ### Logs
+
 - Edge function logs available in Supabase dashboard
 - Database function logs in PostgreSQL logs
 - Client-side errors in browser console
@@ -359,12 +406,14 @@ This document describes the comprehensive backend system for managing user defau
 ## Maintenance
 
 ### Regular Tasks
+
 1. Run `update_property_analytics()` daily
 2. Clean up old audit trail records
 3. Monitor notification delivery rates
 4. Update portfolio allocations based on user activity
 
 ### Performance Monitoring
+
 - Track edge function execution times
 - Monitor database query performance
 - Check notification delivery success rates
