@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,12 +6,18 @@ import { PropertyList } from '@/components/tokens/PropertyList';
 import { GroupDiscussionView } from '@/components/tokens/GroupDiscussionView';
 import { AnalyticsView } from '@/components/tokens/AnalyticsView';
 import { PaymentHistoryView } from '@/components/tokens/PaymentHistoryView';
+import { AgentChat } from '@/components/agents/AgentChat';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bot, ArrowLeft } from 'lucide-react';
 
-type ViewMode = 'portfolio' | 'discussion' | 'analytics' | 'payments';
+type ViewMode = 'portfolio' | 'discussion' | 'analytics' | 'payments' | 'agent';
 
 const Tokens = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('portfolio');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [showAgent, setShowAgent] = useState(false);
 
   const tokenizedProperties = [
     {
@@ -82,6 +87,12 @@ const Tokens = () => {
   const handleBackToPortfolio = () => {
     setCurrentView('portfolio');
     setSelectedPropertyId(null);
+    setShowAgent(false);
+  };
+
+  const handleShowAgent = () => {
+    setCurrentView('agent');
+    setShowAgent(true);
   };
 
   if (currentView === 'discussion' && selectedProperty) {
@@ -119,11 +130,41 @@ const Tokens = () => {
     }
   }
 
+  if (currentView === 'agent') {
+    return (
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={handleBackToPortfolio}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Portfolio
+          </Button>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">AI Assistant</h1>
+        </div>
+        
+        <div className="max-w-4xl">
+          <AgentChat
+            agentId="reservation-agent"
+            context={{
+              userId: "current-user-id", // This would come from auth
+              propertyId: selectedPropertyId || undefined
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
-      <div className="min-w-0">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Token Portfolio</h1>
-        <p className="text-gray-600">Manage your tokenized property investments</p>
+      <div className="flex items-center justify-between min-w-0">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Token Portfolio</h1>
+          <p className="text-gray-600">Manage your tokenized property investments</p>
+        </div>
+        <Button onClick={handleShowAgent} className="flex items-center gap-2">
+          <Bot className="w-4 h-4" />
+          AI Assistant
+        </Button>
       </div>
 
       <PortfolioSummary 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,13 +19,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const propertySchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  category: z.enum(['residential', 'commercial', 'industrial', 'agricultural']),
-  type: z.string().min(1, 'Property type is required'),
-  status: z.enum(['for_sale', 'for_rent', 'tokenized', 'draft']),
+  type: z.enum(['residential', 'commercial', 'industrial', 'land']),
+  sub_type: z.string().min(1, 'Sub-type is required'),
+  category: z.enum(['sell', 'rent', 'shortlet', 'lease']),
   condition: z.enum(['newlyBuilt', 'renovated', 'good', 'needs_renovation']),
   price: z.object({
     amount: z.number().min(0),
-    currency: z.string().default('USD'),
+    currency: z.string().default('NGN'),
     type: z.enum(['sale', 'rent_monthly', 'rent_yearly'])
   }),
   location: z.object({
@@ -82,12 +81,13 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
-      category: 'residential',
-      status: 'draft',
+      type: 'residential',
+      sub_type: '',
+      category: 'sell',
       condition: 'good',
       price: {
         amount: 0,
-        currency: 'USD',
+        currency: 'NGN',
         type: 'sale'
       },
       specification: {},
