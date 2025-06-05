@@ -1716,6 +1716,50 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          notification_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          notification_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          notification_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -1796,12 +1840,17 @@ export type Database = {
           action_label: string | null
           action_taken_at: string | null
           action_url: string | null
+          channel: string | null
           created_at: string
+          delivery_status: Json | null
+          external_id: string | null
           id: string
           image_url: string | null
           is_read: boolean
           message: string | null
           metadata: Json
+          retry_count: number | null
+          scheduled_for: string | null
           sender_id: string | null
           title: string
           type: Database["public"]["Enums"]["notification_type"]
@@ -1812,12 +1861,17 @@ export type Database = {
           action_label?: string | null
           action_taken_at?: string | null
           action_url?: string | null
+          channel?: string | null
           created_at?: string
+          delivery_status?: Json | null
+          external_id?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean
           message?: string | null
           metadata?: Json
+          retry_count?: number | null
+          scheduled_for?: string | null
           sender_id?: string | null
           title: string
           type: Database["public"]["Enums"]["notification_type"]
@@ -1828,12 +1882,17 @@ export type Database = {
           action_label?: string | null
           action_taken_at?: string | null
           action_url?: string | null
+          channel?: string | null
           created_at?: string
+          delivery_status?: Json | null
+          external_id?: string | null
           id?: string
           image_url?: string | null
           is_read?: boolean
           message?: string | null
           metadata?: Json
+          retry_count?: number | null
+          scheduled_for?: string | null
           sender_id?: string | null
           title?: string
           type?: Database["public"]["Enums"]["notification_type"]
@@ -3788,6 +3847,20 @@ export type Database = {
       cleanup_typing_indicators: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_notification_with_delivery: {
+        Args: {
+          p_user_id: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_title: string
+          p_message?: string
+          p_metadata?: Json
+          p_action_url?: string
+          p_action_label?: string
+          p_image_url?: string
+          p_sender_id?: string
+        }
+        Returns: string
       }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
