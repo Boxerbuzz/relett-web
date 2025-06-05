@@ -120,8 +120,8 @@ const Tokens = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6 w-full max-w-full overflow-hidden">
+      <div className="min-w-0">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Token Portfolio</h1>
         <p className="text-gray-600">Manage your tokenized property investments</p>
       </div>

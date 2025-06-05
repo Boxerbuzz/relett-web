@@ -16,7 +16,6 @@ import {
   Bell,
   Plus,
   Search,
-  Users,
   BarChart3
 } from 'lucide-react';
 
@@ -31,7 +30,6 @@ const navigation = [
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
   { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'User Management', href: '/admin/users', icon: Users, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
