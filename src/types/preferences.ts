@@ -43,3 +43,55 @@ export interface NotificationPreferences {
   quiet_hours_end: string;
   do_not_disturb: boolean;
 }
+
+// Add missing interfaces that were referenced in other files
+export interface InvestmentTracking {
+  id: string;
+  user_id: string;
+  tokenized_property_id: string;
+  investment_amount: number;
+  current_value: number;
+  tokens_owned: number;
+  roi_percentage: number;
+  last_dividend_amount: number;
+  last_dividend_date: string | null;
+  total_dividends_received: number;
+  created_at: string;
+  updated_at: string;
+  tokenized_property?: TokenizedProperty | null;
+}
+
+export interface TokenizedProperty {
+  id: string;
+  token_name: string;
+  token_symbol: string;
+  total_supply: string;
+  total_value_usd: number;
+  token_holdings?: TokenHolding[];
+}
+
+export interface TokenHolding {
+  id: string;
+  tokenized_property_id: string;
+  holder_id: string;
+  tokens_owned: string;
+  purchase_price_per_token: number;
+  total_investment: number;
+  acquisition_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FinancialReport {
+  id: string;
+  user_id: string;
+  report_type: string;
+  period_start: string;
+  period_end: string;
+  data: any;
+  status: string;
+  generated_at: string;
+  created_at: string;
+  updated_at: string;
+  metadata?: any;
+}

@@ -16,7 +16,7 @@ export interface UserProfileData {
   full_name: string | null;
   is_active: boolean | null;
   is_verified: boolean | null;
-  verification_status: string | null;
+  verification_status: 'verified' | 'pending' | 'unverified' | 'rejected' | 'expired' | null;
   created_at: string;
   updated_at: string | null;
   
@@ -73,7 +73,7 @@ export function useUserProfile() {
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfileData>) => {
+  const updateProfile = async (updates: Partial<Omit<UserProfileData, 'verification_status'> & { verification_status?: 'verified' | 'pending' | 'unverified' | 'rejected' | 'expired' }>) => {
     try {
       // All updates go to users table now
       const { error } = await supabase

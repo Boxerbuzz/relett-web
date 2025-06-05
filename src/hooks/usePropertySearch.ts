@@ -147,13 +147,19 @@ export function usePropertySearch() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Check if saved_searches table exists, if not create a simple local storage fallback
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          // Store saved searches in user preferences for now
-        });
+      // Store saved searches in localStorage for now since we removed saved_searches table
+      const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+      const newSearch = {
+        id: Date.now().toString(),
+        name,
+        filters,
+        alertEnabled,
+        createdAt: new Date().toISOString(),
+        userId: user.id
+      };
+      
+      savedSearches.push(newSearch);
+      localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
 
       toast({
         title: 'Search saved',
@@ -175,8 +181,9 @@ export function usePropertySearch() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // For now return empty array until saved_searches table is implemented
-      return [];
+      // Get saved searches from localStorage
+      const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+      return savedSearches.filter((search: any) => search.userId === user.id);
 
     } catch (error) {
       console.error('Get saved searches error:', error);
