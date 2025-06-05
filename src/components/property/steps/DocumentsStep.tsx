@@ -1,4 +1,3 @@
-
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
@@ -6,6 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { FileDropzone } from '@/components/ui/file-dropzone';
 import { useSupabaseStorage } from '@/hooks/useSupabaseStorage';
 import { FileText, X, Eye, Download } from 'lucide-react';
