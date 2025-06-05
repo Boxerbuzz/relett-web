@@ -1,3 +1,4 @@
+'use client';
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Bell, Check, Settings, Mail, MessageSquare, DollarSign } from 'lucide-react';
+import { Bell, Check, Settings, Mail, MessageSquare, DollarSign, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
+import { NotificationDeliveryStatus } from '@/components/notifications/NotificationDeliveryStatus';
+import { NotificationTester } from '@/components/notifications/NotificationTester';
+import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 
 interface Notification {
   id: string;
@@ -27,6 +31,8 @@ export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTester, setShowTester] = useState(false);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<string>('');
   const { toast } = useToast();
   const { preferences, updatePreferences, isLoading: preferencesLoading } = useNotificationPreferences();
 
@@ -143,16 +149,7 @@ export function NotificationCenter() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   if (isLoading || preferencesLoading) {
-    return <div className="animate-pulse space-y-4">
-      {[1, 2, 3].map(i => (
-        <Card key={i}>
-          <CardContent className="p-6">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>;
+    return <LoadingSpinner size="lg" text="Loading notifications..." />;
   }
 
   return (
@@ -173,6 +170,13 @@ export function NotificationCenter() {
           )}
           <Button
             variant="outline"
+            onClick={() => setShowTester(!showTester)}
+          >
+            <TestTube className="h-4 w-4 mr-2" />
+            Test
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowSettings(!showSettings)}
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -180,6 +184,9 @@ export function NotificationCenter() {
           </Button>
         </div>
       </div>
+
+      {/* Test Panel */}
+      {showTester && <NotificationTester />}
 
       {/* Settings Panel */}
       {showSettings && (
@@ -296,6 +303,11 @@ export function NotificationCenter() {
         </Card>
       )}
 
+      {/* Delivery Status for selected notification */}
+      {selectedNotificationId && (
+        <NotificationDeliveryStatus notificationId={selectedNotificationId} />
+      )}
+
       {/* Notifications List */}
       <div className="space-y-4">
         {notifications.length === 0 ? (
@@ -335,6 +347,15 @@ export function NotificationCenter() {
                         {!notification.is_read && (
                           <Badge variant="secondary">New</Badge>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedNotificationId(
+                            selectedNotificationId === notification.id ? '' : notification.id
+                          )}
+                        >
+                          Status
+                        </Button>
                         {!notification.is_read && (
                           <Button
                             variant="ghost"
