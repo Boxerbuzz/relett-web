@@ -1,402 +1,241 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, MapPin, Bed, Bath, Square, Heart, GitCompare, BookmarkPlus } from 'lucide-react';
-import { usePropertySearch } from '@/hooks/usePropertySearch';
+import { AdvancedPropertySearch } from './AdvancedPropertySearch';
 import { PropertyComparison } from './PropertyComparison';
-import { useToast } from '@/hooks/use-toast';
-
-interface MarketplaceFilters {
-  search: string;
-  location: string;
-  priceRange: [number, number];
-  riskLevel: string;
-  propertyType: string;
-  minimumROI: number;
-  sortBy: 'newest' | 'price-low' | 'price-high' | 'roi' | 'funding';
-}
+import { TokenizedPropertyMarketplace } from './TokenizedPropertyMarketplace';
+import { InvestmentGroupManager } from '../investment/InvestmentGroupManager';
+import { usePropertySearch } from '@/hooks/usePropertySearch';
+import { 
+  Search, 
+  GitCompare, 
+  Coins, 
+  Users,
+  TrendingUp
+} from 'lucide-react';
 
 export function AdvancedMarketplace() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    category: 'all',
-    type: 'all',
-    priceMin: '',
-    priceMax: '',
-    location: '',
-    sortBy: 'created_desc' as const
-  });
-  const [showComparison, setShowComparison] = useState(false);
-  const [comparisonProperties, setComparisonProperties] = useState<any[]>([]);
-  const [showSaveSearch, setShowSaveSearch] = useState(false);
-  const [searchName, setSearchName] = useState('');
-
+  const [compareProperties, setCompareProperties] = useState([]);
+  const [activeTab, setActiveTab] = useState('search');
   const { 
     properties, 
     isLoading, 
     totalCount, 
     hasMore, 
     searchProperties, 
-    saveSearch,
     clearResults 
   } = usePropertySearch();
-  const { toast } = useToast();
 
-  // Perform initial search
-  useEffect(() => {
-    handleSearch();
-  }, []);
-
-  const handleSearch = () => {
-    const searchFilters = {
-      query: searchQuery,
-      category: filters.category !== 'all' ? filters.category : undefined,
-      type: filters.type !== 'all' ? filters.type : undefined,
-      priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
-      priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
-      location: filters.location || undefined,
-      sortBy: filters.sortBy,
+  const handleSearch = async (filters: any) => {
+    clearResults();
+    await searchProperties({
+      ...filters,
       limit: 20,
       offset: 0
-    };
-
-    clearResults();
-    searchProperties(searchFilters);
-  };
-
-  const handleLoadMore = () => {
-    const searchFilters = {
-      query: searchQuery,
-      category: filters.category !== 'all' ? filters.category : undefined,
-      type: filters.type !== 'all' ? filters.type : undefined,
-      priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
-      priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
-      location: filters.location || undefined,
-      sortBy: filters.sortBy,
-      limit: 20,
-      offset: properties.length
-    };
-
-    searchProperties(searchFilters);
-  };
-
-  const handleSaveSearch = async () => {
-    if (!searchName.trim()) {
-      toast({
-        title: 'Search name required',
-        description: 'Please enter a name for your saved search.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      await saveSearch(searchName, {
-        query: searchQuery,
-        priceMin: filters.priceMin ? parseInt(filters.priceMin) : undefined,
-        priceMax: filters.priceMax ? parseInt(filters.priceMax) : undefined,
-        category: filters.category !== 'all' ? filters.category : undefined,
-        type: filters.type !== 'all' ? filters.type : undefined,
-        location: filters.location,
-        sortBy: filters.sortBy
-      });
-      setShowSaveSearch(false);
-      setSearchName('');
-    } catch (error) {
-      // Error handled in hook
-    }
-  };
-
-  const toggleComparison = (property: any) => {
-    setComparisonProperties(prev => {
-      const exists = prev.find(p => p.id === property.id);
-      if (exists) {
-        return prev.filter(p => p.id !== property.id);
-      } else if (prev.length < 3) {
-        return [...prev, property];
-      } else {
-        toast({
-          title: 'Comparison limit',
-          description: 'You can compare up to 3 properties at once.',
-          variant: 'destructive'
-        });
-        return prev;
-      }
     });
   };
 
-  const formatPrice = (price: any) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: price.currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price.amount);
+  const handleCompareProperty = (property: any) => {
+    setCompareProperties(prev => {
+      const exists = prev.find(p => p.id === property.id);
+      if (exists) {
+        return prev.filter(p => p.id !== property.id);
+      }
+      if (prev.length >= 3) {
+        return [property, ...prev.slice(0, 2)];
+      }
+      return [property, ...prev];
+    });
   };
 
+  const removeFromComparison = (propertyId: string) => {
+    setCompareProperties(prev => prev.filter(p => p.id !== propertyId));
+  };
+
+  const clearComparison = () => {
+    setCompareProperties([]);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Property Marketplace</h1>
+          <p className="text-gray-600">Discover, compare, and invest in properties</p>
+        </div>
+        
+        {compareProperties.length > 0 && (
+          <Badge className="bg-blue-100 text-blue-800 animate-pulse">
+            {compareProperties.length} properties selected for comparison
+          </Badge>
+        )}
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="search" className="flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            Search & Browse
+          </TabsTrigger>
+          <TabsTrigger value="tokenized" className="flex items-center gap-2">
+            <Coins className="w-4 h-4" />
+            Tokenized Properties
+          </TabsTrigger>
+          <TabsTrigger value="groups" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Investment Groups
+          </TabsTrigger>
+          <TabsTrigger value="compare" className="flex items-center gap-2">
+            <GitCompare className="w-4 h-4" />
+            Compare ({compareProperties.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="search" className="space-y-6">
+          <AdvancedPropertySearch onSearch={handleSearch} loading={isLoading} />
+          
+          {/* Search Results */}
+          {properties.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  Search Results ({totalCount} properties found)
+                </h3>
+                {compareProperties.length > 0 && (
+                  <Badge 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-blue-50"
+                    onClick={() => setActiveTab('compare')}
+                  >
+                    <GitCompare className="w-3 h-3 mr-1" />
+                    Compare {compareProperties.length} properties
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {properties.map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    onCompare={() => handleCompareProperty(property)}
+                    isSelected={compareProperties.some(p => p.id === property.id)}
+                  />
+                ))}
+              </div>
+              
+              {hasMore && (
+                <div className="text-center">
+                  <button 
+                    onClick={() => searchProperties({ offset: properties.length })}
+                    className="text-blue-600 hover:text-blue-800"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Loading...' : 'Load More Properties'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="tokenized">
+          <TokenizedPropertyMarketplace />
+        </TabsContent>
+
+        <TabsContent value="groups">
+          <InvestmentGroupManager />
+        </TabsContent>
+
+        <TabsContent value="compare">
+          <PropertyComparison 
+            properties={compareProperties}
+            onRemoveProperty={removeFromComparison}
+            onClearAll={clearComparison}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// Property Card Component for Search Results
+function PropertyCard({ property, onCompare, isSelected }: any) {
   const getPrimaryImage = (property: any) => {
     return property.property_images?.find((img: any) => img.is_primary)?.url || 
            property.property_images?.[0]?.url || 
            '/placeholder.svg';
   };
 
-  if (showComparison) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Property Comparison</h2>
-          <Button onClick={() => setShowComparison(false)}>
-            Back to Search
-          </Button>
-        </div>
-        <PropertyComparison
-          properties={comparisonProperties}
-          onRemoveProperty={(id) => setComparisonProperties(prev => prev.filter(p => p.id !== id))}
-          onClearAll={() => setComparisonProperties([])}
-        />
-      </div>
-    );
-  }
+  const formatPrice = (price: any) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: price.currency || 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price.amount);
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Search Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Advanced Property Search</CardTitle>
-          <CardDescription>
-            Find your perfect property with our advanced search and filtering options
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search Bar */}
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search properties by title, description, or location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10"
-              />
-            </div>
-            <Button onClick={handleSearch} disabled={isLoading}>
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </div>
-
-          {/* Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="residential">Residential</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
-                <SelectItem value="land">Land</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.type} onValueChange={(value) => setFilters(prev => ({ ...prev, type: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="apartment">Apartment</SelectItem>
-                <SelectItem value="condo">Condo</SelectItem>
-                <SelectItem value="office">Office</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Input
-              placeholder="Min Price"
-              value={filters.priceMin}
-              onChange={(e) => setFilters(prev => ({ ...prev, priceMin: e.target.value }))}
-              type="number"
-            />
-
-            <Input
-              placeholder="Max Price"
-              value={filters.priceMax}
-              onChange={(e) => setFilters(prev => ({ ...prev, priceMax: e.target.value }))}
-              type="number"
-            />
-
-            <Input
-              placeholder="Location"
-              value={filters.location}
-              onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-            />
-
-            <Select value={filters.sortBy} onValueChange={(value: any) => setFilters(prev => ({ ...prev, sortBy: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_desc">Newest First</SelectItem>
-                <SelectItem value="created_asc">Oldest First</SelectItem>
-                <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                <SelectItem value="price_desc">Price: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowSaveSearch(true)}>
-                <BookmarkPlus className="h-4 w-4 mr-2" />
-                Save Search
-              </Button>
-              {comparisonProperties.length > 0 && (
-                <Button variant="outline" onClick={() => setShowComparison(true)}>
-                  <GitCompare className="h-4 w-4 mr-2" />
-                  Compare ({comparisonProperties.length})
-                </Button>
-              )}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {totalCount} properties found
-            </div>
-          </div>
-
-          {/* Save Search Dialog */}
-          {showSaveSearch && (
-            <div className="flex gap-2 p-4 border rounded-lg bg-gray-50">
-              <Input
-                placeholder="Enter search name..."
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSaveSearch()}
-              />
-              <Button onClick={handleSaveSearch}>Save</Button>
-              <Button variant="outline" onClick={() => setShowSaveSearch(false)}>Cancel</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Results */}
-      {isLoading && properties.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg"></div>
-              <CardContent className="p-4 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              </CardContent>
-            </Card>
-          ))}
+    <div className={`bg-white rounded-lg shadow-md overflow-hidden border-2 transition-all ${
+      isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
+    }`}>
+      <div className="relative">
+        <img
+          src={getPrimaryImage(property)}
+          alt={property.title}
+          className="w-full h-48 object-cover"
+        />
+        {property.is_featured && (
+          <Badge className="absolute top-2 left-2">Featured</Badge>
+        )}
+        {property.is_tokenized && (
+          <Badge className="absolute top-2 right-2 bg-purple-100 text-purple-800">
+            <Coins className="w-3 h-3 mr-1" />
+            Tokenized
+          </Badge>
+        )}
+      </div>
+      
+      <div className="p-4 space-y-3">
+        <div>
+          <h3 className="font-semibold text-lg line-clamp-1">{property.title}</h3>
+          <p className="text-gray-600 text-sm flex items-center">
+            <span>{property.location?.city}, {property.location?.state}</span>
+          </p>
         </div>
-      ) : properties.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-muted-foreground">
-              <Search className="mx-auto h-12 w-12 mb-4" />
-              <p>No properties found matching your criteria.</p>
-              <p>Try adjusting your search filters.</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property) => {
-              const isInComparison = comparisonProperties.some(p => p.id === property.id);
-              
-              return (
-                <Card key={property.id} className="hover:shadow-lg transition-shadow">
-                  <div className="relative">
-                    <img
-                      src={getPrimaryImage(property)}
-                      alt={property.title}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => toggleComparison(property)}
-                        className={isInComparison ? 'bg-blue-600 text-white' : ''}
-                      >
-                        <GitCompare className="h-4 w-4" />
-                      </Button>
-                      <Button variant="secondary" size="sm">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {property.is_featured && (
-                      <Badge className="absolute top-2 left-2">Featured</Badge>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg line-clamp-2">{property.title}</h3>
-                      <div className="flex items-center text-muted-foreground">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span className="text-sm">{property.location?.city}, {property.location?.state}</span>
-                      </div>
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(property.price)}
-                      </div>
-                      {property.specification && (
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {property.specification.bedrooms && (
-                            <div className="flex items-center">
-                              <Bed className="h-4 w-4 mr-1" />
-                              {property.specification.bedrooms}
-                            </div>
-                          )}
-                          {property.specification.bathrooms && (
-                            <div className="flex items-center">
-                              <Bath className="h-4 w-4 mr-1" />
-                              {property.specification.bathrooms}
-                            </div>
-                          )}
-                          {property.specification.sqft && (
-                            <div className="flex items-center">
-                              <Square className="h-4 w-4 mr-1" />
-                              {property.specification.sqft} ft²
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <Button className="w-full mt-4">View Details</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Load More */}
-          {hasMore && (
-            <div className="text-center">
-              <Button 
-                variant="outline" 
-                onClick={handleLoadMore}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Loading...' : 'Load More Properties'}
-              </Button>
+        
+        <div className="flex items-center justify-between">
+          <p className="text-2xl font-bold text-green-600">
+            {formatPrice(property.price)}
+          </p>
+          {property.ratings > 0 && (
+            <div className="flex items-center text-sm text-gray-600">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              {property.ratings.toFixed(1)}
             </div>
           )}
-        </>
-      )}
+        </div>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={onCompare}
+            className={`flex-1 px-3 py-2 text-sm rounded transition-colors ${
+              isSelected 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {isSelected ? 'Remove from Compare' : 'Add to Compare'}
+          </button>
+          <button className="px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+            View Details
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

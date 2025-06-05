@@ -1,10 +1,74 @@
 
 'use client';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvestmentPortfolio } from '@/components/investment/InvestmentPortfolio';
+import { InvestmentGroupManager } from '@/components/investment/InvestmentGroupManager';
+import { RevenueDistributionCalculator } from '@/components/investment/RevenueDistributionCalculator';
+import { Badge } from '@/components/ui/badge';
+import { 
+  BarChart3, 
+  Users, 
+  Calculator, 
+  TrendingUp 
+} from 'lucide-react';
 
 const Investment = () => {
-  return <InvestmentPortfolio />;
+  return (
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Investment Management</h1>
+          <p className="text-gray-600">Manage your property investments and revenue distributions</p>
+        </div>
+        <Badge className="bg-green-100 text-green-800">
+          <TrendingUp className="w-4 h-4 mr-1" />
+          Investment Hub
+        </Badge>
+      </div>
+
+      <Tabs defaultValue="portfolio" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="portfolio" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Portfolio
+          </TabsTrigger>
+          <TabsTrigger value="groups" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Investment Groups
+          </TabsTrigger>
+          <TabsTrigger value="distributions" className="flex items-center gap-2">
+            <Calculator className="w-4 h-4" />
+            Revenue Distribution
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="portfolio">
+          <InvestmentPortfolio />
+        </TabsContent>
+
+        <TabsContent value="groups">
+          <InvestmentGroupManager />
+        </TabsContent>
+
+        <TabsContent value="distributions">
+          <RevenueDistributionCalculator />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <div className="text-center py-16 text-gray-500">
+            <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold mb-2">Advanced Analytics Coming Soon</h3>
+            <p>Comprehensive investment analytics and insights will be available soon</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 };
 
 export default Investment;
