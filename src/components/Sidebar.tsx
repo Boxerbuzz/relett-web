@@ -52,12 +52,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   });
 
   return (
-    <div className="w-64 bg-gradient-to-b from-white to-blue-50 border-r border-blue-200 h-screen flex flex-col fixed md:sticky top-0 shadow-lg backdrop-blur-sm">
+    <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed md:sticky top-0">
       {/* Header */}
-      <div className="p-6 border-b border-blue-200 h-16 flex items-center flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600">
+      <div className="p-6 border-b h-16 flex items-center flex-shrink-0">
         <div>
-          <h2 className="text-xl font-bold text-white">Terra Vault</h2>
-          <p className="text-sm text-blue-100">Land Tokenization</p>
+          <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
+          <p className="text-sm text-gray-500">Land Tokenization</p>
         </div>
       </div>
       
@@ -73,17 +73,17 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               to={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md",
+                "flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors",
                 isActive
-                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border border-blue-300 shadow-lg"
-                  : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100 hover:text-blue-800"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               )}
             >
               <Icon 
                 size={20} 
                 className={cn(
                   "mr-3",
-                  isActive ? "text-white" : "text-gray-600"
+                  isActive ? "text-blue-700" : "text-gray-500"
                 )} 
               />
               {item.name}
