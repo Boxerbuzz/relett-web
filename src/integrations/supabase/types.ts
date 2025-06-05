@@ -3855,6 +3855,126 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_history: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_status: string | null
+          notes: string | null
+          previous_status: string | null
+          verification_task_id: string | null
+          verifier_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          previous_status?: string | null
+          verification_task_id?: string | null
+          verifier_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          previous_status?: string | null
+          verification_task_id?: string | null
+          verifier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_history_verification_task_id_fkey"
+            columns: ["verification_task_id"]
+            isOneToOne: false
+            referencedRelation: "verification_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_history_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_tasks: {
+        Row: {
+          assigned_at: string | null
+          completed_at: string | null
+          created_at: string
+          deadline: string | null
+          decision: string | null
+          decision_reason: string | null
+          id: string
+          priority: string
+          property_id: string | null
+          status: string
+          task_type: string
+          updated_at: string
+          verification_checklist: Json | null
+          verifier_id: string | null
+          verifier_notes: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          decision?: string | null
+          decision_reason?: string | null
+          id?: string
+          priority?: string
+          property_id?: string | null
+          status?: string
+          task_type?: string
+          updated_at?: string
+          verification_checklist?: Json | null
+          verifier_id?: string | null
+          verifier_notes?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          decision?: string | null
+          decision_reason?: string | null
+          id?: string
+          priority?: string
+          property_id?: string | null
+          status?: string
+          task_type?: string
+          updated_at?: string
+          verification_checklist?: Json | null
+          verifier_id?: string | null
+          verifier_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_tasks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_tasks_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verifier_credentials: {
         Row: {
           created_at: string
@@ -4073,6 +4193,16 @@ export type Database = {
           updated_at: string
         }
       }
+      assign_verification_task: {
+        Args: {
+          p_property_id: string
+          p_verifier_id: string
+          p_task_type?: string
+          p_priority?: string
+          p_deadline?: string
+        }
+        Returns: string
+      }
       can_access_property: {
         Args: { _property_id: string; _user_id?: string }
         Returns: boolean
@@ -4080,6 +4210,16 @@ export type Database = {
       cleanup_typing_indicators: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      complete_verification_task: {
+        Args: {
+          p_task_id: string
+          p_decision: string
+          p_decision_reason?: string
+          p_verifier_notes?: string
+          p_checklist?: Json
+        }
+        Returns: boolean
       }
       create_investment_tracking: {
         Args: {

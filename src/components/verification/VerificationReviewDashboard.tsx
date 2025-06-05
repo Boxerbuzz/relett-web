@@ -8,11 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { FileText, Check, X, Clock, Eye, Download, AlertTriangle, Search } from 'lucide-react';
+import { FileText, Check, X, Clock, Eye, Search, Users, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { VerificationTaskManager } from './VerificationTaskManager';
 import { DocumentViewer } from './DocumentViewer';
+
+interface VerificationStats {
+  totalTasks: number;
+  pendingTasks: number;
+  assignedTasks: number;
+  completedTasks: number;
+  averageCompletionTime: number;
+}
 
 interface VerificationRequest {
   id: string;
@@ -40,26 +49,77 @@ interface VerificationRequest {
 }
 
 export function VerificationReviewDashboard() {
+  const [activeTab, setActiveTab] = useState('tasks');
+  const [stats, setStats] = useState<VerificationStats>({
+    totalTasks: 0,
+    pendingTasks: 0,
+    assignedTasks: 0,
+    completedTasks: 0,
+    averageCompletionTime: 0
+  });
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [verificationNotes, setVerificationNotes] = useState('');
-  const [verificationDecision, setVerificationDecision] = useState<'verified' | 'rejected'>('verified');
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const { hasRole } = useUserRoles();
   const { toast } = useToast();
 
+  const isVerifier = hasRole('verifier') || hasRole('admin');
+
   useEffect(() => {
-    fetchVerificationRequests();
-  }, []);
+    if (isVerifier) {
+      fetchVerificationStats();
+      fetchVerificationRequests();
+    }
+  }, [isVerifier]);
+
+  const fetchVerificationStats = async () => {
+    try {
+      // Fetch verification tasks stats
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('verification_tasks')
+        .select('status, created_at, completed_at');
+
+      if (tasksError) throw tasksError;
+
+      const tasks = tasksData || [];
+      const totalTasks = tasks.length;
+      const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+      const assignedTasks = tasks.filter(t => t.status === 'assigned' || t.status === 'in_progress').length;
+      const completedTasks = tasks.filter(t => t.status === 'completed').length;
+
+      // Calculate average completion time
+      const completedTasksWithTimes = tasks.filter(t => 
+        t.status === 'completed' && t.completed_at && t.created_at
+      );
+      
+      let averageCompletionTime = 0;
+      if (completedTasksWithTimes.length > 0) {
+        const totalTime = completedTasksWithTimes.reduce((sum, task) => {
+          const created = new Date(task.created_at).getTime();
+          const completed = new Date(task.completed_at!).getTime();
+          return sum + (completed - created);
+        }, 0);
+        averageCompletionTime = totalTime / completedTasksWithTimes.length / (1000 * 60 * 60 * 24); // Convert to days
+      }
+
+      setStats({
+        totalTasks,
+        pendingTasks,
+        assignedTasks,
+        completedTasks,
+        averageCompletionTime
+      });
+    } catch (error) {
+      console.error('Error fetching verification stats:', error);
+    }
+  };
 
   const fetchVerificationRequests = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data, error } = await supabase
         .from('document_verification_requests')
         .select(`
@@ -86,102 +146,6 @@ export function VerificationReviewDashboard() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const assignToSelf = async (requestId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('document_verification_requests')
-        .update({
-          assigned_verifier: user.id,
-          status: 'in_progress'
-        })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      await fetchVerificationRequests();
-      toast({
-        title: 'Request Assigned',
-        description: 'Verification request has been assigned to you.',
-      });
-    } catch (error) {
-      console.error('Error assigning request:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to assign request.',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const completeVerification = async () => {
-    if (!selectedRequest || !verificationNotes.trim()) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Update verification request
-      const { error: requestError } = await supabase
-        .from('document_verification_requests')
-        .update({
-          status: 'completed',
-          notes: verificationNotes,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', selectedRequest.id);
-
-      if (requestError) throw requestError;
-
-      // Update document status
-      const { error: documentError } = await supabase
-        .from('property_documents')
-        .update({
-          status: verificationDecision,
-          verification_notes: verificationNotes,
-          verified_by: user.id,
-          verified_at: new Date().toISOString()
-        })
-        .eq('id', selectedRequest.document_id);
-
-      if (documentError) throw documentError;
-
-      // Create notification
-      const { error: notificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: selectedRequest.requested_by,
-          type: 'general',
-          title: `Document ${verificationDecision === 'verified' ? 'Verified' : 'Rejected'}`,
-          message: `Your ${selectedRequest.property_documents.document_name} has been ${verificationDecision}.`,
-          metadata: {
-            document_id: selectedRequest.document_id,
-            verification_decision: verificationDecision
-          }
-        });
-
-      if (notificationError) throw notificationError;
-
-      setSelectedRequest(null);
-      setVerificationNotes('');
-      await fetchVerificationRequests();
-
-      toast({
-        title: 'Verification Complete',
-        description: `Document has been ${verificationDecision}.`,
-      });
-    } catch (error) {
-      console.error('Error completing verification:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to complete verification.',
-        variant: 'destructive'
-      });
     }
   };
 
@@ -214,13 +178,19 @@ export function VerificationReviewDashboard() {
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  if (!isVerifier) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Verifier Access Required</h3>
+          <p className="text-gray-600">
+            You need verifier permissions to access the verification dashboard.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -249,270 +219,172 @@ export function VerificationReviewDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Verification Dashboard</h1>
-          <p className="text-muted-foreground">Review and verify property documents</p>
+          <p className="text-muted-foreground">Manage property and document verification processes</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{filteredRequests.length} requests</Badge>
-        </div>
+        <Badge variant="outline" className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4" />
+          {stats.totalTasks} total tasks
+        </Badge>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search by document name or requester..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Verification Requests */}
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">Pending Review</TabsTrigger>
-          <TabsTrigger value="in_progress">In Progress</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pending" className="space-y-4">
-          {filteredRequests.filter(r => r.status === 'pending').map((request) => (
-            <Card key={request.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">
-                      {request.property_documents.document_name}
-                    </CardTitle>
-                    <CardDescription>
-                      Requested by: {request.requester?.first_name} {request.requester?.last_name}
-                    </CardDescription>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Type: {request.property_documents.document_type}</span>
-                      <span>•</span>
-                      <span>Size: {formatFileSize(request.property_documents.file_size)}</span>
-                      <span>•</span>
-                      <span>Submitted: {new Date(request.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getPriorityColor(request.priority)}>
-                      {request.priority}
-                    </Badge>
-                    <Badge className={getStatusColor(request.status)}>
-                      {request.status}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedRequest(request);
-                      setShowDocumentViewer(true);
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Document
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => assignToSelf(request.id)}
-                  >
-                    Assign to Me
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="in_progress" className="space-y-4">
-          {filteredRequests.filter(r => r.status === 'in_progress').map((request) => (
-            <Card key={request.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">
-                      {request.property_documents.document_name}
-                    </CardTitle>
-                    <CardDescription>
-                      Requested by: {request.requester?.first_name} {request.requester?.last_name}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getPriorityColor(request.priority)}>
-                      {request.priority}
-                    </Badge>
-                    <Badge className={getStatusColor(request.status)}>
-                      {request.status}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedRequest(request);
-                      setShowDocumentViewer(true);
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Document
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setSelectedRequest(request)}
-                  >
-                    Complete Review
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="completed" className="space-y-4">
-          {filteredRequests.filter(r => r.status === 'completed').map((request) => (
-            <Card key={request.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">
-                      {request.property_documents.document_name}
-                    </CardTitle>
-                    <CardDescription>
-                      Completed verification
-                    </CardDescription>
-                  </div>
-                  <Badge className={getStatusColor(request.status)}>
-                    Completed
-                  </Badge>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
-
-      {/* Verification Modal */}
-      {selectedRequest && !showDocumentViewer && (
-        <Card className="border-2 border-blue-200">
-          <CardHeader>
-            <CardTitle>Complete Verification</CardTitle>
-            <CardDescription>
-              Review and provide feedback for {selectedRequest.property_documents.document_name}
-            </CardDescription>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Verification Decision</label>
-              <Select value={verificationDecision} onValueChange={(value: any) => setVerificationDecision(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="verified">
-                    <div className="flex items-center">
-                      <Check className="h-4 w-4 mr-2 text-green-600" />
-                      Approve Document
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="rejected">
-                    <div className="flex items-center">
-                      <X className="h-4 w-4 mr-2 text-red-600" />
-                      Reject Document
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Verification Notes *
-              </label>
-              <Textarea
-                value={verificationNotes}
-                onChange={(e) => setVerificationNotes(e.target.value)}
-                placeholder="Provide detailed notes about your verification decision..."
-                rows={4}
-                required
-              />
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedRequest(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setSelectedRequest(selectedRequest);
-                  setShowDocumentViewer(true);
-                }}
-                variant="outline"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Review Document
-              </Button>
-              <Button
-                onClick={completeVerification}
-                disabled={!verificationNotes.trim()}
-                className={verificationDecision === 'verified' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
-              >
-                {verificationDecision === 'verified' ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Approve
-                  </>
-                ) : (
-                  <>
-                    <X className="h-4 w-4 mr-2" />
-                    Reject
-                  </>
-                )}
-              </Button>
-            </div>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalTasks}</div>
+            <p className="text-xs text-muted-foreground">All verification tasks</p>
           </CardContent>
         </Card>
-      )}
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{stats.pendingTasks}</div>
+            <p className="text-xs text-muted-foreground">Awaiting assignment</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.assignedTasks}</div>
+            <p className="text-xs text-muted-foreground">Being reviewed</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg. Time</CardTitle>
+            <Check className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.averageCompletionTime.toFixed(1)}d
+            </div>
+            <p className="text-xs text-muted-foreground">Average completion</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="tasks">Property Verification Tasks</TabsTrigger>
+          <TabsTrigger value="documents">Document Reviews</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tasks">
+          <VerificationTaskManager />
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-4">
+          {/* Document Verification Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search by document name or requester..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterPriority} onValueChange={setFilterPriority}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priority</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Document Verification Requests */}
+          <div className="space-y-4">
+            {filteredRequests.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No document verification requests found.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredRequests.map((request) => (
+                <Card key={request.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg">
+                          {request.property_documents.document_name}
+                        </CardTitle>
+                        <CardDescription>
+                          Requested by: {request.requester?.first_name} {request.requester?.last_name}
+                        </CardDescription>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>Type: {request.property_documents.document_type}</span>
+                          <span>•</span>
+                          <span>Submitted: {new Date(request.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getPriorityColor(request.priority)}>
+                          {request.priority}
+                        </Badge>
+                        <Badge className={getStatusColor(request.status)}>
+                          {request.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setShowDocumentViewer(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Document
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

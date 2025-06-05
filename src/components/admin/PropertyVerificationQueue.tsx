@@ -24,9 +24,10 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, FileCheck, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Search, FileCheck, Eye, CheckCircle, XCircle, UserPlus } from 'lucide-react';
 import { Json } from '@/types/database';
 import { PropertyMobileCard } from './PropertyMobileCard';
+import { PropertyVerificationActions } from '@/components/verification/PropertyVerificationActions';
 
 interface Property {
   id: string;
@@ -44,6 +45,13 @@ interface Property {
   };
   price: Json;
   location: Json;
+  verification_tasks?: {
+    id: string;
+    status: string;
+    priority: string;
+    assigned_at: string | null;
+    verifier_id: string | null;
+  }[];
 }
 
 export function PropertyVerificationQueue() {
@@ -52,6 +60,8 @@ export function PropertyVerificationQueue() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [showVerificationActions, setShowVerificationActions] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,6 +78,13 @@ export function PropertyVerificationQueue() {
             first_name,
             last_name,
             email
+          ),
+          verification_tasks (
+            id,
+            status,
+            priority,
+            assigned_at,
+            verifier_id
           )
         `)
         .order('created_at', { ascending: false })
@@ -123,6 +140,17 @@ export function PropertyVerificationQueue() {
     }
   };
 
+  const handleInitiateVerification = (property: Property) => {
+    setSelectedProperty(property);
+    setShowVerificationActions(true);
+  };
+
+  const handleVerificationInitiated = () => {
+    setShowVerificationActions(false);
+    setSelectedProperty(null);
+    fetchProperties(); // Refresh the list
+  };
+
   const filteredProperties = properties.filter(property => {
     const locationData = property.location as any;
     const matchesSearch = 
@@ -134,7 +162,8 @@ export function PropertyVerificationQueue() {
       (filterStatus === 'verified' && property.is_verified) ||
       (filterStatus === 'pending' && !property.is_verified) ||
       (filterStatus === 'active' && property.status === 'active') ||
-      (filterStatus === 'draft' && property.status === 'draft');
+      (filterStatus === 'draft' && property.status === 'draft') ||
+      (filterStatus === 'has_verification_task' && property.verification_tasks && property.verification_tasks.length > 0);
 
     const matchesType = filterType === 'all' || property.type === filterType;
 
@@ -144,6 +173,10 @@ export function PropertyVerificationQueue() {
   const getStatusBadge = (property: Property) => {
     if (property.is_verified) {
       return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
+    }
+    if (property.verification_tasks && property.verification_tasks.length > 0) {
+      const latestTask = property.verification_tasks[0];
+      return <Badge className="bg-blue-100 text-blue-800">Under Review</Badge>;
     }
     if (property.status === 'active') {
       return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
@@ -182,6 +215,13 @@ export function PropertyVerificationQueue() {
     return locationObj.city || 'Location not specified';
   };
 
+  const hasActiveVerificationTask = (property: Property) => {
+    return property.verification_tasks && 
+           property.verification_tasks.some(task => 
+             ['pending', 'assigned', 'in_progress'].includes(task.status)
+           );
+  };
+
   if (loading) {
     return (
       <Card>
@@ -196,6 +236,23 @@ export function PropertyVerificationQueue() {
     );
   }
 
+  if (showVerificationActions && selectedProperty) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => setShowVerificationActions(false)}>
+            ← Back to Queue
+          </Button>
+          <h2 className="text-xl font-semibold">Initiate Verification</h2>
+        </div>
+        <PropertyVerificationActions
+          property={selectedProperty}
+          onVerificationInitiated={handleVerificationInitiated}
+        />
+      </div>
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -203,7 +260,7 @@ export function PropertyVerificationQueue() {
           <FileCheck className="h-5 w-5" />
           Property Verification Queue
         </CardTitle>
-        <CardDescription>Review and verify property listings</CardDescription>
+        <CardDescription>Review and manage property verification processes</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filters */}
@@ -220,7 +277,7 @@ export function PropertyVerificationQueue() {
             </div>
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -229,6 +286,7 @@ export function PropertyVerificationQueue() {
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="has_verification_task">Under Review</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterType} onValueChange={setFilterType}>
@@ -312,7 +370,16 @@ export function PropertyVerificationQueue() {
                       <Button size="sm" variant="outline">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      {!property.is_verified && (
+                      {!hasActiveVerificationTask(property) && !property.is_verified && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleInitiateVerification(property)}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {!property.is_verified && !hasActiveVerificationTask(property) && (
                         <>
                           <Button
                             size="sm"

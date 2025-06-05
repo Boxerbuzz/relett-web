@@ -5,7 +5,7 @@ import { VerificationReviewDashboard } from '@/components/verification/Verificat
 
 const Verification = () => {
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 px-4">
       <VerificationReviewDashboard />
     </div>
   );
