@@ -51,12 +51,12 @@ export function PropertyVerificationActions({
   const fetchVerifiers = async () => {
     setLoadingVerifiers(true);
     try {
-      // Get users with verifier role
+      // Get users with verifier role - fixed query
       const { data: verifierRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select(`
           user_id,
-          users!inner(
+          users!user_roles_user_id_fkey(
             id,
             first_name,
             last_name,
@@ -70,7 +70,7 @@ export function PropertyVerificationActions({
       if (rolesError) throw rolesError;
 
       const activeVerifiers = verifierRoles?.filter(role => 
-        role.users?.is_active
+        role.users && role.users.is_active
       ).map(role => role.users) || [];
 
       setVerifiers(activeVerifiers);
