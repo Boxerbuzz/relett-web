@@ -1,10 +1,21 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, Calendar, MessageSquare, ArrowUpRight } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { 
+  MessageSquare, 
+  TrendingUp, 
+  BarChart3, 
+  History,
+  MapPin,
+  Coins,
+  ArrowUpDown
+} from 'lucide-react';
+import { TradeDialog } from './TradeDialog';
 
 interface Property {
   id: string;
@@ -33,90 +44,132 @@ export function PropertyList({
   onViewAnalytics, 
   onViewPaymentHistory 
 }: PropertyListProps) {
-  return (
-    <div className="space-y-4">
-      {properties.map((property) => (
-        <Card key={property.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg">{property.title}</CardTitle>
-                <CardDescription className="flex items-center mt-1">
-                  {property.location}
-                </CardDescription>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Badge className={property.roi >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                  {property.roi >= 0 ? '+' : ''}{property.roi}% ROI
-                </Badge>
-                {property.hasGroupChat && (
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                    <MessageSquare size={12} className="mr-1" />
-                    Chat
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Owned Tokens:</span>
-                <p className="font-medium">{property.ownedTokens}/{property.totalTokens}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Token Price:</span>
-                <p className="font-medium">${property.tokenPrice}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Current Value:</span>
-                <p className="font-medium">${property.currentValue}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Total Value:</span>
-                <p className="font-medium text-green-600">${property.totalValue.toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Investors:</span>
-                <p className="font-medium">{property.investorCount}</p>
-              </div>
-            </div>
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [showTradeDialog, setShowTradeDialog] = useState(false);
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => onViewAnalytics(property.id)}
-              >
-                <BarChart3 size={16} className="mr-2" />
-                Analytics
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => onViewPaymentHistory(property.id)}
-              >
-                <Calendar size={16} className="mr-2" />
-                Payments
-              </Button>
-              {property.hasGroupChat && (
-                <Button 
-                  className="flex-1"
-                  onClick={() => onJoinDiscussion(property.id)}
-                >
-                  <MessageSquare size={16} className="mr-2" />
-                  Discussion
-                </Button>
-              )}
-              <Button variant="outline" className="flex-1">
-                <ArrowUpRight size={16} className="mr-2" />
-                Trade
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+  const handleTrade = (property: Property) => {
+    setSelectedProperty(property);
+    setShowTradeDialog(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Your Properties</h2>
+        <Badge variant="outline" className="text-sm">
+          {properties.length} Properties
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {properties.map((property) => {
+          const ownershipPercentage = (property.ownedTokens / property.totalTokens) * 100;
+          
+          return (
+            <Card key={property.id} className="overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <CardTitle className="text-lg leading-tight">{property.title}</CardTitle>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{property.location}</span>
+                    </div>
+                  </div>
+                  <Badge 
+                    variant={property.roi >= 0 ? 'default' : 'destructive'}
+                    className="ml-2 flex-shrink-0"
+                  >
+                    {property.roi >= 0 ? '+' : ''}{property.roi.toFixed(1)}%
+                  </Badge>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">Your Tokens</p>
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-blue-600" />
+                      <span className="font-semibold">{property.ownedTokens}</span>
+                      <span className="text-sm text-gray-500">/ {property.totalTokens}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">Current Value</p>
+                    <p className="font-semibold text-lg">${property.totalValue.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Ownership</span>
+                    <span className="font-medium">{ownershipPercentage.toFixed(1)}%</span>
+                  </div>
+                  <Progress value={ownershipPercentage} className="h-2" />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleTrade(property)}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowUpDown className="w-4 h-4" />
+                      Trade
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onViewPaymentHistory(property.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <History className="w-4 h-4" />
+                      Payments
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onViewAnalytics(property.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Analytics
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onJoinDiscussion(property.id)}
+                      disabled={!property.hasGroupChat}
+                      className="flex items-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Discussion
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {selectedProperty && (
+        <TradeDialog
+          isOpen={showTradeDialog}
+          onClose={() => {
+            setShowTradeDialog(false);
+            setSelectedProperty(null);
+          }}
+          property={selectedProperty}
+        />
+      )}
     </div>
   );
 }
