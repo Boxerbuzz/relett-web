@@ -22,6 +22,16 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
+interface AddressData {
+  city?: string;
+  state?: string;
+  landmark?: string;
+  latitude?: number;
+  longitude?: number;
+  addressLine1?: string;
+  addressLine2?: string;
+}
+
 interface ProfileWizardProps {
   onComplete?: () => void;
 }
@@ -43,12 +53,14 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
     middle_name: '',
     // Address
     address: {
-      street: '',
       city: '',
       state: '',
-      country: 'Nigeria',
-      postal_code: ''
-    }
+      landmark: '',
+      latitude: 0,
+      longitude: 0,
+      addressLine1: '',
+      addressLine2: ''
+    } as AddressData
   });
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -72,6 +84,30 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
       if (userError) throw userError;
 
       if (userData) {
+        // Parse address data safely
+        let addressData: AddressData = {
+          city: '',
+          state: '',
+          landmark: '',
+          latitude: 0,
+          longitude: 0,
+          addressLine1: '',
+          addressLine2: ''
+        };
+
+        if (userData.address && typeof userData.address === 'object') {
+          const addr = userData.address as any;
+          addressData = {
+            city: addr.city || '',
+            state: addr.state || '',
+            landmark: addr.landmark || '',
+            latitude: addr.latitude || 0,
+            longitude: addr.longitude || 0,
+            addressLine1: addr.addressLine1 || '',
+            addressLine2: addr.addressLine2 || ''
+          };
+        }
+
         setFormData(prev => ({
           ...prev,
           first_name: userData.first_name || '',
@@ -84,13 +120,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
           state_of_origin: userData.state_of_origin || '',
           lga: userData.lga || '',
           middle_name: userData.middle_name || '',
-          address: userData.address || {
-            street: '',
-            city: '',
-            state: '',
-            country: 'Nigeria',
-            postal_code: ''
-          }
+          address: addressData
         }));
       }
     } catch (error) {
@@ -123,7 +153,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
       case 2:
         return formData.date_of_birth && formData.gender && formData.nationality;
       case 3:
-        return formData.address.street && formData.address.city && formData.address.state;
+        return formData.address.addressLine1 && formData.address.city && formData.address.state;
       default:
         return true;
     }
@@ -332,12 +362,22 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="street">Street Address *</Label>
+              <Label htmlFor="addressLine1">Address Line 1 *</Label>
               <Input
-                id="street"
-                value={formData.address.street}
-                onChange={(e) => updateFormData('address.street', e.target.value)}
+                id="addressLine1"
+                value={formData.address.addressLine1}
+                onChange={(e) => updateFormData('address.addressLine1', e.target.value)}
                 placeholder="Enter your street address"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="addressLine2">Address Line 2</Label>
+              <Input
+                id="addressLine2"
+                value={formData.address.addressLine2}
+                onChange={(e) => updateFormData('address.addressLine2', e.target.value)}
+                placeholder="Apartment, suite, etc. (optional)"
               />
             </div>
             
@@ -363,26 +403,14 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={formData.address.country}
-                  onChange={(e) => updateFormData('address.country', e.target.value)}
-                  placeholder="Nigeria"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">Postal Code</Label>
-                <Input
-                  id="postal_code"
-                  value={formData.address.postal_code}
-                  onChange={(e) => updateFormData('address.postal_code', e.target.value)}
-                  placeholder="e.g., 100001"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="landmark">Landmark</Label>
+              <Input
+                id="landmark"
+                value={formData.address.landmark}
+                onChange={(e) => updateFormData('address.landmark', e.target.value)}
+                placeholder="Nearby landmark (optional)"
+              />
             </div>
           </div>
         );
@@ -413,7 +441,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2">Address</h4>
                 <p className="text-sm text-gray-600">
-                  {formData.address.street}, {formData.address.city}, {formData.address.state}
+                  {formData.address.addressLine1}, {formData.address.city}, {formData.address.state}
                 </p>
               </div>
             </div>

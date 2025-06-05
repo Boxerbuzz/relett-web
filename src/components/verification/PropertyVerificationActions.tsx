@@ -27,6 +27,14 @@ interface Property {
   user_id: string;
 }
 
+interface Verifier {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_active: boolean;
+}
+
 interface PropertyVerificationActionsProps {
   property: Property;
   onVerificationInitiated?: () => void;
@@ -40,7 +48,7 @@ export function PropertyVerificationActions({
   const [priority, setPriority] = useState('medium');
   const [notes, setNotes] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [verifiers, setVerifiers] = useState<any[]>([]);
+  const [verifiers, setVerifiers] = useState<Verifier[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingVerifiers, setLoadingVerifiers] = useState(false);
   const { hasRole } = useUserRoles();
@@ -63,34 +71,36 @@ export function PropertyVerificationActions({
       // Also get users who have additional verifier roles from user_roles table
       const { data: additionalVerifiers, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          user_id,
-          users!user_roles_user_id_fkey(
-            id,
-            first_name,
-            last_name,
-            email,
-            is_active
-          )
-        `)
+        .select('user_id')
         .eq('role', 'verifier')
         .eq('is_active', true);
 
       if (rolesError) throw rolesError;
 
+      // Get user details for additional verifiers
+      const additionalVerifierIds = additionalVerifiers?.map(role => role.user_id) || [];
+      
+      let additionalVerifierUsers: Verifier[] = [];
+      if (additionalVerifierIds.length > 0) {
+        const { data: additionalUsers, error: additionalUsersError } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, email, is_active')
+          .in('id', additionalVerifierIds)
+          .eq('is_active', true);
+
+        if (additionalUsersError) throw additionalUsersError;
+        additionalVerifierUsers = additionalUsers || [];
+      }
+
       // Combine both lists and remove duplicates
       const allVerifiers = [...(verifierUsers || [])];
       
-      if (additionalVerifiers) {
-        additionalVerifiers.forEach(role => {
-          if (role.users && role.users.is_active) {
-            const existingVerifier = allVerifiers.find(v => v.id === role.users.id);
-            if (!existingVerifier) {
-              allVerifiers.push(role.users);
-            }
-          }
-        });
-      }
+      additionalVerifierUsers.forEach(user => {
+        const existingVerifier = allVerifiers.find(v => v.id === user.id);
+        if (!existingVerifier) {
+          allVerifiers.push(user);
+        }
+      });
 
       setVerifiers(allVerifiers);
     } catch (error) {
