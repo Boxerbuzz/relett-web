@@ -1,26 +1,37 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { 
-  User, 
-  MapPin, 
-  Phone, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import {
+  User,
+  MapPin,
+  Phone,
   CheckCircle,
   ArrowRight,
-  ArrowLeft
-} from 'lucide-react';
+  ArrowLeft,
+} from "lucide-react";
 
 interface AddressData {
   city?: string;
@@ -40,27 +51,27 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Basic Information
-    first_name: '',
-    last_name: '',
-    phone: '',
-    bio: '',
+    first_name: "",
+    last_name: "",
+    phone: "",
+    bio: "",
     // Profile Details
-    date_of_birth: '',
-    gender: '',
-    nationality: '',
-    state_of_origin: '',
-    lga: '',
-    middle_name: '',
+    date_of_birth: "",
+    gender: "",
+    nationality: "",
+    state_of_origin: "",
+    lga: "",
+    middle_name: "",
     // Address
     address: {
-      city: '',
-      state: '',
-      landmark: '',
+      city: "",
+      state: "",
+      landmark: "",
       latitude: 0,
       longitude: 0,
-      addressLine1: '',
-      addressLine2: ''
-    } as AddressData
+      addressLine1: "",
+      addressLine2: "",
+    } as AddressData,
   });
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -76,9 +87,9 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
     try {
       // Fetch user data from users table (consolidated)
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user?.id)
+        .from("users")
+        .select("*")
+        .eq("id", user?.id)
         .single();
 
       if (userError) throw userError;
@@ -86,62 +97,62 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
       if (userData) {
         // Parse address data safely
         let addressData: AddressData = {
-          city: '',
-          state: '',
-          landmark: '',
+          city: "",
+          state: "",
+          landmark: "",
           latitude: 0,
           longitude: 0,
-          addressLine1: '',
-          addressLine2: ''
+          addressLine1: "",
+          addressLine2: "",
         };
 
-        if (userData.address && typeof userData.address === 'object') {
+        if (userData.address && typeof userData.address === "object") {
           const addr = userData.address as any;
           addressData = {
-            city: addr.city || '',
-            state: addr.state || '',
-            landmark: addr.landmark || '',
+            city: addr.city || "",
+            state: addr.state || "",
+            landmark: addr.landmark || "",
             latitude: addr.latitude || 0,
             longitude: addr.longitude || 0,
-            addressLine1: addr.addressLine1 || '',
-            addressLine2: addr.addressLine2 || ''
+            addressLine1: addr.addressLine1 || "",
+            addressLine2: addr.addressLine2 || "",
           };
         }
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          first_name: userData.first_name || '',
-          last_name: userData.last_name || '',
-          phone: userData.phone || '',
-          bio: userData.bio || '',
-          date_of_birth: userData.date_of_birth || '',
-          gender: userData.gender || '',
-          nationality: userData.nationality || '',
-          state_of_origin: userData.state_of_origin || '',
-          lga: userData.lga || '',
-          middle_name: userData.middle_name || '',
-          address: addressData
+          first_name: userData.first_name || "",
+          last_name: userData.last_name || "",
+          phone: userData.phone || "",
+          bio: userData.bio || "",
+          date_of_birth: userData.date_of_birth || "",
+          gender: userData.gender || "",
+          nationality: userData.nationality || "",
+          state_of_origin: userData.state_of_origin || "",
+          lga: userData.lga || "",
+          middle_name: userData.middle_name || "",
+          address: addressData,
         }));
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
     }
   };
 
   const updateFormData = (field: string, value: any) => {
-    if (field.startsWith('address.')) {
-      const addressField = field.split('.')[1];
-      setFormData(prev => ({
+    if (field.startsWith("address.")) {
+      const addressField = field.split(".")[1];
+      setFormData((prev) => ({
         ...prev,
         address: {
           ...prev.address,
-          [addressField]: value
-        }
+          [addressField]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
@@ -151,9 +162,15 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
       case 1:
         return formData.first_name && formData.last_name && formData.phone;
       case 2:
-        return formData.date_of_birth && formData.gender && formData.nationality;
+        return (
+          formData.date_of_birth && formData.gender && formData.nationality
+        );
       case 3:
-        return formData.address.addressLine1 && formData.address.city && formData.address.state;
+        return (
+          formData.address.addressLine1 &&
+          formData.address.city &&
+          formData.address.state
+        );
       default:
         return true;
     }
@@ -161,18 +178,18 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
       toast({
-        title: 'Required Fields Missing',
-        description: 'Please fill in all required fields before continuing.',
-        variant: 'destructive'
+        title: "Required Fields Missing",
+        description: "Please fill in all required fields before continuing.",
+        variant: "destructive",
       });
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep(prev => prev - 1);
+    setCurrentStep((prev) => prev - 1);
   };
 
   const handleComplete = async () => {
@@ -180,7 +197,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
     try {
       // Update users table with all the consolidated data
       const { error: userError } = await supabase
-        .from('users')
+        .from("users")
         .update({
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -194,24 +211,32 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
           state_of_origin: formData.state_of_origin,
           lga: formData.lga,
           middle_name: formData.middle_name,
-          address: formData.address
+          address: {
+            city: formData.address.city,
+            state: formData.address.state,
+            landmark: formData.address.landmark,
+            latitude: formData.address.latitude,
+            longitude: formData.address.longitude,
+            addressLine1: formData.address.addressLine1,
+            addressLine2: formData.address.addressLine2,
+          },
         })
-        .eq('id', user?.id);
+        .eq("id", user?.id);
 
       if (userError) throw userError;
 
       toast({
-        title: 'Profile Completed',
-        description: 'Your profile has been successfully set up!',
+        title: "Profile Completed",
+        description: "Your profile has been successfully set up!",
       });
 
       onComplete?.();
     } catch (error) {
-      console.error('Error completing profile:', error);
+      console.error("Error completing profile:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to complete profile setup',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to complete profile setup",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -229,46 +254,46 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <User className="w-5 h-5 text-blue-600" />
               <h3 className="text-lg font-semibold">Basic Information</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="first_name">First Name *</Label>
                 <Input
                   id="first_name"
                   value={formData.first_name}
-                  onChange={(e) => updateFormData('first_name', e.target.value)}
+                  onChange={(e) => updateFormData("first_name", e.target.value)}
                   placeholder="Enter your first name"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="last_name">Last Name *</Label>
                 <Input
                   id="last_name"
                   value={formData.last_name}
-                  onChange={(e) => updateFormData('last_name', e.target.value)}
+                  onChange={(e) => updateFormData("last_name", e.target.value)}
                   placeholder="Enter your last name"
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number *</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => updateFormData('phone', e.target.value)}
+                onChange={(e) => updateFormData("phone", e.target.value)}
                 placeholder="+234 xxx xxx xxxx"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="bio">Bio (Optional)</Label>
               <Textarea
                 id="bio"
                 value={formData.bio}
-                onChange={(e) => updateFormData('bio', e.target.value)}
+                onChange={(e) => updateFormData("bio", e.target.value)}
                 placeholder="Tell us a bit about yourself..."
                 rows={3}
               />
@@ -283,20 +308,25 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <User className="w-5 h-5 text-blue-600" />
               <h3 className="text-lg font-semibold">Personal Details</h3>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="date_of_birth">Date of Birth *</Label>
               <Input
                 id="date_of_birth"
                 type="date"
                 value={formData.date_of_birth}
-                onChange={(e) => updateFormData('date_of_birth', e.target.value)}
+                onChange={(e) =>
+                  updateFormData("date_of_birth", e.target.value)
+                }
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="gender">Gender *</Label>
-              <Select value={formData.gender} onValueChange={(value) => updateFormData('gender', value)}>
+              <Select
+                value={formData.gender}
+                onValueChange={(value) => updateFormData("gender", value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -304,38 +334,42 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  <SelectItem value="prefer_not_to_say">
+                    Prefer not to say
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="nationality">Nationality *</Label>
               <Input
                 id="nationality"
                 value={formData.nationality}
-                onChange={(e) => updateFormData('nationality', e.target.value)}
+                onChange={(e) => updateFormData("nationality", e.target.value)}
                 placeholder="e.g., Nigerian"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="state_of_origin">State of Origin</Label>
                 <Input
                   id="state_of_origin"
                   value={formData.state_of_origin}
-                  onChange={(e) => updateFormData('state_of_origin', e.target.value)}
+                  onChange={(e) =>
+                    updateFormData("state_of_origin", e.target.value)
+                  }
                   placeholder="e.g., Lagos"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="lga">Local Government Area</Label>
                 <Input
                   id="lga"
                   value={formData.lga}
-                  onChange={(e) => updateFormData('lga', e.target.value)}
+                  onChange={(e) => updateFormData("lga", e.target.value)}
                   placeholder="e.g., Ikeja"
                 />
               </div>
@@ -346,7 +380,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <Input
                 id="middle_name"
                 value={formData.middle_name}
-                onChange={(e) => updateFormData('middle_name', e.target.value)}
+                onChange={(e) => updateFormData("middle_name", e.target.value)}
                 placeholder="Enter your middle name"
               />
             </div>
@@ -360,55 +394,65 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <MapPin className="w-5 h-5 text-blue-600" />
               <h3 className="text-lg font-semibold">Address Information</h3>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="addressLine1">Address Line 1 *</Label>
               <Input
                 id="addressLine1"
                 value={formData.address.addressLine1}
-                onChange={(e) => updateFormData('address.addressLine1', e.target.value)}
+                onChange={(e) =>
+                  updateFormData("address.addressLine1", e.target.value)
+                }
                 placeholder="Enter your street address"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
                 id="addressLine2"
                 value={formData.address.addressLine2}
-                onChange={(e) => updateFormData('address.addressLine2', e.target.value)}
+                onChange={(e) =>
+                  updateFormData("address.addressLine2", e.target.value)
+                }
                 placeholder="Apartment, suite, etc. (optional)"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">City *</Label>
                 <Input
                   id="city"
                   value={formData.address.city}
-                  onChange={(e) => updateFormData('address.city', e.target.value)}
+                  onChange={(e) =>
+                    updateFormData("address.city", e.target.value)
+                  }
                   placeholder="e.g., Lagos"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="state">State *</Label>
                 <Input
                   id="state"
                   value={formData.address.state}
-                  onChange={(e) => updateFormData('address.state', e.target.value)}
+                  onChange={(e) =>
+                    updateFormData("address.state", e.target.value)
+                  }
                   placeholder="e.g., Lagos State"
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="landmark">Landmark</Label>
               <Input
                 id="landmark"
                 value={formData.address.landmark}
-                onChange={(e) => updateFormData('address.landmark', e.target.value)}
+                onChange={(e) =>
+                  updateFormData("address.landmark", e.target.value)
+                }
                 placeholder="Nearby landmark (optional)"
               />
             </div>
@@ -422,7 +466,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
               <CheckCircle className="w-5 h-5 text-green-600" />
               <h3 className="text-lg font-semibold">Review & Complete</h3>
             </div>
-            
+
             <div className="space-y-4">
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2">Basic Information</h4>
@@ -430,22 +474,23 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
                   {formData.first_name} {formData.last_name} • {formData.phone}
                 </p>
               </div>
-              
+
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2">Personal Details</h4>
                 <p className="text-sm text-gray-600">
                   {formData.gender} • {formData.nationality}
                 </p>
               </div>
-              
+
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2">Address</h4>
                 <p className="text-sm text-gray-600">
-                  {formData.address.addressLine1}, {formData.address.city}, {formData.address.state}
+                  {formData.address.addressLine1}, {formData.address.city},{" "}
+                  {formData.address.state}
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 p-4 bg-green-50 rounded-lg">
               <CheckCircle className="w-5 h-5 text-green-600" />
               <p className="text-green-800">
@@ -476,10 +521,10 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
         </div>
         <Progress value={getStepProgress()} className="mt-4" />
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {renderStep()}
-        
+
         <div className="flex items-center justify-between pt-6 border-t">
           <Button
             variant="outline"
@@ -489,7 +534,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
-          
+
           {currentStep < 4 ? (
             <Button onClick={handleNext} disabled={!validateStep(currentStep)}>
               Next
@@ -497,7 +542,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
             </Button>
           ) : (
             <Button onClick={handleComplete} disabled={loading}>
-              {loading ? 'Completing...' : 'Complete Profile'}
+              {loading ? "Completing..." : "Complete Profile"}
               <CheckCircle className="w-4 h-4 ml-2" />
             </Button>
           )}
