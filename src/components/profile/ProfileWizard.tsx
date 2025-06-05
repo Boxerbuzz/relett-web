@@ -40,6 +40,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
     nationality: '',
     state_of_origin: '',
     lga: '',
+    middle_name: '',
     // Address
     address: {
       street: '',
@@ -61,7 +62,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
 
   const fetchUserData = async () => {
     try {
-      // Fetch user data
+      // Fetch user data from users table (consolidated)
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
@@ -70,13 +71,6 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
 
       if (userError) throw userError;
 
-      // Fetch profile data
-      const { data: profileData } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
       if (userData) {
         setFormData(prev => ({
           ...prev,
@@ -84,12 +78,13 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
           last_name: userData.last_name || '',
           phone: userData.phone || '',
           bio: userData.bio || '',
-          date_of_birth: profileData?.date_of_birth || '',
-          gender: profileData?.gender || '',
-          nationality: profileData?.nationality || '',
-          state_of_origin: profileData?.state_of_origin || '',
-          lga: profileData?.lga || '',
-          address: profileData?.address || {
+          date_of_birth: userData.date_of_birth || '',
+          gender: userData.gender || '',
+          nationality: userData.nationality || '',
+          state_of_origin: userData.state_of_origin || '',
+          lga: userData.lga || '',
+          middle_name: userData.middle_name || '',
+          address: userData.address || {
             street: '',
             city: '',
             state: '',
@@ -153,7 +148,7 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // Update users table
+      // Update users table with all the consolidated data
       const { error: userError } = await supabase
         .from('users')
         .update({
@@ -162,26 +157,18 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
           phone: formData.phone,
           bio: formData.bio,
           full_name: `${formData.first_name} ${formData.last_name}`,
-          has_setup: true
-        })
-        .eq('id', user?.id);
-
-      if (userError) throw userError;
-
-      // Update or insert profile data
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: user?.id,
+          has_setup: true,
           date_of_birth: formData.date_of_birth,
           gender: formData.gender,
           nationality: formData.nationality,
           state_of_origin: formData.state_of_origin,
           lga: formData.lga,
+          middle_name: formData.middle_name,
           address: formData.address
-        });
+        })
+        .eq('id', user?.id);
 
-      if (profileError) throw profileError;
+      if (userError) throw userError;
 
       toast({
         title: 'Profile Completed',
@@ -322,6 +309,16 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
                   placeholder="e.g., Ikeja"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="middle_name">Middle Name</Label>
+              <Input
+                id="middle_name"
+                value={formData.middle_name}
+                onChange={(e) => updateFormData('middle_name', e.target.value)}
+                placeholder="Enter your middle name"
+              />
             </div>
           </div>
         );

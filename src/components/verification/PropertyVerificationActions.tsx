@@ -51,8 +51,17 @@ export function PropertyVerificationActions({
   const fetchVerifiers = async () => {
     setLoadingVerifiers(true);
     try {
-      // Get users with verifier role - fixed query
-      const { data: verifierRoles, error: rolesError } = await supabase
+      // Get users with verifier role from the users table where user_type = 'verifier'
+      const { data: verifierUsers, error: verifiersError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email, is_active')
+        .eq('user_type', 'verifier')
+        .eq('is_active', true);
+
+      if (verifiersError) throw verifiersError;
+
+      // Also get users who have additional verifier roles from user_roles table
+      const { data: additionalVerifiers, error: rolesError } = await supabase
         .from('user_roles')
         .select(`
           user_id,
@@ -69,11 +78,21 @@ export function PropertyVerificationActions({
 
       if (rolesError) throw rolesError;
 
-      const activeVerifiers = verifierRoles?.filter(role => 
-        role.users && role.users.is_active
-      ).map(role => role.users) || [];
+      // Combine both lists and remove duplicates
+      const allVerifiers = [...(verifierUsers || [])];
+      
+      if (additionalVerifiers) {
+        additionalVerifiers.forEach(role => {
+          if (role.users && role.users.is_active) {
+            const existingVerifier = allVerifiers.find(v => v.id === role.users.id);
+            if (!existingVerifier) {
+              allVerifiers.push(role.users);
+            }
+          }
+        });
+      }
 
-      setVerifiers(activeVerifiers);
+      setVerifiers(allVerifiers);
     } catch (error) {
       console.error('Error fetching verifiers:', error);
       toast({
