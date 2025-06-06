@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Json } from '@/integrations/supabase/types';
 
 interface PropertyData {
   title: string;
@@ -30,14 +31,15 @@ interface AIValuationResult {
   marketComparisons: any[];
 }
 
+// This interface matches the database structure
 interface AIPropertyValuation {
   id: string;
   property_id?: string;
   user_id: string;
   ai_estimated_value: number;
   confidence_score: number;
-  valuation_factors: Record<string, any>;
-  market_comparisons: any[];
+  valuation_factors: Json;
+  market_comparisons: Json;
   ai_model?: string;
   created_at: string;
   updated_at: string;
