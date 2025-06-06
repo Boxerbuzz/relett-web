@@ -8,16 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
 import { 
   Calculator, 
-  DollarSign, 
   Users, 
-  TrendingUp,
   Download,
   Send,
   AlertCircle
@@ -92,21 +89,38 @@ export function RevenueDistributionCalculator() {
   const fetchTokenHolders = async (propertyId: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First get token holdings
+      const { data: holdings, error: holdingsError } = await supabase
         .from('token_holdings')
-        .select(`
-          *,
-          holder:users(id, first_name, last_name, email)
-        `)
+        .select('*')
         .eq('tokenized_property_id', propertyId);
 
-      if (error) throw error;
+      if (holdingsError) throw holdingsError;
 
-      const holdersWithDetails = (data || []).map(holding => ({
-        ...holding,
-        holder_name: `${holding.holder?.first_name || ''} ${holding.holder?.last_name || ''}`.trim(),
-        holder_email: holding.holder?.email
-      }));
+      if (!holdings || holdings.length === 0) {
+        setTokenHolders([]);
+        setLoading(false);
+        return;
+      }
+
+      // Then get user details for each holder
+      const holderIds = holdings.map(h => h.holder_id);
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email')
+        .in('id', holderIds);
+
+      if (usersError) throw usersError;
+
+      // Combine holdings with user details
+      const holdersWithDetails = holdings.map(holding => {
+        const user = users?.find(u => u.id === holding.holder_id);
+        return {
+          ...holding,
+          holder_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Unknown',
+          holder_email: user?.email || ''
+        };
+      });
 
       setTokenHolders(holdersWithDetails);
     } catch (error) {

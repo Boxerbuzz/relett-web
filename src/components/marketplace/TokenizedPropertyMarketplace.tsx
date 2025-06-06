@@ -35,13 +35,14 @@ interface TokenizedProperty {
   status: string;
   revenue_distribution_frequency: string;
   investment_terms: string;
-  property: {
+  property?: {
+    id: string;
     title: string;
     description: string;
     location: any;
-    property_images: Array<{ url: string; is_primary: boolean }>;
+    property_images?: Array<{ url: string; is_primary: boolean }>;
   };
-  land_title: {
+  land_title?: {
     location_address: string;
   };
   available_tokens?: number;
@@ -63,11 +64,17 @@ export function TokenizedPropertyMarketplace() {
 
   const fetchTokenizedProperties = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch tokenized properties with basic property and land title info
+      const { data: tokenizedData, error } = await supabase
         .from('tokenized_properties')
         .select(`
           *,
-          property:properties(*),
+          property:properties(
+            id,
+            title,
+            description,
+            location
+          ),
           land_title:land_titles(location_address)
         `)
         .in('status', ['minted', 'active'])
@@ -77,12 +84,23 @@ export function TokenizedPropertyMarketplace() {
 
       // Calculate additional metrics for each property
       const propertiesWithMetrics = await Promise.all(
-        (data || []).map(async (property) => {
+        (tokenizedData || []).map(async (property) => {
           // Get token holdings to calculate available tokens and investor count
           const { data: holdings } = await supabase
             .from('token_holdings')
             .select('tokens_owned, holder_id')
             .eq('tokenized_property_id', property.id);
+
+          // Get property images separately if property exists
+          let propertyImages: Array<{ url: string; is_primary: boolean }> = [];
+          if (property.property?.id) {
+            const { data: images } = await supabase
+              .from('property_images')
+              .select('url, is_primary')
+              .eq('property_id', property.property.id);
+            
+            propertyImages = images || [];
+          }
 
           const totalSold = holdings?.reduce((sum, holding) => 
             sum + parseInt(holding.tokens_owned), 0) || 0;
@@ -92,6 +110,10 @@ export function TokenizedPropertyMarketplace() {
 
           return {
             ...property,
+            property: property.property ? {
+              ...property.property,
+              property_images: propertyImages
+            } : undefined,
             available_tokens: availableTokens,
             investor_count: investorCount,
             funding_progress: fundingProgress
@@ -118,12 +140,13 @@ export function TokenizedPropertyMarketplace() {
   };
 
   const getPrimaryImage = (property: TokenizedProperty) => {
-    return property.property?.property_images?.find(img => img.is_primary)?.url || 
-           property.property?.property_images?.[0]?.url || 
+    const images = property.property?.property_images || [];
+    return images.find(img => img.is_primary)?.url || 
+           images[0]?.url || 
            '/placeholder.svg';
   };
 
-  const getStatusBadge = (status: string, fundingProgress: number) => {
+  const getStatusBadge = (status: string, fundingProgress: number = 0) => {
     if (status === 'active' && fundingProgress < 100) {
       return <Badge className="bg-green-100 text-green-800">Funding</Badge>;
     }
@@ -142,9 +165,9 @@ export function TokenizedPropertyMarketplace() {
   const filteredProperties = properties.filter(property => {
     switch (activeTab) {
       case 'funding':
-        return property.funding_progress < 100;
+        return (property.funding_progress || 0) < 100;
       case 'funded':
-        return property.funding_progress >= 100;
+        return (property.funding_progress || 0) >= 100;
       case 'high-roi':
         return property.expected_roi >= 12;
       default:
@@ -245,12 +268,12 @@ export function TokenizedPropertyMarketplace() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Funding Progress</span>
-                          <span>{property.funding_progress?.toFixed(1)}%</span>
+                          <span>{(property.funding_progress || 0).toFixed(1)}%</span>
                         </div>
-                        <Progress value={property.funding_progress} className="h-2" />
+                        <Progress value={property.funding_progress || 0} className="h-2" />
                         <div className="flex justify-between text-xs text-gray-500">
-                          <span>{property.investor_count} investors</span>
-                          <span>{property.available_tokens} tokens available</span>
+                          <span>{property.investor_count || 0} investors</span>
+                          <span>{property.available_tokens || 0} tokens available</span>
                         </div>
                       </div>
 
@@ -274,9 +297,9 @@ export function TokenizedPropertyMarketplace() {
                       <Button 
                         onClick={() => handleBuyTokens(property)}
                         className="w-full"
-                        disabled={property.available_tokens === 0}
+                        disabled={(property.available_tokens || 0) === 0}
                       >
-                        {property.available_tokens === 0 ? 'Sold Out' : 'Invest Now'}
+                        {(property.available_tokens || 0) === 0 ? 'Sold Out' : 'Invest Now'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -289,18 +312,10 @@ export function TokenizedPropertyMarketplace() {
 
       {selectedProperty && (
         <BuyTokenDialog
-          isOpen={showBuyDialog}
-          onClose={() => {
-            setShowBuyDialog(false);
-            setSelectedProperty(null);
-          }}
-          tokenizedProperty={selectedProperty}
-          onSuccess={() => {
-            fetchTokenizedProperties();
-            toast({
-              title: 'Investment Successful',
-              description: 'Your tokens have been purchased successfully',
-            });
+          open={showBuyDialog}
+          onOpenChange={(open) => {
+            setShowBuyDialog(open);
+            if (!open) setSelectedProperty(null);
           }}
         />
       )}

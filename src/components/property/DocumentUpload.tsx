@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Upload, FileText, CheckCircle, X, AlertTriangle } from 'lucide-react';
-import { useFileUpload } from '@/hooks/useFileUpload';
+import { useSupabaseStorage } from '@/hooks/useSupabaseStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface DocumentUploadProps {
@@ -28,7 +28,7 @@ interface UploadedDocument {
 const DOCUMENT_TYPES = [
   { key: 'deed', label: 'Property Deed', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
   { key: 'survey', label: 'Survey Plan', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
-  { key: 'certificate', label: 'Certificate of Occupancy', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
+  { key: 'certificate_of_occupancy', label: 'Certificate of Occupancy', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
   { key: 'tax_clearance', label: 'Tax Clearance', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
   { key: 'other', label: 'Other Documents', required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }
 ];
@@ -40,14 +40,14 @@ export function DocumentUpload({
   requiredTypes = ['deed', 'survey']
 }: DocumentUploadProps) {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
-  const { uploadFile, deleteFile, isUploading, uploadProgress } = useFileUpload();
+  const { uploadFile, deleteFile, isUploading, uploadProgress } = useSupabaseStorage();
   const { toast } = useToast();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>, docType: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 10MB)
+    // Validate file size (max 10MB for documents)
     if (file.size > 10 * 1024 * 1024) {
       toast({
         title: 'File too large',
@@ -60,9 +60,9 @@ export function DocumentUpload({
     try {
       const result = await uploadFile(file, {
         bucket: 'property-documents',
-        path: propertyId ? `property-${propertyId}` : 'temp',
+        folder: propertyId ? `property-${propertyId}` : 'temp',
         maxSize: 10 * 1024 * 1024,
-        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp']
       });
 
       const newDocument: UploadedDocument = {
@@ -90,9 +90,12 @@ export function DocumentUpload({
     try {
       // Extract path from URL for deletion
       const urlParts = url.split('/');
-      const path = urlParts.slice(-2).join('/'); // Get last two parts of path
+      const pathIndex = urlParts.findIndex(part => part === 'property-documents');
+      if (pathIndex !== -1) {
+        const path = urlParts.slice(pathIndex + 1).join('/');
+        await deleteFile('property-documents', path);
+      }
       
-      await deleteFile('property-documents', path);
       setDocuments(prev => prev.filter(doc => doc.id !== documentId));
     } catch (error) {
       console.error('Delete failed:', error);
@@ -266,7 +269,7 @@ export function DocumentUpload({
           </h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• All documents must be clear and legible</li>
-            <li>• Accepted formats: PDF, JPG, PNG (max 10MB each)</li>
+            <li>• Accepted formats: PDF, JPG, PNG, WebP (max 10MB each)</li>
             <li>• Required documents must be uploaded before property submission</li>
             <li>• Documents will be verified by our team within 2-3 business days</li>
           </ul>
