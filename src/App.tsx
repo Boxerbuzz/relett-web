@@ -21,6 +21,10 @@ import PropertyVerification from "./pages/PropertyVerification";
 import MapView from "./pages/MapView";
 import Notifications from "./pages/Notifications";
 import Admin from "./pages/Admin";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DataFlow from "./pages/DataFlow";
+import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -50,6 +54,28 @@ const App = () => (
               <Routes>
                 {/* Auth routes - no layout */}
                 <Route path="/auth" element={<Auth />} />
+                
+                {/* Public pages - with layout but no auth required */}
+                <Route path="/terms" element={
+                  <Layout>
+                    <TermsAndConditions />
+                  </Layout>
+                } />
+                <Route path="/privacy" element={
+                  <Layout>
+                    <PrivacyPolicy />
+                  </Layout>
+                } />
+                <Route path="/data-flow" element={
+                  <Layout>
+                    <DataFlow />
+                  </Layout>
+                } />
+                <Route path="/docs" element={
+                  <Layout>
+                    <Documentation />
+                  </Layout>
+                } />
                 
                 {/* Protected routes - with layout */}
                 <Route path="/" element={
