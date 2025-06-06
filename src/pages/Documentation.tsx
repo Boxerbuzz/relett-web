@@ -4,32 +4,32 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Shield, Eye, Database, Lock, Share, FileText, AlertTriangle, ArrowLeft, 
-  Twitter, Facebook, Instagram, Linkedin, Mail, Phone, MapPin, Users,
-  Globe, Settings, Clock, Trash2, Server, Activity, Smartphone, HardDrive
+  BookOpen, Database, Code, Webhook, ArrowLeft, Twitter, Facebook, 
+  Instagram, Linkedin, Mail, Phone, MapPin, Key, Server, Activity,
+  Globe, FileText, Settings, Zap, Shield, Users, Lock, Eye
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-const PrivacyPolicy = () => {
+const Documentation = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("commitment");
+  const [activeSection, setActiveSection] = useState("overview");
 
   const tableOfContents = [
-    { id: "commitment", title: "Our Privacy Commitment", icon: Shield },
-    { id: "collection", title: "Information We Collect", icon: Database },
-    { id: "usage", title: "How We Use Information", icon: Eye },
-    { id: "sharing", title: "Information Sharing", icon: Share },
-    { id: "protection", title: "Data Protection & Security", icon: Lock },
-    { id: "rights", title: "Your Privacy Rights", icon: Users },
-    { id: "retention", title: "Data Retention", icon: Clock },
-    { id: "international", title: "International Transfers", icon: Globe },
-    { id: "cookies", title: "Cookies & Tracking", icon: Settings },
-    { id: "automated-processing", title: "Automated Processing & AI", icon: Activity },
-    { id: "blockchain", title: "Blockchain & Public Data", icon: Server },
-    { id: "children", title: "Children's Privacy", icon: AlertTriangle },
-    { id: "changes", title: "Policy Changes", icon: FileText },
-    { id: "contact", title: "Contact Information", icon: Mail },
+    { id: "overview", title: "Overview", icon: BookOpen },
+    { id: "database-schema", title: "Database Schema", icon: Database },
+    { id: "api-endpoints", title: "API Endpoints", icon: Code },
+    { id: "edge-functions", title: "Edge Functions", icon: Zap },
+    { id: "webhooks", title: "Webhooks", icon: Webhook },
+    { id: "authentication", title: "Authentication", icon: Key },
+    { id: "real-time", title: "Real-time Features", icon: Activity },
+    { id: "file-storage", title: "File Storage", icon: Server },
+    { id: "security", title: "Security", icon: Shield },
+    { id: "user-roles", title: "User Roles & Permissions", icon: Users },
+    { id: "compliance", title: "Compliance Features", icon: Lock },
+    { id: "monitoring", title: "Monitoring & Analytics", icon: Eye },
+    { id: "deployment", title: "Deployment", icon: Globe },
+    { id: "troubleshooting", title: "Troubleshooting", icon: Settings },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -41,7 +41,7 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       {/* Header with back button */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center">
@@ -55,109 +55,128 @@ const PrivacyPolicy = () => {
             Back
           </Button>
           <div className="ml-4">
-            <h1 className="text-xl font-bold text-gray-900">Privacy Policy</h1>
+            <h1 className="text-xl font-bold text-gray-900">Technical Documentation</h1>
             <p className="text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
           </div>
         </div>
       </header>
 
-      {/* Main content with sidebar */}
-      <div className="flex-1 flex">
-        {/* Table of Contents Sidebar - Fixed on large screens */}
-        <aside className="hidden lg:block w-80 bg-white border-r border-gray-200 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-            <nav className="space-y-2">
-              {tableOfContents.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => scrollToSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
-                      activeSection === item.id 
-                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span>{item.title}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </aside>
-
+      <div className="container mx-auto px-4 py-8">
         {/* Mobile TOC */}
-        <div className="lg:hidden w-full bg-white border-b border-gray-200">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-            <ScrollArea className="h-40">
-              <div className="grid grid-cols-2 gap-2">
-                {tableOfContents.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => scrollToSection(item.id)}
-                      className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors text-left ${
-                        activeSection === item.id 
-                          ? "bg-blue-50 text-blue-700" 
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Icon className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{item.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+        <div className="lg:hidden mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+              <ScrollArea className="h-40">
+                <div className="grid grid-cols-2 gap-2">
+                  {tableOfContents.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => scrollToSection(item.id)}
+                        className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors text-left ${
+                          activeSection === item.id 
+                            ? "bg-blue-50 text-blue-700" 
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Icon className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{item.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Main content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
+        {/* Desktop layout with sidebar */}
+        <div className="flex gap-8">
+          {/* Table of Contents Sidebar - Fixed on large screens */}
+          <aside className="hidden lg:block w-80 shrink-0">
+            <div className="sticky top-24">
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+                  <nav className="space-y-2">
+                    {tableOfContents.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => scrollToSection(item.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                            activeSection === item.id 
+                              ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4 flex-shrink-0" />
+                          <span>{item.title}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1 min-w-0 space-y-8">
             
-            {/* Privacy Commitment */}
-            <section id="commitment">
+            {/* Overview */}
+            <section id="overview">
               <Card>
                 <CardContent className="p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <Shield className="h-6 w-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold">Our Privacy Commitment</h2>
+                    <BookOpen className="h-6 w-6 text-blue-600" />
+                    <h2 className="text-2xl font-bold">Technical Overview</h2>
                   </div>
                   <div className="prose max-w-none">
                     <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                      At Terra Vault, protecting your privacy is fundamental to our mission of democratizing real estate investment. 
-                      This Privacy Policy explains how we collect, use, protect, and share your information when you use our 
-                      property tokenization platform and related services.
+                      Terra Vault is built on a modern, scalable architecture using React, TypeScript, Supabase, 
+                      and the Hedera blockchain network. This documentation provides comprehensive technical details 
+                      for developers working with our platform.
                     </p>
-                    <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
-                      <h3 className="font-semibold text-blue-900 mb-3">Our Core Privacy Principles</h3>
-                      <ul className="space-y-2 text-blue-800">
-                        <li>• <strong>Transparency:</strong> We clearly explain what data we collect and why</li>
-                        <li>• <strong>Control:</strong> You have control over your personal information</li>
-                        <li>• <strong>Security:</strong> We implement industry-leading security measures</li>
-                        <li>• <strong>Compliance:</strong> We adhere to all applicable privacy laws and regulations</li>
-                        <li>• <strong>Purpose Limitation:</strong> We only use data for legitimate business purposes</li>
-                        <li>• <strong>Data Minimization:</strong> We collect only what's necessary for our services</li>
-                      </ul>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Frontend Stack</h3>
+                        <ul className="text-sm text-blue-800 space-y-1">
+                          <li>• React 18 with TypeScript</li>
+                          <li>• Vite for build tooling</li>
+                          <li>• Tailwind CSS for styling</li>
+                          <li>• Shadcn/ui component library</li>
+                          <li>• React Query for state management</li>
+                          <li>• React Router for navigation</li>
+                        </ul>
+                      </div>
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Backend Services</h3>
+                        <ul className="text-sm text-green-800 space-y-1">
+                          <li>• Supabase for database and auth</li>
+                          <li>• Edge Functions for serverless logic</li>
+                          <li>• Real-time subscriptions</li>
+                          <li>• Row Level Security (RLS)</li>
+                          <li>• Hedera blockchain integration</li>
+                          <li>• Third-party API integrations</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </section>
 
-            {/* Information We Collect */}
-            <section id="collection">
+            {/* Database Schema */}
+            <section id="database-schema">
               <Card>
                 <CardContent className="p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <Database className="h-6 w-6 text-green-600" />
-                    <h2 className="text-2xl font-bold">Information We Collect</h2>
+                    <h2 className="text-2xl font-bold">Database Schema</h2>
                   </div>
                   <div className="space-y-8">
                     <div>
@@ -324,142 +343,65 @@ const PrivacyPolicy = () => {
               </Card>
             </section>
 
-            {/* Automated Processing & AI */}
-            <section id="automated-processing">
+            {/* API Endpoints */}
+            <section id="api-endpoints">
               <Card>
                 <CardContent className="p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <Activity className="h-6 w-6 text-purple-600" />
-                    <h2 className="text-2xl font-bold">Automated Processing & AI</h2>
+                    <Code className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">API Endpoints</h2>
                   </div>
                   <div className="space-y-6">
                     <p className="text-gray-700 leading-relaxed">
-                      We use artificial intelligence and automated processing to enhance your experience and provide 
-                      intelligent services. Here's how we use AI with your data:
+                      Our platform provides a robust API for developers to interact with our services. Here are some 
+                      of the key endpoints:
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="bg-blue-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-blue-900 mb-3">Property Valuation AI</h3>
+                        <h3 className="font-semibold text-blue-900 mb-3">User Management</h3>
                         <ul className="text-sm text-blue-800 space-y-2">
-                          <li>• <strong>Model Used:</strong> GPT-4 with custom real estate training</li>
-                          <li>• <strong>Data Processed:</strong> Property details, location, market comparables</li>
-                          <li>• <strong>Purpose:</strong> Generate accurate property valuations</li>
-                          <li>• <strong>Human Oversight:</strong> All AI valuations reviewed by certified valuers</li>
-                          <li>• <strong>Your Rights:</strong> Request manual review of any AI valuation</li>
+                          <li>• <strong>Register:</strong> Create a new user account</li>
+                          <li>• <strong>Login:</strong> Authenticate existing users</li>
+                          <li>• <strong>Update Profile:</strong> Modify user information</li>
+                          <li>• <strong>Change Password:</strong> Update user password</li>
+                          <li>• <strong>Reset Password:</strong> Reset forgotten passwords</li>
+                          <li>• <strong>Verify Email:</strong> Confirm user email address</li>
+                          <li>• <strong>Deactivate Account:</strong> Disable user account</li>
                         </ul>
                       </div>
 
                       <div className="bg-green-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-green-900 mb-3">Fraud Detection</h3>
+                        <h3 className="font-semibold text-green-900 mb-3">Property Management</h3>
                         <ul className="text-sm text-green-800 space-y-2">
-                          <li>• <strong>Risk Scoring:</strong> Automated analysis of transaction patterns</li>
-                          <li>• <strong>Document Verification:</strong> AI-powered document authenticity checks</li>
-                          <li>• <strong>Behavioral Analysis:</strong> Detection of unusual account activity</li>
-                          <li>• <strong>AML Screening:</strong> Automated sanctions and watchlist checks</li>
-                          <li>• <strong>Appeal Process:</strong> Immediate human review upon request</li>
+                          <li>• <strong>Create Property:</strong> Add new property listings</li>
+                          <li>• <strong>Update Property:</strong> Modify existing property details</li>
+                          <li>• <strong>Delete Property:</strong> Remove property listings</li>
+                          <li>• <strong>Search Properties:</strong> Retrieve property listings</li>
+                          <li>• <strong>Get Property Details:</strong> View detailed property information</li>
+                          <li>• <strong>Book Property:</strong> Reserve property listings</li>
+                          <li>• <strong>Cancel Booking:</strong> Remove property reservations</li>
                         </ul>
                       </div>
 
                       <div className="bg-purple-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-purple-900 mb-3">Investment Recommendations</h3>
+                        <h3 className="font-semibold text-purple-900 mb-3">Investment Management</h3>
                         <ul className="text-sm text-purple-800 space-y-2">
-                          <li>• <strong>Portfolio Analysis:</strong> AI optimization of investment allocations</li>
-                          <li>• <strong>Market Matching:</strong> Properties matched to your preferences</li>
-                          <li>• <strong>Risk Assessment:</strong> Automated investment risk calculations</li>
-                          <li>• <strong>Performance Prediction:</strong> AI-based ROI forecasting</li>
-                          <li>• <strong>Transparency:</strong> All recommendation logic is explainable</li>
+                          <li>• <strong>Invest Property:</strong> Purchase property tokens</li>
+                          <li>• <strong>Withdraw Funds:</strong> Transfer funds from property tokens</li>
+                          <li>• <strong>Get Investment History:</strong> View transaction history</li>
+                          <li>• <strong>Get Portfolio Allocation:</strong> View investment allocations</li>
+                          <li>• <strong>Get Income Verification:</strong> Verify income for investments</li>
+                          <li>• <strong>Get Tax Identification:</strong> Retrieve tax identification numbers</li>
                         </ul>
                       </div>
 
                       <div className="bg-orange-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-orange-900 mb-3">Customer Support AI</h3>
+                        <h3 className="font-semibold text-orange-900 mb-3">Notification System</h3>
                         <ul className="text-sm text-orange-800 space-y-2">
-                          <li>• <strong>Chat Assistance:</strong> AI-powered customer support responses</li>
-                          <li>• <strong>Intent Recognition:</strong> Understanding and routing user queries</li>
-                          <li>• <strong>Multilingual Support:</strong> Automatic language detection and translation</li>
-                          <li>• <strong>Learning Patterns:</strong> Improving responses based on interactions</li>
-                          <li>• <strong>Human Escalation:</strong> Seamless handoff to human agents when needed</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r-lg">
-                      <h3 className="font-semibold text-yellow-900 mb-3">Your Rights Regarding Automated Decisions</h3>
-                      <ul className="text-yellow-800 space-y-2">
-                        <li>• Right to human review of any automated decision affecting you</li>
-                        <li>• Right to explanation of AI decision-making logic</li>
-                        <li>• Right to contest automated decisions and request manual processing</li>
-                        <li>• Right to opt-out of certain AI features (may limit service functionality)</li>
-                        <li>• Right to data correction if AI decisions are based on inaccurate information</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-
-            {/* Blockchain & Public Data */}
-            <section id="blockchain">
-              <Card>
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Server className="h-6 w-6 text-indigo-600" />
-                    <h2 className="text-2xl font-bold">Blockchain & Public Data</h2>
-                  </div>
-                  <div className="space-y-6">
-                    <p className="text-gray-700 leading-relaxed">
-                      Our platform uses blockchain technology for property tokenization and transaction transparency. 
-                      Some data becomes permanently public on the blockchain.
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-blue-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-blue-900 mb-3">Public Blockchain Data</h3>
-                        <ul className="text-sm text-blue-800 space-y-2">
-                          <li>• <strong>Token Transactions:</strong> All token transfers are publicly visible</li>
-                          <li>• <strong>Wallet Addresses:</strong> Pseudonymous identifiers for transactions</li>
-                          <li>• <strong>Property Tokens:</strong> Token supply and basic property metadata</li>
-                          <li>• <strong>Smart Contracts:</strong> Contract code and transaction history</li>
-                          <li>• <strong>Revenue Distributions:</strong> Dividend payment records</li>
-                        </ul>
-                        <div className="mt-4 p-3 bg-blue-100 rounded">
-                          <p className="text-xs text-blue-900">
-                            <strong>Note:</strong> Blockchain data is pseudonymous - wallet addresses are not 
-                            directly linked to personal identities unless you choose to share this information.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-green-50 p-6 rounded-lg">
-                        <h3 className="font-semibold text-green-900 mb-3">Private Data Protection</h3>
-                        <ul className="text-sm text-green-800 space-y-2">
-                          <li>• <strong>Personal Identity:</strong> Never stored on blockchain</li>
-                          <li>• <strong>Property Details:</strong> Sensitive information kept off-chain</li>
-                          <li>• <strong>Financial Data:</strong> Account balances and personal finances private</li>
-                          <li>• <strong>Legal Documents:</strong> Stored securely in encrypted databases</li>
-                          <li>• <strong>Communication:</strong> Messages and chat data remain private</li>
-                        </ul>
-                        <div className="mt-4 p-3 bg-green-100 rounded">
-                          <p className="text-xs text-green-900">
-                            <strong>Security:</strong> We use advanced cryptographic techniques to protect 
-                            your privacy while enabling blockchain transparency.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Blockchain Network Details</h3>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3">Hedera Network Integration</h4>
-                        <ul className="text-sm text-gray-700 space-y-1">
-                          <li>• <strong>Network:</strong> Hedera Hashgraph (enterprise-grade DLT)</li>
-                          <li>• <strong>Token Standard:</strong> Hedera Token Service (HTS)</li>
-                          <li>• <strong>Transaction Fees:</strong> Minimal network fees (typically $0.0001)</li>
-                          <li>• <strong>Finality:</strong> Transactions confirmed in 3-5 seconds</li>
-                          <li>• <strong>Energy Efficiency:</strong> Carbon-negative network operations</li>
-                          <li>• <strong>Compliance:</strong> Built-in regulatory compliance features</li>
+                          <li>• <strong>Send Notification:</strong> Send custom notifications</li>
+                          <li>• <strong>Get Notification History:</strong> View notification logs</li>
+                          <li>• <strong>Update Notification Preferences:</strong> Modify notification settings</li>
                         </ul>
                       </div>
                     </div>
@@ -643,13 +585,201 @@ const transfer = await supabase.functions.invoke(
               </Card>
             </section>
 
-            {/* Data Protection & Security */}
-            <section id="protection">
+            {/* Webhooks */}
+            <section id="webhooks">
               <Card>
                 <CardContent className="p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <Lock className="h-6 w-6 text-red-600" />
-                    <h2 className="text-2xl font-bold">Data Protection & Security</h2>
+                    <Webhook className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">Webhooks</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Webhooks allow you to receive real-time notifications and updates from our platform. 
+                      Here are some common use cases:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Property Updates</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Property Created:</strong> Triggered when a new property is added</li>
+                          <li>• <strong>Property Updated:</strong> Sent when property details are modified</li>
+                          <li>• <strong>Property Deleted:</strong> Notified when a property is removed</li>
+                          <li>• <strong>Property Booked:</strong> Alerts when a property reservation is made</li>
+                          <li>• <strong>Property Cancelled:</strong> Notifies when a property reservation is canceled</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Investment Events</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Investment Purchased:</strong> Notified when property tokens are purchased</li>
+                          <li>• <strong>Investment Withdrawn:</strong> Alerts when funds are transferred from tokens</li>
+                          <li>• <strong>Investment History:</strong> Receives transaction history updates</li>
+                          <li>• <strong>Portfolio Allocation:</strong> Notifies of investment allocation changes</li>
+                          <li>• <strong>Income Verification:</strong> Updates with income verification status</li>
+                          <li>• <strong>Tax Identification:</strong> Receives tax identification updates</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-purple-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-purple-900 mb-3">Notification Delivery</h3>
+                        <ul className="text-sm text-purple-800 space-y-2">
+                          <li>• <strong>Notification Sent:</strong> Triggered when a custom notification is sent</li>
+                          <li>• <strong>Notification Received:</strong> Alerts when a notification is received</li>
+                          <li>• <strong>Notification Updated:</strong> Sent when notification settings are modified</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Authentication */}
+            <section id="authentication">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Key className="h-6 w-6 text-red-600" />
+                    <h2 className="text-2xl font-bold">Authentication</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault supports multiple authentication methods to ensure secure access to our platform. 
+                      Here are the available options:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Email & Password</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Register:</strong> Create a new user account using email and password</li>
+                          <li>• <strong>Login:</strong> Authenticate existing users with email and password</li>
+                          <li>• <strong>Reset Password:</strong> Reset forgotten passwords via email</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Social Media</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Google:</strong> Sign in with Google account</li>
+                          <li>• <strong>Facebook:</strong> Sign in with Facebook account</li>
+                          <li>• <strong>Twitter:</strong> Sign in with Twitter account</li>
+                          <li>• <strong>LinkedIn:</strong> Sign in with LinkedIn account</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-purple-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-purple-900 mb-3">Two-Factor Authentication</h3>
+                        <ul className="text-sm text-purple-800 space-y-2">
+                          <li>• <strong>Enable:</strong> Add an additional layer of security with 2FA</li>
+                          <li>• <strong>Disable:</strong> Remove 2FA for enhanced convenience</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Real-time Features */}
+            <section id="real-time">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Activity className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Real-time Features</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Our platform provides real-time updates and notifications to keep you informed. 
+                      Here are some of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Property Notifications</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Property Created:</strong> Receive notifications when a new property is added</li>
+                          <li>• <strong>Property Updated:</strong> Alerts when property details are modified</li>
+                          <li>• <strong>Property Booked:</strong> Get notified when a property reservation is made</li>
+                          <li>• <strong>Property Cancelled:</strong> Receive alerts when a property reservation is canceled</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Investment Notifications</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Investment Purchased:</strong> Get notified when property tokens are purchased</li>
+                          <li>• <strong>Investment Withdrawn:</strong> Alerts when funds are transferred from tokens</li>
+                          <li>• <strong>Income Verification:</strong> Receive updates with income verification status</li>
+                          <li>• <strong>Tax Identification:</strong> Get notified of tax identification updates</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-purple-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-purple-900 mb-3">Notification Delivery</h3>
+                        <ul className="text-sm text-purple-800 space-y-2">
+                          <li>• <strong>Notification Sent:</strong> Receive alerts when a custom notification is sent</li>
+                          <li>• <strong>Notification Received:</strong> Alerts when a notification is received</li>
+                          <li>• <strong>Notification Updated:</strong> Get notified when notification settings are modified</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* File Storage */}
+            <section id="file-storage">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Server className="h-6 w-6 text-indigo-600" />
+                    <h2 className="text-2xl font-bold">File Storage</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault provides secure file storage for your documents and files. Here are some 
+                      of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">File Uploads</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Upload:</strong> Upload files directly to the platform</li>
+                          <li>• <strong>Download:</strong> Access files securely</li>
+                          <li>• <strong>Share:</strong> Share files with others</li>
+                          <li>• <strong>Version Control:</strong> Manage file versions</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">File Management</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Search:</strong> Find files by name or metadata</li>
+                          <li>• <strong>Filter:</strong> Filter files by type or status</li>
+                          <li>• <strong>Sort:</strong> Sort files by date or size</li>
+                          <li>• <strong>Trash:</strong> Manage files in the trash</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Security */}
+            <section id="security">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Shield className="h-6 w-6 text-red-600" />
+                    <h2 className="text-2xl font-bold">Security</h2>
                   </div>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -720,15 +850,207 @@ const transfer = await supabase.functions.invoke(
               </Card>
             </section>
 
+            {/* User Roles & Permissions */}
+            <section id="user-roles">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Users className="h-6 w-6 text-blue-600" />
+                    <h2 className="text-2xl font-bold">User Roles & Permissions</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault provides flexible user roles and permissions to suit your needs. Here are some 
+                      of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Role-Based Access</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Admin:</strong> Full access to all features</li>
+                          <li>• <strong>Landowner:</strong> Manage property listings and investments</li>
+                          <li>• <strong>Investor:</strong> Purchase and manage property tokens</li>
+                          <li>• <strong>Viewer:</strong> View property listings and notifications</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Permission Management</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Customize:</strong> Assign specific permissions to users</li>
+                          <li>• <strong>Review:</strong> Monitor and update user permissions</li>
+                          <li>• <strong>Deactivate:</strong> Disable user permissions</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Compliance Features */}
+            <section id="compliance">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Lock className="h-6 w-6 text-red-600" />
+                    <h2 className="text-2xl font-bold">Compliance Features</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault is committed to complying with relevant data protection laws and regulations. 
+                      Here are some of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Data Protection</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>GDPR Compliance:</strong> Adheres to GDPR regulations</li>
+                          <li>• <strong>NDPR Compliance:</strong> Complies with NDPR guidelines</li>
+                          <li>• <strong>CCPA Compliance:</strong> Protects California residents' data</li>
+                          <li>• <strong>ISO 27001:</strong> ISO 27001 certified information security</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Compliance Audits</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Regular Audits:</strong> Conducts regular compliance audits</li>
+                          <li>• <strong>Compliance Reports:</strong> Generates compliance reports</li>
+                          <li>• <strong>Compliance Certifications:</strong> Maintains compliance certifications</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Monitoring & Analytics */}
+            <section id="monitoring">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Eye className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">Monitoring & Analytics</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault provides comprehensive monitoring and analytics tools to help you make informed decisions. 
+                      Here are some of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Real-time Monitoring</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Activity Logs:</strong> Track user activity and system events</li>
+                          <li>• <strong>Performance Metrics:</strong> Monitor system performance</li>
+                          <li>• <strong>Alerts:</strong> Receive alerts for unusual activity</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Data Analytics</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Usage Reports:</strong> Generate usage reports</li>
+                          <li>• <strong>Performance Metrics:</strong> Analyze system performance</li>
+                          <li>• <strong>Insights:</strong> Gain insights into user behavior</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Deployment */}
+            <section id="deployment">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Globe className="h-6 w-6 text-indigo-600" />
+                    <h2 className="text-2xl font-bold">Deployment</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault is deployed on a scalable cloud infrastructure to ensure high availability and performance. 
+                      Here are some of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Scalability</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Auto-scaling:</strong> Automatically adjust resources based on demand</li>
+                          <li>• <strong>Load Balancing:</strong> Distribute traffic across multiple servers</li>
+                          <li>• <strong>High Availability:</strong> Ensure high availability with failover capabilities</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Security</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>SSL/TLS:</strong> Secure communication with SSL/TLS encryption</li>
+                          <li>• <strong>Firewall:</strong> Protect against unauthorized access with firewalls</li>
+                          <li>• <strong>DDoS Protection:</strong> Protect against distributed denial-of-service attacks</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Troubleshooting */}
+            <section id="troubleshooting">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Settings className="h-6 w-6 text-blue-600" />
+                    <h2 className="text-2xl font-bold">Troubleshooting</h2>
+                  </div>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Terra Vault provides comprehensive troubleshooting tools to help you resolve issues quickly. 
+                      Here are some of the key features:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-blue-900 mb-3">Error Logging</h3>
+                        <ul className="text-sm text-blue-800 space-y-2">
+                          <li>• <strong>Log Viewer:</strong> View detailed error logs</li>
+                          <li>• <strong>Search Logs:</strong> Search for specific error messages</li>
+                          <li>• <strong>Alerts:</strong> Receive alerts for critical errors</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="font-semibold text-green-900 mb-3">Support Tools</h3>
+                        <ul className="text-sm text-green-800 space-y-2">
+                          <li>• <strong>Knowledge Base:</strong> Access a comprehensive knowledge base</li>
+                          <li>• <strong>Chat Support:</strong> Get real-time support via chat</li>
+                          <li>• <strong>Email Support:</strong> Contact support via email</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             <Separator className="my-8" />
 
             <div className="text-center text-sm text-gray-600 space-y-2">
-              <p>For privacy-related questions or to exercise your rights, contact us at privacy@terravault.com</p>
-              <p>This policy complies with applicable data protection laws including NDPR, GDPR, and CCPA.</p>
-              <p>We are committed to transparency and will notify you of any material changes to this policy.</p>
+              <p>For technical support, contact our developers at dev@terravault.com</p>
+              <p>This documentation is regularly updated with new features and improvements.</p>
+              <p>Join our developer community for discussions and updates.</p>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
       {/* Footer */}
@@ -811,4 +1133,4 @@ const transfer = await supabase.functions.invoke(
   );
 };
 
-export default PrivacyPolicy;
+export default Documentation;

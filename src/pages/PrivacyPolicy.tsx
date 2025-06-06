@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -42,7 +41,7 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       {/* Header with back button */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center">
@@ -62,65 +61,71 @@ const PrivacyPolicy = () => {
         </div>
       </header>
 
-      {/* Main content with sidebar */}
-      <div className="flex-1 flex">
-        {/* Table of Contents Sidebar - Fixed on large screens */}
-        <aside className="hidden lg:block w-80 bg-white border-r border-gray-200 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-            <nav className="space-y-2">
-              {tableOfContents.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => scrollToSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
-                      activeSection === item.id 
-                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span>{item.title}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </aside>
-
+      <div className="container mx-auto px-4 py-8">
         {/* Mobile TOC */}
-        <div className="lg:hidden w-full bg-white border-b border-gray-200">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-            <ScrollArea className="h-40">
-              <div className="grid grid-cols-2 gap-2">
-                {tableOfContents.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => scrollToSection(item.id)}
-                      className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors text-left ${
-                        activeSection === item.id 
-                          ? "bg-blue-50 text-blue-700" 
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Icon className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{item.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+        <div className="lg:hidden mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+              <ScrollArea className="h-40">
+                <div className="grid grid-cols-2 gap-2">
+                  {tableOfContents.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => scrollToSection(item.id)}
+                        className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors text-left ${
+                          activeSection === item.id 
+                            ? "bg-blue-50 text-blue-700" 
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Icon className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{item.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Main content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
+        {/* Desktop layout with sidebar */}
+        <div className="flex gap-8">
+          {/* Table of Contents Sidebar - Fixed on large screens */}
+          <aside className="hidden lg:block w-80 shrink-0">
+            <div className="sticky top-24">
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+                  <nav className="space-y-2">
+                    {tableOfContents.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => scrollToSection(item.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                            activeSection === item.id 
+                              ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4 flex-shrink-0" />
+                          <span>{item.title}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1 min-w-0 space-y-8">
             
             {/* Privacy Commitment */}
             <section id="commitment">
@@ -553,8 +558,8 @@ const PrivacyPolicy = () => {
               <p>This policy complies with applicable data protection laws including NDPR, GDPR, and CCPA.</p>
               <p>We are committed to transparency and will notify you of any material changes to this policy.</p>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
       {/* Footer */}
