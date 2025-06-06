@@ -55,17 +55,11 @@ const App = () => (
                 {/* Auth routes - no layout */}
                 <Route path="/auth" element={<Auth />} />
                 
+                {/* Public pages - standalone without layout */}
+                <Route path="/terms" element={<TermsAndConditions />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                
                 {/* Public pages - with layout but no auth required */}
-                <Route path="/terms" element={
-                  <Layout>
-                    <TermsAndConditions />
-                  </Layout>
-                } />
-                <Route path="/privacy" element={
-                  <Layout>
-                    <PrivacyPolicy />
-                  </Layout>
-                } />
                 <Route path="/data-flow" element={
                   <Layout>
                     <DataFlow />
