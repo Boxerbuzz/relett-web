@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   BookOpen, Database, Code, Webhook, ArrowLeft, Twitter, Facebook, 
   Instagram, Linkedin, Mail, Phone, MapPin, Key, Server, Activity,
-  Globe, FileText, Settings, Zap, Shield, Users, Lock, Eye
+  Globe, FileText, Settings, Zap, Shield, Users, Lock, Eye, HardDrive
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -42,7 +42,7 @@ const Documentation = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with back button */}
+      {/* Fixed header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center">
           <Button
@@ -61,10 +61,36 @@ const Documentation = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="flex min-h-screen">
+        {/* Fixed sidebar */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-80 lg:fixed lg:inset-y-0 lg:pt-20 lg:border-r lg:border-gray-200 lg:bg-white">
+          <div className="flex-1 overflow-y-auto px-6 py-8">
+            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+            <nav className="space-y-2">
+              {tableOfContents.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                      activeSection === item.id 
+                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span>{item.title}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
         {/* Mobile TOC */}
-        <div className="lg:hidden mb-8">
-          <Card>
+        <div className="lg:hidden w-full px-4 py-8">
+          <Card className="mb-8">
             <CardContent className="p-4">
               <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
               <ScrollArea className="h-40">
@@ -92,40 +118,9 @@ const Documentation = () => {
           </Card>
         </div>
 
-        {/* Desktop layout with sidebar */}
-        <div className="flex gap-8">
-          {/* Table of Contents Sidebar - Fixed on large screens */}
-          <aside className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-24">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-                  <nav className="space-y-2">
-                    {tableOfContents.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => scrollToSection(item.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
-                            activeSection === item.id 
-                              ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          <Icon className="h-4 w-4 flex-shrink-0" />
-                          <span>{item.title}</span>
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
-
-          {/* Main content */}
-          <main className="flex-1 min-w-0 space-y-8">
+        {/* Main content area */}
+        <main className="flex-1 lg:pl-80">
+          <div className="px-4 lg:px-8 py-8 space-y-8">
             
             {/* Overview */}
             <section id="overview">
@@ -465,7 +460,7 @@ const { data, error } = await supabase.functions.invoke(
 const { data } = await supabase.functions.invoke(
   'create-payment-session',
   {
-                            body: {
+    body: {
       amount: 50000,
       currency: 'NGN',
       purpose: 'property_reservation',
@@ -1049,8 +1044,8 @@ const transfer = await supabase.functions.invoke(
               <p>This documentation is regularly updated with new features and improvements.</p>
               <p>Join our developer community for discussions and updates.</p>
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
 
       {/* Footer */}
