@@ -36,6 +36,7 @@ interface TokenizedProperty {
   revenue_distribution_frequency: string;
   investment_terms: string;
   property?: {
+    id: string;
     title: string;
     description: string;
     location: any;
@@ -69,6 +70,7 @@ export function TokenizedPropertyMarketplace() {
         .select(`
           *,
           property:properties(
+            id,
             title,
             description,
             location
