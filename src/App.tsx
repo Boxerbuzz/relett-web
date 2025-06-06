@@ -58,18 +58,8 @@ const App = () => (
                 {/* Public pages - standalone without layout */}
                 <Route path="/terms" element={<TermsAndConditions />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
-                
-                {/* Public pages - with layout but no auth required */}
-                <Route path="/data-flow" element={
-                  <Layout>
-                    <DataFlow />
-                  </Layout>
-                } />
-                <Route path="/docs" element={
-                  <Layout>
-                    <Documentation />
-                  </Layout>
-                } />
+                <Route path="/data-flow" element={<DataFlow />} />
+                <Route path="/docs" element={<Documentation />} />
                 
                 {/* Protected routes - with layout */}
                 <Route path="/" element={
