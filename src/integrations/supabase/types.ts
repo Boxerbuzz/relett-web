@@ -155,6 +155,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_property_valuations: {
+        Row: {
+          ai_estimated_value: number
+          ai_model: string | null
+          confidence_score: number
+          created_at: string
+          id: string
+          market_comparisons: Json | null
+          property_id: string | null
+          updated_at: string
+          user_id: string
+          valuation_factors: Json | null
+        }
+        Insert: {
+          ai_estimated_value: number
+          ai_model?: string | null
+          confidence_score: number
+          created_at?: string
+          id?: string
+          market_comparisons?: Json | null
+          property_id?: string | null
+          updated_at?: string
+          user_id: string
+          valuation_factors?: Json | null
+        }
+        Update: {
+          ai_estimated_value?: number
+          ai_model?: string | null
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          market_comparisons?: Json | null
+          property_id?: string | null
+          updated_at?: string
+          user_id?: string
+          valuation_factors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_property_valuations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aml_checks: {
         Row: {
           alerts: Json | null

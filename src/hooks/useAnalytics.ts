@@ -43,7 +43,7 @@ export function useAnalytics() {
       window.gtag('event', eventName, {
         ...parameters,
         user_id: user?.id,
-        user_type: user?.user_type
+        user_type: user?.user_type || user?.role || 'unknown'
       });
     }
   };

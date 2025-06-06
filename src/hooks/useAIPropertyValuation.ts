@@ -30,6 +30,19 @@ interface AIValuationResult {
   marketComparisons: any[];
 }
 
+interface AIPropertyValuation {
+  id: string;
+  property_id?: string;
+  user_id: string;
+  ai_estimated_value: number;
+  confidence_score: number;
+  valuation_factors: Record<string, any>;
+  market_comparisons: any[];
+  ai_model?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export function useAIPropertyValuation() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -65,7 +78,7 @@ export function useAIPropertyValuation() {
             valuation_factors: aiResponse.valuationFactors,
             market_comparisons: aiResponse.marketComparisons
           })
-          .select()
+          .select('*')
           .single();
 
         if (dbError) {
@@ -108,7 +121,7 @@ export function useAIPropertyValuation() {
     }
   };
 
-  const getPropertyValuation = async (propertyId: string) => {
+  const getPropertyValuation = async (propertyId: string): Promise<AIPropertyValuation | null> => {
     try {
       const { data, error } = await supabase
         .from('ai_property_valuations')
@@ -116,13 +129,13 @@ export function useAIPropertyValuation() {
         .eq('property_id', propertyId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     } catch (error) {
       console.error('Get valuation error:', error);
-      throw error;
+      return null;
     }
   };
 
