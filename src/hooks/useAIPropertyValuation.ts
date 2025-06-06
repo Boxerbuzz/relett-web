@@ -53,17 +53,20 @@ export function useAIPropertyValuation() {
 
       if (aiError) throw aiError;
 
-      // Store valuation using raw SQL since table may not be in types yet
+      // Store valuation in database if property ID provided
       if (propertyId) {
         const { data: valuation, error: dbError } = await supabase
-          .rpc('create_ai_valuation', {
-            p_property_id: propertyId,
-            p_user_id: user.id,
-            p_estimated_value: aiResponse.estimatedValue,
-            p_confidence_score: aiResponse.confidenceScore,
-            p_valuation_factors: aiResponse.valuationFactors,
-            p_market_comparisons: aiResponse.marketComparisons
-          });
+          .from('ai_property_valuations')
+          .insert({
+            property_id: propertyId,
+            user_id: user.id,
+            ai_estimated_value: aiResponse.estimatedValue,
+            confidence_score: aiResponse.confidenceScore,
+            valuation_factors: aiResponse.valuationFactors,
+            market_comparisons: aiResponse.marketComparisons
+          })
+          .select()
+          .single();
 
         if (dbError) {
           console.error('Database error:', dbError);
@@ -85,7 +88,7 @@ export function useAIPropertyValuation() {
       }
 
       return {
-        id: '',
+        id: crypto.randomUUID(),
         estimatedValue: aiResponse.estimatedValue,
         confidenceScore: aiResponse.confidenceScore,
         valuationFactors: aiResponse.valuationFactors,
@@ -107,9 +110,13 @@ export function useAIPropertyValuation() {
 
   const getPropertyValuation = async (propertyId: string) => {
     try {
-      // Use RPC call to get valuations since table may not be in types
       const { data, error } = await supabase
-        .rpc('get_property_valuation', { p_property_id: propertyId });
+        .from('ai_property_valuations')
+        .select('*')
+        .eq('property_id', propertyId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
       if (error) throw error;
       return data;
