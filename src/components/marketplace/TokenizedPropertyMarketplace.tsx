@@ -63,15 +63,15 @@ export function TokenizedPropertyMarketplace() {
 
   const fetchTokenizedProperties = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch tokenized properties with basic property and land title info
+      const { data: tokenizedData, error } = await supabase
         .from('tokenized_properties')
         .select(`
           *,
           property:properties(
             title,
             description,
-            location,
-            property_images(url, is_primary)
+            location
           ),
           land_title:land_titles(location_address)
         `)
@@ -82,12 +82,23 @@ export function TokenizedPropertyMarketplace() {
 
       // Calculate additional metrics for each property
       const propertiesWithMetrics = await Promise.all(
-        (data || []).map(async (property) => {
+        (tokenizedData || []).map(async (property) => {
           // Get token holdings to calculate available tokens and investor count
           const { data: holdings } = await supabase
             .from('token_holdings')
             .select('tokens_owned, holder_id')
             .eq('tokenized_property_id', property.id);
+
+          // Get property images separately if property exists
+          let propertyImages: Array<{ url: string; is_primary: boolean }> = [];
+          if (property.property?.id) {
+            const { data: images } = await supabase
+              .from('property_images')
+              .select('url, is_primary')
+              .eq('property_id', property.property.id);
+            
+            propertyImages = images || [];
+          }
 
           const totalSold = holdings?.reduce((sum, holding) => 
             sum + parseInt(holding.tokens_owned), 0) || 0;
@@ -99,7 +110,7 @@ export function TokenizedPropertyMarketplace() {
             ...property,
             property: property.property ? {
               ...property.property,
-              property_images: property.property.property_images || []
+              property_images: propertyImages
             } : undefined,
             available_tokens: availableTokens,
             investor_count: investorCount,
@@ -300,17 +311,9 @@ export function TokenizedPropertyMarketplace() {
       {selectedProperty && (
         <BuyTokenDialog
           open={showBuyDialog}
-          onClose={() => {
-            setShowBuyDialog(false);
-            setSelectedProperty(null);
-          }}
-          tokenizedProperty={selectedProperty}
-          onSuccess={() => {
-            fetchTokenizedProperties();
-            toast({
-              title: 'Investment Successful',
-              description: 'Your tokens have been purchased successfully',
-            });
+          onOpenChange={(open) => {
+            setShowBuyDialog(open);
+            if (!open) setSelectedProperty(null);
           }}
         />
       )}
