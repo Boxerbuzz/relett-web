@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,14 +19,18 @@ const DataFlow = () => {
     { id: "overview", title: "System Overview", icon: Globe },
     { id: "architecture", title: "Technical Architecture", icon: Layers },
     { id: "user-flow", title: "User Registration Flow", icon: Users },
+    { id: "automatic-data", title: "Automatic Data Creation", icon: Database },
     { id: "verification-flow", title: "Identity Verification", icon: Shield },
     { id: "property-flow", title: "Property Management", icon: Home },
+    { id: "document-flow", title: "Document Processing", icon: FileText },
     { id: "tokenization-flow", title: "Tokenization Process", icon: Coins },
     { id: "payment-flow", title: "Payment Processing", icon: Database },
     { id: "security-layers", title: "Security Architecture", icon: Lock },
     { id: "database-schema", title: "Database Design", icon: HardDrive },
     { id: "api-architecture", title: "API & Services", icon: Server },
     { id: "blockchain-integration", title: "Blockchain Layer", icon: Network },
+    { id: "triggers-functions", title: "Database Triggers & Functions", icon: GitBranch },
+    { id: "edge-functions", title: "Edge Functions Deep Dive", icon: Code },
     { id: "monitoring", title: "Monitoring & Analytics", icon: Cpu },
   ];
 
@@ -40,7 +43,7 @@ const DataFlow = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       {/* Header with back button */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center">
@@ -60,39 +63,39 @@ const DataFlow = () => {
         </div>
       </header>
 
-      {/* Main content with sidebar */}
-      <div className="flex-1 flex">
-        {/* Table of Contents Sidebar */}
-        <aside className="hidden lg:block w-80 bg-white border-r border-gray-200 sticky top-[73px] h-[calc(100vh-73px)]">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-            <ScrollArea className="h-[calc(100vh-150px)]">
-              <nav className="space-y-2">
-                {tableOfContents.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => scrollToSection(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
-                        activeSection === item.id 
-                          ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 flex-shrink-0" />
-                      <span>{item.title}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </ScrollArea>
-          </div>
-        </aside>
+      {/* Main content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Table of Contents - Fixed position on larger screens */}
+          <aside className="lg:w-80 lg:flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+                <nav className="space-y-2">
+                  {tableOfContents.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => scrollToSection(item.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+                          activeSection === item.id 
+                            ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500" 
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-xs lg:text-sm">{item.title}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </aside>
 
-        {/* Main content */}
-        <main className="flex-1 p-4 lg:p-8">
-          <div className="max-w-6xl mx-auto space-y-8">
+          {/* Main content - Scrollable */}
+          <main className="flex-1 space-y-8">
 
             {/* System Overview */}
             <section id="overview">
@@ -118,6 +121,8 @@ const DataFlow = () => {
                           <li>• Progressive Web App (PWA)</li>
                           <li>• Real-time WebSocket connections</li>
                           <li>• Responsive mobile-first design</li>
+                          <li>• Component-based architecture</li>
+                          <li>• State management with TanStack Query</li>
                         </ul>
                       </div>
                       
@@ -129,6 +134,8 @@ const DataFlow = () => {
                           <li>• RESTful APIs with GraphQL</li>
                           <li>• Serverless edge computing</li>
                           <li>• Real-time subscriptions</li>
+                          <li>• Row Level Security (RLS)</li>
+                          <li>• Automated triggers and functions</li>
                         </ul>
                       </div>
                       
@@ -140,6 +147,8 @@ const DataFlow = () => {
                           <li>• Token Service (HTS)</li>
                           <li>• File Service (HFS)</li>
                           <li>• Consensus Service (HCS)</li>
+                          <li>• Smart Contract Service</li>
+                          <li>• Immutable audit trails</li>
                         </ul>
                       </div>
                       
@@ -151,7 +160,30 @@ const DataFlow = () => {
                           <li>• Multi-layer authentication</li>
                           <li>• Regulatory compliance</li>
                           <li>• Audit trails</li>
+                          <li>• Data protection (GDPR/NDPR)</li>
+                          <li>• Fraud detection systems</li>
                         </ul>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Data Flow Architecture</h3>
+                      <p className="text-gray-700 mb-4">
+                        Our architecture follows a microservices pattern where each component is responsible for specific business logic:
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white p-4 rounded border">
+                          <h4 className="font-medium mb-2">Input Layer</h4>
+                          <p className="text-sm text-gray-600">User interactions, API calls, file uploads, and external integrations</p>
+                        </div>
+                        <div className="bg-white p-4 rounded border">
+                          <h4 className="font-medium mb-2">Processing Layer</h4>
+                          <p className="text-sm text-gray-600">Business logic, validation, transformation, and workflow orchestration</p>
+                        </div>
+                        <div className="bg-white p-4 rounded border">
+                          <h4 className="font-medium mb-2">Storage Layer</h4>
+                          <p className="text-sm text-gray-600">Database persistence, blockchain records, and file storage</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -388,10 +420,904 @@ const DataFlow = () => {
               </Card>
             </section>
 
-            {/* Continue with remaining sections... */}
-            {/* For brevity, I'll include key remaining technical sections */}
+            {/* Automatic Data Creation */}
+            <section id="automatic-data">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Database className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">Automatic Data Creation & Database Triggers</h2>
+                  </div>
+                  
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">User Registration Data Flow</h3>
+                      <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                        <h4 className="font-medium text-blue-900 mb-3">When a user is created, automatic data is inserted into:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Primary Tables</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• <code>users</code> - Core user information</li>
+                              <li>• <code>user_profiles</code> - Extended profile data</li>
+                              <li>• <code>user_preferences</code> - Default settings</li>
+                              <li>• <code>notification_preferences</code> - Communication settings</li>
+                              <li>• <code>accounts</code> - Default wallet account</li>
+                            </ul>
+                          </div>
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Default Values Created</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• Default notification preferences (all enabled)</li>
+                              <li>• Empty user profile with basic info</li>
+                              <li>• Initial account with 0 balance</li>
+                              <li>• Default privacy settings</li>
+                              <li>• Audit log entry for user creation</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 bg-gray-900 text-gray-100 p-4 rounded-lg">
+                        <h5 className="text-green-400 mb-2">Database Trigger Function</h5>
+                        <pre className="text-sm overflow-x-auto">
+{`-- Trigger function for new user creation
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Create user profile
+  INSERT INTO user_profiles (user_id, created_at)
+  VALUES (NEW.id, NOW());
+  
+  -- Create default preferences
+  INSERT INTO user_preferences (user_id, has_setup_preference)
+  VALUES (NEW.id, false);
+  
+  -- Create notification preferences with defaults
+  INSERT INTO notification_preferences (user_id)
+  VALUES (NEW.id);
+  
+  -- Create default account
+  INSERT INTO accounts (user_id, type, status)
+  VALUES (NEW.id, 'main', 'active');
+  
+  -- Log the user creation
+  INSERT INTO audit_trails (action, resource_type, resource_id, user_id)
+  VALUES ('create', 'user', NEW.id, NEW.id);
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;`}
+                        </pre>
+                      </div>
+                    </div>
 
-            {/* Database Schema */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Property Creation Data Flow</h3>
+                      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+                        <h4 className="font-medium text-green-900 mb-3">When a property is created, the system automatically:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Data Created</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• Property record in <code>properties</code> table</li>
+                              <li>• Initial property images placeholder</li>
+                              <li>• Property view tracking record</li>
+                              <li>• Default property settings</li>
+                              <li>• Verification workflow initiation</li>
+                            </ul>
+                          </div>
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Automatic Processes</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• AI valuation request queued</li>
+                              <li>• Location analysis triggered</li>
+                              <li>• Document verification workflow started</li>
+                              <li>• Property analytics initialization</li>
+                              <li>• Market comparison data gathering</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Document Upload Data Flow</h3>
+                      <div className="bg-purple-50 p-6 rounded-lg border border-purple-200">
+                        <h4 className="font-medium text-purple-900 mb-3">Document processing creates:</h4>
+                        <div className="space-y-4">
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Immediate Actions</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• File uploaded to secure storage with encryption</li>
+                              <li>• Document hash generated for integrity verification</li>
+                              <li>• Metadata extracted and stored</li>
+                              <li>• Virus/malware scanning initiated</li>
+                              <li>• OCR processing for text extraction</li>
+                            </ul>
+                          </div>
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Background Processing</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• Document verification queue entry</li>
+                              <li>• AI-powered document classification</li>
+                              <li>• Thumbnail generation</li>
+                              <li>• Compliance checking (if applicable)</li>
+                              <li>• Audit trail logging</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Transaction Processing</h3>
+                      <div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
+                        <h4 className="font-medium text-orange-900 mb-3">Every transaction automatically creates:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Financial Records</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• Payment record</li>
+                              <li>• Account balance update</li>
+                              <li>• Transaction fee calculation</li>
+                              <li>• Tax record (if applicable)</li>
+                            </ul>
+                          </div>
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Compliance & Security</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• AML check initiation</li>
+                              <li>• Fraud detection analysis</li>
+                              <li>• Audit trail entry</li>
+                              <li>• Risk assessment update</li>
+                            </ul>
+                          </div>
+                          <div className="bg-white p-4 rounded border">
+                            <h5 className="font-medium mb-2">Notifications</h5>
+                            <ul className="text-sm space-y-1">
+                              <li>• User notification</li>
+                              <li>• Email confirmation</li>
+                              <li>• SMS alert (if enabled)</li>
+                              <li>• Push notification</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Identity Verification */}
+            <section id="verification-flow">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Shield className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Identity Verification Process</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">KYC Document Processing</h3>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">Document Upload Flow</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>1. File validation and security scan</li>
+                              <li>2. Image quality assessment</li>
+                              <li>3. OCR text extraction</li>
+                              <li>4. Document classification (NIN, BVN, Passport, etc.)</li>
+                              <li>5. Data extraction and validation</li>
+                              <li>6. Biometric data processing (if applicable)</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Automated Verification</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>• Real-time government database checks</li>
+                              <li>• Cross-reference with existing records</li>
+                              <li>• Face matching with document photo</li>
+                              <li>• Address verification</li>
+                              <li>• Sanctions and watchlist screening</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Verification Workflow</h3>
+                        <div className="space-y-4">
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Multi-tier Verification</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• Tier 1: Basic identity verification</li>
+                              <li>• Tier 2: Enhanced due diligence</li>
+                              <li>• Tier 3: High-risk customer assessment</li>
+                              <li>• Manual review for edge cases</li>
+                              <li>• Continuous monitoring</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-medium text-orange-900 mb-2">Database Updates</h4>
+                            <ul className="text-sm text-orange-800 space-y-1">
+                              <li>• <code>identity_verifications</code> table</li>
+                              <li>• <code>kyc_documents</code> table</li>
+                              <li>• <code>user_profiles</code> verification status</li>
+                              <li>• <code>audit_trails</code> for compliance</li>
+                              <li>• <code>sanctions_screening</code> results</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Property Management */}
+            <section id="property-flow">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Home className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">Property Management</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Property Lifecycle</h3>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">Property Creation</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>• Property listing creation</li>
+                              <li>• Initial property images upload</li>
+                              <li>• Property metadata setup</li>
+                              <li>• Verification workflow initiation</li>
+                              <li>• AI valuation request</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Property Updates</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>• Property information updates</li>
+                              <li>• Document uploads</li>
+                              <li>• Status changes</li>
+                              <li>• Market data updates</li>
+                              <li>• Verification status updates</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Property Management Features</h3>
+                        <div className="space-y-4">
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Property Analytics</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• Market trend analysis</li>
+                              <li>• Property performance metrics</li>
+                              <li>• Investment return projections</li>
+                              <li>• Risk assessment reports</li>
+                              <li>• Compliance status tracking</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-medium text-orange-900 mb-2">Property Security</h4>
+                            <ul className="text-sm text-orange-800 space-y-1">
+                              <li>• Access control for property data</li>
+                              <li>• Document verification status</li>
+                              <li>• Audit trail for property changes</li>
+                              <li>• Compliance monitoring</li>
+                              <li>• Fraud detection for property transactions</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Document Processing */}
+            <section id="document-flow">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <FileText className="h-6 w-6 text-indigo-600" />
+                    <h2 className="text-2xl font-bold">Document Processing & Verification</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Document Types & Processing</h3>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">Property Documents</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>• <strong>Deeds:</strong> Property ownership proof</li>
+                              <li>• <strong>Survey Plans:</strong> Boundary and measurements</li>
+                              <li>• <strong>C of O:</strong> Certificate of Occupancy</li>
+                              <li>• <strong>Government Consent:</strong> Transfer approvals</li>
+                              <li>• <strong>Tax Clearance:</strong> Payment verification</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Processing Pipeline</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>1. File upload and virus scanning</li>
+                              <li>2. Format validation and conversion</li>
+                              <li>3. OCR and text extraction</li>
+                              <li>4. AI-powered classification</li>
+                              <li>5. Data extraction and validation</li>
+                              <li>6. Verification queue assignment</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Verification Workflow</h3>
+                        <div className="space-y-4">
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Automated Checks</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• Document authenticity verification</li>
+                              <li>• Government registry cross-check</li>
+                              <li>• Previous ownership validation</li>
+                              <li>• Legal compliance assessment</li>
+                              <li>• Fraud detection analysis</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-medium text-orange-900 mb-2">Manual Review</h4>
+                            <ul className="text-sm text-orange-800 space-y-1">
+                              <li>• Expert verifier assignment</li>
+                              <li>• Document quality assessment</li>
+                              <li>• Legal compliance review</li>
+                              <li>• Final approval/rejection</li>
+                              <li>• Feedback and recommendations</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Document Storage & Security</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                          <h4 className="font-medium text-red-900 mb-2">Encryption</h4>
+                          <ul className="text-sm text-red-800 space-y-1">
+                            <li>• AES-256 encryption at rest</li>
+                            <li>• TLS 1.3 for data in transit</li>
+                            <li>• End-to-end encryption for sensitive docs</li>
+                            <li>• Key rotation and management</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-900 mb-2">Access Control</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• Role-based access permissions</li>
+                            <li>• Document owner controls</li>
+                            <li>• Verifier access management</li>
+                            <li>• Audit logging for all access</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <h4 className="font-medium text-green-900 mb-2">Compliance</h4>
+                          <ul className="text-sm text-green-800 space-y-1">
+                            <li>• GDPR/NDPR compliance</li>
+                            <li>• Document retention policies</li>
+                            <li>• Right to erasure support</li>
+                            <li>• Regular compliance audits</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Database Triggers & Functions */}
+            <section id="triggers-functions">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <GitBranch className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Database Triggers & Functions</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Automatic Triggers</h3>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">User-Related Triggers</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>• <code>on_auth_user_created</code> - Profile setup</li>
+                              <li>• <code>update_user_timestamp</code> - Last activity</li>
+                              <li>• <code>log_profile_changes</code> - Audit tracking</li>
+                              <li>• <code>validate_user_data</code> - Data integrity</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Property Triggers</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>• <code>property_created</code> - Workflow initiation</li>
+                              <li>• <code>update_property_stats</code> - Analytics</li>
+                              <li>• <code>property_status_change</code> - Notifications</li>
+                              <li>• <code>calculate_market_metrics</code> - Valuation</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Business Logic Functions</h3>
+                        <div className="space-y-4">
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Security Functions</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• <code>has_role(user_id, role)</code> - Permission check</li>
+                              <li>• <code>is_user_verified(user_id)</code> - KYC status</li>
+                              <li>• <code>can_access_property()</code> - Access control</li>
+                              <li>• <code>get_user_active_roles()</code> - Role management</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-medium text-orange-900 mb-2">Business Functions</h4>
+                            <ul className="text-sm text-orange-800 space-y-1">
+                              <li>• <code>calculate_roi()</code> - Investment returns</li>
+                              <li>• <code>distribute_revenue()</code> - Dividend calculation</li>
+                              <li>• <code>update_token_balance()</code> - Blockchain sync</li>
+                              <li>• <code>generate_financial_report()</code> - Reporting</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Example Trigger Implementation</h3>
+                      <div className="bg-gray-900 text-gray-100 p-6 rounded-lg">
+                        <pre className="text-sm overflow-x-auto">
+{`-- Example: Property creation trigger
+CREATE OR REPLACE FUNCTION handle_property_created()
+RETURNS TRIGGER AS $$
+DECLARE
+  workflow_id UUID;
+BEGIN
+  -- Create property creation workflow
+  INSERT INTO property_creation_workflows (
+    user_id, 
+    property_id, 
+    current_step, 
+    status
+  ) VALUES (
+    NEW.user_id, 
+    NEW.id, 
+    1, 
+    'in_progress'
+  ) RETURNING id INTO workflow_id;
+  
+  -- Queue AI valuation
+  INSERT INTO ai_property_valuations (
+    property_id,
+    user_id,
+    status
+  ) VALUES (
+    NEW.id,
+    NEW.user_id,
+    'queued'
+  );
+  
+  -- Initialize analytics
+  INSERT INTO property_views (
+    property_id,
+    view_count
+  ) VALUES (
+    NEW.id,
+    0
+  );
+  
+  -- Create audit log
+  INSERT INTO audit_trails (
+    action,
+    resource_type,
+    resource_id,
+    user_id,
+    metadata
+  ) VALUES (
+    'create',
+    'property',
+    NEW.id,
+    NEW.user_id,
+    jsonb_build_object(
+      'workflow_id', workflow_id,
+      'property_type', NEW.type,
+      'created_at', NOW()
+    )
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Attach trigger to properties table
+CREATE TRIGGER on_property_created
+  AFTER INSERT ON properties
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_property_created();`}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Edge Functions Deep Dive */}
+            <section id="edge-functions">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Code className="h-6 w-6 text-indigo-600" />
+                    <h2 className="text-2xl font-bold">Edge Functions Deep Dive</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Core Edge Functions</h3>
+                        <div className="space-y-4">
+                          {[
+                            { 
+                              name: "ai-property-valuation", 
+                              desc: "AI-powered property valuation using OpenAI GPT-4",
+                              inputs: "Property details, location, market data",
+                              outputs: "Estimated value, confidence score, comparable properties"
+                            },
+                            { 
+                              name: "create-hedera-token", 
+                              desc: "Property tokenization on Hedera blockchain",
+                              inputs: "Property ID, token metadata, supply amount",
+                              outputs: "Token ID, transaction hash, smart contract address"
+                            },
+                            { 
+                              name: "process-payment", 
+                              desc: "Payment processing with multiple providers",
+                              inputs: "Amount, currency, payment method, user ID",
+                              outputs: "Payment status, transaction ID, receipt"
+                            },
+                            { 
+                              name: "send-notification", 
+                              desc: "Multi-channel notification delivery",
+                              inputs: "User ID, message, channels, priority",
+                              outputs: "Delivery status, message ID, tracking info"
+                            }
+                          ].map((fn, index) => (
+                            <div key={index} className="bg-white p-4 rounded-lg border">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Code className="h-4 w-4 text-indigo-600" />
+                                <code className="text-sm font-mono text-indigo-700">{fn.name}</code>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-2">{fn.desc}</p>
+                              <div className="text-xs space-y-1">
+                                <div><span className="font-medium">Inputs:</span> {fn.inputs}</div>
+                                <div><span className="font-medium">Outputs:</span> {fn.outputs}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Function Architecture</h3>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">Runtime Environment</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>• Deno runtime for TypeScript execution</li>
+                              <li>• Isolated execution environment</li>
+                              <li>• Automatic scaling based on demand</li>
+                              <li>• Global edge deployment</li>
+                              <li>• Sub-100ms cold start times</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Security Features</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>• JWT token validation</li>
+                              <li>• Row Level Security integration</li>
+                              <li>• API key authentication</li>
+                              <li>• Rate limiting and throttling</li>
+                              <li>• Input validation and sanitization</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Error Handling</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• Structured error responses</li>
+                              <li>• Retry mechanisms for transient failures</li>
+                              <li>• Dead letter queues for failed requests</li>
+                              <li>• Comprehensive logging and monitoring</li>
+                              <li>• Graceful degradation strategies</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Example Edge Function</h3>
+                      <div className="bg-gray-900 text-gray-100 p-6 rounded-lg">
+                        <pre className="text-sm overflow-x-auto">
+{`// ai-property-valuation/index.ts
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { propertyId, propertyDetails } = await req.json()
+    
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { auth: { persistSession: false } }
+    )
+
+    // Get user from JWT
+    const authHeader = req.headers.get('Authorization')!
+    const { data: { user } } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
+
+    if (!user) {
+      throw new Error('Unauthorized')
+    }
+
+    // Call OpenAI for valuation
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': \`Bearer \${Deno.env.get('OPENAI_API_KEY')}\`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: \`Analyze this property for valuation: \${JSON.stringify(propertyDetails)}\`
+        }],
+        temperature: 0.3,
+      }),
+    })
+
+    const aiResult = await openaiResponse.json()
+    
+    // Store valuation result
+    const { data: valuation } = await supabase
+      .from('ai_property_valuations')
+      .insert({
+        property_id: propertyId,
+        user_id: user.id,
+        ai_estimated_value: aiResult.estimated_value,
+        confidence_score: aiResult.confidence,
+        valuation_factors: aiResult.factors,
+        market_comparisons: aiResult.comparables
+      })
+      .select()
+      .single()
+
+    return new Response(
+      JSON.stringify({ success: true, valuation }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
+})`}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Continue with remaining sections... */}
+            <section id="tokenization-flow">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Coins className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Tokenization Process</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Tokenization Workflow</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-900 mb-2">Token Creation</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• Property tokenization request</li>
+                            <li>• Token metadata setup</li>
+                            <li>• Token supply allocation</li>
+                            <li>• Smart contract deployment</li>
+                            <li>• Token minting</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <h4 className="font-medium text-green-900 mb-2">Token Management</h4>
+                          <ul className="text-sm text-green-800 space-y-1">
+                            <li>• Token ownership tracking</li>
+                            <li>• Token transfers and trading</li>
+                            <li>• Token status updates</li>
+                            <li>• Token metadata updates</li>
+                            <li>• Token audit logs</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="font-medium text-purple-900 mb-2">Token Security</h4>
+                          <ul className="text-sm text-purple-800 space-y-1">
+                            <li>• Token access control</li>
+                            <li>• Token verification</li>
+                            <li>• Token compliance checks</li>
+                            <li>• Token audit trails</li>
+                            <li>• Token fraud detection</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            <section id="payment-flow">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Database className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">Payment Processing</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Payment Workflow</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-900 mb-2">Payment Initiation</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• Payment request creation</li>
+                            <li>• Payment method selection</li>
+                            <li>• Payment validation</li>
+                            <li>• Payment processing</li>
+                            <li>• Payment confirmation</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <h4 className="font-medium text-green-900 mb-2">Payment Processing</h4>
+                          <ul className="text-sm text-green-800 space-y-1">
+                            <li>• Payment execution</li>
+                            <li>• Payment confirmation</li>
+                            <li>• Payment record creation</li>
+                            <li>• Payment audit logging</li>
+                            <li>• Payment reconciliation</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="font-medium text-purple-900 mb-2">Payment Security</h4>
+                          <ul className="text-sm text-purple-800 space-y-1">
+                            <li>• Payment encryption</li>
+                            <li>• Payment validation</li>
+                            <li>• Payment fraud detection</li>
+                            <li>• Payment compliance checks</li>
+                            <li>• Payment audit trails</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            <section id="security-layers">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Lock className="h-6 w-6 text-orange-600" />
+                    <h2 className="text-2xl font-bold">Security Architecture</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Security Layers</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-900 mb-2">Data Encryption</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• AES-256 encryption at rest</li>
+                            <li>• TLS 1.3 for data in transit</li>
+                            <li>• End-to-end encryption for sensitive data</li>
+                            <li>• Key rotation and management</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <h4 className="font-medium text-green-900 mb-2">Access Control</h4>
+                          <ul className="text-sm text-green-800 space-y-1">
+                            <li>• Role-based access permissions</li>
+                            <li>• User authentication</li>
+                            <li>• Device fingerprinting</li>
+                            <li>• Session management</li>
+                            <li>• Multi-factor authentication</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="font-medium text-purple-900 mb-2">Compliance</h4>
+                          <ul className="text-sm text-purple-800 space-y-1">
+                            <li>• GDPR/NDPR compliance</li>
+                            <li>• Data protection policies</li>
+                            <li>• Right to erasure support</li>
+                            <li>• Regular compliance audits</li>
+                            <li>• Security audit logging</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             <section id="database-schema">
               <Card>
                 <CardContent className="p-8">
@@ -496,7 +1422,6 @@ const DataFlow = () => {
               </Card>
             </section>
 
-            {/* API Architecture */}
             <section id="api-architecture">
               <Card>
                 <CardContent className="p-8">
@@ -560,17 +1485,138 @@ const DataFlow = () => {
               </Card>
             </section>
 
+            <section id="blockchain-integration">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Network className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Blockchain Integration</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Hedera Hashgraph Services</h3>
+                        <div className="space-y-4">
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-900 mb-2">Token Service (HTS)</h4>
+                            <ul className="text-sm text-purple-800 space-y-1">
+                              <li>• Property tokenization and minting</li>
+                              <li>• Token transfers and trading</li>
+                              <li>• Supply management and controls</li>
+                              <li>• Freeze and wipe capabilities</li>
+                              <li>• Custom token properties</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-blue-900 mb-2">File Service (HFS)</h4>
+                            <ul className="text-sm text-blue-800 space-y-1">
+                              <li>• Document immutable storage</li>
+                              <li>• Property metadata storage</li>
+                              <li>• Legal agreement archival</li>
+                              <li>• Audit trail documentation</li>
+                              <li>• Compliance record keeping</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Smart Contract Integration</h3>
+                        <div className="space-y-4">
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 className="font-medium text-green-900 mb-2">Property Registry Contract</h4>
+                            <ul className="text-sm text-green-800 space-y-1">
+                              <li>• Property ownership verification</li>
+                              <li>• Transfer history tracking</li>
+                              <li>• Legal compliance automation</li>
+                              <li>• Multi-signature requirements</li>
+                              <li>• Escrow functionality</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h4 className="font-medium text-orange-900 mb-2">Revenue Distribution</h4>
+                            <ul className="text-sm text-orange-800 space-y-1">
+                              <li>• Automated dividend calculations</li>
+                              <li>• Proportional distribution logic</li>
+                              <li>• Tax withholding management</li>
+                              <li>• Payment scheduling</li>
+                              <li>• Dispute resolution mechanisms</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            <section id="monitoring">
+              <Card>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Cpu className="h-6 w-6 text-purple-600" />
+                    <h2 className="text-2xl font-bold">Monitoring & Analytics</h2>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Monitoring Architecture</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-900 mb-2">System Monitoring</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• Real-time performance metrics</li>
+                            <li>• Error tracking and logging</li>
+                            <li>• Resource utilization monitoring</li>
+                            <li>• API request tracking</li>
+                            <li>• User activity monitoring</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <h4 className="font-medium text-green-900 mb-2">Analytics</h4>
+                          <ul className="text-sm text-green-800 space-y-1">
+                            <li>• User behavior analytics</li>
+                            <li>• Property market trends</li>
+                            <li>• Transaction analytics</li>
+                            <li>• Revenue distribution analytics</li>
+                            <li>• Security incident analytics</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="font-medium text-purple-900 mb-2">Compliance Monitoring</h4>
+                          <ul className="text-sm text-purple-800 space-y-1">
+                            <li>• Regulatory compliance tracking</li>
+                            <li>• Data protection monitoring</li>
+                            <li>• Audit trail monitoring</li>
+                            <li>• Security incident monitoring</li>
+                            <li>• Risk assessment monitoring</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            <Separator className="my-8" />
+
             <div className="text-center text-sm text-gray-600 space-y-2">
               <p>This technical documentation is continuously updated to reflect our evolving architecture.</p>
               <p>For technical questions or contributions, contact our engineering team at tech@terravault.com</p>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white mt-16">
-        {/* ... keep existing code (footer content) ... */}
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
