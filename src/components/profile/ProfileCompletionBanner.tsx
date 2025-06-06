@@ -27,8 +27,7 @@ export function ProfileCompletionBanner({ onDismiss, onCompleteProfile }: Profil
       profile.last_name,
       profile.phone,
       profile.date_of_birth,
-      profile.country,
-      profile.city,
+      profile.nationality,
       profile.state_of_origin,
       user?.email_confirmed_at, // email verification
     ];
