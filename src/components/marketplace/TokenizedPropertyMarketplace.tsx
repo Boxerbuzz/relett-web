@@ -35,13 +35,13 @@ interface TokenizedProperty {
   status: string;
   revenue_distribution_frequency: string;
   investment_terms: string;
-  property: {
+  property?: {
     title: string;
     description: string;
     location: any;
-    property_images: Array<{ url: string; is_primary: boolean }>;
+    property_images?: Array<{ url: string; is_primary: boolean }>;
   };
-  land_title: {
+  land_title?: {
     location_address: string;
   };
   available_tokens?: number;
@@ -67,7 +67,12 @@ export function TokenizedPropertyMarketplace() {
         .from('tokenized_properties')
         .select(`
           *,
-          property:properties(*),
+          property:properties(
+            title,
+            description,
+            location,
+            property_images(url, is_primary)
+          ),
           land_title:land_titles(location_address)
         `)
         .in('status', ['minted', 'active'])
@@ -92,6 +97,10 @@ export function TokenizedPropertyMarketplace() {
 
           return {
             ...property,
+            property: property.property ? {
+              ...property.property,
+              property_images: property.property.property_images || []
+            } : undefined,
             available_tokens: availableTokens,
             investor_count: investorCount,
             funding_progress: fundingProgress
@@ -118,12 +127,13 @@ export function TokenizedPropertyMarketplace() {
   };
 
   const getPrimaryImage = (property: TokenizedProperty) => {
-    return property.property?.property_images?.find(img => img.is_primary)?.url || 
-           property.property?.property_images?.[0]?.url || 
+    const images = property.property?.property_images || [];
+    return images.find(img => img.is_primary)?.url || 
+           images[0]?.url || 
            '/placeholder.svg';
   };
 
-  const getStatusBadge = (status: string, fundingProgress: number) => {
+  const getStatusBadge = (status: string, fundingProgress: number = 0) => {
     if (status === 'active' && fundingProgress < 100) {
       return <Badge className="bg-green-100 text-green-800">Funding</Badge>;
     }
@@ -142,9 +152,9 @@ export function TokenizedPropertyMarketplace() {
   const filteredProperties = properties.filter(property => {
     switch (activeTab) {
       case 'funding':
-        return property.funding_progress < 100;
+        return (property.funding_progress || 0) < 100;
       case 'funded':
-        return property.funding_progress >= 100;
+        return (property.funding_progress || 0) >= 100;
       case 'high-roi':
         return property.expected_roi >= 12;
       default:
@@ -245,12 +255,12 @@ export function TokenizedPropertyMarketplace() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Funding Progress</span>
-                          <span>{property.funding_progress?.toFixed(1)}%</span>
+                          <span>{(property.funding_progress || 0).toFixed(1)}%</span>
                         </div>
-                        <Progress value={property.funding_progress} className="h-2" />
+                        <Progress value={property.funding_progress || 0} className="h-2" />
                         <div className="flex justify-between text-xs text-gray-500">
-                          <span>{property.investor_count} investors</span>
-                          <span>{property.available_tokens} tokens available</span>
+                          <span>{property.investor_count || 0} investors</span>
+                          <span>{property.available_tokens || 0} tokens available</span>
                         </div>
                       </div>
 
@@ -274,9 +284,9 @@ export function TokenizedPropertyMarketplace() {
                       <Button 
                         onClick={() => handleBuyTokens(property)}
                         className="w-full"
-                        disabled={property.available_tokens === 0}
+                        disabled={(property.available_tokens || 0) === 0}
                       >
-                        {property.available_tokens === 0 ? 'Sold Out' : 'Invest Now'}
+                        {(property.available_tokens || 0) === 0 ? 'Sold Out' : 'Invest Now'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -289,7 +299,7 @@ export function TokenizedPropertyMarketplace() {
 
       {selectedProperty && (
         <BuyTokenDialog
-          isOpen={showBuyDialog}
+          open={showBuyDialog}
           onClose={() => {
             setShowBuyDialog(false);
             setSelectedProperty(null);
