@@ -23,9 +23,9 @@ const profileSchema = z.object({
   date_of_birth: z.string().min(1, 'Date of birth is required'),
   gender: z.enum(['male', 'female', 'other']).optional(),
   bio: z.string().optional(),
-  nationality: z.string().min(1, 'Nationality is required'),
+  country: z.string().min(1, 'Country is required'),
+  city: z.string().min(1, 'City is required'),
   state_of_origin: z.string().min(1, 'State is required'),
-  lga: z.string().min(1, 'LGA is required'),
   address: z.string().min(1, 'Address is required'),
 });
 
@@ -39,7 +39,7 @@ interface ProfileCompletionWizardProps {
 const STEPS = [
   { id: 'personal', title: 'Personal Information', fields: ['first_name', 'last_name', 'phone', 'date_of_birth'] },
   { id: 'additional', title: 'Additional Details', fields: ['gender', 'bio'] },
-  { id: 'location', title: 'Location', fields: ['nationality', 'state_of_origin', 'lga', 'address'] },
+  { id: 'location', title: 'Location', fields: ['country', 'state_of_origin', 'city', 'address'] },
 ];
 
 export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletionWizardProps) {
@@ -57,9 +57,9 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
       date_of_birth: profile?.date_of_birth || '',
       gender: profile?.gender || 'other',
       bio: profile?.bio || '',
-      nationality: profile?.nationality || '',
+      country: profile?.country || '',
       state_of_origin: profile?.state_of_origin || '',
-      lga: profile?.lga || '',
+      city: profile?.city || '',
       address: typeof profile?.address === 'object' ? profile?.address?.address_line : (profile?.address || ''),
     },
   });
@@ -75,16 +75,16 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
         date_of_birth: data.date_of_birth,
         gender: data.gender,
         bio: data.bio,
-        nationality: data.nationality,
+        country: data.country,
         state_of_origin: data.state_of_origin,
-        lga: data.lga,
+        city: data.city,
         address: {
           address_line: data.address,
-          lga: data.lga,
+          city: data.city,
           state: data.state_of_origin,
-          country: data.nationality,
+          country: data.country,
         },
-        has_setup: true,
+        has_setup_preference: true,
       };
 
       const { error } = await updateProfile(updateData);
@@ -209,25 +209,25 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
             {currentStep === 2 && (
               <>
                 <div>
-                  <Label htmlFor="nationality">Nationality</Label>
-                  <Input {...form.register('nationality')} placeholder="e.g., Nigerian" />
-                  {form.formState.errors.nationality && (
-                    <p className="text-sm text-red-600">{form.formState.errors.nationality.message}</p>
+                  <Label htmlFor="country">Country</Label>
+                  <Input {...form.register('country')} placeholder="e.g., Nigeria" />
+                  {form.formState.errors.country && (
+                    <p className="text-sm text-red-600">{form.formState.errors.country.message}</p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="state_of_origin">State of Origin</Label>
+                    <Label htmlFor="state_of_origin">State</Label>
                     <Input {...form.register('state_of_origin')} placeholder="e.g., Lagos" />
                     {form.formState.errors.state_of_origin && (
                       <p className="text-sm text-red-600">{form.formState.errors.state_of_origin.message}</p>
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="lga">LGA</Label>
-                    <Input {...form.register('lga')} placeholder="e.g., Ikeja" />
-                    {form.formState.errors.lga && (
-                      <p className="text-sm text-red-600">{form.formState.errors.lga.message}</p>
+                    <Label htmlFor="city">City</Label>
+                    <Input {...form.register('city')} placeholder="e.g., Lagos" />
+                    {form.formState.errors.city && (
+                      <p className="text-sm text-red-600">{form.formState.errors.city.message}</p>
                     )}
                   </div>
                 </div>
