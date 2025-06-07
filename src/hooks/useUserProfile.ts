@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,8 +18,9 @@ export interface UserProfileData {
   verification_status: 'verified' | 'pending' | 'unverified' | 'rejected' | 'expired' | null;
   created_at: string;
   updated_at: string | null;
+  has_setup: boolean | null;
   
-  // Additional profile data (previously from user_profiles)
+  // Other fields that might be in the users table
   date_of_birth?: string | null;
   nationality?: string | null;
   state_of_origin?: string | null;
@@ -28,14 +28,7 @@ export interface UserProfileData {
   middle_name?: string | null;
   gender?: 'male' | 'female' | 'other' | null;
   last_login?: string | null;
-  
-  // Location data (previously from user_preferences)
   address?: any | null;
-  city?: string | null;
-  coordinates?: any | null;
-  country?: string | null;
-  interest?: string | null;
-  has_setup_preference?: boolean | null;
 }
 
 export function useUserProfile() {
@@ -55,7 +48,7 @@ export function useUserProfile() {
 
   const fetchProfile = async () => {
     try {
-      // Fetch all data from consolidated users table
+      // Fetch user data directly from the consolidated users table
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
@@ -73,9 +66,9 @@ export function useUserProfile() {
     }
   };
 
-  const updateProfile = async (updates: Partial<Omit<UserProfileData, 'verification_status'> & { verification_status?: 'verified' | 'pending' | 'unverified' | 'rejected' | 'expired' }>) => {
+  const updateProfile = async (updates: Partial<UserProfileData>) => {
     try {
-      // All updates go to users table now
+      // All updates go to the users table now
       const { error } = await supabase
         .from('users')
         .update(updates)
