@@ -136,13 +136,28 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     }
   });
 
+  const getFieldError = (fieldPath: string): string | undefined => {
+    const keys = fieldPath.split('.');
+    let current: any = form.formState.errors;
+    
+    for (const key of keys) {
+      if (current && typeof current === 'object' && key in current) {
+        current = current[key];
+      } else {
+        return undefined;
+      }
+    }
+    
+    return current?.message;
+  };
+
   const validateCurrentStep = async () => {
     const values = form.getValues();
     let fieldsToValidate: string[] = [];
 
     switch (currentStep) {
       case 0: // Basic Details
-        fieldsToValidate = ['title', 'description', 'type', 'category', 'condition', 'price.amount'];
+        fieldsToValidate = ['title', 'description', 'type', 'sub_type', 'category', 'condition', 'price.amount'];
         break;
       case 1: // Location
         fieldsToValidate = ['location.address', 'location.city', 'location.state', 'location.country'];
@@ -163,17 +178,12 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     const result = await form.trigger(fieldsToValidate as any);
     
     if (!result) {
-      const errors = form.formState.errors;
-      const errorMessages = [];
+      const errorMessages: string[] = [];
       
       fieldsToValidate.forEach(field => {
-        const fieldPath = field.split('.');
-        let error = errors;
-        for (const path of fieldPath) {
-          error = error?.[path] as any;
-        }
-        if (error?.message) {
-          errorMessages.push(error.message);
+        const errorMessage = getFieldError(field);
+        if (errorMessage) {
+          errorMessages.push(errorMessage);
         }
       });
 
