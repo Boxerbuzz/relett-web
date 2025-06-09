@@ -1,91 +1,110 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { FinancialReport } from '@/types/preferences';
+
+interface FinancialReport {
+  id: string;
+  user_id: string;
+  report_type: string;
+  period_start: string;
+  period_end: string;
+  data: any;
+  status: string;
+  generated_at: string;
+  metadata: any;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useFinancialReports() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<FinancialReport[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchReports();
-  }, []);
+    if (user) {
+      fetchReports();
+    }
+  }, [user]);
 
   const fetchReports = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('financial_reports')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user?.id)
+        .order('generated_at', { ascending: false });
 
       if (error) throw error;
       setReports(data || []);
-    } catch (error) {
-      console.error('Error fetching financial reports:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load financial reports.',
-        variant: 'destructive'
-      });
+    } catch (err) {
+      console.error('Error fetching financial reports:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch reports');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const generateReport = async (reportType: string, periodStart: string, periodEnd: string) => {
+  const generateReport = async (
+    reportType: string,
+    periodStart: string,
+    periodEnd: string
+  ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      setIsLoading(true);
 
-      // In a real app, this would trigger a background job to generate the report
-      const reportData = {
-        summary: 'Investment performance report generated',
-        period: `${periodStart} to ${periodEnd}`,
-        // Add more report data based on reportType
-      };
-
+      // Create a new financial report
       const { data, error } = await supabase
         .from('financial_reports')
         .insert({
-          user_id: user.id,
+          user_id: user?.id,
           report_type: reportType,
           period_start: periodStart,
           period_end: periodEnd,
-          data: reportData,
-          status: 'generated'
+          status: 'generated',
+          data: {
+            summary: 'Financial report generated successfully',
+            period: `${periodStart} to ${periodEnd}`,
+            type: reportType
+          }
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setReports(prev => [data, ...prev]);
       toast({
         title: 'Report Generated',
         description: 'Your financial report has been generated successfully.',
       });
 
+      await fetchReports();
       return data;
-    } catch (error) {
-      console.error('Error generating financial report:', error);
+    } catch (err) {
+      console.error('Error generating report:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate report';
+      setError(errorMessage);
       toast({
         title: 'Error',
-        description: 'Failed to generate financial report.',
+        description: errorMessage,
         variant: 'destructive'
       });
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     reports,
-    generateReport,
     isLoading,
+    error,
+    generateReport,
     refetch: fetchReports
   };
 }

@@ -4,60 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Calendar, FileText } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, Calendar, FileText, Loader2 } from 'lucide-react';
+import { useTokenizedProperties } from '@/hooks/useTokenizedProperties';
 import { useFinancialReports } from '@/hooks/useFinancialReports';
-import type { InvestmentTracking } from '@/types/preferences';
 
 export function InvestmentTracker() {
-  const [investments, setInvestments] = useState<InvestmentTracking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalPortfolioValue, setTotalPortfolioValue] = useState(0);
-  const [totalROI, setTotalROI] = useState(0);
-  const { toast } = useToast();
+  const { 
+    tokenizedProperties, 
+    totalPortfolioValue, 
+    totalROI, 
+    loading 
+  } = useTokenizedProperties();
   const { reports, generateReport, isLoading: reportsLoading } = useFinancialReports();
-
-  useEffect(() => {
-    fetchInvestments();
-  }, []);
-
-  const fetchInvestments = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('investment_tracking')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      const transformedData: InvestmentTracking[] = (data || []).map(item => ({
-        ...item,
-        tokenized_property: null
-      }));
-
-      setInvestments(transformedData);
-      
-      const totalValue = transformedData.reduce((sum, inv) => sum + inv.current_value, 0);
-      const totalInvested = transformedData.reduce((sum, inv) => sum + inv.investment_amount, 0);
-      const overallROI = totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0;
-      
-      setTotalPortfolioValue(totalValue);
-      setTotalROI(overallROI);
-    } catch (error) {
-      console.error('Error fetching investments:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load investment data.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleGenerateReport = async () => {
     const today = new Date();
@@ -81,20 +39,11 @@ export function InvestmentTracker() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="grid gap-4">
-        {[1, 2, 3].map(i => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader>
-              <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-20 bg-gray-200 rounded"></div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading investment data...</span>
       </div>
     );
   }
@@ -134,7 +83,7 @@ export function InvestmentTracker() {
             <PieChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{investments.length}</div>
+            <div className="text-2xl font-bold">{tokenizedProperties.length}</div>
           </CardContent>
         </Card>
 
@@ -152,6 +101,9 @@ export function InvestmentTracker() {
               onClick={handleGenerateReport}
               disabled={reportsLoading}
             >
+              {reportsLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
               Generate Report
             </Button>
           </CardContent>
@@ -183,7 +135,7 @@ export function InvestmentTracker() {
       )}
 
       <InvestmentList 
-        investments={investments}
+        investments={tokenizedProperties}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
       />
@@ -196,7 +148,7 @@ function InvestmentList({
   formatCurrency, 
   formatDate 
 }: { 
-  investments: InvestmentTracking[];
+  investments: any[];
   formatCurrency: (amount: number) => string;
   formatDate: (dateString: string) => string;
 }) {
@@ -225,10 +177,10 @@ function InvestmentList({
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-lg">
-                  Investment {investment.id.slice(0, 8)}
+                  {investment.token_name || investment.property_title}
                 </CardTitle>
                 <CardDescription>
-                  {investment.tokens_owned} tokens
+                  {investment.tokens_owned} tokens owned
                 </CardDescription>
               </div>
               <Badge variant={investment.roi_percentage >= 0 ? 'default' : 'destructive'}>
@@ -240,7 +192,7 @@ function InvestmentList({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Initial Investment</p>
-                <p className="font-semibold">{formatCurrency(investment.investment_amount)}</p>
+                <p className="font-semibold">{formatCurrency(investment.total_investment)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Current Value</p>
@@ -267,6 +219,22 @@ function InvestmentList({
               value={Math.max(0, Math.min(100, investment.roi_percentage + 50))} 
               className="h-2" 
             />
+
+            {investment.recent_dividends && investment.recent_dividends.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Recent Dividends</h4>
+                <div className="space-y-1">
+                  {investment.recent_dividends.slice(0, 3).map((dividend: any) => (
+                    <div key={dividend.id} className="flex justify-between text-sm">
+                      <span>{dividend.source_description}</span>
+                      <span className="font-medium">
+                        {dividend.net_amount ? formatCurrency(dividend.net_amount) : formatCurrency(dividend.revenue_per_token * parseFloat(investment.tokens_owned))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
