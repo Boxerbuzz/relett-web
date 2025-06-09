@@ -32,12 +32,58 @@ interface Property {
   }>;
 }
 
+// Extended interface for dialog components
+interface PropertyForDialog {
+  id: number;
+  title: string;
+  location: string;
+  size: string;
+  value?: string;
+  price?: string;
+  tokenPrice?: string;
+  totalTokens?: number;
+  availableTokens?: number;
+  roi?: string;
+  category?: string;
+  type?: string;
+  status?: string;
+  featured?: boolean;
+  tokenized?: boolean;
+  image: string;
+  description?: string;
+  condition?: string;
+  yearBuilt?: string;
+  sqrft?: string;
+  maxGuest?: number;
+  garages?: number;
+  ratings?: number;
+  reviewCount?: number;
+  amenities?: string[];
+  features?: string[];
+  tags?: string[];
+  views?: number;
+  likes?: number;
+  favorites?: number;
+  isVerified?: boolean;
+  isExclusive?: boolean;
+  isAd?: boolean;
+}
+
+interface TokenizePropertyForDialog {
+  id: string;
+  title: string;
+  value: string;
+  location: string;
+  image: string;
+}
+
 const MyProperty = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyForDialog | null>(null);
+  const [selectedPropertyForTokenize, setSelectedPropertyForTokenize] = useState<TokenizePropertyForDialog | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -110,12 +156,42 @@ const MyProperty = () => {
   };
 
   const handleViewDetails = (property: Property) => {
-    setSelectedProperty(property);
+    // Transform Property to PropertyForDialog
+    const propertyForDialog: PropertyForDialog = {
+      id: parseInt(property.id.slice(-8), 16), // Convert string ID to number for dialog
+      title: property.title,
+      location: getLocationString(property.location),
+      size: getPropertySize(property.specification),
+      value: getPriceString(property.price),
+      price: getPriceString(property.price),
+      category: property.type,
+      type: property.type,
+      status: property.status,
+      tokenized: property.is_tokenized,
+      image: getPropertyImage(property),
+      isVerified: property.is_verified,
+      views: 0,
+      likes: 0,
+      favorites: 0,
+      ratings: 0,
+      reviewCount: 0
+    };
+    
+    setSelectedProperty(propertyForDialog);
     setDetailsDialogOpen(true);
   };
 
   const handleTokenizeProperty = (property: Property) => {
-    setSelectedProperty(property);
+    // Transform Property to TokenizePropertyForDialog
+    const propertyForTokenize: TokenizePropertyForDialog = {
+      id: property.id,
+      title: property.title,
+      value: getPriceString(property.price),
+      location: getLocationString(property.location),
+      image: getPropertyImage(property)
+    };
+    
+    setSelectedPropertyForTokenize(propertyForTokenize);
     setTokenizeDialogOpen(true);
   };
 
@@ -367,18 +443,18 @@ const MyProperty = () => {
 
       {/* Dialogs */}
       {selectedProperty && (
-        <>
-          <PropertyDetailsDialog
-            open={detailsDialogOpen}
-            onOpenChange={setDetailsDialogOpen}
-            property={selectedProperty}
-          />
-          <TokenizePropertyDialog
-            open={tokenizeDialogOpen}
-            onOpenChange={setTokenizeDialogOpen}
-            property={selectedProperty}
-          />
-        </>
+        <PropertyDetailsDialog
+          open={detailsDialogOpen}
+          onOpenChange={setDetailsDialogOpen}
+          property={selectedProperty}
+        />
+      )}
+      {selectedPropertyForTokenize && (
+        <TokenizePropertyDialog
+          open={tokenizeDialogOpen}
+          onOpenChange={setTokenizeDialogOpen}
+          property={selectedPropertyForTokenize}
+        />
       )}
     </div>
   );
