@@ -95,6 +95,9 @@ const MyProperty = () => {
     }
   }, [user]);
 
+  // Convert kobo to naira for display
+  const convertKoboToNaira = (kobo: number) => kobo / 100;
+
   const fetchProperties = async () => {
     try {
       setLoading(true);
@@ -120,29 +123,33 @@ const MyProperty = () => {
 
       // Fetch property images separately
       const propertyIds = propertiesData?.map(p => p.id) || [];
-      const { data: imagesData, error: imagesError } = await supabase
-        .from('property_images')
-        .select('property_id, url, is_primary')
-        .in('property_id', propertyIds);
+      if (propertyIds.length > 0) {
+        const { data: imagesData, error: imagesError } = await supabase
+          .from('property_images')
+          .select('property_id, url, is_primary')
+          .in('property_id', propertyIds);
 
-      if (imagesError) {
-        console.error('Error fetching images:', imagesError);
+        if (imagesError) {
+          console.error('Error fetching images:', imagesError);
+        }
+
+        // Group images by property
+        const imagesByProperty = imagesData?.reduce((acc, img) => {
+          if (!acc[img.property_id]) acc[img.property_id] = [];
+          acc[img.property_id].push(img);
+          return acc;
+        }, {} as Record<string, any[]>) || {};
+
+        // Combine properties with their images
+        const enrichedProperties: Property[] = propertiesData?.map(property => ({
+          ...property,
+          property_images: imagesByProperty[property.id] || []
+        })) || [];
+
+        setProperties(enrichedProperties);
+      } else {
+        setProperties([]);
       }
-
-      // Group images by property
-      const imagesByProperty = imagesData?.reduce((acc, img) => {
-        if (!acc[img.property_id]) acc[img.property_id] = [];
-        acc[img.property_id].push(img);
-        return acc;
-      }, {} as Record<string, any[]>) || {};
-
-      // Combine properties with their images
-      const enrichedProperties: Property[] = propertiesData?.map(property => ({
-        ...property,
-        property_images: imagesByProperty[property.id] || []
-      })) || [];
-
-      setProperties(enrichedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({
@@ -240,13 +247,14 @@ const MyProperty = () => {
   const getPriceString = (price: any) => {
     if (typeof price === 'object' && price !== null) {
       const amount = price.amount || 0;
-      return new Intl.NumberFormat('en-US', {
+      const convertedAmount = convertKoboToNaira(amount); // Convert from kobo to naira
+      return new Intl.NumberFormat('en-NG', {
         style: 'currency',
-        currency: price.currency || 'USD',
+        currency: price.currency || 'NGN',
         minimumFractionDigits: 0,
-      }).format(amount);
+      }).format(convertedAmount);
     }
-    return '$0';
+    return '₦0';
   };
 
   const getPropertySize = (specification: any) => {

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +10,7 @@ import { AgentChat } from '@/components/agents/AgentChat';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
 import { Bot, ArrowLeft, Brain } from 'lucide-react';
 
 type ViewMode = 'portfolio' | 'discussion' | 'analytics' | 'payments' | 'agent';
@@ -19,6 +19,13 @@ const Tokens = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('portfolio');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [showAgent, setShowAgent] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate loading for demo
+  useState(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  });
 
   const tokenizedProperties = [
     {
@@ -27,9 +34,9 @@ const Tokens = () => {
       location: 'Lagos, Nigeria',
       totalTokens: 1000,
       ownedTokens: 150,
-      tokenPrice: 45.0,
-      currentValue: 52.5,
-      totalValue: 7875,
+      tokenPrice: 4500.0, // Amount in kobo (₦45.00)
+      currentValue: 5250.0, // Amount in kobo (₦52.50)
+      totalValue: 787500, // Amount in kobo (₦7,875.00)
       roi: 16.7,
       investorCount: 12,
       hasGroupChat: true
@@ -40,9 +47,9 @@ const Tokens = () => {
       location: 'Abuja, Nigeria',
       totalTokens: 2000,
       ownedTokens: 75,
-      tokenPrice: 125.0,
-      currentValue: 138.75,
-      totalValue: 10406.25,
+      tokenPrice: 12500.0, // Amount in kobo (₦125.00)
+      currentValue: 13875.0, // Amount in kobo (₦138.75)
+      totalValue: 1040625, // Amount in kobo (₦10,406.25)
       roi: 11.0,
       investorCount: 8,
       hasGroupChat: true
@@ -53,14 +60,17 @@ const Tokens = () => {
       location: 'Port Harcourt, Nigeria',
       totalTokens: 500,
       ownedTokens: 25,
-      tokenPrice: 200.0,
-      currentValue: 185.0,
-      totalValue: 4625,
+      tokenPrice: 20000.0, // Amount in kobo (₦200.00)
+      currentValue: 18500.0, // Amount in kobo (₦185.00)
+      totalValue: 462500, // Amount in kobo (₦4,625.00)
       roi: -7.5,
       investorCount: 5,
       hasGroupChat: false
     }
   ];
+
+  // Convert kobo to naira for display
+  const convertKoboToNaira = (kobo: number) => kobo / 100;
 
   const totalPortfolioValue = tokenizedProperties.reduce((sum, prop) => sum + prop.totalValue, 0);
   const totalROI = tokenizedProperties.reduce((sum, prop) => sum + prop.roi, 0) / tokenizedProperties.length;
@@ -95,6 +105,14 @@ const Tokens = () => {
     setCurrentView('agent');
     setShowAgent(true);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <TokenPortfolioSkeleton />
+      </div>
+    );
+  }
 
   if (currentView === 'discussion' && selectedProperty) {
     return (
@@ -174,7 +192,7 @@ const Tokens = () => {
               userId: "current-user-id", // This would come from auth
               propertyId: selectedPropertyId || undefined,
               metadata: {
-                portfolio_value: totalPortfolioValue,
+                portfolio_value: convertKoboToNaira(totalPortfolioValue),
                 portfolio_roi: totalROI,
                 property_count: tokenizedProperties.length,
                 context: 'token_portfolio'
@@ -201,14 +219,19 @@ const Tokens = () => {
       </div>
 
       <PortfolioSummary 
-        totalPortfolioValue={totalPortfolioValue}
+        totalPortfolioValue={convertKoboToNaira(totalPortfolioValue)}
         totalROI={totalROI}
         propertyCount={tokenizedProperties.length}
         activeChatCount={activeChatCount}
       />
 
       <PropertyList 
-        properties={tokenizedProperties}
+        properties={tokenizedProperties.map(prop => ({
+          ...prop,
+          tokenPrice: convertKoboToNaira(prop.tokenPrice),
+          currentValue: convertKoboToNaira(prop.currentValue),
+          totalValue: convertKoboToNaira(prop.totalValue)
+        }))}
         onJoinDiscussion={handleJoinDiscussion}
         onViewAnalytics={handleViewAnalytics}
         onViewPaymentHistory={handleViewPaymentHistory}

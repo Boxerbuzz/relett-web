@@ -9,6 +9,7 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { PropertyCard } from '@/components/marketplace/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/property-skeleton';
+import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, Bell, Home, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,12 +40,22 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [featuredProperties, setFeaturedProperties] = useState<PropertyWithTokenization[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+
+  // Simulate initial dashboard loading
+  useEffect(() => {
+    const timer = setTimeout(() => setDashboardLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'properties') {
       fetchFeaturedProperties();
     }
   }, [activeTab]);
+
+  // Convert kobo to naira for display
+  const convertKoboToNaira = (kobo: number) => kobo / 100;
 
   const fetchFeaturedProperties = async () => {
     setLoading(true);
@@ -95,7 +106,7 @@ const DashboardPage = () => {
 
             if (tokenizedProperty) {
               tokenizedData = {
-                token_price: tokenizedProperty.token_price,
+                token_price: convertKoboToNaira(tokenizedProperty.token_price), // Convert from kobo
                 total_supply: tokenizedProperty.total_supply,
                 expected_roi: tokenizedProperty.expected_roi,
                 token_holdings: tokenizedProperty.token_holdings || []
@@ -154,6 +165,14 @@ const DashboardPage = () => {
       investorCount
     };
   };
+
+  if (dashboardLoading) {
+    return (
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <DashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
@@ -230,7 +249,10 @@ const DashboardPage = () => {
                         id={property.id}
                         title={property.title}
                         location={property.location}
-                        price={property.price}
+                        price={{
+                          ...property.price,
+                          amount: convertKoboToNaira(property.price?.amount || 0) // Convert from kobo
+                        }}
                         tokenPrice={tokenData?.tokenPrice}
                         totalTokens={tokenData?.totalTokens}
                         availableTokens={tokenData?.availableTokens}
