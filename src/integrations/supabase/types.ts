@@ -4493,6 +4493,8 @@ export type Database = {
         | "general"
         | "investment"
         | "chat"
+        | "property_updates"
+        | "verification_updates"
       token_type: "erc20" | "erc721" | "hts_fungible" | "hts_nft"
       tokenization_status:
         | "draft"
@@ -4674,6 +4676,8 @@ export const Constants = {
         "general",
         "investment",
         "chat",
+        "property_updates",
+        "verification_updates",
       ],
       token_type: ["erc20", "erc721", "hts_fungible", "hts_nft"],
       tokenization_status: [
