@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +8,7 @@ import { MarketOverview } from '@/components/dashboard/MarketOverview';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
 import { PropertyCard } from '@/components/marketplace/PropertyCard';
+import { PropertyGridSkeleton } from '@/components/ui/property-skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, Bell, Home, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -214,18 +214,7 @@ const DashboardPage = () => {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="bg-gray-200 h-48 rounded-t-lg"></div>
-                      <div className="p-4 space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                        <div className="h-6 bg-gray-200 rounded w-2/3"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <PropertyGridSkeleton count={6} />
               ) : featuredProperties.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <p>No properties available at the moment</p>
