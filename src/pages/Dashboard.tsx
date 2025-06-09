@@ -11,54 +11,79 @@ import { NotificationsList } from '@/components/notifications/NotificationsList'
 import { PropertyCard } from '@/components/marketplace/PropertyCard';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, Bell, Home, Search } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
-const sampleProperties = [
-  {
-    id: '1',
-    title: 'Victoria Island Luxury Apartments',
-    location: 'Victoria Island, Lagos',
-    price: 850000,
-    tokenPrice: 85,
-    totalTokens: 10000,
-    availableTokens: 2500,
-    expectedROI: 12.5,
-    investorCount: 156,
-    imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
-    isVerified: true,
-    views: 1247
-  },
-  {
-    id: '2',
-    title: 'Ikoyi Commercial Plaza',
-    location: 'Ikoyi, Lagos',
-    price: 1200000,
-    tokenPrice: 80,
-    totalTokens: 15000,
-    availableTokens: 3200,
-    expectedROI: 15.2,
-    investorCount: 98,
-    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop',
-    isVerified: true,
-    views: 892
-  },
-  {
-    id: '3',
-    title: 'Lekki Mixed Development',
-    location: 'Lekki Phase 1, Lagos',
-    price: 650000,
-    tokenPrice: 81.25,
-    totalTokens: 8000,
-    availableTokens: 1800,
-    expectedROI: 18.7,
-    investorCount: 67,
-    imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
-    isVerified: true,
-    views: 654
-  }
-];
+interface PropertyWithTokenization {
+  id: string;
+  title: string;
+  location: any;
+  price: any;
+  views: number;
+  is_verified: boolean;
+  is_tokenized: boolean;
+  backdrop?: string;
+  tokenized_properties?: {
+    token_price: number;
+    total_supply: string;
+    expected_roi: number;
+    token_holdings: any[];
+  };
+  property_images?: Array<{
+    url: string;
+    is_primary: boolean;
+  }>;
+}
 
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [featuredProperties, setFeaturedProperties] = useState<PropertyWithTokenization[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'properties') {
+      fetchFeaturedProperties();
+    }
+  }, [activeTab]);
+
+  const fetchFeaturedProperties = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          id,
+          title,
+          location,
+          price,
+          views,
+          is_verified,
+          is_tokenized,
+          backdrop,
+          tokenized_properties(
+            token_price,
+            total_supply,
+            expected_roi,
+            token_holdings(id)
+          ),
+          property_images(
+            url,
+            is_primary
+          )
+        `)
+        .eq('status', 'active')
+        .eq('is_verified', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      setFeaturedProperties(data || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewDetails = (propertyId: string) => {
     console.log('View details for property:', propertyId);
@@ -68,6 +93,31 @@ const DashboardPage = () => {
   const handleInvest = (propertyId: string) => {
     console.log('Invest in property:', propertyId);
     // Open investment dialog
+  };
+
+  const getPropertyImage = (property: PropertyWithTokenization) => {
+    const primaryImage = property.property_images?.find(img => img.is_primary);
+    return primaryImage?.url || property.backdrop || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop';
+  };
+
+  const getTokenizationData = (property: PropertyWithTokenization) => {
+    if (!property.is_tokenized || !property.tokenized_properties) {
+      return null;
+    }
+
+    const tokenData = property.tokenized_properties;
+    const totalSupply = parseInt(tokenData.total_supply);
+    const soldTokens = tokenData.token_holdings?.length || 0;
+    const availableTokens = totalSupply - soldTokens;
+    const investorCount = tokenData.token_holdings?.length || 0;
+
+    return {
+      tokenPrice: tokenData.token_price,
+      totalTokens: totalSupply,
+      availableTokens,
+      expectedROI: tokenData.expected_roi,
+      investorCount
+    };
   };
 
   return (
@@ -128,16 +178,51 @@ const DashboardPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sampleProperties.map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    {...property}
-                    onViewDetails={handleViewDetails}
-                    onInvest={handleInvest}
-                  />
-                ))}
-              </div>
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-200 h-48 rounded-t-lg"></div>
+                      <div className="p-4 space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-6 bg-gray-200 rounded w-2/3"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : featuredProperties.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No properties available at the moment</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {featuredProperties.map((property) => {
+                    const tokenData = getTokenizationData(property);
+                    
+                    return (
+                      <PropertyCard
+                        key={property.id}
+                        id={property.id}
+                        title={property.title}
+                        location={property.location}
+                        price={property.price}
+                        tokenPrice={tokenData?.tokenPrice}
+                        totalTokens={tokenData?.totalTokens}
+                        availableTokens={tokenData?.availableTokens}
+                        expectedROI={tokenData?.expectedROI}
+                        investorCount={tokenData?.investorCount}
+                        imageUrl={getPropertyImage(property)}
+                        isVerified={property.is_verified}
+                        views={property.views || 0}
+                        isTokenized={property.is_tokenized}
+                        onViewDetails={handleViewDetails}
+                        onInvest={property.is_tokenized ? handleInvest : undefined}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
