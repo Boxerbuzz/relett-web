@@ -76,22 +76,24 @@ export function useTokenizedProperties() {
           tokenized_properties!token_holdings_tokenized_property_id_fkey (
             *,
             properties!tokenized_properties_property_id_fkey (
+              id,
               title,
               location,
               backdrop
             )
-          ),
-          investment_tracking!investment_tracking_tokenized_property_id_fkey (
-            current_value,
-            roi_percentage,
-            total_dividends_received,
-            last_dividend_date,
-            last_dividend_amount
           )
         `)
         .eq('holder_id', user?.id);
 
       if (holdingsError) throw holdingsError;
+
+      // Get investment tracking data separately
+      const tokenizedPropertyIds = holdingsData?.map(h => h.tokenized_property_id) || [];
+      const { data: investmentTrackingData } = await supabase
+        .from('investment_tracking')
+        .select('*')
+        .eq('user_id', user?.id)
+        .in('tokenized_property_id', tokenizedPropertyIds);
 
       // Get property images
       const propertyIds = holdingsData
@@ -106,7 +108,6 @@ export function useTokenizedProperties() {
         .order('sort_order', { ascending: true });
 
       // Get investor counts
-      const tokenizedPropertyIds = holdingsData?.map(h => h.tokenized_property_id) || [];
       const { data: investorCounts } = await supabase
         .from('token_holdings')
         .select('tokenized_property_id, holder_id')
@@ -162,11 +163,16 @@ export function useTokenizedProperties() {
         return acc;
       }, {} as Record<string, any[]>) || {};
 
+      const investmentTrackingByProperty = investmentTrackingData?.reduce((acc, it) => {
+        acc[it.tokenized_property_id] = it;
+        return acc;
+      }, {} as Record<string, any>) || {};
+
       // Transform and enrich data
       const enrichedProperties: TokenizedPropertyData[] = holdingsData?.map(holding => {
         const tokenizedProperty = holding.tokenized_properties;
         const property = tokenizedProperty?.properties;
-        const investmentTracking = holding.investment_tracking?.[0];
+        const investmentTracking = investmentTrackingByProperty[holding.tokenized_property_id];
         const propertyId = property?.id;
 
         return {

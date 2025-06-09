@@ -44,8 +44,6 @@ interface VerificationTaskData {
     notes?: string;
     created_at: string;
     verifier_name: string;
-    license_name?: string;
-    verifier_type?: string;
   }>;
   compliance_records: Array<{
     id: string;
@@ -101,6 +99,7 @@ export function usePropertyVerification() {
         .select(`
           *,
           properties!verification_tasks_property_id_fkey (
+            id,
             title,
             location,
             price,
@@ -175,10 +174,6 @@ export function usePropertyVerification() {
           users!verification_history_verifier_id_fkey (
             first_name,
             last_name
-          ),
-          verifier_credentials!verifier_credentials_user_id_fkey (
-            license_name,
-            verifier_type
           )
         `)
         .in('verification_task_id', taskIds)
@@ -225,8 +220,6 @@ export function usePropertyVerification() {
         acc[history.verification_task_id].push({
           ...history,
           verifier_name: `${history.users?.first_name} ${history.users?.last_name}`,
-          license_name: history.verifier_credentials?.license_name,
-          verifier_type: history.verifier_credentials?.verifier_type,
         });
         return acc;
       }, {} as Record<string, any[]>) || {};
@@ -234,17 +227,14 @@ export function usePropertyVerification() {
       const complianceByLandTitle = complianceData?.reduce((acc, compliance) => {
         if (!acc[compliance.land_title_id]) acc[compliance.land_title_id] = [];
         
-        // Calculate computed status
+        // Calculate computed status based on valid compliance status values
         let computed_status = compliance.status;
         if (compliance.expiry_date) {
           const expiryDate = new Date(compliance.expiry_date);
           const now = new Date();
-          const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
           
           if (expiryDate < now) {
             computed_status = 'expired';
-          } else if (expiryDate < thirtyDaysFromNow) {
-            computed_status = 'expiring_soon';
           }
         }
         
