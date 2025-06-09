@@ -52,7 +52,7 @@ const MyProperty = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: propertiesData, error: propertiesError } = await supabase
         .from('properties')
         .select(`
           id,
@@ -64,16 +64,39 @@ const MyProperty = () => {
           is_tokenized,
           is_verified,
           type,
-          backdrop,
-          property_images(url, is_primary)
+          backdrop
         `)
         .eq('user_id', user?.id)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (propertiesError) throw propertiesError;
 
-      setProperties(data || []);
+      // Fetch property images separately
+      const propertyIds = propertiesData?.map(p => p.id) || [];
+      const { data: imagesData, error: imagesError } = await supabase
+        .from('property_images')
+        .select('property_id, url, is_primary')
+        .in('property_id', propertyIds);
+
+      if (imagesError) {
+        console.error('Error fetching images:', imagesError);
+      }
+
+      // Group images by property
+      const imagesByProperty = imagesData?.reduce((acc, img) => {
+        if (!acc[img.property_id]) acc[img.property_id] = [];
+        acc[img.property_id].push(img);
+        return acc;
+      }, {} as Record<string, any[]>) || {};
+
+      // Combine properties with their images
+      const enrichedProperties: Property[] = propertiesData?.map(property => ({
+        ...property,
+        property_images: imagesByProperty[property.id] || []
+      })) || [];
+
+      setProperties(enrichedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({
