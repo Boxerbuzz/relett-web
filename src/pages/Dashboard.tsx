@@ -60,15 +60,11 @@ const DashboardPage = () => {
           is_verified,
           is_tokenized,
           backdrop,
-          tokenized_properties(
+          tokenized_properties!tokenized_properties_property_id_fkey(
             token_price,
             total_supply,
             expected_roi,
             token_holdings(id)
-          ),
-          property_images(
-            url,
-            is_primary
           )
         `)
         .eq('status', 'active')
@@ -77,9 +73,27 @@ const DashboardPage = () => {
         .limit(6);
 
       if (error) throw error;
-      setFeaturedProperties(data || []);
+
+      // Fetch property images separately to avoid join issues
+      const propertiesWithImages = await Promise.all(
+        (data || []).map(async (property) => {
+          const { data: images } = await supabase
+            .from('property_images')
+            .select('url, is_primary')
+            .eq('property_id', property.id)
+            .order('sort_order', { ascending: true });
+
+          return {
+            ...property,
+            property_images: images || []
+          };
+        })
+      );
+
+      setFeaturedProperties(propertiesWithImages);
     } catch (error) {
       console.error('Error fetching properties:', error);
+      setFeaturedProperties([]);
     } finally {
       setLoading(false);
     }

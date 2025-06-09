@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +42,7 @@ export function MarketOverview() {
           total_supply,
           token_price,
           status,
-          properties(
+          property:properties(
             location,
             title
           ),
@@ -66,7 +65,7 @@ export function MarketOverview() {
       // Count unique investors
       const allInvestors = new Set();
       properties?.forEach(prop => {
-        prop.token_holdings.forEach(holding => {
+        prop.token_holdings?.forEach(holding => {
           allInvestors.add(holding.holder_id);
         });
       });
@@ -108,18 +107,23 @@ export function MarketOverview() {
       // Calculate top performing properties
       const topPerformingProperties: TopProperty[] = properties
         ?.map(prop => {
-          const investorCount = prop.token_holdings.length;
-          const totalTokensOwned = prop.token_holdings.reduce((sum, holding) => 
+          const investorCount = prop.token_holdings?.length || 0;
+          const totalTokensOwned = prop.token_holdings?.reduce((sum, holding) => 
             sum + parseFloat(holding.tokens_owned), 0
-          );
+          ) || 0;
           const totalSupplyNum = parseFloat(prop.total_supply);
           const fundedPercentage = (totalTokensOwned / totalSupplyNum) * 100;
           
-          const location = prop.properties?.location 
-            ? (typeof prop.properties.location === 'object' 
-                ? prop.properties.location.city || prop.properties.location.address || 'Lagos, Nigeria'
-                : prop.properties.location)
-            : 'Lagos, Nigeria';
+          // Safe location handling
+          let location = 'Lagos, Nigeria'; // default
+          if (prop.property?.location) {
+            if (typeof prop.property.location === 'object' && prop.property.location !== null && !Array.isArray(prop.property.location)) {
+              const locationObj = prop.property.location as Record<string, any>;
+              location = locationObj.city || locationObj.address || 'Lagos, Nigeria';
+            } else if (typeof prop.property.location === 'string') {
+              location = prop.property.location;
+            }
+          }
 
           return {
             name: prop.token_name,
