@@ -63,6 +63,23 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
 
         <FormField
           control={form.control}
+          name="sub_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sub Type *</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="e.g., Apartment, House, Office, etc."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="category"
           render={({ field }) => (
             <FormItem>
@@ -90,7 +107,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
           name="condition"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Property Condition</FormLabel>
+              <FormLabel>Property Condition *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -114,11 +131,13 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
           name="price.amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price Amount *</FormLabel>
+              <FormLabel>Price Amount (NGN) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   placeholder="0"
+                  min="1000"
+                  max="1000000000"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />

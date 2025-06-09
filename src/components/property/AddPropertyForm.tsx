@@ -21,46 +21,77 @@ import { ReviewStep } from './steps/ReviewStep';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const propertySchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  type: z.enum(['residential', 'commercial', 'industrial', 'land']),
-  sub_type: z.string().min(1, 'Sub-type is required'),
-  category: z.enum(['sell', 'rent', 'shortlet', 'lease']),
-  condition: z.enum(['newlyBuilt', 'renovated', 'good', 'needs_renovation']),
+  title: z.string()
+    .min(5, 'Title must be at least 5 characters')
+    .max(100, 'Title must be less than 100 characters')
+    .regex(/^[a-zA-Z0-9\s\-,.']+$/, 'Title contains invalid characters'),
+  description: z.string()
+    .min(20, 'Description must be at least 20 characters')
+    .max(1000, 'Description must be less than 1000 characters'),
+  type: z.enum(['residential', 'commercial', 'industrial', 'land'], {
+    required_error: 'Property type is required'
+  }),
+  sub_type: z.string()
+    .min(1, 'Sub-type is required')
+    .max(50, 'Sub-type must be less than 50 characters'),
+  category: z.enum(['sell', 'rent', 'shortlet', 'lease'], {
+    required_error: 'Listing category is required'
+  }),
+  condition: z.enum(['newlyBuilt', 'renovated', 'good', 'needs_renovation'], {
+    required_error: 'Property condition is required'
+  }),
   price: z.object({
-    amount: z.number().min(0),
+    amount: z.number()
+      .min(1000, 'Price must be at least ₦1,000')
+      .max(1000000000, 'Price cannot exceed ₦1 billion'),
     currency: z.string().default('NGN'),
     type: z.enum(['sale', 'rent_monthly', 'rent_yearly'])
   }),
   location: z.object({
-    address: z.string().min(1, 'Address is required'),
-    city: z.string().min(1, 'City is required'),
-    state: z.string().min(1, 'State is required'),
-    country: z.string().min(1, 'Country is required'),
+    address: z.string()
+      .min(5, 'Address must be at least 5 characters')
+      .max(200, 'Address must be less than 200 characters'),
+    city: z.string()
+      .min(2, 'City must be at least 2 characters')
+      .max(50, 'City must be less than 50 characters')
+      .regex(/^[a-zA-Z\s\-']+$/, 'City contains invalid characters'),
+    state: z.string()
+      .min(2, 'State must be at least 2 characters')
+      .max(50, 'State must be less than 50 characters')
+      .regex(/^[a-zA-Z\s\-']+$/, 'State contains invalid characters'),
+    country: z.string()
+      .min(2, 'Country must be at least 2 characters')
+      .max(50, 'Country must be less than 50 characters')
+      .regex(/^[a-zA-Z\s\-']+$/, 'Country contains invalid characters'),
     coordinates: z.object({
-      lat: z.number().optional(),
-      lng: z.number().optional()
+      lat: z.number().min(-90).max(90).optional(),
+      lng: z.number().min(-180).max(180).optional()
     }).optional()
   }),
   specification: z.object({
-    bedrooms: z.number().min(0).optional(),
-    bathrooms: z.number().min(0).optional(),
-    parking: z.number().min(0).optional(),
-    year_built: z.number().min(1800).max(2024).optional()
+    bedrooms: z.number().min(0).max(20).optional(),
+    bathrooms: z.number().min(0).max(20).optional(),
+    parking: z.number().min(0).max(50).optional(),
+    year_built: z.number()
+      .min(1800, 'Year built cannot be before 1800')
+      .max(new Date().getFullYear(), `Year built cannot be in the future`)
+      .optional()
   }),
-  sqrft: z.string().optional(),
-  features: z.array(z.string()).default([]),
-  amenities: z.array(z.string()).default([]),
+  sqrft: z.string()
+    .optional()
+    .refine((val) => !val || /^\d+(\.\d+)?$/.test(val), 'Square footage must be a valid number'),
+  features: z.array(z.string().min(1, 'Feature cannot be empty')).default([]),
+  amenities: z.array(z.string().min(1, 'Amenity cannot be empty')).default([]),
   documents: z.array(z.object({
     type: z.enum(['deed', 'survey', 'certificate', 'other']),
-    filename: z.string(),
-    url: z.string()
-  })).default([]),
+    filename: z.string().min(1, 'Document filename is required'),
+    url: z.string().url('Invalid document URL')
+  })).min(1, 'At least one document is required'),
   images: z.array(z.object({
-    url: z.string(),
+    url: z.string().url('Invalid image URL'),
     is_primary: z.boolean().default(false),
     category: z.string().default('general')
-  })).default([])
+  })).min(1, 'At least one image is required')
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -86,6 +117,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
+    mode: 'onChange',
     defaultValues: {
       type: 'residential',
       sub_type: '',
@@ -104,8 +136,62 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     }
   });
 
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) {
+  const validateCurrentStep = async () => {
+    const values = form.getValues();
+    let fieldsToValidate: string[] = [];
+
+    switch (currentStep) {
+      case 0: // Basic Details
+        fieldsToValidate = ['title', 'description', 'type', 'category', 'condition', 'price.amount'];
+        break;
+      case 1: // Location
+        fieldsToValidate = ['location.address', 'location.city', 'location.state', 'location.country'];
+        break;
+      case 2: // Specifications
+        fieldsToValidate = ['sqrft'];
+        break;
+      case 3: // Documents
+        fieldsToValidate = ['documents'];
+        break;
+      case 4: // Media
+        fieldsToValidate = ['images'];
+        break;
+      default:
+        return true;
+    }
+
+    const result = await form.trigger(fieldsToValidate as any);
+    
+    if (!result) {
+      const errors = form.formState.errors;
+      const errorMessages = [];
+      
+      fieldsToValidate.forEach(field => {
+        const fieldPath = field.split('.');
+        let error = errors;
+        for (const path of fieldPath) {
+          error = error?.[path] as any;
+        }
+        if (error?.message) {
+          errorMessages.push(error.message);
+        }
+      });
+
+      if (errorMessages.length > 0) {
+        toast({
+          title: 'Validation Error',
+          description: errorMessages[0],
+          variant: 'destructive'
+        });
+      }
+    }
+
+    return result;
+  };
+
+  const nextStep = async () => {
+    const isValid = await validateCurrentStep();
+    if (isValid && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -118,7 +204,37 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
   const onSubmit = async (data: PropertyFormData) => {
     try {
+      // Final validation
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast({
+          title: 'Validation Error',
+          description: 'Please fix all errors before submitting',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       console.log('Submitting property:', data);
+
+      // Validate required fields
+      if (!data.documents || data.documents.length === 0) {
+        toast({
+          title: 'Validation Error',
+          description: 'At least one document is required',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (!data.images || data.images.length === 0) {
+        toast({
+          title: 'Validation Error',
+          description: 'At least one image is required',
+          variant: 'destructive'
+        });
+        return;
+      }
 
       // Ensure coordinates are either complete or null
       const coordinates = data.location.coordinates?.lat && data.location.coordinates?.lng 
