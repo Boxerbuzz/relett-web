@@ -60,12 +60,7 @@ const DashboardPage = () => {
           is_verified,
           is_tokenized,
           backdrop,
-          tokenized_properties!tokenized_properties_property_id_fkey(
-            token_price,
-            total_supply,
-            expected_roi,
-            token_holdings(id)
-          )
+          tokenized_property_id
         `)
         .eq('status', 'active')
         .eq('is_verified', true)
@@ -74,23 +69,49 @@ const DashboardPage = () => {
 
       if (error) throw error;
 
-      // Fetch property images separately to avoid join issues
-      const propertiesWithImages = await Promise.all(
+      // Fetch additional data for each property
+      const enrichedProperties = await Promise.all(
         (data || []).map(async (property) => {
+          // Fetch property images
           const { data: images } = await supabase
             .from('property_images')
             .select('url, is_primary')
             .eq('property_id', property.id)
             .order('sort_order', { ascending: true });
 
+          // Fetch tokenized property data if tokenized
+          let tokenizedData = null;
+          if (property.is_tokenized && property.tokenized_property_id) {
+            const { data: tokenizedProperty } = await supabase
+              .from('tokenized_properties')
+              .select(`
+                token_price,
+                total_supply,
+                expected_roi,
+                token_holdings(id)
+              `)
+              .eq('id', property.tokenized_property_id)
+              .single();
+
+            if (tokenizedProperty) {
+              tokenizedData = {
+                token_price: tokenizedProperty.token_price,
+                total_supply: tokenizedProperty.total_supply,
+                expected_roi: tokenizedProperty.expected_roi,
+                token_holdings: tokenizedProperty.token_holdings || []
+              };
+            }
+          }
+
           return {
             ...property,
-            property_images: images || []
+            property_images: images || [],
+            tokenized_properties: tokenizedData
           };
         })
       );
 
-      setFeaturedProperties(propertiesWithImages);
+      setFeaturedProperties(enrichedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
       setFeaturedProperties([]);
