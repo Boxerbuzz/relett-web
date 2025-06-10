@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, X, Vote } from 'lucide-react';
+import { useInvestmentPolls } from '@/hooks/useInvestmentPolls';
 
 interface CreatePollDialogProps {
   investmentGroupId: string;
@@ -17,6 +18,7 @@ interface CreatePollDialogProps {
 }
 
 export function CreatePollDialog({ investmentGroupId, onPollCreated, trigger }: CreatePollDialogProps) {
+  const { createPoll } = useInvestmentPolls(investmentGroupId);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -52,11 +54,23 @@ export function CreatePollDialog({ investmentGroupId, onPollCreated, trigger }: 
 
     setCreating(true);
     try {
-      // This would call the useInvestmentPolls hook's createPoll function
-      // For now, just close the dialog
-      setOpen(false);
-      resetForm();
-      onPollCreated();
+      const result = await createPoll({
+        title,
+        description,
+        poll_type: pollType,
+        ends_at: endsAt,
+        options: options.filter(opt => opt.trim()),
+        min_participation_percentage: minParticipation,
+        requires_consensus: requiresConsensus,
+        consensus_threshold: consensusThreshold,
+        voting_power_basis: votingPowerBasis
+      });
+
+      if (result) {
+        setOpen(false);
+        resetForm();
+        onPollCreated();
+      }
     } catch (error) {
       console.error('Error creating poll:', error);
     } finally {

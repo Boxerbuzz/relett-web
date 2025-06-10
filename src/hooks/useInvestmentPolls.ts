@@ -97,7 +97,15 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
       const { data: pollsData, error: pollsError } = await pollsQuery;
       if (pollsError) throw pollsError;
 
-      setPolls(pollsData || []);
+      // Type cast the data to ensure proper typing
+      const typedPolls = (pollsData || []).map(poll => ({
+        ...poll,
+        poll_type: poll.poll_type as 'simple' | 'multiple_choice' | 'ranked' | 'weighted',
+        status: poll.status as 'draft' | 'active' | 'closed' | 'cancelled',
+        voting_power_basis: poll.voting_power_basis as 'tokens' | 'equal' | 'investment_amount'
+      }));
+
+      setPolls(typedPolls);
 
       // Fetch options for all polls
       if (pollsData && pollsData.length > 0) {
@@ -146,9 +154,14 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
 
         if (votesError) throw votesError;
 
-        // Index votes by poll_id
+        // Type cast and index votes by poll_id
         const votesByPoll = (votesData || []).reduce((acc, vote) => {
-          acc[vote.poll_id] = vote;
+          const typedVote: PollVote = {
+            ...vote,
+            ranked_choices: Array.isArray(vote.ranked_choices) ? vote.ranked_choices : 
+                           (vote.ranked_choices ? [vote.ranked_choices as string] : undefined)
+          };
+          acc[vote.poll_id] = typedVote;
           return acc;
         }, {} as Record<string, PollVote>);
 

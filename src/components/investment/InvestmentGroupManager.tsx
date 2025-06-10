@@ -1,211 +1,84 @@
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Users, Plus, Target, Clock } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
-import { 
-  Users, 
-  Plus, 
-  Target, 
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  MessageSquare,
-  Settings,
-  Crown
-} from 'lucide-react';
 
 interface InvestmentGroup {
   id: string;
   name: string;
-  description: string;
-  target_amount: number;
+  description?: string;
+  status: string;
   current_amount: number;
+  target_amount: number;
   minimum_investment: number;
   investor_count: number;
-  max_investors: number;
-  status: string;
-  closes_at: string;
-  lead_investor_id: string;
-  investment_terms: any;
-  voting_power_distribution: any;
-  tokenized_property: {
-    token_name: string;
-    token_symbol: string;
-    expected_roi: number;
-  };
+  closes_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export function InvestmentGroupManager() {
-  const [groups, setGroups] = useState<InvestmentGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newGroup, setNewGroup] = useState({
-    name: '',
-    description: '',
-    target_amount: '',
-    minimum_investment: '',
-    max_investors: '',
-    tokenized_property_id: ''
-  });
-  const [tokenizedProperties, setTokenizedProperties] = useState([]);
+interface InvestmentGroupManagerProps {
+  onGroupSelect: (groupId: string) => void;
+}
+
+export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManagerProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
 
-  useEffect(() => {
-    fetchInvestmentGroups();
-    fetchTokenizedProperties();
-  }, []);
-
-  const fetchInvestmentGroups = async () => {
-    try {
+  const { data: groups = [], isLoading } = useQuery({
+    queryKey: ['investment-groups', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from('investment_groups')
-        .select(`
-          *,
-          tokenized_property:tokenized_properties(
-            token_name,
-            token_symbol,
-            expected_roi
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGroups(data || []);
-    } catch (error) {
-      console.error('Error fetching investment groups:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch investment groups',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+      return data as InvestmentGroup[];
+    },
+    enabled: !!user
+  });
+
+  const handleGroupSelect = (groupId: string) => {
+    setSelectedGroupId(groupId);
+    onGroupSelect(groupId);
   };
 
-  const fetchTokenizedProperties = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tokenized_properties')
-        .select('id, token_name, token_symbol')
-        .eq('status', 'minted');
-
-      if (error) throw error;
-      setTokenizedProperties(data || []);
-    } catch (error) {
-      console.error('Error fetching tokenized properties:', error);
-    }
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
-  const createInvestmentGroup = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('investment_groups')
-        .insert({
-          name: newGroup.name,
-          description: newGroup.description,
-          target_amount: parseFloat(newGroup.target_amount),
-          minimum_investment: parseFloat(newGroup.minimum_investment),
-          max_investors: parseInt(newGroup.max_investors) || null,
-          tokenized_property_id: newGroup.tokenized_property_id,
-          lead_investor_id: user.id,
-          status: 'forming',
-          closes_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-          investment_terms: {
-            profit_sharing: 'proportional',
-            decision_making: 'majority_vote',
-            exit_strategy: 'majority_approval'
-          },
-          voting_power_distribution: {
-            method: 'proportional_to_investment'
-          }
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Investment group created successfully',
-      });
-
-      setShowCreateDialog(false);
-      setNewGroup({
-        name: '',
-        description: '',
-        target_amount: '',
-        minimum_investment: '',
-        max_investors: '',
-        tokenized_property_id: ''
-      });
-      fetchInvestmentGroups();
-    } catch (error) {
-      console.error('Error creating investment group:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create investment group',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const joinInvestmentGroup = async (groupId: string) => {
-    if (!user) return;
-
-    try {
-      // This would involve creating a record in an investment_group_members table
-      // and updating the group's current_amount and investor_count
-      toast({
-        title: 'Feature Coming Soon',
-        description: 'Investment group joining functionality will be available soon',
-      });
-    } catch (error) {
-      console.error('Error joining investment group:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to join investment group',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string, progress: number) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'forming':
-        return <Badge className="bg-yellow-100 text-yellow-800">Forming</Badge>;
-      case 'active':
-        return progress >= 100 
-          ? <Badge className="bg-green-100 text-green-800">Fully Funded</Badge>
-          : <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-      case 'closed':
-        return <Badge className="bg-gray-100 text-gray-800">Closed</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      case 'forming': return 'bg-blue-100 text-blue-800';
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'closed': return 'bg-gray-100 text-gray-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -214,232 +87,98 @@ export function InvestmentGroupManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Investment Groups</h2>
-          <p className="text-gray-600">Pool resources with other investors</p>
+          <p className="text-gray-600">Join or create investment groups for property investments</p>
         </div>
-        
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Group
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Create Investment Group</DialogTitle>
-              <DialogDescription>
-                Start a new investment group to pool resources with other investors
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="group-name">Group Name</Label>
-                <Input
-                  id="group-name"
-                  placeholder="Enter group name"
-                  value={newGroup.name}
-                  onChange={(e) => setNewGroup(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="group-description">Description</Label>
-                <Textarea
-                  id="group-description"
-                  placeholder="Describe the investment opportunity"
-                  value={newGroup.description}
-                  onChange={(e) => setNewGroup(prev => ({ ...prev, description: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="property-select">Tokenized Property</Label>
-                <Select value={newGroup.tokenized_property_id} onValueChange={(value) => setNewGroup(prev => ({ ...prev, tokenized_property_id: value }))}>
-                  <SelectTrigger id="property-select">
-                    <SelectValue placeholder="Select a property" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tokenizedProperties.map((property: any) => (
-                      <SelectItem key={property.id} value={property.id}>
-                        {property.token_name} ({property.token_symbol})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="target-amount">Target Amount ($)</Label>
-                  <Input
-                    id="target-amount"
-                    type="number"
-                    placeholder="100000"
-                    value={newGroup.target_amount}
-                    onChange={(e) => setNewGroup(prev => ({ ...prev, target_amount: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="min-investment">Min Investment ($)</Label>
-                  <Input
-                    id="min-investment"
-                    type="number"
-                    placeholder="1000"
-                    value={newGroup.minimum_investment}
-                    onChange={(e) => setNewGroup(prev => ({ ...prev, minimum_investment: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="max-investors">Max Investors (Optional)</Label>
-                <Input
-                  id="max-investors"
-                  type="number"
-                  placeholder="50"
-                  value={newGroup.max_investors}
-                  onChange={(e) => setNewGroup(prev => ({ ...prev, max_investors: e.target.value }))}
-                />
-              </div>
-
-              <Button onClick={createInvestmentGroup} className="w-full">
-                Create Investment Group
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Create Group
+        </Button>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">All Groups</TabsTrigger>
-          <TabsTrigger value="my-groups">My Groups</TabsTrigger>
-          <TabsTrigger value="joined">Joined</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="space-y-4">
-          {groups.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>No investment groups available</p>
-                  <p className="text-sm">Create the first group to get started</p>
+      {groups.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Investment Groups</h3>
+            <p className="text-gray-600 mb-4">Create or join an investment group to start collaborating on property investments.</p>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Group
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {groups.map((group) => (
+            <Card 
+              key={group.id} 
+              className={`cursor-pointer transition-all hover:shadow-lg ${
+                selectedGroupId === group.id ? 'ring-2 ring-blue-500' : ''
+              }`}
+              onClick={() => handleGroupSelect(group.id)}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{group.name}</CardTitle>
+                  <Badge className={getStatusColor(group.status)}>
+                    {group.status.charAt(0).toUpperCase() + group.status.slice(1)}
+                  </Badge>
                 </div>
+                {group.description && (
+                  <p className="text-sm text-gray-600">{group.description}</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{((group.current_amount / group.target_amount) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{ width: `${Math.min((group.current_amount / group.target_amount) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>{formatCurrency(group.current_amount)}</span>
+                    <span>{formatCurrency(group.target_amount)}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-500" />
+                    <span>{group.investor_count} investors</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-gray-500" />
+                    <span>Min: {formatCurrency(group.minimum_investment)}</span>
+                  </div>
+                </div>
+
+                {group.closes_at && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>Closes: {new Date(group.closes_at).toLocaleDateString()}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groups.map((group) => {
-                const progress = (group.current_amount / group.target_amount) * 100;
-                const isLeader = user?.id === group.lead_investor_id;
-                
-                return (
-                  <Card key={group.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            {group.name}
-                            {isLeader && <Crown className="w-4 h-4 text-yellow-500" />}
-                          </CardTitle>
-                          <CardDescription>
-                            {group.tokenized_property?.token_name}
-                          </CardDescription>
-                        </div>
-                        {getStatusBadge(group.status, progress)}
-                      </div>
-                    </CardHeader>
+          ))}
+        </div>
+      )}
 
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-gray-600">{group.description}</p>
-
-                      {/* Progress */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Funding Progress</span>
-                          <span>{progress.toFixed(1)}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                        <div className="flex justify-between text-xs text-gray-500">
-                          <span>${group.current_amount.toLocaleString()} raised</span>
-                          <span>${group.target_amount.toLocaleString()} target</span>
-                        </div>
-                      </div>
-
-                      {/* Key Info */}
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-400" />
-                          <span>{group.investor_count} investors</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-gray-400" />
-                          <span>${group.minimum_investment} min</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-gray-400" />
-                          <span>{group.tokenized_property?.expected_roi}% ROI</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>{new Date(group.closes_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        {isLeader ? (
-                          <>
-                            <Button variant="outline" size="sm">
-                              <Settings className="w-4 h-4 mr-1" />
-                              Manage
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <MessageSquare className="w-4 h-4 mr-1" />
-                              Discuss
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button 
-                              size="sm" 
-                              onClick={() => joinInvestmentGroup(group.id)}
-                              disabled={group.status === 'closed' || progress >= 100}
-                            >
-                              Join Group
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              View Details
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="my-groups">
-          <div className="text-center py-8 text-gray-500">
-            <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p>No groups created yet</p>
-            <p className="text-sm">Groups you create will appear here</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="joined">
-          <div className="text-center py-8 text-gray-500">
-            <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p>No groups joined yet</p>
-            <p className="text-sm">Groups you join will appear here</p>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {selectedGroupId && (
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-800">
+            Selected group: <strong>{groups.find(g => g.id === selectedGroupId)?.name}</strong>
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            You can now view and create polls for this investment group in the "Polls & Voting" tab.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
