@@ -269,3 +269,71 @@ export interface PropertyValuation {
   created_at: string;
   updated_at: string;
 }
+
+// Polling Types for Investment Groups
+export type PollType = 'simple' | 'multiple_choice' | 'ranked' | 'weighted'
+export type PollStatus = 'draft' | 'active' | 'closed' | 'cancelled'
+export type VotingPowerBasis = 'tokens' | 'equal' | 'investment_amount'
+
+export interface InvestmentPoll {
+  id: string;
+  investment_group_id: string;
+  title: string;
+  description?: string;
+  poll_type: PollType;
+  created_by: string;
+  status: PollStatus;
+  starts_at: string;
+  ends_at: string;
+  min_participation_percentage: number;
+  requires_consensus: boolean;
+  consensus_threshold: number;
+  allow_vote_changes: boolean;
+  is_anonymous: boolean;
+  voting_power_basis: VotingPowerBasis;
+  hedera_topic_id?: string;
+  hedera_consensus_timestamp?: string;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  option_text: string;
+  option_order: number;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  voter_id: string;
+  poll_option_id?: string;
+  voting_power: number;
+  vote_weight: number;
+  ranked_choices?: string[];
+  vote_data: Record<string, any>;
+  hedera_transaction_id?: string;
+  hedera_consensus_timestamp?: string;
+  ip_address?: string;
+  user_agent?: string;
+  voted_at: string;
+  updated_at: string;
+}
+
+export interface PollResult {
+  poll_id: string;
+  title: string;
+  status: string;
+  ends_at: string;
+  option_id: string;
+  option_text: string;
+  option_order: number;
+  vote_count: number;
+  total_voting_power: number;
+  total_vote_weight: number;
+  vote_percentage: number;
+}

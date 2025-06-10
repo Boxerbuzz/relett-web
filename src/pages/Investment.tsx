@@ -5,15 +5,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvestmentPortfolio } from '@/components/investment/InvestmentPortfolio';
 import { InvestmentGroupManager } from '@/components/investment/InvestmentGroupManager';
 import { RevenueDistributionCalculator } from '@/components/investment/RevenueDistributionCalculator';
+import { PollsList } from '@/components/investment/polling/PollsList';
 import { Badge } from '@/components/ui/badge';
 import { 
   BarChart3, 
   Users, 
   Calculator, 
-  TrendingUp 
+  TrendingUp,
+  Vote
 } from 'lucide-react';
+import { useState } from 'react';
 
 const Investment = () => {
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -28,7 +33,7 @@ const Investment = () => {
       </div>
 
       <Tabs defaultValue="portfolio" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="portfolio" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             Portfolio
@@ -36,6 +41,10 @@ const Investment = () => {
           <TabsTrigger value="groups" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Investment Groups
+          </TabsTrigger>
+          <TabsTrigger value="polls" className="flex items-center gap-2">
+            <Vote className="w-4 h-4" />
+            Polls & Voting
           </TabsTrigger>
           <TabsTrigger value="distributions" className="flex items-center gap-2">
             <Calculator className="w-4 h-4" />
@@ -52,7 +61,19 @@ const Investment = () => {
         </TabsContent>
 
         <TabsContent value="groups">
-          <InvestmentGroupManager />
+          <InvestmentGroupManager onGroupSelect={setSelectedGroupId} />
+        </TabsContent>
+
+        <TabsContent value="polls">
+          {selectedGroupId ? (
+            <PollsList investmentGroupId={selectedGroupId} />
+          ) : (
+            <div className="text-center py-16 text-gray-500">
+              <Vote className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">Select an Investment Group</h3>
+              <p>Choose an investment group from the "Investment Groups" tab to view and create polls</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="distributions">

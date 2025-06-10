@@ -1458,6 +1458,83 @@ export type Database = {
           },
         ]
       }
+      investment_polls: {
+        Row: {
+          allow_vote_changes: boolean | null
+          consensus_threshold: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string
+          hedera_consensus_timestamp: string | null
+          hedera_topic_id: string | null
+          id: string
+          investment_group_id: string
+          is_anonymous: boolean | null
+          metadata: Json | null
+          min_participation_percentage: number | null
+          poll_type: string
+          requires_consensus: boolean | null
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+          voting_power_basis: string | null
+        }
+        Insert: {
+          allow_vote_changes?: boolean | null
+          consensus_threshold?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at: string
+          hedera_consensus_timestamp?: string | null
+          hedera_topic_id?: string | null
+          id?: string
+          investment_group_id: string
+          is_anonymous?: boolean | null
+          metadata?: Json | null
+          min_participation_percentage?: number | null
+          poll_type?: string
+          requires_consensus?: boolean | null
+          starts_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+          voting_power_basis?: string | null
+        }
+        Update: {
+          allow_vote_changes?: boolean | null
+          consensus_threshold?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string
+          hedera_consensus_timestamp?: string | null
+          hedera_topic_id?: string | null
+          id?: string
+          investment_group_id?: string
+          is_anonymous?: boolean | null
+          metadata?: Json | null
+          min_participation_percentage?: number | null
+          poll_type?: string
+          requires_consensus?: boolean | null
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          voting_power_basis?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_polls_investment_group_id_fkey"
+            columns: ["investment_group_id"]
+            isOneToOne: false
+            referencedRelation: "investment_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_tracking: {
         Row: {
           created_at: string
@@ -2329,6 +2406,128 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_options: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          option_order: number
+          option_text: string
+          poll_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          option_order?: number
+          option_text: string
+          poll_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          option_order?: number
+          option_text?: string
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "investment_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_results"
+            referencedColumns: ["poll_id"]
+          },
+        ]
+      }
+      poll_votes: {
+        Row: {
+          hedera_consensus_timestamp: string | null
+          hedera_transaction_id: string | null
+          id: string
+          ip_address: unknown | null
+          poll_id: string
+          poll_option_id: string | null
+          ranked_choices: Json | null
+          updated_at: string
+          user_agent: string | null
+          vote_data: Json | null
+          vote_weight: number | null
+          voted_at: string
+          voter_id: string
+          voting_power: number
+        }
+        Insert: {
+          hedera_consensus_timestamp?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          poll_id: string
+          poll_option_id?: string | null
+          ranked_choices?: Json | null
+          updated_at?: string
+          user_agent?: string | null
+          vote_data?: Json | null
+          vote_weight?: number | null
+          voted_at?: string
+          voter_id: string
+          voting_power?: number
+        }
+        Update: {
+          hedera_consensus_timestamp?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          poll_id?: string
+          poll_option_id?: string | null
+          ranked_choices?: Json | null
+          updated_at?: string
+          user_agent?: string | null
+          vote_data?: Json | null
+          vote_weight?: number | null
+          voted_at?: string
+          voter_id?: string
+          voting_power?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "investment_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_results"
+            referencedColumns: ["poll_id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_option_id_fkey"
+            columns: ["poll_option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_option_id_fkey"
+            columns: ["poll_option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_results"
+            referencedColumns: ["option_id"]
           },
         ]
       }
@@ -4209,6 +4408,22 @@ export type Database = {
       }
     }
     Views: {
+      poll_results: {
+        Row: {
+          ends_at: string | null
+          option_id: string | null
+          option_order: number | null
+          option_text: string | null
+          poll_id: string | null
+          status: string | null
+          title: string | null
+          total_vote_weight: number | null
+          total_voting_power: number | null
+          vote_count: number | null
+          vote_percentage: number | null
+        }
+        Relationships: []
+      }
       user_activities: {
         Row: {
           activity_id: string | null
@@ -4250,11 +4465,19 @@ export type Database = {
         }
         Returns: string
       }
+      calculate_voting_power: {
+        Args: { p_poll_id: string; p_voter_id: string }
+        Returns: number
+      }
       can_access_property: {
         Args: { _property_id: string; _user_id?: string }
         Returns: boolean
       }
       cleanup_typing_indicators: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      close_expired_polls: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
