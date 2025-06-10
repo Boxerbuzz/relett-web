@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -158,8 +157,9 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
         const votesByPoll = (votesData || []).reduce((acc, vote) => {
           const typedVote: PollVote = {
             ...vote,
-            ranked_choices: Array.isArray(vote.ranked_choices) ? vote.ranked_choices : 
-                           (vote.ranked_choices ? [vote.ranked_choices as string] : undefined)
+            ranked_choices: Array.isArray(vote.ranked_choices) 
+              ? vote.ranked_choices.map(choice => String(choice))
+              : undefined
           };
           acc[vote.poll_id] = typedVote;
           return acc;

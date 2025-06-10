@@ -20,6 +20,7 @@ import {
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState([]);
   const [activeTab, setActiveTab] = useState('search');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const { 
     properties, 
     isLoading, 
@@ -147,7 +148,7 @@ export function AdvancedMarketplace() {
         </TabsContent>
 
         <TabsContent value="groups">
-          <InvestmentGroupManager />
+          <InvestmentGroupManager onGroupSelect={setSelectedGroupId} />
         </TabsContent>
 
         <TabsContent value="compare">
