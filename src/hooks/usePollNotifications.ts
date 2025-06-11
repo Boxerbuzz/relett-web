@@ -5,6 +5,15 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useNotificationDelivery } from './useNotificationDelivery';
 
+interface PollPayload {
+  id: string;
+  investment_group_id: string;
+  title: string;
+  status: string;
+  ends_at: string;
+  created_by: string;
+}
+
 export function usePollNotifications() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -22,18 +31,19 @@ export function usePollNotifications() {
         table: 'investment_polls'
       }, async (payload) => {
         console.log('New poll created:', payload);
+        const pollData = payload.new as PollPayload;
         
         // Get the investment group details
         const { data: groupData } = await supabase
           .from('investment_groups')
           .select('name, lead_investor_id')
-          .eq('id', payload.new.investment_group_id)
+          .eq('id', pollData.investment_group_id)
           .single();
 
-        if (groupData && payload.new.created_by !== user.id) {
+        if (groupData && pollData.created_by !== user.id) {
           toast({
             title: 'New Poll Created',
-            description: `A new poll "${payload.new.title}" has been created in ${groupData.name}`,
+            description: `A new poll "${pollData.title}" has been created in ${groupData.name}`,
           });
 
           // Send notification
@@ -41,13 +51,13 @@ export function usePollNotifications() {
             user.id,
             'investment',
             'New Investment Poll',
-            `A new poll "${payload.new.title}" has been created in ${groupData.name}`,
+            `A new poll "${pollData.title}" has been created in ${groupData.name}`,
             {
-              poll_id: payload.new.id,
-              investment_group_id: payload.new.investment_group_id,
-              poll_title: payload.new.title
+              poll_id: pollData.id,
+              investment_group_id: pollData.investment_group_id,
+              poll_title: pollData.title
             },
-            `/investment?tab=polls&group=${payload.new.investment_group_id}`,
+            `/investment?tab=polls&group=${pollData.investment_group_id}`,
             'View Poll'
           );
         }
@@ -63,32 +73,34 @@ export function usePollNotifications() {
         table: 'investment_polls'
       }, async (payload) => {
         console.log('Poll status changed:', payload);
+        const oldData = payload.old as PollPayload;
+        const newData = payload.new as PollPayload;
         
-        if (payload.new.status === 'closed' && payload.old.status === 'active') {
+        if (newData.status === 'closed' && oldData.status === 'active') {
           // Get user's vote if they participated
           const { data: userVote } = await supabase
             .from('poll_votes')
             .select('*')
-            .eq('poll_id', payload.new.id)
+            .eq('poll_id', newData.id)
             .eq('voter_id', user.id)
             .single();
 
           if (userVote) {
             toast({
               title: 'Poll Closed',
-              description: `The poll "${payload.new.title}" has been closed. View results now.`,
+              description: `The poll "${newData.title}" has been closed. View results now.`,
             });
 
             await sendNotification(
               user.id,
               'investment',
               'Poll Results Available',
-              `The poll "${payload.new.title}" has been closed and results are now available`,
+              `The poll "${newData.title}" has been closed and results are now available`,
               {
-                poll_id: payload.new.id,
-                poll_title: payload.new.title
+                poll_id: newData.id,
+                poll_title: newData.title
               },
-              `/investment?tab=polls&poll=${payload.new.id}`,
+              `/investment?tab=polls&poll=${newData.id}`,
               'View Results'
             );
           }
@@ -104,8 +116,9 @@ export function usePollNotifications() {
         schema: 'public',
         table: 'investment_polls'
       }, async (payload) => {
-        if (payload.new && payload.new.status === 'active') {
-          const endTime = new Date(payload.new.ends_at);
+        const pollData = payload.new as PollPayload;
+        if (pollData && pollData.status === 'active') {
+          const endTime = new Date(pollData.ends_at);
           const now = new Date();
           const timeLeft = endTime.getTime() - now.getTime();
           
@@ -115,27 +128,27 @@ export function usePollNotifications() {
             const { data: userVote } = await supabase
               .from('poll_votes')
               .select('id')
-              .eq('poll_id', payload.new.id)
+              .eq('poll_id', pollData.id)
               .eq('voter_id', user.id)
               .single();
 
             if (!userVote) {
               toast({
                 title: 'Poll Ending Soon',
-                description: `The poll "${payload.new.title}" ends in less than 24 hours. Don't forget to vote!`,
+                description: `The poll "${pollData.title}" ends in less than 24 hours. Don't forget to vote!`,
               });
 
               await sendNotification(
                 user.id,
                 'investment',
                 'Poll Ending Soon',
-                `The poll "${payload.new.title}" ends in less than 24 hours. Cast your vote now!`,
+                `The poll "${pollData.title}" ends in less than 24 hours. Cast your vote now!`,
                 {
-                  poll_id: payload.new.id,
-                  poll_title: payload.new.title,
-                  ends_at: payload.new.ends_at
+                  poll_id: pollData.id,
+                  poll_title: pollData.title,
+                  ends_at: pollData.ends_at
                 },
-                `/investment?tab=polls&poll=${payload.new.id}`,
+                `/investment?tab=polls&poll=${pollData.id}`,
                 'Vote Now'
               );
             }
