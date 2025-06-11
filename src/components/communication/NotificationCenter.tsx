@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -153,23 +154,24 @@ export function NotificationCenter() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Notifications</h2>
+          <h2 className="text-xl md:text-2xl font-bold">Notifications</h2>
           {unreadCount > 0 && (
-            <p className="text-muted-foreground">{unreadCount} unread notifications</p>
+            <p className="text-sm text-muted-foreground">{unreadCount} unread notifications</p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {unreadCount > 0 && (
-            <Button variant="outline" onClick={markAllAsRead}>
+            <Button variant="outline" size="sm" onClick={markAllAsRead}>
               Mark All Read
             </Button>
           )}
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setShowTester(!showTester)}
           >
             <TestTube className="h-4 w-4 mr-2" />
@@ -177,6 +179,7 @@ export function NotificationCenter() {
           </Button>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setShowSettings(!showSettings)}
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -203,7 +206,7 @@ export function NotificationCenter() {
               <h4 className="font-medium mb-4">Delivery Methods</h4>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="email">Email notifications</Label>
+                  <Label htmlFor="email" className="text-sm">Email notifications</Label>
                   <Switch
                     id="email"
                     checked={preferences.email_notifications}
@@ -213,7 +216,7 @@ export function NotificationCenter() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="push">Push notifications</Label>
+                  <Label htmlFor="push" className="text-sm">Push notifications</Label>
                   <Switch
                     id="push"
                     checked={preferences.push_notifications}
@@ -223,7 +226,7 @@ export function NotificationCenter() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="sms">SMS notifications</Label>
+                  <Label htmlFor="sms" className="text-sm">SMS notifications</Label>
                   <Switch
                     id="sms"
                     checked={preferences.sms_notifications}
@@ -233,7 +236,7 @@ export function NotificationCenter() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="dnd">Do not disturb</Label>
+                  <Label htmlFor="dnd" className="text-sm">Do not disturb</Label>
                   <Switch
                     id="dnd"
                     checked={preferences.do_not_disturb}
@@ -248,9 +251,9 @@ export function NotificationCenter() {
             {/* Quiet Hours */}
             <div>
               <h4 className="font-medium mb-4">Quiet Hours</h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="quiet-start">Start time</Label>
+                  <Label htmlFor="quiet-start" className="text-sm">Start time</Label>
                   <Input
                     id="quiet-start"
                     type="time"
@@ -258,10 +261,11 @@ export function NotificationCenter() {
                     onChange={(e) => 
                       updatePreferences({ quiet_hours_start: e.target.value })
                     }
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="quiet-end">End time</Label>
+                  <Label htmlFor="quiet-end" className="text-sm">End time</Label>
                   <Input
                     id="quiet-end"
                     type="time"
@@ -269,6 +273,7 @@ export function NotificationCenter() {
                     onChange={(e) => 
                       updatePreferences({ quiet_hours_end: e.target.value })
                     }
+                    className="mt-1"
                   />
                 </div>
               </div>
@@ -280,7 +285,7 @@ export function NotificationCenter() {
               <div className="space-y-4">
                 {Object.entries(preferences.notification_types).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
-                    <Label htmlFor={key}>
+                    <Label htmlFor={key} className="text-sm">
                       {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </Label>
                     <Switch
@@ -309,7 +314,7 @@ export function NotificationCenter() {
       )}
 
       {/* Notifications List */}
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {notifications.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
@@ -325,17 +330,17 @@ export function NotificationCenter() {
               key={notification.id} 
               className={`${!notification.is_read ? 'border-blue-200 bg-blue-50/50' : ''}`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="mt-1 flex-shrink-0">
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h4 className="font-medium">{notification.title}</h4>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+                      <div className="min-w-0">
+                        <h4 className="font-medium text-sm md:text-base break-words">{notification.title}</h4>
                         {notification.message && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-xs md:text-sm text-muted-foreground mt-1 break-words">
                             {notification.message}
                           </p>
                         )}
@@ -343,9 +348,9 @@ export function NotificationCenter() {
                           {new Date(notification.created_at).toLocaleString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {!notification.is_read && (
-                          <Badge variant="secondary">New</Badge>
+                          <Badge variant="secondary" className="text-xs">New</Badge>
                         )}
                         <Button
                           variant="ghost"
@@ -353,6 +358,7 @@ export function NotificationCenter() {
                           onClick={() => setSelectedNotificationId(
                             selectedNotificationId === notification.id ? '' : notification.id
                           )}
+                          className="text-xs"
                         >
                           Status
                         </Button>
@@ -371,7 +377,7 @@ export function NotificationCenter() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-3"
+                        className="mt-3 text-xs"
                         onClick={() => window.location.href = notification.action_url!}
                       >
                         {notification.action_label}

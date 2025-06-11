@@ -7,7 +7,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/components/AuthProvider';
 import { Layout } from '@/components/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { NotificationCenter } from '@/components/communication/NotificationCenter';
 
 // Pages
 import Index from '@/pages/Index';
@@ -43,7 +42,6 @@ function App() {
         <Router>
           <AuthProvider>
             <Routes>
-              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -54,6 +52,7 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Routes>
+                        <Route path="/" element={<Index />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/marketplace" element={<Marketplace />} />
                         <Route path="/add-property" element={<AddProperty />} />
@@ -77,7 +76,6 @@ function App() {
                 }
               />
             </Routes>
-            <NotificationCenter />
             <Toaster />
             <Sonner />
           </AuthProvider>
