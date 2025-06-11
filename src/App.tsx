@@ -1,152 +1,90 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/components/AuthProvider";
-import { Layout } from "@/components/Layout";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AnalyticsProvider } from "@/components/monitoring/AnalyticsProvider";
-import { ErrorBoundary } from "@/components/monitoring/ErrorBoundary";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import MyLand from "./pages/MyLand";
-import AddProperty from "./pages/AddProperty";
-import Marketplace from "./pages/Marketplace";
-import Tokens from "./pages/Tokens";
-import Settings from "./pages/Settings";
-import Verification from "./pages/Verification";
-import PropertyVerification from "./pages/PropertyVerification";
-import MapView from "./pages/MapView";
-import Notifications from "./pages/Notifications";
-import Admin from "./pages/Admin";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import DataFlow from "./pages/DataFlow";
-import Documentation from "./pages/Documentation";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider } from '@/components/AuthProvider';
+import { Layout } from '@/components/Layout';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { NotificationCenter } from '@/components/communication/NotificationCenter';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) return false;
-        }
-        return failureCount < 3;
-      },
-    },
-  },
-});
+// Pages
+import Index from '@/pages/Index';
+import Auth from '@/pages/Auth';
+import Dashboard from '@/pages/Dashboard';
+import AddProperty from '@/pages/AddProperty';
+import Marketplace from '@/pages/Marketplace';
+import Settings from '@/pages/Settings';
+import Admin from '@/pages/Admin';
+import Verification from '@/pages/Verification';
+import PropertyVerification from '@/pages/PropertyVerification';
+import Investment from '@/pages/Investment';
+import Tokens from '@/pages/Tokens';
+import HederaTokens from '@/pages/HederaTokens';
+import Notifications from '@/pages/Notifications';
+import MyLand from '@/pages/MyLand';
+import Documentation from '@/pages/Documentation';
+import DataFlow from '@/pages/DataFlow';
+import DatabaseDocumentation from '@/pages/DatabaseDocumentation';
+import MapView from '@/pages/MapView';
+import NotFound from '@/pages/NotFound';
+import TermsAndConditions from '@/pages/TermsAndConditions';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
-const App = () => (
-  <ErrorBoundary>
+import './App.css';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <Router>
           <AuthProvider>
-            <AnalyticsProvider>
-              <Routes>
-                {/* Auth routes - no layout */}
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Public pages - standalone without layout */}
-                <Route path="/terms" element={<TermsAndConditions />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/data-flow" element={<DataFlow />} />
-                <Route path="/docs" element={<Documentation />} />
-                
-                {/* Protected routes - with layout */}
-                <Route path="/" element={
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              
+              <Route
+                path="/*"
+                element={
                   <ProtectedRoute>
                     <Layout>
-                      <Index />
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/marketplace" element={<Marketplace />} />
+                        <Route path="/add-property" element={<AddProperty />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/admin" element={<Admin />} />
+                        <Route path="/verification" element={<Verification />} />
+                        <Route path="/property-verification" element={<PropertyVerification />} />
+                        <Route path="/investment" element={<Investment />} />
+                        <Route path="/tokens" element={<Tokens />} />
+                        <Route path="/hedera-tokens" element={<HederaTokens />} />
+                        <Route path="/notifications" element={<Notifications />} />
+                        <Route path="/my-land" element={<MyLand />} />
+                        <Route path="/docs" element={<Documentation />} />
+                        <Route path="/data-flow" element={<DataFlow />} />
+                        <Route path="/database-docs" element={<DatabaseDocumentation />} />
+                        <Route path="/map" element={<MapView />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
                     </Layout>
                   </ProtectedRoute>
-                } />
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Admin />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/land" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MyLand />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/add-property" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <AddProperty />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/verification" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Verification />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/property-verification" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <PropertyVerification />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketplace" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Marketplace />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/tokens" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Tokens />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/map" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MapView />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/notifications" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Notifications />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Settings />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AnalyticsProvider>
+                }
+              />
+            </Routes>
+            <NotificationCenter />
+            <Toaster />
+            <Sonner />
           </AuthProvider>
-        </BrowserRouter>
+        </Router>
       </TooltipProvider>
     </QueryClientProvider>
-  </ErrorBoundary>
-);
+  );
+}
 
 export default App;
