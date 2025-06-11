@@ -30,7 +30,7 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
   const { user } = useAuth();
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
 
-  const { data: groups = [], isLoading } = useQuery({
+  const { data: groups = [], isLoading, refetch } = useQuery({
     queryKey: ['investment-groups', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -89,10 +89,7 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
           <h2 className="text-2xl font-bold">Investment Groups</h2>
           <p className="text-gray-600">Join or create investment groups for property investments</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Create Group
-        </Button>
+        <InvestmentGroupCreator onGroupCreated={refetch} />
       </div>
 
       {groups.length === 0 ? (
@@ -101,10 +98,15 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
             <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Investment Groups</h3>
             <p className="text-gray-600 mb-4">Create or join an investment group to start collaborating on property investments.</p>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Group
-            </Button>
+            <InvestmentGroupCreator 
+              onGroupCreated={refetch}
+              trigger={
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First Group
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       ) : (

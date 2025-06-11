@@ -1,13 +1,14 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Vote, Users, Clock, Plus } from 'lucide-react';
+import { Vote, Plus, TrendingUp } from 'lucide-react';
 import { useInvestmentPolls } from '@/hooks/useInvestmentPolls';
-import { CreatePollDialog } from './CreatePollDialog';
-import { PollCard } from './PollCard';
 import { useAuth } from '@/lib/auth';
+import { CreatePollDialog } from './CreatePollDialog';
+import { EnhancedPollCard } from './EnhancedPollCard';
 
 interface PollsListProps {
   investmentGroupId: string;
@@ -15,17 +16,47 @@ interface PollsListProps {
 
 export function PollsList({ investmentGroupId }: PollsListProps) {
   const { user } = useAuth();
-  const {
-    polls,
-    pollOptions,
-    pollResults,
-    userVotes,
-    loading,
-    createPoll,
-    castVote,
+  const { 
+    polls, 
+    pollOptions, 
+    pollResults, 
+    userVotes, 
+    loading, 
+    castVote, 
     closePoll,
-    refetch
+    refetch 
   } = useInvestmentPolls(investmentGroupId);
+
+  const [activeTab, setActiveTab] = useState('active');
+
+  const handleVote = async (pollId: string, optionId: string) => {
+    const success = await castVote(pollId, optionId);
+    if (success) {
+      refetch();
+    }
+    return success;
+  };
+
+  const handleClosePoll = async (pollId: string) => {
+    const success = await closePoll(pollId);
+    if (success) {
+      refetch();
+    }
+    return success;
+  };
+
+  const filterPolls = (status: string) => {
+    return polls.filter(poll => {
+      if (status === 'active') return poll.status === 'active';
+      if (status === 'closed') return poll.status === 'closed';
+      if (status === 'my-votes') return userVotes[poll.id];
+      return true;
+    });
+  };
+
+  const getTabCount = (status: string) => {
+    return filterPolls(status).length;
+  };
 
   if (loading) {
     return (
@@ -39,142 +70,125 @@ export function PollsList({ investmentGroupId }: PollsListProps) {
     );
   }
 
-  const activePolls = polls.filter(poll => poll.status === 'active');
-  const closedPolls = polls.filter(poll => poll.status === 'closed');
-  const draftPolls = polls.filter(poll => poll.status === 'draft');
-
-  const getStatsCard = (title: string, count: number, icon: React.ReactNode, color: string) => (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${color}`}>
-            {icon}
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{count}</p>
-            <p className="text-sm text-gray-600">{title}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Investment Group Polls</h2>
-          <p className="text-gray-600">Vote on important investment decisions</p>
+          <h2 className="text-2xl font-bold">Polls & Voting</h2>
+          <p className="text-gray-600">Participate in investment group decisions</p>
         </div>
-        <CreatePollDialog
+        <CreatePollDialog 
           investmentGroupId={investmentGroupId}
           onPollCreated={refetch}
         />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {getStatsCard('Active Polls', activePolls.length, <Vote className="w-5 h-5 text-blue-600" />, 'bg-blue-100')}
-        {getStatsCard('Total Polls', polls.length, <Users className="w-5 h-5 text-green-600" />, 'bg-green-100')}
-        {getStatsCard('Closed Polls', closedPolls.length, <Clock className="w-5 h-5 text-gray-600" />, 'bg-gray-100')}
-      </div>
-
-      {/* Polls Tabs */}
-      <Tabs defaultValue="active" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <Vote className="w-4 h-4" />
-            Active ({activePolls.length})
-          </TabsTrigger>
-          <TabsTrigger value="closed" className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Closed ({closedPolls.length})
-          </TabsTrigger>
-          {draftPolls.length > 0 && (
-            <TabsTrigger value="draft" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Drafts ({draftPolls.length})
+      {polls.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Vote className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Polls Yet</h3>
+            <p className="text-gray-600 mb-4">
+              Create the first poll for this investment group to start making collective decisions.
+            </p>
+            <CreatePollDialog 
+              investmentGroupId={investmentGroupId}
+              onPollCreated={refetch}
+              trigger={
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Poll
+                </Button>
+              }
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              All Polls
+              <Badge variant="secondary">{polls.length}</Badge>
             </TabsTrigger>
-          )}
-        </TabsList>
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Active
+              <Badge variant="secondary">{getTabCount('active')}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="closed" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Closed
+              <Badge variant="secondary">{getTabCount('closed')}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="my-votes" className="flex items-center gap-2">
+              My Votes
+              <Badge variant="secondary">{getTabCount('my-votes')}</Badge>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="active" className="space-y-4">
-          {activePolls.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Vote className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Active Polls</h3>
-                <p className="text-gray-600 mb-4">There are no active polls for this investment group.</p>
-                <CreatePollDialog
-                  investmentGroupId={investmentGroupId}
-                  onPollCreated={refetch}
-                  trigger={
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create First Poll
-                    </Button>
-                  }
+          <TabsContent value="all" className="space-y-4">
+            {polls
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .map((poll) => (
+                <EnhancedPollCard
+                  key={poll.id}
+                  poll={poll}
+                  options={pollOptions[poll.id] || []}
+                  results={pollResults[poll.id] || []}
+                  userVote={userVotes[poll.id]}
+                  onVote={handleVote}
+                  onClosePoll={handleClosePoll}
+                  canClosePoll={poll.created_by === user?.id}
                 />
-              </CardContent>
-            </Card>
-          ) : (
-            activePolls.map((poll) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                options={pollOptions[poll.id] || []}
-                results={pollResults[poll.id] || []}
-                userVote={userVotes[poll.id]}
-                onVote={castVote}
-                onClosePoll={closePoll}
-                userCanManage={poll.created_by === user?.id}
-              />
-            ))
-          )}
-        </TabsContent>
+              ))}
+          </TabsContent>
 
-        <TabsContent value="closed" className="space-y-4">
-          {closedPolls.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Closed Polls</h3>
-                <p className="text-gray-600">No polls have been closed yet.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            closedPolls.map((poll) => (
-              <PollCard
+          <TabsContent value="active" className="space-y-4">
+            {filterPolls('active').map((poll) => (
+              <EnhancedPollCard
                 key={poll.id}
                 poll={poll}
                 options={pollOptions[poll.id] || []}
                 results={pollResults[poll.id] || []}
                 userVote={userVotes[poll.id]}
-                onVote={castVote}
-                userCanManage={poll.created_by === user?.id}
-              />
-            ))
-          )}
-        </TabsContent>
-
-        {draftPolls.length > 0 && (
-          <TabsContent value="draft" className="space-y-4">
-            {draftPolls.map((poll) => (
-              <PollCard
-                key={poll.id}
-                poll={poll}
-                options={pollOptions[poll.id] || []}
-                results={pollResults[poll.id] || []}
-                userVote={userVotes[poll.id]}
-                onVote={castVote}
-                onClosePoll={closePoll}
-                userCanManage={poll.created_by === user?.id}
+                onVote={handleVote}
+                onClosePoll={handleClosePoll}
+                canClosePoll={poll.created_by === user?.id}
               />
             ))}
           </TabsContent>
-        )}
-      </Tabs>
+
+          <TabsContent value="closed" className="space-y-4">
+            {filterPolls('closed').map((poll) => (
+              <EnhancedPollCard
+                key={poll.id}
+                poll={poll}
+                options={pollOptions[poll.id] || []}
+                results={pollResults[poll.id] || []}
+                userVote={userVotes[poll.id]}
+                onVote={handleVote}
+                onClosePoll={handleClosePoll}
+                canClosePoll={false}
+              />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="my-votes" className="space-y-4">
+            {filterPolls('my-votes').map((poll) => (
+              <EnhancedPollCard
+                key={poll.id}
+                poll={poll}
+                options={pollOptions[poll.id] || []}
+                results={pollResults[poll.id] || []}
+                userVote={userVotes[poll.id]}
+                onVote={handleVote}
+                onClosePoll={handleClosePoll}
+                canClosePoll={poll.created_by === user?.id}
+              />
+            ))}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }

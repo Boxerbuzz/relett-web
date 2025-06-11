@@ -14,10 +14,25 @@ import {
   TrendingUp,
   Vote
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePollNotifications } from '@/hooks/usePollNotifications';
 
 const Investment = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('portfolio');
+  
+  // Enable poll notifications
+  usePollNotifications();
+
+  // Handle URL parameters for direct navigation
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const group = params.get('group');
+    
+    if (tab) setActiveTab(tab);
+    if (group) setSelectedGroupId(group);
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -32,7 +47,7 @@ const Investment = () => {
         </Badge>
       </div>
 
-      <Tabs defaultValue="portfolio" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="portfolio" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -45,6 +60,7 @@ const Investment = () => {
           <TabsTrigger value="polls" className="flex items-center gap-2">
             <Vote className="w-4 h-4" />
             Polls & Voting
+            {selectedGroupId && <Badge variant="secondary" className="ml-1">Active</Badge>}
           </TabsTrigger>
           <TabsTrigger value="distributions" className="flex items-center gap-2">
             <Calculator className="w-4 h-4" />
