@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
@@ -30,6 +29,10 @@ import MapView from '@/pages/MapView';
 import NotFound from '@/pages/NotFound';
 import TermsAndConditions from '@/pages/TermsAndConditions';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import AgentInspections from '@/pages/AgentInspections';
+import AgentRentals from '@/pages/AgentRentals';
+import AgentReservations from '@/pages/AgentReservations';
+import AgentCalendar from '@/pages/AgentCalendar';
 
 import './App.css';
 
@@ -69,6 +72,10 @@ function App() {
                         <Route path="/data-flow" element={<DataFlow />} />
                         <Route path="/database-docs" element={<DatabaseDocumentation />} />
                         <Route path="/map" element={<MapView />} />
+                        <Route path="/agent/inspections" element={<AgentInspections />} />
+                        <Route path="/agent/rentals" element={<AgentRentals />} />
+                        <Route path="/agent/reservations" element={<AgentReservations />} />
+                        <Route path="/agent/calendar" element={<AgentCalendar />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Layout>

@@ -16,7 +16,11 @@ import {
   Bell,
   Plus,
   Search,
-  BarChart3
+  BarChart3,
+  Eye,
+  Home,
+  Users,
+  CalendarDays
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -32,6 +36,11 @@ const navigation = [
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
+  // Agent-specific menu items
+  { name: 'Inspections', href: '/agent/inspections', icon: Eye, roles: ['agent', 'admin'] },
+  { name: 'Rentals', href: '/agent/rentals', icon: Home, roles: ['agent', 'admin'] },
+  { name: 'Reservations', href: '/agent/reservations', icon: Users, roles: ['agent', 'admin'] },
+  { name: 'Calendar', href: '/agent/calendar', icon: CalendarDays, roles: ['agent', 'admin'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
