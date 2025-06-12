@@ -26,7 +26,7 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Admin Dashboard', href: '/admin', icon: BarChart3, roles: ['admin'] },
-  { name: 'My Property', href: '/land', icon: FileText, roles: ['landowner', 'admin'] },
+  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
   { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
