@@ -19,7 +19,7 @@ export function useAgentInspections() {
         .select(`
           *,
           property:properties(*),
-          user:users(*)
+          user:users!inspections_user_id_fkey(*)
         `)
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });

@@ -19,7 +19,7 @@ export function useAgentReservations() {
         .select(`
           *,
           property:properties(*),
-          user:users(*)
+          user:users!reservations_user_id_fkey(*)
         `)
         .eq('agent_id', user.id)
         .order('created_at', { ascending: false });
