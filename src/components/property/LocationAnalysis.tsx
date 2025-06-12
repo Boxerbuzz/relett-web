@@ -136,7 +136,7 @@ export function LocationAnalysis({ propertyId }: LocationAnalysisProps) {
               onClick={generateLocationAnalysis}
               disabled={isLoading}
               size="lg"
-              className="min-w-[200px]"
+              className="min-w-0 w-full sm:min-w-[200px]"
             >
               <Zap className="w-4 h-4 mr-2" />
               {isLoading ? 'Analyzing Location...' : 'Generate Location Analysis'}

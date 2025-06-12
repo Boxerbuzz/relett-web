@@ -190,7 +190,7 @@ Note: This is a simulated valuation as the AI service is currently unavailable. 
                 variant="outline" 
                 onClick={generateAIValuation}
                 disabled={isGeneratingAI}
-                className="min-w-[140px]"
+                className="min-w-0 w-full sm:min-w-[140px]"
               >
                 <Zap className="w-4 h-4 mr-2" />
                 {isGeneratingAI ? 'Generating...' : 'AI Valuation'}

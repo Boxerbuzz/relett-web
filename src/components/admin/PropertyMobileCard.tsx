@@ -1,138 +1,118 @@
-
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Eye, CheckCircle, XCircle } from 'lucide-react';
-import { Json } from '@/types/database';
+import { Edit, Trash2, MapPin } from 'lucide-react';
 
 interface Property {
   id: string;
-  title: string | null;
+  title: string;
   type: string;
   category: string;
   status: string;
-  is_verified: boolean | null;
+  location: any;
+  price: any;
   created_at: string;
+  is_verified: boolean;
+  is_featured: boolean;
+  is_tokenized: boolean;
+  views: number;
+  likes: number;
   user_id: string;
   users?: {
     first_name: string;
     last_name: string;
     email: string;
   };
-  price: Json;
-  location: Json;
 }
 
 interface PropertyMobileCardProps {
   property: Property;
-  onUpdateStatus: (propertyId: string, isVerified: boolean) => void;
+  onEdit: (property: Property) => void;
+  onDelete: (propertyId: string) => void;
 }
 
-export function PropertyMobileCard({ property, onUpdateStatus }: PropertyMobileCardProps) {
-  const getStatusBadge = (property: Property) => {
-    if (property.is_verified) {
-      return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
+export function PropertyMobileCard({ property, onEdit, onDelete }: PropertyMobileCardProps) {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case 'inactive':
+        return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
-    if (property.status === 'active') {
-      return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-    }
-    if (property.status === 'pending') {
-      return <Badge variant="secondary">Pending</Badge>;
-    }
-    return <Badge variant="outline">Draft</Badge>;
-  };
-
-  const getTypeBadge = (type: string) => {
-    const typeColors = {
-      residential: 'bg-blue-100 text-blue-800',
-      commercial: 'bg-purple-100 text-purple-800',
-      industrial: 'bg-gray-100 text-gray-800',
-      land: 'bg-green-100 text-green-800'
-    };
-    
-    return (
-      <Badge className={typeColors[type as keyof typeof typeColors] || 'bg-gray-100 text-gray-800'}>
-        {type}
-      </Badge>
-    );
-  };
-
-  const formatPrice = (price: Json) => {
-    if (!price || typeof price !== 'object') return 'N/A';
-    const priceObj = price as any;
-    if (!priceObj.amount) return 'N/A';
-    return `${priceObj.currency || '₦'}${priceObj.amount.toLocaleString()}`;
-  };
-
-  const getLocationCity = (location: Json) => {
-    if (!location || typeof location !== 'object') return 'Location not specified';
-    const locationObj = location as any;
-    return locationObj.city || 'Location not specified';
   };
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-medium truncate">{property.title || 'Untitled Property'}</h3>
-              <p className="text-sm text-gray-500 truncate">{getLocationCity(property.location)}</p>
-            </div>
-            <div className="flex gap-1 flex-shrink-0">
-              {getTypeBadge(property.type)}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-xs text-gray-500">Owner</div>
-              <div className="text-sm font-medium truncate">
-                {property.users?.first_name} {property.users?.last_name}
-              </div>
-              <div className="text-xs text-gray-500 truncate">{property.users?.email}</div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500">Price</div>
-              <div className="text-sm font-medium truncate">{formatPrice(property.price)}</div>
+      <CardContent className="p-4 space-y-3">
+        {/* Header with title and actions */}
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium truncate">{property.title || 'Untitled Property'}</h3>
+            <div className="flex items-center text-sm text-gray-500 mt-1">
+              <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+              <span className="truncate">{property.location?.city || 'Location not specified'}</span>
             </div>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs text-gray-500">Status</div>
-              {getStatusBadge(property)}
-            </div>
-            <div>
-              <div className="text-xs text-gray-500">Created</div>
-              <div className="text-sm">{new Date(property.created_at).toLocaleDateString()}</div>
-            </div>
-          </div>
-          
-          <div className="flex gap-2 pt-2">
-            <Button size="sm" variant="outline" className="flex-shrink-0">
-              <Eye className="h-4 w-4" />
+          <div className="flex gap-2 ml-2 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={() => onEdit(property)}>
+              <Edit className="h-4 w-4" />
             </Button>
-            {!property.is_verified && (
-              <>
-                <Button
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 flex-1"
-                  onClick={() => onUpdateStatus(property.id, true)}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Verify
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => onUpdateStatus(property.id, false)}
-                >
-                  <XCircle className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+            <Button variant="outline" size="sm" onClick={() => onDelete(property.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
+        
+        {/* Owner info */}
+        <div className="text-sm">
+          <span className="text-gray-500">Owner:</span>
+          <div className="mt-1">
+            <div className="font-medium">
+              {property.users?.first_name} {property.users?.last_name}
+            </div>
+            <div className="text-gray-500 truncate">{property.users?.email}</div>
+          </div>
+        </div>
+        
+        {/* Property details grid */}
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-gray-500">Type:</span>
+            <Badge variant="outline" className="ml-1 text-xs">{property.type}</Badge>
+          </div>
+          <div>
+            <span className="text-gray-500">Price:</span>
+            <div className="font-medium mt-1">
+              {property.price?.currency} {property.price?.amount?.toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <span className="text-gray-500">Views:</span>
+            <div className="font-medium mt-1">{property.views || 0}</div>
+          </div>
+          <div>
+            <span className="text-gray-500">Likes:</span>
+            <div className="font-medium mt-1">{property.likes || 0}</div>
+          </div>
+        </div>
+        
+        {/* Status and badges */}
+        <div className="flex flex-wrap gap-2 pt-2 border-t">
+          {getStatusBadge(property.status)}
+          {property.is_verified && <Badge variant="outline" className="text-xs">Verified</Badge>}
+          {property.is_featured && <Badge variant="outline" className="text-xs">Featured</Badge>}
+          {property.is_tokenized && <Badge variant="outline" className="text-xs">Tokenized</Badge>}
+        </div>
+        
+        {/* Created date */}
+        <div className="text-xs text-gray-500 pt-1">
+          Created: {new Date(property.created_at).toLocaleDateString()}
         </div>
       </CardContent>
     </Card>
