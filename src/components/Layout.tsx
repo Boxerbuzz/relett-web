@@ -34,16 +34,16 @@ export function Layout({ children }: LayoutProps) {
       </Sheet>
 
       {/* Main Content Area with proper spacing for fixed sidebar */}
-      <div className="flex-1 flex flex-col min-h-screen md:ml-64 min-w-0 overflow-x-hidden">
-        {/* Header - Fixed positioning */}
-        <div className="sticky top-0 z-40">
+      <div className="flex-1 flex flex-col min-h-screen md:ml-64 min-w-0">
+        {/* Header - Sticky positioning with background */}
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200">
           <Navbar 
             onToggleSidebar={() => setSidebarOpen(true)}
           />
         </div>
         
         {/* Page Content - Scrollable with overflow protection */}
-        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden overflow-y-auto">
           <div className="max-w-full min-w-0 w-full">
             {isAddPropertyPage ? (
               <AddPropertyForm />

@@ -105,7 +105,7 @@ const TermsAndConditions = () => {
         <div className="flex gap-8">
           {/* Table of Contents Sidebar - Fixed on large screens */}
           <aside className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-24">
+            <div className="sticky top-20 max-h-screen overflow-y-auto">
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>

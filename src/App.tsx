@@ -45,10 +45,38 @@ function App() {
         <Router>
           <AuthProvider>
             <Routes>
+              {/* Standalone pages without dashboard layout */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               
+              {/* Documentation pages - standalone without dashboard */}
+              <Route
+                path="/docs"
+                element={
+                  <ProtectedRoute>
+                    <Documentation />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/data-flow"
+                element={
+                  <ProtectedRoute>
+                    <DataFlow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/database-docs"
+                element={
+                  <ProtectedRoute>
+                    <DatabaseDocumentation />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Dashboard pages with layout */}
               <Route
                 path="/*"
                 element={
@@ -68,9 +96,6 @@ function App() {
                         <Route path="/hedera-tokens" element={<HederaTokens />} />
                         <Route path="/notifications" element={<Notifications />} />
                         <Route path="/my-land" element={<MyLand />} />
-                        <Route path="/docs" element={<Documentation />} />
-                        <Route path="/data-flow" element={<DataFlow />} />
-                        <Route path="/database-docs" element={<DatabaseDocumentation />} />
                         <Route path="/map" element={<MapView />} />
                         <Route path="/agent/inspections" element={<AgentInspections />} />
                         <Route path="/agent/rentals" element={<AgentRentals />} />
