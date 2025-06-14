@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { TrendingUp, TrendingDown, DollarSign, Coins, AlertTriangle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
-import { TradingService } from '@/lib/trading';
+import { TradingService } from '@/lib/services/TradingService';
 import { MarketDepth } from './MarketDepth';
 
 interface TradeDialogProps {
@@ -111,7 +110,8 @@ export function TradeDialog({ isOpen, onClose, property, onTradeComplete }: Trad
         tokenAmount: parseFloat(tokenAmount),
         pricePerToken: parseFloat(pricePerToken),
         tradeType,
-        userId: user!.id
+        userId: user!.id,
+        orderType
       });
 
       if (result.success) {
