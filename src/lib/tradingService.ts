@@ -209,7 +209,7 @@ export class TradingService {
       );
 
       // Record trade transaction
-      await this.recordTradeTransaction(request, transferData.transaction_id, 'completed');
+      await this.recordTradeTransaction(request, transferData.transaction_id, 'confirmed');
 
       return {
         success: true,
@@ -252,7 +252,7 @@ export class TradingService {
       );
 
       // Record trade transaction
-      await this.recordTradeTransaction(request, transferData.transaction_id, 'completed');
+      await this.recordTradeTransaction(request, transferData.transaction_id, 'confirmed');
 
       return {
         success: true,
@@ -318,25 +318,33 @@ export class TradingService {
   private async recordTradeTransaction(
     request: TradeRequest,
     transactionId?: string,
-    status: 'completed' | 'failed' = 'completed'
+    status: 'pending' | 'confirmed' | 'failed' = 'confirmed'
   ) {
     try {
+      // Map trade request to token_transactions table structure
+      const transactionType = request.tradeType === 'buy' ? 'transfer' : 'transfer';
+      const fromHolder = request.tradeType === 'buy' ? null : request.userId;
+      const toHolder = request.tradeType === 'buy' ? request.userId : null;
+
       await supabase
-        .from('trade_transactions')
+        .from('token_transactions')
         .insert({
-          user_id: request.userId,
           tokenized_property_id: request.tokenizedPropertyId,
-          trade_type: request.tradeType,
-          order_type: request.orderType,
-          token_amount: request.tokenAmount,
+          transaction_type: transactionType,
+          from_holder: fromHolder,
+          to_holder: toHolder,
+          token_amount: request.tokenAmount.toString(),
           price_per_token: request.pricePerToken,
           total_value: request.tokenAmount * request.pricePerToken,
           status,
           hedera_transaction_id: transactionId,
-          executed_at: status === 'completed' ? new Date().toISOString() : null
+          metadata: {
+            order_type: request.orderType,
+            trade_type: request.tradeType
+          }
         });
     } catch (error) {
-      console.error('Error recording trade transaction:', error);
+      console.error('Error recording transaction:', error);
     }
   }
 
@@ -359,12 +367,12 @@ export class TradingService {
   async getTradeHistory(userId: string, limit: number = 50) {
     try {
       const { data, error } = await supabase
-        .from('trade_transactions')
+        .from('token_transactions')
         .select(`
           *,
           tokenized_properties!inner(token_name, token_symbol)
         `)
-        .eq('user_id', userId)
+        .or(`from_holder.eq.${userId},to_holder.eq.${userId}`)
         .order('created_at', { ascending: false })
         .limit(limit);
 
