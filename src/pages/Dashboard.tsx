@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -243,27 +244,31 @@ const DashboardPage = () => {
                   {featuredProperties.map((property) => {
                     const tokenData = getTokenizationData(property);
                     
+                    // Transform the property data to match PropertyCard expectations
+                    const propertyForCard = {
+                      id: property.id,
+                      title: property.title,
+                      location: property.location,
+                      price: {
+                        ...property.price,
+                        amount: convertKoboToNaira(property.price?.amount || 0)
+                      },
+                      is_verified: property.is_verified,
+                      is_tokenized: property.is_tokenized,
+                      backdrop: getPropertyImage(property),
+                      views: property.views || 0,
+                      tokenized_property: tokenData ? {
+                        token_price: tokenData.tokenPrice,
+                        expected_roi: tokenData.expectedROI
+                      } : undefined,
+                      property_images: property.property_images || []
+                    };
+                    
                     return (
                       <PropertyCard
                         key={property.id}
-                        id={property.id}
-                        title={property.title}
-                        location={property.location}
-                        price={{
-                          ...property.price,
-                          amount: convertKoboToNaira(property.price?.amount || 0)
-                        }}
-                        tokenPrice={tokenData?.tokenPrice}
-                        totalTokens={tokenData?.totalTokens}
-                        availableTokens={tokenData?.availableTokens}
-                        expectedROI={tokenData?.expectedROI}
-                        investorCount={tokenData?.investorCount}
-                        imageUrl={getPropertyImage(property)}
-                        isVerified={property.is_verified}
-                        views={property.views || 0}
-                        isTokenized={property.is_tokenized}
+                        property={propertyForCard}
                         onViewDetails={() => handleViewDetails(property.id)}
-                        onInvest={property.is_tokenized ? () => handleInvest(property.id) : undefined}
                       />
                     );
                   })}
