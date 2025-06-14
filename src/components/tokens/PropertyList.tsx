@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   MessageSquare, 
-  TrendingUp, 
   BarChart3, 
   History,
   MapPin,
@@ -16,20 +15,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { TradeDialog } from './TradeDialog';
-
-interface TokenProperty {
-  id: string;
-  title: string;
-  location: string;
-  totalTokens: number;
-  ownedTokens: number;
-  tokenPrice: number;
-  currentValue: number;
-  totalValue: number;
-  roi: number;
-  investorCount: number;
-  hasGroupChat: boolean;
-}
+import { TokenProperty } from '@/types/tokens';
 
 interface PropertyListProps {
   properties: TokenProperty[];
