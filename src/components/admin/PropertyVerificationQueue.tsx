@@ -29,13 +29,17 @@ import { Json } from '@/types/database';
 import { PropertyMobileCard } from './PropertyMobileCard';
 import { PropertyVerificationActions } from '@/components/verification/PropertyVerificationActions';
 
-interface Property {
+interface AdminProperty {
   id: string;
   title: string | null;
   type: string;
   category: string;
   status: string;
   is_verified: boolean | null;
+  is_featured: boolean | null;
+  is_tokenized: boolean | null;
+  views: number | null;
+  likes: number | null;
   created_at: string;
   user_id: string;
   users?: {
@@ -55,12 +59,12 @@ interface Property {
 }
 
 export function PropertyVerificationQueue() {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<AdminProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<AdminProperty | null>(null);
   const [showVerificationActions, setShowVerificationActions] = useState(false);
   const { toast } = useToast();
 
@@ -140,7 +144,7 @@ export function PropertyVerificationQueue() {
     }
   };
 
-  const handleInitiateVerification = (property: Property) => {
+  const handleInitiateVerification = (property: AdminProperty) => {
     setSelectedProperty(property);
     setShowVerificationActions(true);
   };
@@ -170,7 +174,7 @@ export function PropertyVerificationQueue() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const getStatusBadge = (property: Property) => {
+  const getStatusBadge = (property: AdminProperty) => {
     if (property.is_verified) {
       return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
     }
@@ -215,7 +219,7 @@ export function PropertyVerificationQueue() {
     return locationObj.city || 'Location not specified';
   };
 
-  const hasActiveVerificationTask = (property: Property) => {
+  const hasActiveVerificationTask = (property: AdminProperty) => {
     return property.verification_tasks && 
            property.verification_tasks.some(task => 
              ['pending', 'assigned', 'in_progress'].includes(task.status)

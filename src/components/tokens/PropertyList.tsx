@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { TradeDialog } from './TradeDialog';
 
-interface Property {
+interface TokenProperty {
   id: string;
   title: string;
   location: string;
@@ -32,7 +32,7 @@ interface Property {
 }
 
 interface PropertyListProps {
-  properties: Property[];
+  properties: TokenProperty[];
   onJoinDiscussion: (propertyId: string) => void;
   onViewAnalytics: (propertyId: string) => void;
   onViewPaymentHistory: (propertyId: string) => void;
@@ -44,10 +44,10 @@ export function PropertyList({
   onViewAnalytics, 
   onViewPaymentHistory 
 }: PropertyListProps) {
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<TokenProperty | null>(null);
   const [showTradeDialog, setShowTradeDialog] = useState(false);
 
-  const handleTrade = (property: Property) => {
+  const handleTrade = (property: TokenProperty) => {
     setSelectedProperty(property);
     setShowTradeDialog(true);
   };

@@ -19,6 +19,20 @@ import { Bot, ArrowLeft, Brain } from 'lucide-react';
 
 type ViewMode = 'portfolio' | 'discussion' | 'analytics' | 'payments' | 'agent';
 
+interface TokenProperty {
+  id: string;
+  title: string;
+  location: string;
+  totalTokens: number;
+  ownedTokens: number;
+  tokenPrice: number;
+  currentValue: number;
+  totalValue: number;
+  roi: number;
+  investorCount: number;
+  hasGroupChat: boolean;
+}
+
 const Tokens = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('portfolio');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
@@ -172,6 +186,21 @@ const Tokens = () => {
     );
   }
 
+  // Transform tokenized properties data to match PropertyList interface
+  const transformedProperties: TokenProperty[] = tokenizedProperties.map(prop => ({
+    id: prop.id,
+    title: prop.property_title || prop.token_name,
+    location: prop.property_location?.address || 'Unknown Location',
+    totalTokens: parseInt(prop.total_supply),
+    ownedTokens: parseInt(prop.tokens_owned),
+    tokenPrice: prop.token_price,
+    currentValue: prop.current_value,
+    totalValue: prop.current_value,
+    roi: prop.roi_percentage,
+    investorCount: prop.investor_count,
+    hasGroupChat: prop.has_group_chat
+  }));
+
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between min-w-0">
@@ -194,19 +223,7 @@ const Tokens = () => {
       />
 
       <PropertyList 
-        properties={tokenizedProperties.map(prop => ({
-          id: prop.id,
-          title: prop.property_title || prop.token_name,
-          location: prop.property_location?.address || 'Unknown Location',
-          totalTokens: parseInt(prop.total_supply),
-          ownedTokens: parseInt(prop.tokens_owned),
-          tokenPrice: prop.token_price,
-          currentValue: prop.current_value,
-          totalValue: prop.current_value,
-          roi: prop.roi_percentage,
-          investorCount: prop.investor_count,
-          hasGroupChat: prop.has_group_chat
-        }))}
+        properties={transformedProperties}
         onJoinDiscussion={handleJoinDiscussion}
         onViewAnalytics={handleViewAnalytics}
         onViewPaymentHistory={handleViewPaymentHistory}
