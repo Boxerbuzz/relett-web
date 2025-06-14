@@ -17,8 +17,8 @@ import { transformTokenizedProperties } from '@/utils/tokenDataTransformer';
 
 const Tokens = () => {
   const { user } = useAuth();
-  const { tokenizedProperties, totalPortfolioValue, totalROI, loading: tokenizedLoading } = useTokenizedProperties();
-  const { portfolio, loading: portfolioLoading } = useInvestmentPortfolio();
+  const { tokenizedProperties, totalPortfolioValue, totalROI, loading: tokenizedLoading, refetch: refetchTokenizedProperties } = useTokenizedProperties();
+  const { portfolio, loading: portfolioLoading, refetch: refetchPortfolio } = useInvestmentPortfolio();
   
   const {
     currentView,
@@ -35,6 +35,11 @@ const Tokens = () => {
   const selectedProperty = selectedPropertyId 
     ? tokenizedProperties.find(p => p.id === selectedPropertyId)
     : null;
+
+  const handleRefreshData = () => {
+    refetchTokenizedProperties();
+    refetchPortfolio();
+  };
 
   if (loading) {
     return (
@@ -110,6 +115,7 @@ const Tokens = () => {
         onJoinDiscussion={handleJoinDiscussion}
         onViewAnalytics={handleViewAnalytics}
         onViewPaymentHistory={handleViewPaymentHistory}
+        onRefreshData={handleRefreshData}
       />
     </div>
   );

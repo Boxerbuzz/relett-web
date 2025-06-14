@@ -22,13 +22,15 @@ interface PropertyListProps {
   onJoinDiscussion: (propertyId: string) => void;
   onViewAnalytics: (propertyId: string) => void;
   onViewPaymentHistory: (propertyId: string) => void;
+  onRefreshData?: () => void;
 }
 
 export function PropertyList({ 
   properties, 
   onJoinDiscussion, 
   onViewAnalytics, 
-  onViewPaymentHistory 
+  onViewPaymentHistory,
+  onRefreshData 
 }: PropertyListProps) {
   const [selectedProperty, setSelectedProperty] = useState<TokenProperty | null>(null);
   const [showTradeDialog, setShowTradeDialog] = useState(false);
@@ -36,6 +38,11 @@ export function PropertyList({
   const handleTrade = (property: TokenProperty) => {
     setSelectedProperty(property);
     setShowTradeDialog(true);
+  };
+
+  const handleTradeComplete = () => {
+    // Refresh the data when trade is completed
+    onRefreshData?.();
   };
 
   return (
@@ -154,6 +161,7 @@ export function PropertyList({
             setSelectedProperty(null);
           }}
           property={selectedProperty}
+          onTradeComplete={handleTradeComplete}
         />
       )}
     </div>
