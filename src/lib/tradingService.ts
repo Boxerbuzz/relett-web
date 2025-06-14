@@ -27,5 +27,5 @@ export { TradingService } from './services/TradingService';
 export type { TradeRequest, TradeValidation } from './services/TradeValidationService';
 export type { TradeResult } from './services/TradingService';
 
-// Keep the old exports working
+// Keep the old exports working for backward compatibility
 export { TradingService as TradingServiceLegacy } from './services/TradingService';
