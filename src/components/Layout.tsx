@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
       {/* Desktop Sidebar - Fixed positioning */}
-      <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-50">
+      <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-40">
         <div className="flex flex-col w-64">
           <Sidebar />
         </div>
@@ -36,15 +36,15 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Main Content Area with proper spacing for fixed sidebar */}
       <div className="flex-1 flex flex-col min-h-screen md:ml-64 min-w-0">
-        {/* Header - Fixed positioning at top with higher z-index */}
-        <div className="fixed top-0 left-0 md:left-64 right-0 z-30 bg-white border-b border-gray-200">
+        {/* Header - Fixed positioning at top */}
+        <div className="fixed top-0 left-0 md:left-64 right-0 z-30 bg-white border-b border-gray-200 h-16">
           <Navbar 
             onToggleSidebar={() => setSidebarOpen(true)}
           />
         </div>
         
-        {/* Page Content - Scrollable with top padding to account for fixed header */}
-        <main className="flex-1 pt-16 p-4 md:p-6 overflow-x-hidden overflow-y-auto">
+        {/* Page Content - Properly spaced below fixed header */}
+        <main className="flex-1 mt-16 p-4 md:p-6 overflow-x-hidden overflow-y-auto">
           <div className="max-w-full min-w-0 w-full">
             {isAddPropertyPage ? (
               <AddPropertyForm />
