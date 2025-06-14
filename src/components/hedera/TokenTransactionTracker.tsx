@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -40,6 +41,32 @@ interface TokenTransaction {
 interface TokenTransactionTrackerProps {
   tokenizedPropertyId?: string;
   userId?: string;
+}
+
+function TransactionSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-6 h-6 rounded" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right space-y-1">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function TokenTransactionTracker({ 
@@ -157,18 +184,6 @@ export function TokenTransactionTracker({
     return true;
   });
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -190,7 +205,9 @@ export function TokenTransactionTracker({
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4 mt-6">
-            {filteredTransactions.length === 0 ? (
+            {loading ? (
+              <TransactionSkeleton />
+            ) : filteredTransactions.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <History className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p>No transactions found</p>

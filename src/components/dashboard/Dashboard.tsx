@@ -11,6 +11,7 @@ import { AgentDashboard } from './AgentDashboard';
 import { EmailVerificationStatus } from '../profile/EmailVerificationStatus';
 import { ProfileCompletionBanner } from '../profile/ProfileCompletionBanner';
 import { ProfileCompletionWizard } from '../profile/ProfileCompletionWizard';
+import { DashboardSkeleton } from '../ui/dashboard-skeleton';
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -19,11 +20,7 @@ export function Dashboard() {
 
   // Show loading state while profile is loading
   if (!user) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const handleCompleteProfile = () => {
