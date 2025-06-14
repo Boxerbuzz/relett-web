@@ -47,19 +47,7 @@ const Tokens = () => {
   if (currentView === 'discussion' && selectedProperty) {
     return (
       <GroupDiscussionView 
-        property={{
-          id: selectedProperty.id,
-          title: selectedProperty.property_title || selectedProperty.token_name,
-          location: selectedProperty.property_location?.address || 'Unknown Location',
-          totalTokens: parseInt(selectedProperty.total_supply),
-          ownedTokens: parseInt(selectedProperty.tokens_owned),
-          tokenPrice: selectedProperty.token_price,
-          currentValue: selectedProperty.current_value,
-          totalValue: selectedProperty.current_value,
-          roi: selectedProperty.roi_percentage,
-          investorCount: selectedProperty.investor_count,
-          hasGroupChat: selectedProperty.has_group_chat
-        }}
+        property={transformTokenizedProperties([selectedProperty])[0]}
         onBack={handleBackToPortfolio}
       />
     );
