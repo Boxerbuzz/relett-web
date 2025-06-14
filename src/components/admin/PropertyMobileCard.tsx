@@ -1,7 +1,8 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, MapPin } from 'lucide-react';
+import { Edit, Trash2, MapPin, CheckCircle, XCircle, Eye, UserPlus } from 'lucide-react';
 
 interface Property {
   id: string;
@@ -23,28 +24,51 @@ interface Property {
     last_name: string;
     email: string;
   };
+  verification_tasks?: {
+    id: string;
+    status: string;
+    priority: string;
+    assigned_at: string | null;
+    verifier_id: string | null;
+  }[];
 }
 
 interface PropertyMobileCardProps {
   property: Property;
-  onEdit: (property: Property) => void;
-  onDelete: (propertyId: string) => void;
+  onEdit?: (property: Property) => void;
+  onDelete?: (propertyId: string) => void;
+  onUpdateStatus?: (propertyId: string, isVerified: boolean) => Promise<void>;
+  onInitiateVerification?: (property: Property) => void;
 }
 
-export function PropertyMobileCard({ property, onEdit, onDelete }: PropertyMobileCardProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case 'inactive':
-        return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+export function PropertyMobileCard({ 
+  property, 
+  onEdit, 
+  onDelete, 
+  onUpdateStatus,
+  onInitiateVerification 
+}: PropertyMobileCardProps) {
+  const getStatusBadge = (property: Property) => {
+    if (property.is_verified) {
+      return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
     }
+    if (property.verification_tasks && property.verification_tasks.length > 0) {
+      return <Badge className="bg-blue-100 text-blue-800">Under Review</Badge>;
+    }
+    if (property.status === 'active') {
+      return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
+    }
+    if (property.status === 'pending') {
+      return <Badge variant="secondary">Pending</Badge>;
+    }
+    return <Badge variant="outline">Draft</Badge>;
+  };
+
+  const hasActiveVerificationTask = (property: Property) => {
+    return property.verification_tasks && 
+           property.verification_tasks.some(task => 
+             ['pending', 'assigned', 'in_progress'].includes(task.status)
+           );
   };
 
   return (
@@ -60,12 +84,50 @@ export function PropertyMobileCard({ property, onEdit, onDelete }: PropertyMobil
             </div>
           </div>
           <div className="flex gap-2 ml-2 flex-shrink-0">
-            <Button variant="outline" size="sm" onClick={() => onEdit(property)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => onDelete(property.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {onEdit && onDelete && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => onEdit(property)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => onDelete(property.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            {onUpdateStatus && (
+              <>
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4" />
+                </Button>
+                {!hasActiveVerificationTask(property) && !property.is_verified && onInitiateVerification && (
+                  <Button
+                    size="sm"
+                    onClick={() => onInitiateVerification(property)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
+                )}
+                {!property.is_verified && !hasActiveVerificationTask(property) && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => onUpdateStatus(property.id, true)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onUpdateStatus(property.id, false)}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
         
@@ -104,7 +166,7 @@ export function PropertyMobileCard({ property, onEdit, onDelete }: PropertyMobil
         
         {/* Status and badges */}
         <div className="flex flex-wrap gap-2 pt-2 border-t">
-          {getStatusBadge(property.status)}
+          {getStatusBadge(property)}
           {property.is_verified && <Badge variant="outline" className="text-xs">Verified</Badge>}
           {property.is_featured && <Badge variant="outline" className="text-xs">Featured</Badge>}
           {property.is_tokenized && <Badge variant="outline" className="text-xs">Tokenized</Badge>}

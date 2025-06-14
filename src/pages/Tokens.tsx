@@ -186,7 +186,7 @@ const Tokens = () => {
     );
   }
 
-  // Transform tokenized properties data to match PropertyList interface
+  // Transform tokenized properties data to match TokenProperty interface
   const transformedProperties: TokenProperty[] = tokenizedProperties.map(prop => ({
     id: prop.id,
     title: prop.property_title || prop.token_name,
