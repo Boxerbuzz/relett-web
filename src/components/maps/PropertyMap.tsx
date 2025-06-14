@@ -64,7 +64,7 @@ export function PropertyMap({ coordinates, address, className }: PropertyMapProp
         const request = {
           location: coordinates,
           radius: 2000,
-          type: 'establishment' as google.maps.places.PlaceType
+          type: 'establishment' // use string, not PlaceType
         };
 
         service.nearbySearch(request, (results, status) => {

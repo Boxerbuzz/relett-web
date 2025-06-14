@@ -251,7 +251,7 @@ const DashboardPage = () => {
                         location={property.location}
                         price={{
                           ...property.price,
-                          amount: convertKoboToNaira(property.price?.amount || 0) // Convert from kobo
+                          amount: convertKoboToNaira(property.price?.amount || 0)
                         }}
                         tokenPrice={tokenData?.tokenPrice}
                         totalTokens={tokenData?.totalTokens}
@@ -262,8 +262,8 @@ const DashboardPage = () => {
                         isVerified={property.is_verified}
                         views={property.views || 0}
                         isTokenized={property.is_tokenized}
-                        onViewDetails={handleViewDetails}
-                        onInvest={property.is_tokenized ? handleInvest : undefined}
+                        onViewDetails={() => handleViewDetails(property.id)}
+                        onInvest={property.is_tokenized ? () => handleInvest(property.id) : undefined}
                       />
                     );
                   })}

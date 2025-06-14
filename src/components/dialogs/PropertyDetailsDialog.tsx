@@ -100,10 +100,15 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
           )
         `)
         .eq('id', propertyId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProperty(data);
+      if (data) {
+        setProperty({
+          ...data,
+          property_images: Array.isArray(data.property_images) ? data.property_images : [],
+        });
+      }
     } catch (error) {
       console.error('Error fetching property:', error);
       toast({

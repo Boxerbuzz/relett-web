@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -379,21 +378,21 @@ const MyProperty = () => {
                   <Button 
                     variant="secondary" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
+                    className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
                     <Heart size={14} />
                   </Button>
                   <Button 
                     variant="secondary" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
+                    className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
                     <Share size={14} />
                   </Button>
                   <Button 
                     variant="secondary" 
                     size="icon" 
-                    className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
+                    className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
                     <DotsThreeVertical size={14} />
                   </Button>
@@ -454,7 +453,7 @@ const MyProperty = () => {
         <PropertyDetailsDialog
           open={detailsDialogOpen}
           onOpenChange={setDetailsDialogOpen}
-          property={selectedProperty}
+          propertyId={selectedProperty.id.toString()}
         />
       )}
       {selectedPropertyForTokenize && (
