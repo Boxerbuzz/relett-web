@@ -1,95 +1,192 @@
+
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, TrendingUp, Heart, Share, Eye, Star, Calendar, Home, Ruler, Users, Car, Bed, Bath } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PropertyMap } from '@/components/maps/PropertyMap';
+import { PropertyDocumentViewer } from '@/components/property/PropertyDocumentViewer';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  MapPin, 
+  TrendingUp, 
+  Heart, 
+  Share, 
+  Star, 
+  Calendar, 
+  Home, 
+  Ruler, 
+  Users, 
+  Car,
+  Loader2
+} from 'lucide-react';
+
+interface PropertyData {
+  id: string;
+  title: string;
+  location: any;
+  price: any;
+  status: string;
+  category: string;
+  type: string;
+  is_verified: boolean;
+  is_tokenized: boolean;
+  is_featured: boolean;
+  backdrop: string;
+  description?: string;
+  condition?: string;
+  year_built?: string;
+  sqrft?: string;
+  max_guest?: number;
+  garages?: number;
+  ratings?: number;
+  review_count?: number;
+  amenities?: string[];
+  features?: string[];
+  tags?: string[];
+  views?: number;
+  likes?: number;
+  favorites?: number;
+  land_title_id?: string;
+  tokenized_property?: {
+    token_price: number;
+    total_supply: string;
+    expected_roi: number;
+  };
+  property_images: Array<{
+    url: string;
+    is_primary: boolean;
+  }>;
+}
 
 interface PropertyDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property: {
-    id: number;
-    title: string;
-    location: string;
-    size: string;
-    value?: string;
-    price?: string;
-    tokenPrice?: string;
-    totalTokens?: number;
-    availableTokens?: number;
-    roi?: string;
-    category?: string;
-    type?: string;
-    status?: string;
-    featured?: boolean;
-    tokenized?: boolean;
-    image: string;
-    description?: string;
-    condition?: string;
-    yearBuilt?: string;
-    sqrft?: string;
-    maxGuest?: number;
-    garages?: number;
-    ratings?: number;
-    reviewCount?: number;
-    amenities?: string[];
-    features?: string[];
-    tags?: string[];
-    views?: number;
-    likes?: number;
-    favorites?: number;
-    isVerified?: boolean;
-    isExclusive?: boolean;
-    isAd?: boolean;
-  };
+  propertyId: string;
 }
 
-export function PropertyDetailsDialog({ open, onOpenChange, property }: PropertyDetailsDialogProps) {
-  // Provide default values for optional properties
-  const displayPrice = property.value || property.price || 'N/A';
-  const displayTokenPrice = property.tokenPrice || 'N/A';
-  const displayTotalTokens = property.totalTokens || 0;
-  const displayAvailableTokens = property.availableTokens || 0;
-  const displayRoi = property.roi || 'N/A';
-  const displayCategory = property.category || property.type || 'Unknown';
-  const displayFeatured = property.featured || false;
-  const displayDescription = property.description || 'No description available';
-  const displayCondition = property.condition || 'Good';
-  const displayYearBuilt = property.yearBuilt || 'N/A';
-  const displaySqrft = property.sqrft || property.size || 'N/A';
-  const displayMaxGuest = property.maxGuest || 0;
-  const displayGarages = property.garages || 0;
-  const displayRatings = property.ratings || 0;
-  const displayReviewCount = property.reviewCount || 0;
-  const displayAmenities = property.amenities || [];
-  const displayFeatures = property.features || [];
-  const displayTags = property.tags || [];
-  const displayViews = property.views || 0;
-  const displayLikes = property.likes || 0;
-  const displayFavorites = property.favorites || 0;
+export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: PropertyDetailsDialogProps) {
+  const [property, setProperty] = useState<PropertyData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  const keySpecs = [
-    { label: 'Property Type', value: displayCategory, icon: Home },
-    { label: 'Size', value: displaySqrft, icon: Ruler },
-    { label: 'Condition', value: displayCondition, icon: Star },
-    { label: 'Year Built', value: displayYearBuilt, icon: Calendar },
-    { label: 'Max Guests', value: displayMaxGuest.toString(), icon: Users },
-    { label: 'Garages', value: displayGarages.toString(), icon: Car }
-  ];
+  useEffect(() => {
+    if (open && propertyId) {
+      fetchPropertyDetails();
+    }
+  }, [open, propertyId]);
 
-  const investmentSpecs = [
-    { label: 'Total Value', value: displayPrice },
-    { label: 'Token Price', value: displayTokenPrice },
-    { label: 'Total Tokens', value: displayTotalTokens.toLocaleString() },
-    { label: 'Available Tokens', value: displayAvailableTokens.toLocaleString() },
-    { label: 'Expected ROI', value: displayRoi },
-    { label: 'Views', value: displayViews.toLocaleString() },
-    { label: 'Likes', value: displayLikes.toLocaleString() },
-    { label: 'Favorites', value: displayFavorites.toLocaleString() }
-  ];
+  const fetchPropertyDetails = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          tokenized_properties (
+            token_price,
+            total_supply,
+            expected_roi
+          ),
+          property_images (
+            url,
+            is_primary
+          )
+        `)
+        .eq('id', propertyId)
+        .single();
+
+      if (error) throw error;
+      setProperty(data);
+    } catch (error) {
+      console.error('Error fetching property:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch property details',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPrimaryImage = () => {
+    if (!property?.property_images?.length) return property?.backdrop || '/placeholder.svg';
+    const primaryImage = property.property_images.find(img => img.is_primary);
+    return primaryImage?.url || property.property_images[0]?.url || '/placeholder.svg';
+  };
+
+  const getLocationString = () => {
+    if (!property?.location) return 'Location not specified';
+    if (typeof property.location === 'string') return property.location;
+    
+    const { address, city, state, country } = property.location;
+    return [address, city, state, country].filter(Boolean).join(', ');
+  };
+
+  const getCoordinates = () => {
+    if (!property?.location?.coordinates) return undefined;
+    return {
+      lat: property.location.coordinates.lat,
+      lng: property.location.coordinates.lng
+    };
+  };
+
+  const formatPrice = (price: any) => {
+    if (!price) return 'Price not available';
+    if (typeof price === 'string') return price;
+    if (typeof price === 'number') return `₦${price.toLocaleString()}`;
+    if (price.amount) return `₦${price.amount.toLocaleString()}`;
+    return 'Price not available';
+  };
+
+  const keySpecs = property ? [
+    { label: 'Property Type', value: property.category || property.type || 'N/A', icon: Home },
+    { label: 'Size', value: property.sqrft || 'N/A', icon: Ruler },
+    { label: 'Condition', value: property.condition || 'Good', icon: Star },
+    { label: 'Year Built', value: property.year_built || 'N/A', icon: Calendar },
+    { label: 'Max Guests', value: property.max_guest?.toString() || '0', icon: Users },
+    { label: 'Garages', value: property.garages?.toString() || '0', icon: Car }
+  ] : [];
+
+  const investmentSpecs = property ? [
+    { label: 'Total Value', value: formatPrice(property.price) },
+    { label: 'Token Price', value: property.tokenized_property ? `₦${property.tokenized_property.token_price}` : 'N/A' },
+    { label: 'Total Tokens', value: property.tokenized_property ? parseInt(property.tokenized_property.total_supply).toLocaleString() : 'N/A' },
+    { label: 'Expected ROI', value: property.tokenized_property ? `${property.tokenized_property.expected_roi}%` : 'N/A' },
+    { label: 'Views', value: property.views?.toLocaleString() || '0' },
+    { label: 'Likes', value: property.likes?.toLocaleString() || '0' }
+  ] : [];
+
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-center flex-1">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!property) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-center flex-1">
+            <p>Property not found</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,10 +197,9 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
             <DialogTitle className="flex items-center gap-2">
               {property.title}
               <div className="flex gap-1">
-                {displayFeatured && <Badge className="bg-orange-500">Featured</Badge>}
-                {property.isVerified && <Badge className="bg-green-500">Verified</Badge>}
-                {property.isExclusive && <Badge className="bg-purple-500">Exclusive</Badge>}
-                {property.tokenized && <Badge className="bg-blue-500">Tokenized</Badge>}
+                {property.is_featured && <Badge className="bg-orange-500">Featured</Badge>}
+                {property.is_verified && <Badge className="bg-green-500">Verified</Badge>}
+                {property.is_tokenized && <Badge className="bg-blue-500">Tokenized</Badge>}
               </div>
             </DialogTitle>
           </DialogHeader>
@@ -114,10 +210,10 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
             {/* Left Column - Image and Basic Info */}
             <div className="lg:col-span-1 space-y-4">
-              {/* Smaller Image */}
+              {/* Property Image */}
               <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                 <img 
-                  src={property.image} 
+                  src={getPrimaryImage()} 
                   alt={property.title}
                   className="w-full h-full object-cover"
                 />
@@ -127,14 +223,14 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin size={16} />
-                  <span className="text-sm">{property.location}</span>
+                  <span className="text-sm">{getLocationString()}</span>
                 </div>
                 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm font-medium">{displayRatings.toFixed(1)}</span>
-                    <span className="text-sm text-gray-500">({displayReviewCount} reviews)</span>
+                    <span className="text-sm font-medium">{(property.ratings || 0).toFixed(1)}</span>
+                    <span className="text-sm text-gray-500">({property.review_count || 0} reviews)</span>
                   </div>
                 </div>
 
@@ -159,7 +255,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="investment">Investment</TabsTrigger>
-                    <TabsTrigger value="features">Features</TabsTrigger>
+                    <TabsTrigger value="documents">Documents</TabsTrigger>
                     <TabsTrigger value="location">Location</TabsTrigger>
                   </TabsList>
                 </div>
@@ -169,7 +265,9 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                   <Card>
                     <CardContent className="p-4">
                       <h3 className="font-semibold mb-3">Description</h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">{displayDescription}</p>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {property.description || 'No description available for this property.'}
+                      </p>
                     </CardContent>
                   </Card>
 
@@ -191,16 +289,23 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                     </CardContent>
                   </Card>
 
-                  {/* Tags */}
-                  {displayTags.length > 0 && (
+                  {/* Features & Amenities */}
+                  {(property.features?.length || property.amenities?.length) && (
                     <Card>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold mb-3">Tags</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {displayTags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
+                        <h3 className="font-semibold mb-3">Features & Amenities</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          {property.features?.map((feature, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span>{feature}</span>
+                            </div>
+                          ))}
+                          {property.amenities?.map((amenity, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span>{amenity}</span>
+                            </div>
                           ))}
                         </div>
                       </CardContent>
@@ -224,30 +329,23 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                     </CardContent>
                   </Card>
 
-                  {displayAvailableTokens > 0 && (
+                  {property.is_tokenized && property.tokenized_property && (
                     <Card>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">Token Availability</h3>
+                        <h3 className="font-semibold mb-4">Tokenization Details</h3>
                         <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Available for Investment</span>
-                            <div className="text-right">
-                              <p className="font-semibold text-sm">{displayAvailableTokens.toLocaleString()} tokens</p>
-                              <p className="text-xs text-gray-600">
-                                {displayTotalTokens > 0 ? ((displayAvailableTokens / displayTotalTokens) * 100).toFixed(1) : '0'}% available
-                              </p>
-                            </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Token Price</span>
+                            <span className="font-semibold">₦{property.tokenized_property.token_price}</span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full" 
-                              style={{ width: `${displayTotalTokens > 0 ? (displayAvailableTokens / displayTotalTokens) * 100 : 0}%` }}
-                            ></div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Total Supply</span>
+                            <span className="font-semibold">{parseInt(property.tokenized_property.total_supply).toLocaleString()}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
                               <TrendingUp size={16} className="text-green-600 mr-1" />
-                              <span className="text-green-600 font-medium text-sm">{displayRoi} Expected ROI</span>
+                              <span className="text-green-600 font-medium text-sm">{property.tokenized_property.expected_roi}% Expected ROI</span>
                             </div>
                             <span className="text-xs text-gray-600">Annual projected return</span>
                           </div>
@@ -255,113 +353,27 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
                       </CardContent>
                     </Card>
                   )}
-
-                  {/* Revenue Breakdown */}
-                  <Card>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-4">Revenue Breakdown</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Rental Income</span>
-                          <span>8.5% annually</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Property Appreciation</span>
-                          <span>4.0% annually</span>
-                        </div>
-                        <div className="flex justify-between font-semibold border-t pt-2 text-sm">
-                          <span>Total Expected ROI</span>
-                          <span className="text-green-600">{displayRoi}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
                 </TabsContent>
 
-                <TabsContent value="features" className="space-y-4">
-                  {/* Amenities */}
-                  {displayAmenities.length > 0 && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">Amenities</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          {displayAmenities.map((amenity, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span>{amenity}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Features */}
-                  {displayFeatures.length > 0 && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">Features</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          {displayFeatures.map((feature, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Documents */}
-                  <Card>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-4">Legal Documents</h3>
-                      <div className="space-y-2">
-                        {['Property Deed', 'Survey Report', 'Valuation Certificate', 'Legal Opinion'].map((doc, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                            <span className="text-sm">{doc}</span>
-                            <Button variant="outline" size="sm">
-                              <Eye size={14} className="mr-2" />
-                              View
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <TabsContent value="documents" className="space-y-4">
+                  <PropertyDocumentViewer 
+                    propertyId={property.id}
+                    landTitleId={property.land_title_id}
+                  />
                 </TabsContent>
 
                 <TabsContent value="location" className="space-y-4">
+                  <PropertyMap 
+                    coordinates={getCoordinates()}
+                    address={getLocationString()}
+                  />
+                  
                   <Card>
                     <CardContent className="p-4">
-                      <h3 className="font-semibold mb-4">Location Details</h3>
-                      <div className="space-y-4">
-                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                          <p className="text-gray-500 text-sm">Map view would be here</p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">Address</p>
-                          <p className="text-gray-600 text-sm">{property.location}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="font-medium text-sm">Nearby Amenities</p>
-                            <ul className="text-xs text-gray-600 mt-1 space-y-1">
-                              <li>• Shopping Mall (2km)</li>
-                              <li>• International Airport (15km)</li>
-                              <li>• Business District (5km)</li>
-                            </ul>
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Transportation</p>
-                            <ul className="text-xs text-gray-600 mt-1 space-y-1">
-                              <li>• Metro Station (1km)</li>
-                              <li>• Bus Stop (500m)</li>
-                              <li>• Highway Access (3km)</li>
-                            </ul>
-                          </div>
-                        </div>
+                      <h3 className="font-semibold mb-4">Location Information</h3>
+                      <div>
+                        <p className="font-medium text-sm">Address</p>
+                        <p className="text-gray-600 text-sm">{getLocationString()}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -377,9 +389,11 @@ export function PropertyDetailsDialog({ open, onOpenChange, property }: Property
             <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Close
             </Button>
-            <Button className="flex-1">
-              Invest Now
-            </Button>
+            {property.is_tokenized && (
+              <Button className="flex-1">
+                Invest Now
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

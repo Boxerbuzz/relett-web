@@ -1,177 +1,199 @@
 
+'use client';
+
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Users, TrendingUp, Eye, Heart } from 'lucide-react';
+import { PropertyDetailsDialog } from '@/components/dialogs/PropertyDetailsDialog';
+import { 
+  MapPin, 
+  Eye, 
+  Heart, 
+  TrendingUp, 
+  Star,
+  Verified,
+  Crown
+} from 'lucide-react';
 
 interface PropertyCardProps {
-  id: string;
-  title: string;
-  location: any;
-  price: any;
-  tokenPrice?: number;
-  totalTokens?: number;
-  availableTokens?: number;
-  expectedROI?: number;
-  investorCount?: number;
-  imageUrl?: string;
-  isVerified: boolean;
-  views: number;
-  isTokenized: boolean;
-  onViewDetails: (id: string) => void;
-  onInvest?: (id: string) => void;
+  property: {
+    id: string;
+    title?: string;
+    location: any;
+    price: any;
+    status?: string;
+    category?: string;
+    type?: string;
+    is_verified?: boolean;
+    is_tokenized?: boolean;
+    is_featured?: boolean;
+    backdrop?: string;
+    ratings?: number;
+    review_count?: number;
+    views?: number;
+    likes?: number;
+    tokenized_property?: {
+      token_price: number;
+      expected_roi: number;
+    };
+    property_images?: Array<{
+      url: string;
+      is_primary: boolean;
+    }>;
+  };
+  onViewDetails?: () => void;
 }
 
-export function PropertyCard({
-  id,
-  title,
-  location,
-  price,
-  tokenPrice,
-  totalTokens,
-  availableTokens,
-  expectedROI,
-  investorCount = 0,
-  imageUrl,
-  isVerified,
-  views,
-  isTokenized,
-  onViewDetails,
-  onInvest
-}: PropertyCardProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
+export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const getPrimaryImage = () => {
+    if (property.property_images?.length) {
+      const primaryImage = property.property_images.find(img => img.is_primary);
+      return primaryImage?.url || property.property_images[0]?.url;
+    }
+    return property.backdrop || '/placeholder.svg';
   };
 
   const getLocationString = () => {
-    if (typeof location === 'object' && location !== null) {
-      return location.address || location.city || 'Location not specified';
-    }
-    return location || 'Location not specified';
+    if (!property.location) return 'Location not specified';
+    if (typeof property.location === 'string') return property.location;
+    
+    const { address, city, state } = property.location;
+    return [address, city, state].filter(Boolean).join(', ');
   };
 
-  const getPriceAmount = () => {
-    if (typeof price === 'object' && price !== null) {
-      return price.amount || 0;
-    }
-    return price || 0;
+  const formatPrice = (price: any) => {
+    if (!price) return 'Price not available';
+    if (typeof price === 'string') return price;
+    if (typeof price === 'number') return `₦${price.toLocaleString()}`;
+    if (price.amount) return `₦${price.amount.toLocaleString()}`;
+    return 'Price not available';
   };
 
-  const progressPercentage = totalTokens && availableTokens 
-    ? ((totalTokens - availableTokens) / totalTokens) * 100 
-    : 0;
-
-  const fallbackImage = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop';
+  const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails();
+    } else {
+      setDetailsOpen(true);
+    }
+  };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group">
-      <div className="relative">
-        <img 
-          src={imageUrl || fallbackImage} 
-          alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-        />
-        <div className="absolute top-3 left-3 flex gap-2">
-          {isVerified && (
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-              Verified
-            </Badge>
-          )}
-          {isTokenized && totalTokens && (
-            <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-              {Math.round(progressPercentage)}% Funded
-            </Badge>
-          )}
-        </div>
-        <div className="absolute top-3 right-3">
-          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
-            <Heart className="h-4 w-4 text-gray-600 hover:text-red-500 cursor-pointer transition-colors" />
-          </div>
-        </div>
-      </div>
-      
-      <CardContent className="p-4 space-y-4">
-        <div>
-          <h3 className="font-semibold text-lg mb-1 line-clamp-1">{title}</h3>
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <MapPin className="h-4 w-4 mr-1" />
-            {getLocationString()}
-          </div>
-          <p className="text-2xl font-bold text-gray-900">{formatCurrency(getPriceAmount())}</p>
-        </div>
-
-        {isTokenized && tokenPrice && expectedROI && (
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-600">Token Price</p>
-              <p className="font-semibold">${tokenPrice}</p>
+    <>
+      <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+        <div className="relative">
+          {/* Property Image */}
+          <div className="aspect-video relative overflow-hidden rounded-t-lg">
+            <img 
+              src={getPrimaryImage()}
+              alt={property.title || 'Property'}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            />
+            
+            {/* Badges Overlay */}
+            <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+              {property.is_featured && (
+                <Badge className="bg-orange-500 text-xs">
+                  <Crown className="h-3 w-3 mr-1" />
+                  Featured
+                </Badge>
+              )}
+              {property.is_verified && (
+                <Badge className="bg-green-500 text-xs">
+                  <Verified className="h-3 w-3 mr-1" />
+                  Verified
+                </Badge>
+              )}
+              {property.is_tokenized && (
+                <Badge className="bg-blue-500 text-xs">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Tokenized
+                </Badge>
+              )}
             </div>
-            <div>
-              <p className="text-gray-600">Expected ROI</p>
-              <div className="flex items-center">
-                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-                <span className="font-semibold text-green-600">{expectedROI}%</span>
+
+            {/* Stats Overlay */}
+            <div className="absolute top-3 right-3 flex gap-2">
+              {property.views && (
+                <Badge variant="secondary" className="text-xs bg-black/50 text-white">
+                  <Eye className="h-3 w-3 mr-1" />
+                  {property.views}
+                </Badge>
+              )}
+              {property.likes && (
+                <Badge variant="secondary" className="text-xs bg-black/50 text-white">
+                  <Heart className="h-3 w-3 mr-1" />
+                  {property.likes}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Property Info */}
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              {/* Title and Rating */}
+              <div className="flex items-start justify-between">
+                <h3 className="font-semibold text-lg line-clamp-2">
+                  {property.title || 'Untitled Property'}
+                </h3>
+                {property.ratings && (
+                  <div className="flex items-center gap-1 text-sm">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{property.ratings.toFixed(1)}</span>
+                    <span className="text-gray-500">({property.review_count || 0})</span>
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-        )}
 
-        {isTokenized && totalTokens && availableTokens && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Progress</span>
-              <span className="font-medium">{totalTokens - availableTokens} / {totalTokens} tokens</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            {investorCount > 0 && (
-              <div className="flex items-center">
-                <Users className="h-3 w-3 mr-1" />
-                {investorCount} investors
+              {/* Location */}
+              <div className="flex items-center gap-2 text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm line-clamp-1">{getLocationString()}</span>
               </div>
-            )}
-            <div className="flex items-center">
-              <Eye className="h-3 w-3 mr-1" />
-              {views || 0} views
-            </div>
-          </div>
-        </div>
 
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={() => onViewDetails(id)}
-          >
-            View Details
-          </Button>
-          {isTokenized && onInvest && (
-            <Button 
-              size="sm" 
-              className="flex-1"
-              onClick={() => onInvest(id)}
-              disabled={availableTokens === 0}
-            >
-              {availableTokens === 0 ? 'Sold Out' : 'Invest Now'}
-            </Button>
-          )}
+              {/* Price and ROI */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xl font-bold text-gray-900">
+                    {formatPrice(property.price)}
+                  </p>
+                  {property.tokenized_property && (
+                    <p className="text-sm text-gray-600">
+                      ₦{property.tokenized_property.token_price} per token
+                    </p>
+                  )}
+                </div>
+                {property.tokenized_property?.expected_roi && (
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-green-600">
+                      {property.tokenized_property.expected_roi}% ROI
+                    </p>
+                    <p className="text-xs text-gray-500">Expected</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Button */}
+              <Button 
+                onClick={handleViewDetails}
+                className="w-full"
+                variant="outline"
+              >
+                View Details
+              </Button>
+            </div>
+          </CardContent>
         </div>
-      </CardContent>
-    </Card>
+      </Card>
+
+      <PropertyDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        propertyId={property.id}
+      />
+    </>
   );
 }
