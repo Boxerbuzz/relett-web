@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
+import { useTokenizedProperties } from '@/hooks/useTokenizedProperties';
+import { useInvestmentPortfolio } from '@/hooks/useInvestmentPortfolio';
+import { useAuth } from '@/lib/auth';
 import { Bot, ArrowLeft, Brain } from 'lucide-react';
 
 type ViewMode = 'portfolio' | 'discussion' | 'analytics' | 'payments' | 'agent';
@@ -19,62 +23,14 @@ const Tokens = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('portfolio');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [showAgent, setShowAgent] = useState(false);
-  const [loading, setLoading] = useState(true);
+  
+  const { user } = useAuth();
+  const { tokenizedProperties, totalPortfolioValue, totalROI, loading: tokenizedLoading } = useTokenizedProperties();
+  const { portfolio, loading: portfolioLoading } = useInvestmentPortfolio();
 
-  // Simulate loading for demo
-  useState(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  });
+  const loading = tokenizedLoading || portfolioLoading;
 
-  const tokenizedProperties = [
-    {
-      id: '1',
-      title: 'Downtown Commercial Plot',
-      location: 'Lagos, Nigeria',
-      totalTokens: 1000,
-      ownedTokens: 150,
-      tokenPrice: 4500.0, // Amount in kobo (₦45.00)
-      currentValue: 5250.0, // Amount in kobo (₦52.50)
-      totalValue: 787500, // Amount in kobo (₦7,875.00)
-      roi: 16.7,
-      investorCount: 12,
-      hasGroupChat: true
-    },
-    {
-      id: '2',
-      title: 'Luxury Apartment Complex',
-      location: 'Abuja, Nigeria',
-      totalTokens: 2000,
-      ownedTokens: 75,
-      tokenPrice: 12500.0, // Amount in kobo (₦125.00)
-      currentValue: 13875.0, // Amount in kobo (₦138.75)
-      totalValue: 1040625, // Amount in kobo (₦10,406.25)
-      roi: 11.0,
-      investorCount: 8,
-      hasGroupChat: true
-    },
-    {
-      id: '3',
-      title: 'Industrial Warehouse',
-      location: 'Port Harcourt, Nigeria',
-      totalTokens: 500,
-      ownedTokens: 25,
-      tokenPrice: 20000.0, // Amount in kobo (₦200.00)
-      currentValue: 18500.0, // Amount in kobo (₦185.00)
-      totalValue: 462500, // Amount in kobo (₦4,625.00)
-      roi: -7.5,
-      investorCount: 5,
-      hasGroupChat: false
-    }
-  ];
-
-  // Convert kobo to naira for display
-  const convertKoboToNaira = (kobo: number) => kobo / 100;
-
-  const totalPortfolioValue = tokenizedProperties.reduce((sum, prop) => sum + prop.totalValue, 0);
-  const totalROI = tokenizedProperties.reduce((sum, prop) => sum + prop.roi, 0) / tokenizedProperties.length;
-  const activeChatCount = tokenizedProperties.filter(p => p.hasGroupChat).length;
+  const activeChatCount = tokenizedProperties.filter(p => p.has_group_chat).length;
 
   const selectedProperty = selectedPropertyId 
     ? tokenizedProperties.find(p => p.id === selectedPropertyId)
@@ -117,7 +73,19 @@ const Tokens = () => {
   if (currentView === 'discussion' && selectedProperty) {
     return (
       <GroupDiscussionView 
-        property={selectedProperty}
+        property={{
+          id: selectedProperty.id,
+          title: selectedProperty.property_title || selectedProperty.token_name,
+          location: selectedProperty.property_location?.address || 'Unknown Location',
+          totalTokens: parseInt(selectedProperty.total_supply),
+          ownedTokens: parseInt(selectedProperty.tokens_owned),
+          tokenPrice: selectedProperty.token_price,
+          currentValue: selectedProperty.current_value,
+          totalValue: selectedProperty.current_value,
+          roi: selectedProperty.roi_percentage,
+          investorCount: selectedProperty.investor_count,
+          hasGroupChat: selectedProperty.has_group_chat
+        }}
         onBack={handleBackToPortfolio}
       />
     );
@@ -129,7 +97,7 @@ const Tokens = () => {
       return (
         <AnalyticsView 
           propertyId={property.id}
-          propertyTitle={property.title}
+          propertyTitle={property.property_title || property.token_name}
           onBack={handleBackToPortfolio}
         />
       );
@@ -142,7 +110,7 @@ const Tokens = () => {
       return (
         <PaymentHistoryView 
           propertyId={property.id}
-          propertyTitle={property.title}
+          propertyTitle={property.property_title || property.token_name}
           onBack={handleBackToPortfolio}
         />
       );
@@ -189,10 +157,10 @@ const Tokens = () => {
           <AgentChat
             agentId="adaptive-property-agent"
             context={{
-              userId: "current-user-id", // This would come from auth
+              userId: user?.id || "current-user-id",
               propertyId: selectedPropertyId || undefined,
               metadata: {
-                portfolio_value: convertKoboToNaira(totalPortfolioValue),
+                portfolio_value: totalPortfolioValue,
                 portfolio_roi: totalROI,
                 property_count: tokenizedProperties.length,
                 context: 'token_portfolio'
@@ -219,7 +187,7 @@ const Tokens = () => {
       </div>
 
       <PortfolioSummary 
-        totalPortfolioValue={convertKoboToNaira(totalPortfolioValue)}
+        totalPortfolioValue={totalPortfolioValue}
         totalROI={totalROI}
         propertyCount={tokenizedProperties.length}
         activeChatCount={activeChatCount}
@@ -227,10 +195,17 @@ const Tokens = () => {
 
       <PropertyList 
         properties={tokenizedProperties.map(prop => ({
-          ...prop,
-          tokenPrice: convertKoboToNaira(prop.tokenPrice),
-          currentValue: convertKoboToNaira(prop.currentValue),
-          totalValue: convertKoboToNaira(prop.totalValue)
+          id: prop.id,
+          title: prop.property_title || prop.token_name,
+          location: prop.property_location?.address || 'Unknown Location',
+          totalTokens: parseInt(prop.total_supply),
+          ownedTokens: parseInt(prop.tokens_owned),
+          tokenPrice: prop.token_price,
+          currentValue: prop.current_value,
+          totalValue: prop.current_value,
+          roi: prop.roi_percentage,
+          investorCount: prop.investor_count,
+          hasGroupChat: prop.has_group_chat
         }))}
         onJoinDiscussion={handleJoinDiscussion}
         onViewAnalytics={handleViewAnalytics}

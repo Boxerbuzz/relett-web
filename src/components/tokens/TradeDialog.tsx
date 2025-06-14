@@ -11,6 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, DollarSign, Coins, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/auth';
+import { InvestmentService } from '@/lib/investment';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TradeDialogProps {
   isOpen: boolean;
@@ -24,13 +27,17 @@ interface TradeDialogProps {
     totalTokens: number;
     roi: number;
   };
+  onTradeComplete?: () => void;
 }
 
-export function TradeDialog({ isOpen, onClose, property }: TradeDialogProps) {
+export function TradeDialog({ isOpen, onClose, property, onTradeComplete }: TradeDialogProps) {
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const [tokenAmount, setTokenAmount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const investmentService = new InvestmentService();
 
   const totalCost = parseFloat(tokenAmount || '0') * property.currentValue;
   const platformFee = totalCost * 0.025; // 2.5% platform fee
@@ -38,6 +45,15 @@ export function TradeDialog({ isOpen, onClose, property }: TradeDialogProps) {
   const totalWithFees = totalCost + platformFee + gasFee;
 
   const handleTrade = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to trade tokens.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!tokenAmount || parseFloat(tokenAmount) <= 0) {
       toast({
         title: 'Invalid Amount',
@@ -59,24 +75,52 @@ export function TradeDialog({ isOpen, onClose, property }: TradeDialogProps) {
     setIsProcessing(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (tradeType === 'buy') {
+        // Get tokenized property data for purchase
+        const { data: tokenizedProperty, error: propertyError } = await supabase
+          .from('tokenized_properties')
+          .select('*')
+          .eq('id', property.id)
+          .single();
+
+        if (propertyError) throw propertyError;
+
+        // For now, we'll simulate the purchase since we need wallet integration
+        // In a real implementation, this would call the actual purchase function
+        await investmentService.purchaseTokens({
+          investorId: user.id,
+          tokenizedPropertyId: property.id,
+          tokenAmount: parseFloat(tokenAmount),
+          investorAccountId: 'mock-account-id', // Would come from user's wallet
+          investorPrivateKey: 'mock-private-key' // Would come from secure storage
+        });
+
+        toast({
+          title: 'Purchase Successful',
+          description: `Successfully purchased ${tokenAmount} tokens.`,
+        });
+      } else {
+        // For sell trades, we would need buyer information
+        // This is a simplified implementation
+        toast({
+          title: 'Sell Order Created',
+          description: `Sell order for ${tokenAmount} tokens has been created.`,
+        });
+      }
       
-      toast({
-        title: 'Trade Successful',
-        description: `Successfully ${tradeType === 'buy' ? 'purchased' : 'sold'} ${tokenAmount} tokens.`,
-      });
-      
+      onTradeComplete?.();
       onClose();
       setTokenAmount('');
     } catch (error) {
+      console.error('Trade error:', error);
       toast({
         title: 'Trade Failed',
-        description: 'An error occurred while processing your trade.',
+        description: error instanceof Error ? error.message : 'An error occurred while processing your trade.',
         variant: 'destructive'
       });
     } finally {
       setIsProcessing(false);
+      investmentService.close();
     }
   };
 

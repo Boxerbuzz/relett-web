@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,7 +17,8 @@ import {
   Clock,
   Users
 } from 'lucide-react';
-import { InvestmentService, type InvestmentPortfolio as Portfolio } from '@/lib/investment';
+import { useInvestmentPortfolio } from '@/hooks/useInvestmentPortfolio';
+import { useAuth } from '@/lib/auth';
 
 interface PortfolioMetrics {
   totalInvestment: number;
@@ -32,42 +32,27 @@ interface PortfolioMetrics {
 }
 
 export function InvestmentPortfolio() {
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const { user } = useAuth();
+  const { portfolio, loading, error, refetch } = useInvestmentPortfolio();
   const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
 
-  const investmentService = new InvestmentService();
-
   useEffect(() => {
-    loadPortfolio();
-  }, []);
-
-  const loadPortfolio = async () => {
-    try {
-      setLoading(true);
-      // In a real app, you'd get the user ID from authentication context
-      const portfolioData = await investmentService.getInvestorPortfolio('user-id');
-      setPortfolio(portfolioData);
-
+    if (portfolio) {
       // Calculate additional metrics
       const calculatedMetrics: PortfolioMetrics = {
-        totalInvestment: portfolioData.totalInvestment,
-        currentValue: portfolioData.totalValue,
-        unrealizedGains: portfolioData.totalValue - portfolioData.totalInvestment,
+        totalInvestment: portfolio.totalInvestment,
+        currentValue: portfolio.totalValue,
+        unrealizedGains: portfolio.totalValue - portfolio.totalInvestment,
         realizedGains: 0, // This would come from completed sales
-        totalROI: portfolioData.totalROI,
-        monthlyIncome: portfolioData.upcomingPayments.reduce((sum, payment) => sum + payment.amount, 0),
-        activeProperties: portfolioData.properties.length,
-        totalTokens: portfolioData.properties.reduce((sum, prop) => sum + prop.tokensOwned, 0)
+        totalROI: portfolio.totalROI,
+        monthlyIncome: portfolio.upcomingPayments.reduce((sum, payment) => sum + payment.amount, 0),
+        activeProperties: portfolio.properties.length,
+        totalTokens: portfolio.properties.reduce((sum, prop) => sum + prop.tokensOwned, 0)
       };
       setMetrics(calculatedMetrics);
-    } catch (error) {
-      console.error('Error loading portfolio:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [portfolio]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -83,10 +68,27 @@ export function InvestmentPortfolio() {
     return `${sign}${value.toFixed(2)}%`;
   };
 
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Please log in to view your investment portfolio.</p>
+      </div>
+    );
+  }
+
   if (loading || !portfolio || !metrics) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <p className="text-red-600">Error loading portfolio: {error}</p>
+        <Button onClick={refetch} variant="outline">Retry</Button>
       </div>
     );
   }
@@ -191,45 +193,53 @@ export function InvestmentPortfolio() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {portfolio.properties.map((property) => (
-                  <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{property.propertyTitle}</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 text-sm">
-                        <div>
-                          <span className="text-gray-600">Tokens Owned:</span>
-                          <p className="font-medium">{property.tokensOwned.toLocaleString()}</p>
+                {portfolio.properties.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <PieChart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>No property investments found</p>
+                    <p className="text-sm">Start investing in tokenized properties to see them here</p>
+                  </div>
+                ) : (
+                  portfolio.properties.map((property) => (
+                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{property.propertyTitle}</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 text-sm">
+                          <div>
+                            <span className="text-gray-600">Tokens Owned:</span>
+                            <p className="font-medium">{property.tokensOwned.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Ownership:</span>
+                            <p className="font-medium">{property.ownershipPercentage.toFixed(3)}%</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Investment:</span>
+                            <p className="font-medium">{formatCurrency(property.initialInvestment)}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Current Value:</span>
+                            <p className="font-medium">{formatCurrency(property.currentValue)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-gray-600">Ownership:</span>
-                          <p className="font-medium">{property.ownershipPercentage.toFixed(3)}%</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Investment:</span>
-                          <p className="font-medium">{formatCurrency(property.initialInvestment)}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Current Value:</span>
-                          <p className="font-medium">{formatCurrency(property.currentValue)}</p>
+                        
+                        <div className="flex items-center gap-4 mt-3">
+                          <Badge variant={property.roi >= 0 ? "default" : "destructive"}>
+                            ROI: {formatPercentage(property.roi)}
+                          </Badge>
+                          <span className="text-sm text-gray-600">
+                            Next Payment: {new Date(property.nextPaymentDate).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4 mt-3">
-                        <Badge variant={property.roi >= 0 ? "default" : "destructive"}>
-                          ROI: {formatPercentage(property.roi)}
-                        </Badge>
-                        <span className="text-sm text-gray-600">
-                          Next Payment: {new Date(property.nextPaymentDate).toLocaleDateString()}
-                        </span>
+                      <div className="flex gap-2 ml-4">
+                        <Button variant="outline" size="sm">View Details</Button>
+                        <Button variant="outline" size="sm">Trade</Button>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button variant="outline" size="sm">View Details</Button>
-                      <Button variant="outline" size="sm">Trade</Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
