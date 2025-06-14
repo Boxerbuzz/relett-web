@@ -89,41 +89,49 @@ export function BuyTokenDialog({ open, onOpenChange, tokenizedProperty }: BuyTok
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            Invest in {tokenizedProperty.token_name}
-          </DialogTitle>
-          <DialogDescription>
-            Purchase {tokenizedProperty.token_symbol} tokens to own a fraction of this property
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl h-[80vh] flex flex-col">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0">
+          <DialogHeader>
+            <DialogTitle>
+              Invest in {tokenizedProperty.token_name}
+            </DialogTitle>
+            <DialogDescription>
+              Purchase {tokenizedProperty.token_symbol} tokens to own a fraction of this property
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="wallet">1. Setup Wallet</TabsTrigger>
-            <TabsTrigger value="purchase" disabled={!userWallet}>
-              2. Purchase Tokens
-            </TabsTrigger>
-          </TabsList>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="sticky top-0 bg-white z-10 pb-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="wallet">1. Setup Wallet</TabsTrigger>
+                <TabsTrigger value="purchase" disabled={!userWallet}>
+                  2. Purchase Tokens
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value="wallet" className="space-y-4">
-            <HederaWalletManager 
-              userId={user?.id || ''}
-              onWalletConfigured={handleWalletConfigured}
-            />
-          </TabsContent>
-
-          <TabsContent value="purchase" className="space-y-4">
-            {userWallet && (
-              <TokenPurchaseManager
-                tokenizedProperty={tokenizedProperty}
-                userWallet={userWallet}
-                onPurchaseComplete={handlePurchaseComplete}
+            <TabsContent value="wallet" className="space-y-4">
+              <HederaWalletManager 
+                userId={user?.id || ''}
+                onWalletConfigured={handleWalletConfigured}
               />
-            )}
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+
+            <TabsContent value="purchase" className="space-y-4">
+              {userWallet && (
+                <TokenPurchaseManager
+                  tokenizedProperty={tokenizedProperty}
+                  userWallet={userWallet}
+                  onPurchaseComplete={handlePurchaseComplete}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

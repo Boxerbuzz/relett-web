@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -254,15 +253,16 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Coins size={20} />
-            Tokenize Property
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl h-[90vh] flex flex-col">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Coins size={20} />
+              Tokenize Property
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6">
           {/* Property Info */}
           {property && (
             <Card>
@@ -302,13 +302,15 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
             </div>
             <Progress value={(step / 4) * 100} className="w-full" />
           </div>
+        </div>
 
-          {/* Step Content */}
-          <div className="min-h-[300px]">
-            {renderStep()}
-          </div>
+        {/* Scrollable Step Content */}
+        <div className="flex-1 overflow-y-auto py-4">
+          {renderStep()}
+        </div>
 
-          {/* Navigation */}
+        {/* Fixed Footer Navigation */}
+        <div className="flex-shrink-0 pt-4 border-t">
           <div className="flex justify-between">
             <Button
               variant="outline"
