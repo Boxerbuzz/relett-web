@@ -1,12 +1,16 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, Database, GitBranch, Search, Code } from 'lucide-react';
+import { ArrowLeft, Database, Key, Link, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+// Database schema data based on your actual database
 const databaseTables = {
+  // Core User Management
   users: {
     description: "Core user profiles and authentication data",
     fields: [
@@ -65,6 +69,7 @@ const databaseTables = {
     ]
   },
 
+  // Property Management
   properties: {
     description: "Main property listings with details, pricing, location",
     fields: [
@@ -128,6 +133,7 @@ const databaseTables = {
     ]
   },
 
+  // Land Registry & Legal
   land_titles: {
     description: "Official land ownership records",
     fields: [
@@ -157,6 +163,7 @@ const databaseTables = {
     ]
   },
 
+  // Tokenization & Investment
   tokenized_properties: {
     description: "Properties converted to digital tokens",
     fields: [
@@ -209,6 +216,7 @@ const databaseTables = {
     ]
   },
 
+  // Financial Systems
   accounts: {
     description: "User wallet balances and points",
     fields: [
@@ -256,6 +264,7 @@ const databaseTables = {
     ]
   },
 
+  // Communication
   conversations: {
     description: "Chat rooms and groups",
     fields: [
@@ -309,6 +318,7 @@ const databaseTables = {
     ]
   },
 
+  // Notifications
   notifications: {
     description: "All user notifications",
     fields: [
@@ -334,48 +344,127 @@ const databaseTables = {
   }
 };
 
-const categories = [
-  {
-    name: 'User Management & Authentication',
-    icon: BookOpen,
-    tables: ['users', 'user_roles', 'user_profiles'],
-  },
-  {
-    name: 'Property Management Core',
-    icon: Database,
-    tables: ['properties', 'property_images'],
-  },
-  {
-    name: 'Land Registry & Legal',
-    icon: GitBranch,
-    tables: ['land_titles'],
-  },
-  {
-    name: 'Tokenization & Investment',
-    icon: Code,
-    tables: ['tokenized_properties', 'token_holdings'],
-  },
-  {
-    name: 'Financial & Payment Systems',
-    icon: Search,
-    tables: ['accounts', 'payments'],
-  },
-  {
-    name: 'Communication & Chat',
-    icon: GitBranch,
-    tables: ['conversations', 'messages'],
-  },
-  {
-    name: 'Notifications & Alerts',
-    icon: Database,
-    tables: ['notifications'],
-  },
-];
-
-const DatabaseDocumentation = () => {
+const DatabaseSchema = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [showRelationships, setShowRelationships] = useState(true);
+
+  const filteredTables = Object.entries(databaseTables).filter(([tableName]) =>
+    tableName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getTypeColor = (type: string) => {
+    if (type.includes('uuid')) return 'bg-blue-100 text-blue-800';
+    if (type.includes('text')) return 'bg-green-100 text-green-800';
+    if (type.includes('integer') || type.includes('bigint') || type.includes('numeric')) return 'bg-orange-100 text-orange-800';
+    if (type.includes('boolean')) return 'bg-purple-100 text-purple-800';
+    if (type.includes('timestamp')) return 'bg-red-100 text-red-800';
+    if (type.includes('jsonb')) return 'bg-yellow-100 text-yellow-800';
+    if (type.includes('[]')) return 'bg-cyan-100 text-cyan-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  const renderTableCard = (tableName: string, tableData: any) => (
+    <Card key={tableName} className="mb-4">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Database className="w-5 h-5" />
+            {tableName}
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedTable(selectedTable === tableName ? null : tableName)}
+          >
+            {selectedTable === tableName ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">{tableData.description}</p>
+      </CardHeader>
+      
+      {selectedTable === tableName && (
+        <CardContent>
+          <div className="space-y-4">
+            {/* Fields Table */}
+            <div>
+              <h4 className="font-semibold mb-2 flex items-center gap-2">
+                <Key className="w-4 h-4" />
+                Fields ({tableData.fields.length})
+              </h4>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Nullable</TableHead>
+                      <TableHead>Default</TableHead>
+                      <TableHead>Constraints</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tableData.fields.map((field: any) => (
+                      <TableRow key={field.name}>
+                        <TableCell className="font-mono">
+                          <div className="flex items-center gap-2">
+                            {field.name}
+                            {field.primary && <Badge variant="secondary" className="text-xs">PK</Badge>}
+                            {field.foreignKey && <Badge variant="outline" className="text-xs">FK</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getTypeColor(field.type)}>
+                            {field.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={field.nullable ? "secondary" : "destructive"}>
+                            {field.nullable ? 'Yes' : 'No'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {field.default || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {field.foreignKey && (
+                            <Badge variant="outline" className="text-xs">
+                              → {field.foreignKey}
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Relationships */}
+            {showRelationships && tableData.relationships.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Link className="w-4 h-4" />
+                  Relationships ({tableData.relationships.length})
+                </h4>
+                <div className="space-y-2">
+                  {tableData.relationships.map((rel: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                      <Badge variant="outline">{rel.type}</Badge>
+                      <span className="font-mono text-sm">
+                        {tableName}.{rel.field} → {rel.table}.{rel.references}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -386,121 +475,36 @@ const DatabaseDocumentation = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/database-docs')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              Back to Database Docs
             </Button>
             <div className="ml-4">
-              <h1 className="text-xl font-bold text-gray-900">Database Documentation</h1>
-              <p className="text-sm text-gray-600">Complete database schema and table relationships</p>
+              <h1 className="text-xl font-bold text-gray-900">Database Schema</h1>
+              <p className="text-sm text-gray-600">Interactive table relationships and field definitions</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => navigate('/database-schema')} 
-              variant="outline" 
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRelationships(!showRelationships)}
               className="flex items-center gap-2"
             >
-              <GitBranch className="w-4 h-4" />
-              Interactive Schema
-            </Button>
-            <Button 
-              onClick={() => navigate('/data-flow')} 
-              variant="outline" 
-              className="flex items-center gap-2"
-            >
-              <Code className="w-4 h-4" />
-              Data Flow Diagrams
+              <Link className="w-4 h-4" />
+              {showRelationships ? 'Hide' : 'Show'} Relationships
             </Button>
           </div>
         </div>
       </header>
-      
+
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Database className="w-8 h-8 text-blue-600" />
-                <div>
-                  <div className="text-2xl font-bold">{Object.keys(databaseTables).length}</div>
-                  <div className="text-sm text-gray-600">Total Tables</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <BookOpen className="w-8 h-8 text-green-600" />
-                <div>
-                  <div className="text-2xl font-bold">{categories.length}</div>
-                  <div className="text-sm text-gray-600">Categories</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <GitBranch className="w-8 h-8 text-purple-600" />
-                <div>
-                  <div className="text-2xl font-bold">
-                    {Object.values(databaseTables).reduce((acc, table) => acc + (table.relationships?.length || 0), 0)}
-                  </div>
-                  <div className="text-sm text-gray-600">Relationships</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Search className="w-8 h-8 text-orange-600" />
-                <div>
-                  <div className="text-2xl font-bold">
-                    {Object.values(databaseTables).reduce((acc, table) => acc + table.fields.length, 0)}
-                  </div>
-                  <div className="text-sm text-gray-600">Total Fields</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* New Interactive Schema Card */}
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <GitBranch className="w-5 h-5" />
-              Interactive Database Schema
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-blue-800 mb-4">
-              Explore our database schema with an interactive table view that shows field definitions, 
-              relationships, and foreign keys - similar to Supabase's table editor interface.
-            </p>
-            <Button 
-              onClick={() => navigate('/database-schema')} 
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <GitBranch className="w-4 h-4 mr-2" />
-              View Interactive Schema
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
+        {/* Search and Stats */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 max-w-md">
             <Input
               placeholder="Search tables..."
               value={searchTerm}
@@ -508,137 +512,57 @@ const DatabaseDocumentation = () => {
               className="w-full"
             />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-            >
-              All Categories
-            </Button>
-            {categories.map((category) => (
-              <Button
-                key={category.name}
-                variant={selectedCategory === category.name ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.name)}
-              >
-                {category.name} ({category.tables.length})
-              </Button>
-            ))}
+          <div className="text-sm text-muted-foreground">
+            {filteredTables.length} of {Object.keys(databaseTables).length} tables
           </div>
         </div>
 
-        {/* Categories and Tables */}
-        <div className="space-y-8">
-          {categories
-            .filter(category => selectedCategory === null || category.name === selectedCategory)
-            .map((category) => {
-              const categoryTables = category.tables.filter(tableName =>
-                tableName.toLowerCase().includes(searchTerm.toLowerCase())
-              );
-
-              if (categoryTables.length === 0) return null;
-
-              return (
-                <div key={category.name} className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <category.icon className="w-6 h-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold text-gray-900">{category.name}</h2>
-                    <Badge variant="secondary">{categoryTables.length} tables</Badge>
-                  </div>
-                  
-                  <div className="grid gap-6">
-                    {categoryTables.map((tableName) => {
-                      const table = databaseTables[tableName];
-                      return (
-                        <Card key={tableName} className="overflow-hidden">
-                          <CardHeader className="bg-gray-50">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="flex items-center gap-2">
-                                <Database className="w-5 h-5" />
-                                {tableName}
-                              </CardTitle>
-                              <Badge variant="outline">
-                                {table.fields.length} fields
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600">{table.description}</p>
-                          </CardHeader>
-                          
-                          <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                              <table className="w-full">
-                                <thead className="bg-gray-100">
-                                  <tr>
-                                    <th className="text-left p-3 font-semibold">Field</th>
-                                    <th className="text-left p-3 font-semibold">Type</th>
-                                    <th className="text-left p-3 font-semibold">Nullable</th>
-                                    <th className="text-left p-3 font-semibold">Default</th>
-                                    <th className="text-left p-3 font-semibold">Description</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {table.fields.map((field, index) => (
-                                    <tr key={index} className="border-t hover:bg-gray-50">
-                                      <td className="p-3">
-                                        <div className="flex items-center gap-2">
-                                          <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                                            {field.name}
-                                          </code>
-                                          {field.primary && (
-                                            <Badge variant="default" className="text-xs">
-                                              PK
-                                            </Badge>
-                                          )}
-                                          {field.foreignKey && (
-                                            <Badge variant="secondary" className="text-xs">
-                                              FK
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td className="p-3">
-                                        <Badge variant="outline" className="font-mono">
-                                          {field.type}
-                                        </Badge>
-                                      </td>
-                                      <td className="p-3">
-                                        <Badge variant={field.nullable ? "secondary" : "destructive"}>
-                                          {field.nullable ? 'Yes' : 'No'}
-                                        </Badge>
-                                      </td>
-                                      <td className="p-3 font-mono text-sm">
-                                        {field.default || '-'}
-                                      </td>
-                                      <td className="p-3 text-sm text-gray-600">
-                                        {field.description || '-'}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">{Object.keys(databaseTables).length}</div>
+              <div className="text-sm text-muted-foreground">Total Tables</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {Object.values(databaseTables).reduce((acc, table) => acc + table.fields.length, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Fields</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {Object.values(databaseTables).reduce((acc, table) => acc + table.relationships.length, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Relationships</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {Object.values(databaseTables).reduce((acc, table) => 
+                  acc + table.fields.filter((f: any) => f.foreignKey).length, 0
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">Foreign Keys</div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* No results message */}
-        {categories.every(category => 
-          category.tables.filter(tableName =>
-            tableName.toLowerCase().includes(searchTerm.toLowerCase())
-          ).length === 0
-        ) && (
+        {/* Tables List */}
+        <div className="space-y-4">
+          {filteredTables.map(([tableName, tableData]) => renderTableCard(tableName, tableData))}
+        </div>
+
+        {filteredTables.length === 0 && (
           <div className="text-center py-12">
-            <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No tables found</h3>
-            <p className="text-gray-600">Try adjusting your search term or category filter.</p>
+            <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold">No tables found</h3>
+            <p className="text-muted-foreground">Try adjusting your search term</p>
           </div>
         )}
       </div>
@@ -646,4 +570,4 @@ const DatabaseDocumentation = () => {
   );
 };
 
-export default DatabaseDocumentation;
+export default DatabaseSchema;
