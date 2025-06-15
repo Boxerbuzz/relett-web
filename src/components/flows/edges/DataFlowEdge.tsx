@@ -13,7 +13,7 @@ interface DataFlowEdgeData {
   animated?: boolean;
 }
 
-export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
+export function DataFlowEdge(props: EdgeProps) {
   const {
     sourceX,
     sourceY,
@@ -23,6 +23,8 @@ export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
     data,
     markerEnd,
   } = props;
+
+  const edgeData = data as DataFlowEdgeData;
 
   const [edgePath, labelX, labelY] = getStraightPath({
     sourceX,
@@ -34,10 +36,10 @@ export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
   const getEdgeStyle = () => {
     const baseStyle: React.CSSProperties = {
       strokeWidth: 2,
-      ...(style || {}),
+      ...(style && typeof style === 'object' ? style : {}),
     };
 
-    switch (data?.type) {
+    switch (edgeData?.type) {
       case 'event':
         return {
           ...baseStyle,
@@ -64,9 +66,9 @@ export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
         path={edgePath}
         markerEnd={markerEnd}
         style={getEdgeStyle()}
-        className={data?.animated ? 'animate-pulse' : ''}
+        className={edgeData?.animated ? 'animate-pulse' : ''}
       />
-      {data?.label && (
+      {edgeData?.label && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -76,7 +78,7 @@ export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
             className="nodrag nopan pointer-events-auto"
           >
             <div className="bg-white px-2 py-1 rounded shadow-sm border text-xs font-medium">
-              {data.label}
+              {edgeData.label}
             </div>
           </div>
         </EdgeLabelRenderer>
