@@ -43,12 +43,12 @@ const mainNavigation = [
   { name: 'Admin Dashboard', href: '/admin', icon: BarChart3, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
 ];
 
 const propertyNavigation = [
   { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
-  { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
   { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
 ];
@@ -200,8 +200,8 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         </Collapsible>
       </nav>
 
-      {/* Plant a Tree CTA */}
-      <div className="p-4 border-t bg-gradient-to-r from-green-50 to-emerald-50">
+      {/* Plant a Tree CTA with proper margins */}
+      <div className="p-6 border-t bg-gradient-to-r from-green-50 to-emerald-50 mx-3 mb-4 rounded-lg shadow-sm">
         <div className="text-center mb-3">
           <div className="flex justify-center mb-2">
             <div className="bg-green-100 p-2 rounded-full">
