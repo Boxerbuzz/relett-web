@@ -12,6 +12,7 @@ import {
   addEdge,
   Connection,
   Panel,
+  BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Card } from '@/components/ui/card';
@@ -85,7 +86,7 @@ export function FlowContainer({
           maskColor="rgba(255, 255, 255, 0.2)"
           className="bg-white"
         />
-        <Background variant="dots" gap={20} size={1} />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
         
         <Panel position="top-right" className="flex gap-2">
           <Button size="sm" variant="outline">
@@ -99,11 +100,11 @@ export function FlowContainer({
       
       {selectedNode && (
         <div className="absolute top-4 right-4 w-80 bg-white p-4 rounded-lg shadow-lg border z-20">
-          <h4 className="font-semibold mb-2">{selectedNode.data.label}</h4>
-          <p className="text-sm text-gray-600">{selectedNode.data.description}</p>
+          <h4 className="font-semibold mb-2">{String(selectedNode.data.label || '')}</h4>
+          <p className="text-sm text-gray-600">{String(selectedNode.data.description || '')}</p>
           {selectedNode.data.details && (
             <div className="mt-2 space-y-1">
-              {Object.entries(selectedNode.data.details).map(([key, value]) => (
+              {Object.entries(selectedNode.data.details as Record<string, any>).map(([key, value]) => (
                 <div key={key} className="text-xs">
                   <span className="font-medium">{key}:</span> {String(value)}
                 </div>
