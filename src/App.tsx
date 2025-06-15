@@ -49,9 +49,9 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AnalyticsProvider>
-          <AuthProvider>
-            <Router>
+        <AuthProvider>
+          <Router>
+            <AnalyticsProvider>
               <div className="App">
                 <Routes>
                   {/* Public routes */}
@@ -269,9 +269,9 @@ function App() {
                 </Routes>
                 <Toaster />
               </div>
-            </Router>
-          </AuthProvider>
-        </AnalyticsProvider>
+            </AnalyticsProvider>
+          </Router>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
