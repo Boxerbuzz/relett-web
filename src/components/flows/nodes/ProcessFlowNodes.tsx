@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,7 +40,7 @@ const getStatusColor = (status?: string) => {
   }
 };
 
-export const ProcessStepNode = memo<NodeProps<ProcessNodeData>>(({ data }) => {
+export const ProcessStepNode = memo(({ data }: NodeProps<ProcessNodeData>) => {
   const StatusIcon = getStatusIcon(data.status);
   const colorClass = getStatusColor(data.status);
   
@@ -90,7 +89,7 @@ export const ProcessStepNode = memo<NodeProps<ProcessNodeData>>(({ data }) => {
 
 ProcessStepNode.displayName = 'ProcessStepNode';
 
-export const DecisionNode = memo<NodeProps<ProcessNodeData>>(({ data }) => {
+export const DecisionNode = memo(({ data }: NodeProps<ProcessNodeData>) => {
   return (
     <div className="relative">
       <div className="w-32 h-32 bg-yellow-50 border-2 border-yellow-200 transform rotate-45 flex items-center justify-center">

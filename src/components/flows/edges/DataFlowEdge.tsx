@@ -18,8 +18,6 @@ export function DataFlowEdge({
   sourceY,
   targetX,
   targetY,
-  sourcePosition,
-  targetPosition,
   style = {},
   data,
   markerEnd,
@@ -27,14 +25,12 @@ export function DataFlowEdge({
   const [edgePath, labelX, labelY] = getStraightPath({
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
-    targetPosition,
   });
 
   const getEdgeStyle = () => {
-    const baseStyle = {
+    const baseStyle: React.CSSProperties = {
       strokeWidth: 2,
       ...style,
     };

@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -42,7 +41,7 @@ const getNodeColor = (type: string) => {
   }
 };
 
-export const SystemArchitectureNode = memo<NodeProps<NodeData>>(({ data }) => {
+export const SystemArchitectureNode = memo(({ data }: NodeProps<NodeData>) => {
   const Icon = getNodeIcon(data.type);
   const colorClass = getNodeColor(data.type);
   
