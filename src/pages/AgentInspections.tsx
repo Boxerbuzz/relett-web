@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Search, Filter } from 'lucide-react';
 import { useAgentInspections } from '@/hooks/useAgentInspections';
 import { InspectionCard } from '@/components/agent/InspectionCard';
-import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
+import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
 
 const AgentInspections = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,7 +33,7 @@ const AgentInspections = () => {
   const statusCounts = getStatusCounts();
 
   if (isLoading) {
-    return <LoadingSpinner size="lg" text="Loading inspections..." />;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -108,7 +108,7 @@ const AgentInspections = () => {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
