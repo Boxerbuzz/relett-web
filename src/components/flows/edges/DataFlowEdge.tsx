@@ -13,15 +13,17 @@ interface DataFlowEdgeData {
   animated?: boolean;
 }
 
-export function DataFlowEdge({
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  style = {},
-  data,
-  markerEnd,
-}: EdgeProps<DataFlowEdgeData>) {
+export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
+  const {
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    style = {},
+    data,
+    markerEnd,
+  } = props;
+
   const [edgePath, labelX, labelY] = getStraightPath({
     sourceX,
     sourceY,

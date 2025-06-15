@@ -40,7 +40,8 @@ const getStatusColor = (status?: string) => {
   }
 };
 
-export const ProcessStepNode = memo(({ data }: NodeProps<ProcessNodeData>) => {
+export const ProcessStepNode = memo((props: NodeProps<ProcessNodeData>) => {
+  const { data } = props;
   const StatusIcon = getStatusIcon(data.status);
   const colorClass = getStatusColor(data.status);
   
@@ -89,7 +90,8 @@ export const ProcessStepNode = memo(({ data }: NodeProps<ProcessNodeData>) => {
 
 ProcessStepNode.displayName = 'ProcessStepNode';
 
-export const DecisionNode = memo(({ data }: NodeProps<ProcessNodeData>) => {
+export const DecisionNode = memo((props: NodeProps<ProcessNodeData>) => {
+  const { data } = props;
   return (
     <div className="relative">
       <div className="w-32 h-32 bg-yellow-50 border-2 border-yellow-200 transform rotate-45 flex items-center justify-center">

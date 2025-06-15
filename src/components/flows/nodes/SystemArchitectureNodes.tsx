@@ -41,7 +41,8 @@ const getNodeColor = (type: string) => {
   }
 };
 
-export const SystemArchitectureNode = memo(({ data }: NodeProps<NodeData>) => {
+export const SystemArchitectureNode = memo((props: NodeProps<NodeData>) => {
+  const { data } = props;
   const Icon = getNodeIcon(data.type);
   const colorClass = getNodeColor(data.type);
   
