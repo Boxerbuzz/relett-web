@@ -7,7 +7,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: 'verifier' | 'agent' | 'landowner';
+  requiredRole?: 'verifier' | 'agent' | 'landowner' | 'admin';
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
