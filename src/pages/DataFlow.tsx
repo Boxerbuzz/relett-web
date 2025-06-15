@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { FlowSelector } from '@/components/flows/FlowSelector';
 import { UserJourneyFlow } from '@/components/flows/flows/UserJourneyFlow';
 import { SystemArchitectureFlow } from '@/components/flows/flows/SystemArchitectureFlow';
+import { PropertyFlow } from '@/components/flows/flows/PropertyFlow';
+import { FinancialFlow } from '@/components/flows/flows/FinancialFlow';
 
 const DataFlow = () => {
   const navigate = useNavigate();
@@ -19,21 +20,9 @@ const DataFlow = () => {
       case 'system-architecture':
         return <SystemArchitectureFlow />;
       case 'property-flow':
-        return (
-          <Card className="h-[600px] flex items-center justify-center">
-            <CardContent>
-              <p className="text-gray-500">Property Flow diagram coming soon...</p>
-            </CardContent>
-          </Card>
-        );
+        return <PropertyFlow />;
       case 'financial-flow':
-        return (
-          <Card className="h-[600px] flex items-center justify-center">
-            <CardContent>
-              <p className="text-gray-500">Financial Flow diagram coming soon...</p>
-            </CardContent>
-          </Card>
-        );
+        return <FinancialFlow />;
       default:
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
