@@ -34,7 +34,7 @@ export function DataFlowEdge(props: EdgeProps<DataFlowEdgeData>) {
   const getEdgeStyle = () => {
     const baseStyle: React.CSSProperties = {
       strokeWidth: 2,
-      ...style,
+      ...(style || {}),
     };
 
     switch (data?.type) {
