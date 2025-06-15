@@ -39,7 +39,7 @@ interface SidebarProps {
 }
 
 const mainNavigation = [
-  { name: 'Dashboard', href: '/', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Admin Dashboard', href: '/admin', icon: BarChart3, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
