@@ -7,7 +7,8 @@ import {
   DollarSign, 
   Network,
   GitBranch,
-  Eye
+  Eye,
+  Database,
 } from 'lucide-react';
 
 interface FlowSelectorProps {
@@ -46,6 +47,12 @@ const flows = [
     icon: Network,
     description: 'Technical system architecture',
   },
+  {
+    id: 'database-schema',
+    label: 'Database',
+    icon: Database,
+    description: 'Interactive database schema diagram',
+  },
 ];
 
 export function FlowSelector({ activeFlow, onFlowChange }: FlowSelectorProps) {
@@ -60,7 +67,7 @@ export function FlowSelector({ activeFlow, onFlowChange }: FlowSelectorProps) {
       </div>
       
       <Tabs value={activeFlow} onValueChange={onFlowChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-6">
           {flows.map((flow) => {
             const Icon = flow.icon;
             return (

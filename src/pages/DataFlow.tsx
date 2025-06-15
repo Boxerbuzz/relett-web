@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { UserJourneyFlow } from '@/components/flows/flows/UserJourneyFlow';
 import { SystemArchitectureFlow } from '@/components/flows/flows/SystemArchitectureFlow';
 import { PropertyFlow } from '@/components/flows/flows/PropertyFlow';
 import { FinancialFlow } from '@/components/flows/flows/FinancialFlow';
+import { DatabaseFlow } from '@/components/flows/flows/DatabaseFlow';
 
 const DataFlow = () => {
   const navigate = useNavigate();
@@ -23,6 +25,8 @@ const DataFlow = () => {
         return <PropertyFlow />;
       case 'financial-flow':
         return <FinancialFlow />;
+      case 'database-schema':
+        return <DatabaseFlow />;
       default:
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -133,39 +137,41 @@ const DataFlow = () => {
         {renderFlowContent()}
 
         {/* Key Integration Points */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Key Integration Points</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-blue-600 mb-2">Hedera Blockchain</h3>
-                <p className="text-sm text-gray-600">Token creation, consensus timestamps, immutable voting records, smart contract deployment</p>
+        {activeFlow === 'overview' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Key Integration Points</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-blue-600 mb-2">Hedera Blockchain</h3>
+                  <p className="text-sm text-gray-600">Token creation, consensus timestamps, immutable voting records, smart contract deployment</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-green-600 mb-2">Payment Providers</h3>
+                  <p className="text-sm text-gray-600">Paystack, Flutterwave integration for Nigerian market, multi-currency support</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-purple-600 mb-2">Identity Verification</h3>
+                  <p className="text-sm text-gray-600">NIN, BVN verification through Nigerian identity APIs, document OCR processing</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-orange-600 mb-2">AI Services</h3>
+                  <p className="text-sm text-gray-600">Property valuation, market analysis, document processing, fraud detection</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-red-600 mb-2">Communication</h3>
+                  <p className="text-sm text-gray-600">Real-time chat, email notifications, SMS alerts, push notifications</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h3 className="font-semibold text-teal-600 mb-2">Government APIs</h3>
+                  <p className="text-sm text-gray-600">Land registry integration, compliance checking, regulatory reporting</p>
+                </div>
               </div>
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-green-600 mb-2">Payment Providers</h3>
-                <p className="text-sm text-gray-600">Paystack, Flutterwave integration for Nigerian market, multi-currency support</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-purple-600 mb-2">Identity Verification</h3>
-                <p className="text-sm text-gray-600">NIN, BVN verification through Nigerian identity APIs, document OCR processing</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-orange-600 mb-2">AI Services</h3>
-                <p className="text-sm text-gray-600">Property valuation, market analysis, document processing, fraud detection</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-red-600 mb-2">Communication</h3>
-                <p className="text-sm text-gray-600">Real-time chat, email notifications, SMS alerts, push notifications</p>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-teal-600 mb-2">Government APIs</h3>
-                <p className="text-sm text-gray-600">Land registry integration, compliance checking, regulatory reporting</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
