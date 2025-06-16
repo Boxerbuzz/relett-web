@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useLocation, Link } from 'react-router-dom';
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TreeDonationDialog } from '@/components/dialogs/TreeDonationDialog';
 import { useState } from 'react';
 
 interface SidebarProps {
@@ -72,6 +72,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [agentToolsOpen, setAgentToolsOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [treeDonationOpen, setTreeDonationOpen] = useState(false);
 
   const filterNavigation = (items: typeof mainNavigation) => {
     return items.filter(item => {
@@ -218,18 +219,21 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <Button 
           size="sm" 
           className="w-full bg-green-600 hover:bg-green-700 text-white"
-          onClick={() => {
-            // Add donation logic here
-            console.log('Donate to plant a tree');
-          }}
+          onClick={() => setTreeDonationOpen(true)}
         >
           <Heart className="w-4 h-4 mr-2" />
           Donate Now
         </Button>
         <p className="text-xs text-center text-gray-500 mt-2">
-          Starting from $1 per tree
+          Starting from ₦2,000 per tree
         </p>
       </div>
+
+      {/* Tree Donation Dialog */}
+      <TreeDonationDialog 
+        open={treeDonationOpen} 
+        onOpenChange={setTreeDonationOpen} 
+      />
     </div>
   );
 }

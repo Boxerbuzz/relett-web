@@ -3856,6 +3856,110 @@ export type Database = {
         }
         Relationships: []
       }
+      tree_donations: {
+        Row: {
+          certificate_url: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          payment_provider: string
+          payment_reference: string | null
+          payment_status: string
+          planted_at: string | null
+          quantity: number
+          total_amount_ngn: number
+          tree_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string
+          payment_reference?: string | null
+          payment_status?: string
+          planted_at?: string | null
+          quantity?: number
+          total_amount_ngn: number
+          tree_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string
+          payment_reference?: string | null
+          payment_status?: string
+          planted_at?: string | null
+          quantity?: number
+          total_amount_ngn?: number
+          tree_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tree_donations_tree_id_fkey"
+            columns: ["tree_id"]
+            isOneToOne: false
+            referencedRelation: "trees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trees: {
+        Row: {
+          carbon_offset_kg: number | null
+          country: string
+          created_at: string
+          description: string | null
+          growth_time_years: number | null
+          id: string
+          image_url: string
+          is_available: boolean
+          location: string
+          name: string
+          price_ngn: number
+          scientific_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          carbon_offset_kg?: number | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          growth_time_years?: number | null
+          id?: string
+          image_url: string
+          is_available?: boolean
+          location: string
+          name: string
+          price_ngn: number
+          scientific_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carbon_offset_kg?: number | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          growth_time_years?: number | null
+          id?: string
+          image_url?: string
+          is_available?: boolean
+          location?: string
+          name?: string
+          price_ngn?: number
+          scientific_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       typing_indicators: {
         Row: {
           conversation_id: string | null
