@@ -32,7 +32,7 @@ export interface TreeDonation {
   payment_provider: string;
   planted_at?: string;
   certificate_url?: string;
-  metadata: Record<string, any>;
+  metadata: any; // Changed from Record<string, any> to any to match Supabase Json type
   created_at: string;
   updated_at: string;
 }
@@ -77,7 +77,8 @@ export function useTreeDonation() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDonations(data || []);
+      // Type assertion to handle the Json to any conversion
+      setDonations((data as any[]) || []);
     } catch (error) {
       console.error('Error fetching donations:', error);
     }
