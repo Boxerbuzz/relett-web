@@ -65,7 +65,6 @@ api_keys - API access management
 #### 💬 Communication & Chat
 conversations - Chat rooms and groups
 messages - Individual chat messages
-chat_messages - Alternative message storage system
 message_attachments - File sharing in chats
 message_reactions - Emoji reactions on messages
 typing_indicators - Real-time typing status
@@ -97,25 +96,18 @@ conversation_contexts - AI conversation state management
 
 #### 🌳 Environmental & Sustainability
 tree_donations - Environmental contribution tracking
-tree_planting_records - Tree planting activity records
-carbon_offset_calculations - Carbon footprint calculations
-environmental_impact_reports - Sustainability reporting
 
 #### 🤖 AI & Machine Learning
 ai_property_valuations - AI-generated property valuations
-learning_patterns - Machine learning pattern storage
 
 #### 🗳️ Investment Polling System
 investment_polls - Investment group voting polls
 poll_options - Available voting choices
 poll_votes - Individual vote records
-poll_results - Aggregated poll outcomes
 
 #### 🔧 System & Infrastructure
 smart_contracts - Blockchain contract management
 bank_cache - Banking data caching
-verification_tasks - Document verification workflow
-verification_history - Verification audit trail
 `;
 
 interface Domain {

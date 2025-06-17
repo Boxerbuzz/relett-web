@@ -4132,6 +4132,7 @@ export type Database = {
           middle_name: string | null
           nationality: string | null
           phone: string | null
+          state: string | null
           state_of_origin: string | null
           updated_at: string | null
           user_type: string
@@ -4164,6 +4165,7 @@ export type Database = {
           middle_name?: string | null
           nationality?: string | null
           phone?: string | null
+          state?: string | null
           state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
@@ -4196,6 +4198,7 @@ export type Database = {
           middle_name?: string | null
           nationality?: string | null
           phone?: string | null
+          state?: string | null
           state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
@@ -4646,6 +4649,7 @@ export type Database = {
           middle_name: string | null
           nationality: string | null
           phone: string | null
+          state: string | null
           state_of_origin: string | null
           updated_at: string | null
           user_type: string
