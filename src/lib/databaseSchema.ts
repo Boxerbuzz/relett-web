@@ -8,12 +8,18 @@ property_images - Property photos and media
 property_documents - Legal documents, certificates, deeds
 property_valuations - AI and professional property valuations
 property_creation_workflows - Multi-step property creation process tracking
+property_favorites - User saved/bookmarked properties
+property_likes - Property likes/hearts from users
+property_views - Property view tracking and analytics
+property_reviews - User reviews and ratings for properties
+property_inquiries - Contact requests and inquiries for properties
 
 #### 🏛️ Land Registry & Legal
 land_titles - Official land ownership records
 legal_agreements - Contracts, leases, sale agreements
 compliance_records - Tax, permits, regulatory compliance
 compliance_reports - Regulatory reporting for authorities
+document_verification_requests - Document review queue for verifiers
 
 #### 🪙 Tokenization & Investment
 tokenized_properties - Properties converted to digital tokens
@@ -25,37 +31,43 @@ investment_tracking - Portfolio performance tracking
 investment_groups - Collaborative investment pools
 investment_discussions - Group chat for investors
 investment_analytics - Performance metrics and insights
+auction_listings - Property auctions and bidding
 
 #### 👤 User Management & Authentication
 users - Core user profiles and basic info
 user_roles - Role assignments (admin, agent, investor, etc.)
-user_devices - Device registration for notifications
+user_profiles - Extended user profile information
+user_devices - Device registration for security and notifications
+user_preferences - User settings and preferences
 identity_verifications - KYC identity verification
 kyc_documents - Identity documents for verification
 verifier_credentials - Professional verifier licenses
+sanctions_screening - Government sanctions checking
 
 #### 💰 Financial & Payment Systems
 accounts - User wallet balances and points
 payments - Transaction records
 payment_methods - Saved payment cards/methods
-payment_sessions - Active payment processing
-escrow_accounts - Secure transaction holding
-withdrawal_requests - Cash-out requests
+payment_sessions - Active payment processing sessions
+escrow_accounts - Secure transaction holding accounts
+withdrawal_requests - Cash-out requests from users
 transaction_fees - Fee calculations and records
 wallets - Cryptocurrency wallet connections
+financial_reports - User investment reports
 
 #### 🔐 Security & Compliance
 aml_checks - Anti-money laundering screening
-sanctions_screening - Government sanctions checking
 audit_trails - Complete activity logging
 identity_audit_logs - Identity verification audit trail
+backup_recovery - System backup management
+api_keys - API access management
 
 #### 💬 Communication & Chat
 conversations - Chat rooms and groups
 messages - Individual chat messages
-chat_messages - Alternative message storage
+chat_messages - Alternative message storage system
 message_attachments - File sharing in chats
-message_reactions - Emoji reactions
+message_reactions - Emoji reactions on messages
 typing_indicators - Real-time typing status
 
 #### 🔔 Notifications & Alerts
@@ -66,11 +78,6 @@ notification_templates - Pre-defined message templates
 system_notifications - Platform-wide announcements
 
 #### 🎯 User Interaction & Engagement
-property_favorites - Saved/bookmarked properties
-property_likes - Property likes/hearts
-property_views - View tracking and analytics
-property_reviews - User reviews and ratings
-property_inquiries - Contact requests for properties
 saved_searches - Saved search criteria
 portfolio_allocations - Investment diversification targets
 
@@ -78,20 +85,37 @@ portfolio_allocations - Investment diversification targets
 inspections - Property inspection scheduling
 rentals - Rental agreements and management
 reservations - Property viewing appointments
-auction_listings - Property auctions
 feedbacks - User feedback and support
 contacts_us - Contact form submissions
 
 #### 📈 Analytics & Reporting
 market_analytics - Market trends and insights
-financial_reports - User investment reports
+learning_patterns - AI learning and pattern recognition
+agent_interactions - AI agent conversation tracking
+agent_performance_metrics - Agent effectiveness metrics
+conversation_contexts - AI conversation state management
+
+#### 🌳 Environmental & Sustainability
+tree_donations - Environmental contribution tracking
+tree_planting_records - Tree planting activity records
+carbon_offset_calculations - Carbon footprint calculations
+environmental_impact_reports - Sustainability reporting
+
+#### 🤖 AI & Machine Learning
+ai_property_valuations - AI-generated property valuations
+learning_patterns - Machine learning pattern storage
+
+#### 🗳️ Investment Polling System
+investment_polls - Investment group voting polls
+poll_options - Available voting choices
+poll_votes - Individual vote records
+poll_results - Aggregated poll outcomes
 
 #### 🔧 System & Infrastructure
-api_keys - API access management
-backup_recovery - System backup management
-bank_cache - Banking data caching
 smart_contracts - Blockchain contract management
-document_verification_requests - Document review queue
+bank_cache - Banking data caching
+verification_tasks - Document verification workflow
+verification_history - Verification audit trail
 `;
 
 interface Domain {
