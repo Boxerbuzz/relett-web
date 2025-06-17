@@ -1,39 +1,44 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/components/AuthProvider';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { Layout } from '@/components/Layout';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ErrorBoundary } from '@/components/monitoring/ErrorBoundary';
-import { AnalyticsProvider } from '@/components/monitoring/AnalyticsProvider';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/components/AuthProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Layout } from "@/components/Layout";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "@/components/monitoring/ErrorBoundary";
+import { AnalyticsProvider } from "@/components/monitoring/AnalyticsProvider";
 
 // Pages
-import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
-import Index from '@/pages/Index';
-import Marketplace from '@/pages/Marketplace';
-import Tokens from '@/pages/Tokens';
-import Investment from '@/pages/Investment';
-import Settings from '@/pages/Settings';
-import NotFound from '@/pages/NotFound';
-import Admin from '@/pages/Admin';
-import Verification from '@/pages/Verification';
-import PropertyVerification from '@/pages/PropertyVerification';
-import HederaTokens from '@/pages/HederaTokens';
-import MapView from '@/pages/MapView';
-import Notifications from '@/pages/Notifications';
-import MyLand from '@/pages/MyLand';
-import AgentInspections from '@/pages/AgentInspections';
-import AgentRentals from '@/pages/AgentRentals';
-import AgentReservations from '@/pages/AgentReservations';
-import AgentCalendar from '@/pages/AgentCalendar';
-import Documentation from '@/pages/Documentation';
-import DatabaseDocumentation from '@/pages/DatabaseDocumentation';
-import DatabaseSchema from '@/pages/DatabaseSchema';
-import DataFlow from '@/pages/DataFlow';
-import AddProperty from '@/pages/AddProperty';
-import TermsAndConditions from '@/pages/TermsAndConditions';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
+import Index from "@/pages/Index";
+import Marketplace from "@/pages/Marketplace";
+import Tokens from "@/pages/Tokens";
+import Investment from "@/pages/Investment";
+import Settings from "@/pages/Settings";
+import NotFound from "@/pages/NotFound";
+import Admin from "@/pages/Admin";
+import Verification from "@/pages/Verification";
+import PropertyVerification from "@/pages/PropertyVerification";
+import HederaTokens from "@/pages/HederaTokens";
+import MapView from "@/pages/MapView";
+import Notifications from "@/pages/Notifications";
+import MyLand from "@/pages/MyLand";
+import AgentInspections from "@/pages/AgentInspections";
+import AgentRentals from "@/pages/AgentRentals";
+import AgentReservations from "@/pages/AgentReservations";
+import AgentCalendar from "@/pages/AgentCalendar";
+import Documentation from "@/pages/Documentation";
+import DatabaseDocumentation from "@/pages/DatabaseDocumentation";
+import DatabaseSchema from "@/pages/DatabaseSchema";
+import DataFlow from "@/pages/DataFlow";
+import AddProperty from "@/pages/AddProperty";
+import TermsAndConditions from "@/pages/TermsAndConditions";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,11 +59,20 @@ function App() {
               <div className="App">
                 <Routes>
                   {/* Public routes */}
-                  <Route path="/" element={<Index />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Dashboard />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/terms" element={<TermsAndConditions />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
-                  
+
                   {/* Protected routes */}
                   <Route
                     path="/dashboard"
@@ -262,7 +276,7 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  
+
                   {/* Catch all route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
