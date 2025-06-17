@@ -65,7 +65,6 @@ const generateSchemaEdges = (): Edge[] => {
     { from: 'typing_indicators', to: 'conversations' },
     { from: 'notifications', to: 'users' },
     { from: 'notification_preferences', to: 'users' },
-    { from: 'notification_deliveries', to: 'notifications' },
     { from: 'portfolio_allocations', to: 'users' },
     { from: 'inspections', to: 'properties' },
     { from: 'rentals', to: 'properties' },
@@ -105,8 +104,7 @@ export function DatabaseFlow() {
       edges={initialEdges}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
-      title="Complete Database Schema Relationship Diagram"
-      description={`Interactive visualization of all ${initialNodes.filter(n => n.type === 'table').length} database tables organized by domain`}
+      title={`Complete Database Schema (${initialNodes.filter(n => n.type === 'table').length} tables)`}
     />
   );
 }
