@@ -10,7 +10,7 @@ import {
   MapPin, 
   Eye, 
   Heart, 
-  TrendingUp, 
+  TrendUp, 
   Star,
   CheckCircle,
   Crown
@@ -108,7 +108,7 @@ export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
               )}
               {property.is_tokenized && (
                 <Badge className="bg-blue-500 text-xs">
-                  <TrendingUp size={12} className="mr-1" />
+                  <TrendUp size={12} className="mr-1" />
                   Tokenized
                 </Badge>
               )}
