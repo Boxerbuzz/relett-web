@@ -10,11 +10,11 @@ import {
   MapPin, 
   Eye, 
   Heart, 
-  TrendingUp, 
+  TrendUp, 
   Star,
-  Verified,
+  CheckCircle,
   Crown
-} from 'lucide-react';
+} from 'phosphor-react';
 
 interface PropertyCardProps {
   property: {
@@ -96,19 +96,19 @@ export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
             <div className="absolute top-3 left-3 flex flex-wrap gap-1">
               {property.is_featured && (
                 <Badge className="bg-orange-500 text-xs">
-                  <Crown className="h-3 w-3 mr-1" />
+                  <Crown size={12} className="mr-1" />
                   Featured
                 </Badge>
               )}
               {property.is_verified && (
                 <Badge className="bg-green-500 text-xs">
-                  <Verified className="h-3 w-3 mr-1" />
+                  <CheckCircle size={12} className="mr-1" />
                   Verified
                 </Badge>
               )}
               {property.is_tokenized && (
                 <Badge className="bg-blue-500 text-xs">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <TrendUp size={12} className="mr-1" />
                   Tokenized
                 </Badge>
               )}
@@ -118,13 +118,13 @@ export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
             <div className="absolute top-3 right-3 flex gap-2">
               {property.views && (
                 <Badge variant="secondary" className="text-xs bg-black/50 text-white">
-                  <Eye className="h-3 w-3 mr-1" />
+                  <Eye size={12} className="mr-1" />
                   {property.views}
                 </Badge>
               )}
               {property.likes && (
                 <Badge variant="secondary" className="text-xs bg-black/50 text-white">
-                  <Heart className="h-3 w-3 mr-1" />
+                  <Heart size={12} className="mr-1" />
                   {property.likes}
                 </Badge>
               )}
@@ -141,7 +141,7 @@ export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
                 </h3>
                 {property.ratings && (
                   <div className="flex items-center gap-1 text-sm">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <Star size={16} weight="fill" className="text-yellow-400" />
                     <span className="font-medium">{property.ratings.toFixed(1)}</span>
                     <span className="text-gray-500">({property.review_count || 0})</span>
                   </div>
@@ -150,7 +150,7 @@ export function PropertyCard({ property, onViewDetails }: PropertyCardProps) {
 
               {/* Location */}
               <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="h-4 w-4" />
+                <MapPin size={16} />
                 <span className="text-sm line-clamp-1">{getLocationString()}</span>
               </div>
 

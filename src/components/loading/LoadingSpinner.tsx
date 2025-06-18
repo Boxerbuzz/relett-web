@@ -1,5 +1,5 @@
 
-import { Loader2 } from 'lucide-react';
+import { CircleNotch } from 'phosphor-react';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
@@ -9,15 +9,15 @@ interface LoadingSpinnerProps {
 }
 
 export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8'
+  const sizeMap = {
+    sm: 16,
+    md: 24,
+    lg: 32
   };
 
   return (
     <div className={cn('flex items-center justify-center gap-2', className)}>
-      <Loader2 className={cn('animate-spin', sizeClasses[size])} />
+      <CircleNotch size={sizeMap[size]} className="animate-spin" />
       {text && <span className="text-sm text-muted-foreground">{text}</span>}
     </div>
   );

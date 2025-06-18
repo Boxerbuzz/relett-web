@@ -4132,6 +4132,7 @@ export type Database = {
           middle_name: string | null
           nationality: string | null
           phone: string | null
+          state: string | null
           state_of_origin: string | null
           updated_at: string | null
           user_type: string
@@ -4164,6 +4165,7 @@ export type Database = {
           middle_name?: string | null
           nationality?: string | null
           phone?: string | null
+          state?: string | null
           state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
@@ -4196,6 +4198,7 @@ export type Database = {
           middle_name?: string | null
           nationality?: string | null
           phone?: string | null
+          state?: string | null
           state_of_origin?: string | null
           updated_at?: string | null
           user_type?: string
@@ -4397,6 +4400,48 @@ export type Database = {
           verified_at?: string | null
           verified_by?: string | null
           verifier_type?: Database["public"]["Enums"]["verifier_type"]
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          additional_info: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          interest_type: string | null
+          location: string | null
+          phone_number: string | null
+          referral_source: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          interest_type?: string | null
+          location?: string | null
+          phone_number?: string | null
+          referral_source?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          interest_type?: string | null
+          location?: string | null
+          phone_number?: string | null
+          referral_source?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -4646,6 +4691,7 @@ export type Database = {
           middle_name: string | null
           nationality: string | null
           phone: string | null
+          state: string | null
           state_of_origin: string | null
           updated_at: string | null
           user_type: string

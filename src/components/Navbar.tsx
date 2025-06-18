@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "./profile/UserAvatar";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Menu, Settings, LogOut, User } from "lucide-react";
+import { Bell, List, Gear, SignOut, User } from "phosphor-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -46,7 +47,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           onClick={onToggleSidebar}
           className="md:hidden"
         >
-          <Menu className="h-5 w-5" />
+          <List size={20} />
         </Button>
 
         {/* Desktop: Show page title or breadcrumb */}
@@ -59,7 +60,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
       <div className="flex items-center gap-3">
         {/* Notifications */}
         <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell size={20} />
           {notificationCount > 0 && (
             <Badge
               variant="destructive"
@@ -97,7 +98,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/settings"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <User className="h-4 w-4" />
+                <User size={16} />
                 Profile
               </Link>
             </DropdownMenuItem>
@@ -106,7 +107,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/settings"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Settings className="h-4 w-4" />
+                <Gear size={16} />
                 Settings
               </Link>
             </DropdownMenuItem>
@@ -115,7 +116,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/notifications"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Bell className="h-4 w-4" />
+                <Bell size={16} />
                 Notifications
                 {notificationCount > 0 && (
                   <Badge variant="secondary" className="ml-auto">
@@ -129,7 +130,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               onClick={() => signOut()}
               className="flex items-center gap-2 cursor-pointer text-red-600"
             >
-              <LogOut className="h-4 w-4" />
+              <SignOut size={16} />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useLocation, Link } from 'react-router-dom';
@@ -8,22 +9,22 @@ import {
   House, 
   FileText, 
   ShieldCheck, 
-  Store, 
+  Storefront, 
   Coins,
-  Settings,
+  Gear,
   MapPin,
   Bell,
   Plus,
-  Search,
-  BarChart3,
+  MagnifyingGlass,
+  ChartBar,
   Eye,
-  Home,
+  Buildings,
   Users,
-  CalendarDays,
-  ChevronRight,
-  TreePine,
+  Calendar,
+  CaretRight,
+  Tree,
   Heart
-} from 'lucide-react';
+} from 'phosphor-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,10 +41,10 @@ interface SidebarProps {
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Admin Dashboard', href: '/admin', icon: BarChart3, roles: ['admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Store, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
+  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Property Verification', href: '/property-verification', icon: Search, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent'] },
 ];
 
 const propertyNavigation = [
@@ -55,14 +56,14 @@ const propertyNavigation = [
 
 const agentNavigation = [
   { name: 'Inspections', href: '/agent/inspections', icon: Eye, roles: ['agent', 'admin'] },
-  { name: 'Rentals', href: '/agent/rentals', icon: Home, roles: ['agent', 'admin'] },
+  { name: 'Rentals', href: '/agent/rentals', icon: Buildings, roles: ['agent', 'admin'] },
   { name: 'Reservations', href: '/agent/reservations', icon: Users, roles: ['agent', 'admin'] },
-  { name: 'Calendar', href: '/agent/calendar', icon: CalendarDays, roles: ['agent', 'admin'] },
+  { name: 'Calendar', href: '/agent/calendar', icon: Calendar, roles: ['agent', 'admin'] },
 ];
 
 const settingsNavigation = [
   { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Settings', href: '/settings', icon: Settings, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
@@ -141,7 +142,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 <FileText size={16} className="mr-2" />
                 Property Management
               </span>
-              <ChevronRight 
+              <CaretRight 
                 size={16} 
                 className={cn(
                   "transition-transform",
@@ -166,7 +167,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                   Pro
                 </Badge>
               </span>
-              <ChevronRight 
+              <CaretRight 
                 size={16} 
                 className={cn(
                   "transition-transform",
@@ -184,10 +185,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
             <span className="flex items-center">
-              <Settings size={16} className="mr-2" />
+              <Gear size={16} className="mr-2" />
               Settings & Support
             </span>
-            <ChevronRight 
+            <CaretRight 
               size={16} 
               className={cn(
                 "transition-transform",
@@ -206,7 +207,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <div className="text-center mb-3">
           <div className="flex justify-center mb-2">
             <div className="bg-green-100 p-2 rounded-full">
-              <TreePine className="w-6 h-6 text-green-600" />
+              <Tree className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <h3 className="text-sm font-semibold text-gray-900 mb-1">

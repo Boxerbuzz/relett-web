@@ -24,7 +24,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Rubik', 'sans-serif'],
+				sans: ['League Spartan', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

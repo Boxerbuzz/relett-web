@@ -18,15 +18,14 @@ const edgeTypes = {
 // Generate nodes from the complete schema
 const initialNodes: Node[] = generateDatabaseNodes();
 
-// Generate basic relationships between key tables
+// Generate basic relationships between key tables (excluding non-existent tables)
 const generateSchemaEdges = (): Edge[] => {
   const edges: Edge[] = [];
   
-  // Core relationships
+  // Core relationships - only including tables that actually exist
   const relationships = [
     { from: 'user_roles', to: 'users' },
     { from: 'user_profiles', to: 'users' },
-    { from: 'user_preferences', to: 'users' },
     { from: 'user_devices', to: 'users' },
     { from: 'properties', to: 'users' },
     { from: 'property_images', to: 'properties' },
