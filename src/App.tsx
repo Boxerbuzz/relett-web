@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -22,6 +23,8 @@ import Investment from "@/pages/Investment";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import Admin from "@/pages/Admin";
+import AdminContacts from "@/pages/AdminContacts";
+import AdminWaitlist from "@/pages/AdminWaitlist";
 import Verification from "@/pages/Verification";
 import PropertyVerification from "@/pages/PropertyVerification";
 import HederaTokens from "@/pages/HederaTokens";

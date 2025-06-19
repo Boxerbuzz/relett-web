@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +10,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { PropertyVerificationQueue } from '@/components/admin/PropertyVerificationQueue';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 import { 
   Users, 
   FileCheck, 
@@ -18,7 +18,9 @@ import {
   AlertTriangle, 
   Home,
   DollarSign,
-  Activity
+  Activity,
+  Envelope,
+  ArrowRight
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -41,6 +43,7 @@ export function AdminDashboard() {
     pendingDocuments: 0
   });
   const [loading, setLoading] = useState(true);
+  const [contactsCount, setContactsCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -76,6 +79,14 @@ export function AdminDashboard() {
         .from('property_documents')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
+
+      // Fetch unread contacts count
+      const { count: unreadContacts } = await supabase
+        .from('contacts_us')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'responded');
+
+      setContactsCount(unreadContacts || 0);
 
       // Calculate monthly revenue (placeholder - you'd need a payments/revenue table)
       const currentMonth = new Date();
@@ -161,6 +172,57 @@ export function AdminDashboard() {
             <div className="text-2xl font-bold">₦{loading ? '...' : stats.monthlyRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Link to="/admin/contacts">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Contact Messages</CardTitle>
+              <Envelope className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{contactsCount}</div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                Unread messages
+                <ArrowRight className="ml-2 h-3 w-3" />
+              </p>
+            </CardContent>
+          </Link>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Link to="/admin/users">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">User Management</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{loading ? '...' : stats.totalUsers}</div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                Manage all users
+                <ArrowRight className="ml-2 h-3 w-3" />
+              </p>
+            </CardContent>
+          </Link>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Link to="/property-verification">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Verifications</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{loading ? '...' : stats.pendingVerifications}</div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                Pending reviews
+                <ArrowRight className="ml-2 h-3 w-3" />
+              </p>
+            </CardContent>
+          </Link>
         </Card>
       </div>
 
