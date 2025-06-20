@@ -55,7 +55,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
         <p className="text-gray-600 mt-2">
-          Sign in to your LandChain account
+          Sign in to your Relett account
         </p>
       </div>
       

@@ -50,6 +50,7 @@ export function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [contactsCount, setContactsCount] = useState(0);
+  const [waitlistCount, setWaitlistCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -91,7 +92,12 @@ export function AdminDashboard() {
         .from("contacts_us")
         .select("*", { count: "exact", head: true });
 
+      const { count: unreadWaitlist } = await supabase
+        .from("waitlist")
+        .select("*", { count: "exact", head: true });
+
       setContactsCount(unreadContacts || 0);
+      setWaitlistCount(unreadWaitlist || 0);
 
       // Calculate monthly revenue (placeholder - you'd need a payments/revenue table)
       const currentMonth = new Date();
@@ -252,6 +258,21 @@ export function AdminDashboard() {
               <p className="text-xs text-muted-foreground flex items-center">
                 Pending reviews
                 <ArrowRight className="ml-2 h-3 w-3" />
+              </p>
+            </CardContent>
+          </Link>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Link to="/admin/waitlist">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Waitlist</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{waitlistCount}</div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                Pending reviews
               </p>
             </CardContent>
           </Link>

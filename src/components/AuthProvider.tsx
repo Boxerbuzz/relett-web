@@ -298,7 +298,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       } else {
         toast({
-          title: "Welcome to LandChain!",
+          title: "Welcome to Relett!",
           description: "Your account has been created successfully.",
         });
         navigate("/");

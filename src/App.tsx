@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -143,6 +142,26 @@ function App() {
                       <ProtectedRoute requiredRole="admin">
                         <Layout>
                           <Admin />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/contacts"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                          <AdminContacts />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/waitlist"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                          <AdminWaitlist />
                         </Layout>
                       </ProtectedRoute>
                     }

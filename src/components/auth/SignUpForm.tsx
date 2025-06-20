@@ -74,7 +74,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Join LandChain</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Join Relett</h1>
         <p className="text-gray-600 mt-2">
           Create your account to get started
         </p>
