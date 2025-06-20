@@ -13,59 +13,53 @@ import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
 import { MagnifyingGlass, ArrowLeft, Download } from 'phosphor-react';
 import { Link } from 'react-router-dom';
 
-interface User {
+interface WaitlistEntry {
   id: string;
   email: string;
-  full_name?: string;
-  user_type?: string;
-  verification_status?: string;
-  is_active?: boolean;
-  is_verified?: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  interested_in?: string;
+  referral_source?: string;
+  message?: string;
+  status: string;
   created_at: string;
-  last_sign_in_at?: string;
+  updated_at?: string;
 }
 
 export default function AdminWaitlist() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [waitlistEntries, setWaitlistEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [userTypeFilter, setUserTypeFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const { toast } = useToast();
 
   const itemsPerPage = 15;
 
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, statusFilter, userTypeFilter]);
+    fetchWaitlistEntries();
+  }, [currentPage, searchTerm, statusFilter, sourceFilter]);
 
-  const fetchUsers = async () => {
+  const fetchWaitlistEntries = async () => {
     try {
       setLoading(true);
       
-      let query = supabase.from('users').select('*', { count: 'exact' });
+      let query = supabase.from('waitlist').select('*', { count: 'exact' });
 
       // Apply filters
       if (searchTerm) {
-        query = query.or(`email.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%`);
+        query = query.or(`email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
       }
 
       if (statusFilter !== 'all') {
-        if (statusFilter === 'verified') {
-          query = query.eq('is_verified', true);
-        } else if (statusFilter === 'unverified') {
-          query = query.eq('is_verified', false);
-        } else if (statusFilter === 'active') {
-          query = query.eq('is_active', true);
-        } else if (statusFilter === 'inactive') {
-          query = query.eq('is_active', false);
-        }
+        query = query.eq('status', statusFilter);
       }
 
-      if (userTypeFilter !== 'all') {
-        query = query.eq('user_type', userTypeFilter);
+      if (sourceFilter !== 'all') {
+        query = query.eq('referral_source', sourceFilter);
       }
 
       // Get total count for pagination
@@ -78,12 +72,12 @@ export default function AdminWaitlist() {
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
 
       if (error) throw error;
-      setUsers(data || []);
+      setWaitlistEntries(data || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching waitlist entries:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch users',
+        description: 'Failed to fetch waitlist entries',
         variant: 'destructive'
       });
     } finally {
@@ -91,11 +85,36 @@ export default function AdminWaitlist() {
     }
   };
 
-  const exportUsers = async () => {
+  const updateStatus = async (id: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('waitlist')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Status updated',
+        description: 'Waitlist entry status has been updated',
+      });
+
+      fetchWaitlistEntries();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update status',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const exportWaitlist = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('email, full_name, user_type, verification_status, is_verified, created_at, last_sign_in_at')
+        .from('waitlist')
+        .select('email, first_name, last_name, phone_number, interested_in, referral_source, status, created_at')
         .csv();
 
       if (error) throw error;
@@ -105,7 +124,7 @@ export default function AdminWaitlist() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `waitlist_export_${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -113,46 +132,35 @@ export default function AdminWaitlist() {
 
       toast({
         title: 'Export successful',
-        description: 'Users data has been exported to CSV',
+        description: 'Waitlist data has been exported to CSV',
       });
     } catch (error) {
-      console.error('Error exporting users:', error);
+      console.error('Error exporting waitlist:', error);
       toast({
         title: 'Export failed',
-        description: 'Failed to export users data',
+        description: 'Failed to export waitlist data',
         variant: 'destructive'
       });
     }
   };
 
-  const getStatusBadge = (user: User) => {
-    if (!user.is_active) {
-      return <Badge variant="destructive">Inactive</Badge>;
-    }
-    if (user.is_verified) {
-      return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
-    }
-    return <Badge className="bg-yellow-100 text-yellow-800">Unverified</Badge>;
-  };
-
-  const getUserTypeBadge = (userType?: string) => {
-    const typeColors: Record<string, string> = {
-      admin: 'bg-purple-100 text-purple-800',
-      agent: 'bg-blue-100 text-blue-800',
-      landowner: 'bg-green-100 text-green-800',
-      investor: 'bg-orange-100 text-orange-800',
-      verifier: 'bg-cyan-100 text-cyan-800'
+  const getStatusBadge = (status: string) => {
+    const statusColors: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      approved: 'bg-green-100 text-green-800',
+      rejected: 'bg-red-100 text-red-800',
+      contacted: 'bg-blue-100 text-blue-800'
     };
 
     return (
-      <Badge className={typeColors[userType || ''] || 'bg-gray-100 text-gray-800'}>
-        {userType || 'Unknown'}
+      <Badge className={statusColors[status] || 'bg-gray-100 text-gray-800'}>
+        {status}
       </Badge>
     );
   };
 
   if (loading) {
-    return <LoadingSpinner text="Loading users..." />;
+    return <LoadingSpinner text="Loading waitlist..." />;
   }
 
   return (
@@ -165,22 +173,22 @@ export default function AdminWaitlist() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">User Management</h1>
-          <p className="text-gray-600">View and manage all platform users</p>
+          <h1 className="text-2xl font-bold">Waitlist Management</h1>
+          <p className="text-gray-600">View and manage waitlist entries</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Platform Users</span>
-            <Button onClick={exportUsers} variant="outline">
+            <span>Waitlist Entries</span>
+            <Button onClick={exportWaitlist} variant="outline">
               <Download size={16} className="mr-2" />
               Export CSV
             </Button>
           </CardTitle>
           <CardDescription>
-            All registered users with filtering and search options
+            All waitlist entries with filtering and search options
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -202,24 +210,24 @@ export default function AdminWaitlist() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="verified">Verified</SelectItem>
-                <SelectItem value="unverified">Unverified</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="User Type" />
+                <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="landowner">Landowner</SelectItem>
-                <SelectItem value="investor">Investor</SelectItem>
-                <SelectItem value="agent">Agent</SelectItem>
-                <SelectItem value="verifier">Verifier</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="website">Website</SelectItem>
+                <SelectItem value="social_media">Social Media</SelectItem>
+                <SelectItem value="referral">Referral</SelectItem>
+                <SelectItem value="advertisement">Advertisement</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -230,27 +238,46 @@ export default function AdminWaitlist() {
                 <TableRow>
                   <TableHead>Email</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Interested In</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead>Last Sign In</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{user.full_name || 'Not provided'}</TableCell>
-                    <TableCell>{getUserTypeBadge(user.user_type)}</TableCell>
-                    <TableCell>{getStatusBadge(user)}</TableCell>
+                {waitlistEntries.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">{entry.email}</TableCell>
                     <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {entry.first_name || entry.last_name 
+                        ? `${entry.first_name || ''} ${entry.last_name || ''}`.trim()
+                        : 'Not provided'
+                      }
+                    </TableCell>
+                    <TableCell>{entry.phone_number || 'Not provided'}</TableCell>
+                    <TableCell>{entry.interested_in || 'Not specified'}</TableCell>
+                    <TableCell>{entry.referral_source || 'Not specified'}</TableCell>
+                    <TableCell>{getStatusBadge(entry.status)}</TableCell>
+                    <TableCell>
+                      {new Date(entry.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      {user.last_sign_in_at 
-                        ? new Date(user.last_sign_in_at).toLocaleDateString()
-                        : 'Never'
-                      }
+                      <Select 
+                        value={entry.status} 
+                        onValueChange={(value) => updateStatus(entry.id, value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -306,7 +333,7 @@ export default function AdminWaitlist() {
           )}
 
           <div className="mt-4 text-sm text-gray-600">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, users.length)} of {users.length} users
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, waitlistEntries.length)} of {waitlistEntries.length} entries
           </div>
         </CardContent>
       </Card>
