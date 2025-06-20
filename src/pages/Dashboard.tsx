@@ -1,19 +1,18 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Dashboard } from '@/components/dashboard/Dashboard';
-import { MarketOverview } from '@/components/dashboard/MarketOverview';
-import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
-import { NotificationsList } from '@/components/notifications/NotificationsList';
-import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
-import { FeaturedPropertiesTab } from '@/components/dashboard/FeaturedPropertiesTab';
+import { useState, useEffect } from "react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Dashboard } from "@/components/dashboard/Dashboard";
+import { MarketOverview } from "@/components/dashboard/MarketOverview";
+import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { NotificationsList } from "@/components/notifications/NotificationsList";
+import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
+import { FeaturedPropertiesTab } from "@/components/dashboard/FeaturedPropertiesTab";
 
 const DashboardPage = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [dashboardLoading, setDashboardLoading] = useState(true);
 
   // Simulate initial dashboard loading
@@ -34,12 +33,16 @@ const DashboardPage = () => {
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       <DashboardHeader />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
         <TabsContent value="overview" className="space-y-6">
           <Dashboard />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <RecentTransactions />
             <NotificationsList />
           </div>
@@ -54,7 +57,7 @@ const DashboardPage = () => {
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
-          <FeaturedPropertiesTab isActive={activeTab === 'properties'} />
+          <FeaturedPropertiesTab isActive={activeTab === "properties"} />
         </TabsContent>
       </Tabs>
     </div>
