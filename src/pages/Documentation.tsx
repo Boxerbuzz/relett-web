@@ -147,7 +147,7 @@ const Documentation = () => {
                 </div>
                 <div className="prose max-w-none">
                   <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                    Terra Vault is built on a modern, scalable architecture using React, TypeScript, Supabase, 
+                    Relett is built on a modern, scalable architecture using React, TypeScript, Supabase, 
                     and the Hedera blockchain network. This documentation provides comprehensive technical details 
                     for developers working with our platform.
                   </p>
@@ -396,7 +396,7 @@ const Documentation = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Company Info */}
               <div className="space-y-4">
-                <h3 className="text-xl font-bold">Terra Vault</h3>
+                <h3 className="text-xl font-bold">Relett</h3>
                 <p className="text-gray-400 text-sm">
                   Revolutionary property tokenization platform making real estate investment accessible to everyone.
                 </p>
@@ -455,7 +455,7 @@ const Documentation = () => {
             {/* Bottom footer */}
             <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
               <div className="mb-4 md:mb-0">
-                <p>&copy; 2024 Terra Vault. All rights reserved.</p>
+                <p>&copy; 2024 Relett. All rights reserved.</p>
               </div>
               <div className="flex space-x-6">
                 <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>

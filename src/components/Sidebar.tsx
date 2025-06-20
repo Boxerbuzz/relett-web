@@ -122,7 +122,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       {/* Header */}
       <div className="p-6 border-b h-16 flex items-center flex-shrink-0">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Terra Vault</h2>
+          <h2 className="text-xl font-bold text-gray-900">Relett</h2>
           <p className="text-sm text-gray-500">Land Tokenization</p>
         </div>
       </div>

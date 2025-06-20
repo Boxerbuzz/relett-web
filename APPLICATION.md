@@ -1,7 +1,7 @@
-# Terra Vault Platform Analysis
+# Relett Platform Analysis
 
 ## Platform Overview
-Terra Vault is a comprehensive property tokenization platform that allows users to buy, sell, and invest in real estate through blockchain technology, specifically using Hedera Hashgraph for tokenization and file storage.
+Relett is a comprehensive property tokenization platform that allows users to buy, sell, and invest in real estate through blockchain technology, specifically using Hedera Hashgraph for tokenization and file storage.
 
 ## 1. Application Architecture
 
@@ -344,4 +344,4 @@ App.tsx → AuthProvider → Layout → Protected Routes
 - ❌ Monitoring service (Sentry)
 
 ## Conclusion
-Terra Vault is a sophisticated property tokenization platform with a solid foundation. The core architecture is well-designed with comprehensive user management, property handling, and blockchain integration. However, several critical infrastructure pieces need completion, particularly around security (RLS policies), storage (file buckets), and real-time features. The platform is approximately 75% complete with most business logic implemented but lacking production-ready infrastructure and some integrations.
+Relett is a sophisticated property tokenization platform with a solid foundation. The core architecture is well-designed with comprehensive user management, property handling, and blockchain integration. However, several critical infrastructure pieces need completion, particularly around security (RLS policies), storage (file buckets), and real-time features. The platform is approximately 75% complete with most business logic implemented but lacking production-ready infrastructure and some integrations.

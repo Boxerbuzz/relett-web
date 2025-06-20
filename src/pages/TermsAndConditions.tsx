@@ -146,13 +146,13 @@ const TermsAndConditions = () => {
                   </div>
                   <div className="prose max-w-none">
                     <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                      Welcome to Terra Vault, a comprehensive property tokenization and real estate investment platform. 
+                      Welcome to Relett, a comprehensive property tokenization and real estate investment platform. 
                       By accessing or using our services, you agree to be bound by these Terms and Conditions.
                     </p>
                     <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-6">
                       <h3 className="font-semibold text-blue-900 mb-3">Important Notice</h3>
                       <p className="text-blue-800 mb-3">
-                        These terms constitute a legally binding agreement between you and Terra Vault Limited. 
+                        These terms constitute a legally binding agreement between you and Relett Limited. 
                         Please read them carefully before using our platform.
                       </p>
                       <ul className="space-y-2 text-blue-700">
@@ -184,7 +184,7 @@ const TermsAndConditions = () => {
                       {[
                         {
                           term: "Platform",
-                          definition: "Terra Vault's web application, mobile applications, APIs, and all related services"
+                          definition: "Relett's web application, mobile applications, APIs, and all related services"
                         },
                         {
                           term: "User",
@@ -252,7 +252,7 @@ const TermsAndConditions = () => {
                   </div>
                   <div className="space-y-6">
                     <p className="text-gray-700 leading-relaxed">
-                      Terra Vault provides a comprehensive suite of real estate technology services designed to 
+                      Relett provides a comprehensive suite of real estate technology services designed to 
                       democratize property investment and streamline real estate transactions.
                     </p>
                     
@@ -616,7 +616,7 @@ const TermsAndConditions = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold">Terra Vault</h3>
+              <h3 className="text-xl font-bold">Relett</h3>
               <p className="text-gray-400 text-sm">
                 Revolutionary property tokenization platform making real estate investment accessible to everyone.
               </p>
@@ -675,7 +675,7 @@ const TermsAndConditions = () => {
           {/* Bottom footer */}
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
             <div className="mb-4 md:mb-0">
-              <p>&copy; 2024 Terra Vault. All rights reserved.</p>
+              <p>&copy; 2024 Relett. All rights reserved.</p>
             </div>
             <div className="flex space-x-6">
               <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>

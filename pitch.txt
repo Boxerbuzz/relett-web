@@ -1,5 +1,5 @@
 Slide 1: Title Slide
-Terra Vault
+Relett
 The Complete PropTech Ecosystem
 
 Redefining real estate with AI, blockchain, and community-driven investment.
@@ -15,7 +15,7 @@ Fragmented tools for property managers, investors, and renters
 
 Little innovation in property discovery, valuation, or management
 
-Slide 3: The Solution – Terra Vault
+Slide 3: The Solution – Relett
 A Unified PropTech Ecosystem
 
 End-to-end platform for property listing, investing, managing, and trading
@@ -35,7 +35,7 @@ A Vertical Stack That Powers the Real Estate Economy
 🌐 Hedera-based Blockchain Infrastructure
 
 Slide 5: How It Works
-Property Lifecycle on Terra Vault
+Property Lifecycle on Relett
 
 List & Verify
 
@@ -52,7 +52,7 @@ Track Everything with Analytics
 (Use a clean flow diagram)
 
 Slide 6: Unique Differentiators
-Why Terra Vault is Special
+Why Relett is Special
 
 AI-Powered Property Agents
 
