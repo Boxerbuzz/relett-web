@@ -1,6 +1,17 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { Tables } from "../../../src/integrations/supabase/types.ts";
+
+// Local type definition for the user data we expect
+interface UserData {
+  id: string;
+  email?: string;
+  created_at: string;
+  first_name?: string;
+  last_name?: string;
+  user_type?: string;
+  phone?: string;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +30,7 @@ serve(async (req) => {
   }
 
   try {
-    const userData: Tables<"users"> = await req.json();
+    const userData: UserData = await req.json();
 
     console.log("Processing new user creation:", userData.id);
 
