@@ -40,80 +40,187 @@ serve(async (req) => {
 
     const transaction = paystackData.data
 
-    // Find the payment session
-    const { data: paymentSession, error: sessionError } = await supabaseClient
-      .from('payment_sessions')
+    // Find the payment record
+    const { data: payment, error: paymentError } = await supabaseClient
+      .from('payments')
       .select('*')
-      .eq('session_id', reference)
+      .eq('reference', reference)
       .single()
 
-    if (sessionError || !paymentSession) {
-      throw new Error('Payment session not found')
+    if (paymentError || !payment) {
+      throw new Error('Payment record not found')
     }
 
-    // Update payment session status
+    // Update payment status
     const { error: updateError } = await supabaseClient
-      .from('payment_sessions')
+      .from('payments')
       .update({
         status: transaction.status === 'success' ? 'completed' : 'failed',
-        completed_at: new Date().toISOString(),
+        paid_at: new Date().toISOString(),
         metadata: {
-          ...paymentSession.metadata,
+          ...payment.metadata,
           paystack_transaction: transaction
         }
       })
-      .eq('id', paymentSession.id)
+      .eq('id', payment.id)
 
     if (updateError) throw updateError
 
     if (transaction.status === 'success') {
-      // Create payment record
-      const { error: paymentError } = await supabaseClient
-        .from('payments')
-        .insert({
-          user_id: paymentSession.user_id,
-          reference: reference,
-          amount: transaction.amount / 100, // Convert from kobo
-          currency: transaction.currency,
-          status: 'completed',
-          method: 'card',
-          provider: 'paystack',
-          type: 'payment',
-          related_type: paymentSession.purpose,
-          related_id: paymentSession.user_id,
-          paid_at: new Date().toISOString(),
-          metadata: {
-            paystack_transaction: transaction,
-            session_id: paymentSession.id
-          }
-        })
+      // Process based on payment type
+      if (payment.related_type === 'rentals') {
+        // Update rental status
+        const { error: rentalError } = await supabaseClient
+          .from('rentals')
+          .update({
+            payment_status: 'paid',
+            status: 'confirmed'
+          })
+          .eq('id', payment.related_id)
 
-      if (paymentError) throw paymentError
+        if (rentalError) throw rentalError
 
-      // Update user account balance if needed
-      if (paymentSession.purpose === 'wallet_topup') {
+        // Get rental details for agent commission
+        const { data: rental } = await supabaseClient
+          .from('rentals')
+          .select(`
+            *,
+            property:properties(user_id, title)
+          `)
+          .eq('id', payment.related_id)
+          .single()
+
+        if (rental?.property?.user_id) {
+          // Calculate agent commission (90% to agent, 10% platform fee)
+          const agentAmount = Math.round((transaction.amount / 100) * 0.9 * 100) // Convert back to kobo
+          
+          // Credit agent account
+          await supabaseClient
+            .from('accounts')
+            .upsert({
+              user_id: rental.property.user_id,
+              type: 'main',
+              currency: 'NGN',
+              amount: agentAmount,
+              status: 'active'
+            }, {
+              onConflict: 'user_id,type',
+              ignoreDuplicates: false
+            })
+
+          // Update existing account if it exists
+          await supabaseClient.rpc('update_agent_balance', {
+            agent_id: rental.property.user_id,
+            amount: agentAmount
+          })
+
+          // Notify agent
+          await supabaseClient.functions.invoke('process-notification', {
+            body: {
+              user_id: rental.property.user_id,
+              type: 'payment',
+              title: 'Payment Received',
+              message: `You received ₦${(agentAmount / 100).toLocaleString()} for rental of ${rental.property.title}`,
+              metadata: {
+                amount: agentAmount / 100,
+                currency: 'NGN',
+                rental_id: rental.id
+              }
+            }
+          })
+        }
+
+      } else if (payment.related_type === 'reservations') {
+        // Update reservation status
+        const { error: reservationError } = await supabaseClient
+          .from('reservations')
+          .update({
+            status: 'confirmed'
+          })
+          .eq('id', payment.related_id)
+
+        if (reservationError) throw reservationError
+
+        // Get reservation details for agent commission
+        const { data: reservation } = await supabaseClient
+          .from('reservations')
+          .select(`
+            *,
+            property:properties(user_id, title)
+          `)
+          .eq('id', payment.related_id)
+          .single()
+
+        if (reservation?.property?.user_id) {
+          // Calculate agent commission (90% to agent, 10% platform fee)
+          const agentAmount = Math.round((transaction.amount / 100) * 0.9 * 100) // Convert back to kobo
+          
+          // Credit agent account
+          await supabaseClient
+            .from('accounts')
+            .upsert({
+              user_id: reservation.property.user_id,
+              type: 'main',
+              currency: 'NGN',
+              amount: agentAmount,
+              status: 'active'
+            }, {
+              onConflict: 'user_id,type',
+              ignoreDuplicates: false
+            })
+
+          // Update existing account if it exists
+          await supabaseClient.rpc('update_agent_balance', {
+            agent_id: reservation.property.user_id,
+            amount: agentAmount
+          })
+
+          // Notify agent
+          await supabaseClient.functions.invoke('process-notification', {
+            body: {
+              user_id: reservation.property.user_id,
+              type: 'payment',
+              title: 'Payment Received',
+              message: `You received ₦${(agentAmount / 100).toLocaleString()} for reservation of ${reservation.property.title}`,
+              metadata: {
+                amount: agentAmount / 100,
+                currency: 'NGN',
+                reservation_id: reservation.id
+              }
+            }
+          })
+        }
+
+      } else if (payment.related_type === 'wallet_topup') {
+        // Update user account balance
         const { error: accountError } = await supabaseClient
           .from('accounts')
-          .update({
-            amount: supabaseClient.raw('amount + ?', [transaction.amount / 100])
+          .upsert({
+            user_id: payment.user_id,
+            type: 'wallet',
+            currency: 'NGN',
+            amount: transaction.amount,
+            status: 'active'
+          }, {
+            onConflict: 'user_id,type',
+            ignoreDuplicates: false
           })
-          .eq('user_id', paymentSession.user_id)
-          .eq('type', 'wallet')
 
         if (accountError) throw accountError
       }
 
-      // Send success notification
+      // Send success notification to user
       await supabaseClient.functions.invoke('process-notification', {
         body: {
-          user_id: paymentSession.user_id,
+          user_id: payment.user_id,
           type: 'payment',
           title: 'Payment Successful',
-          message: `Your payment of ${transaction.currency} ${(transaction.amount / 100).toLocaleString()} has been processed successfully.`,
+          message: `Your payment of ₦${(transaction.amount / 100).toLocaleString()} has been processed successfully.`,
           metadata: {
             amount: transaction.amount / 100,
             currency: transaction.currency,
-            reference: reference
+            reference: reference,
+            type: payment.related_type
           }
         }
       })

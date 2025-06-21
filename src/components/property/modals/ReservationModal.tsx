@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { paystackService } from '@/lib/paystack';
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,14 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  const calculateTotal = () => {
+    const fromDate = form.watch('from_date');
+    const toDate = form.watch('to_date');
+    const nights = calculateNights(fromDate, toDate);
+    const basePrice = property?.price?.amount || 0;
+    return basePrice * nights;
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
       toast({
@@ -81,8 +90,11 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
       const nights = calculateNights(values.from_date, values.to_date);
       const basePrice = property?.price?.amount || 0;
       const total = basePrice * nights;
+      const serviceFee = Math.round(total * 0.1); // 10% service fee
+      const finalTotal = total + serviceFee;
 
-      const { error } = await supabase
+      // Create reservation record first
+      const { data: reservation, error: reservationError } = await supabase
         .from('reservations')
         .insert({
           user_id: user.id,
@@ -94,20 +106,95 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
           adults: values.adults,
           children: values.children || 0,
           infants: values.infants || 0,
-          total,
+          total: finalTotal,
+          fee: serviceFee,
           note: values.note,
           status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (reservationError) throw reservationError;
+
+      // Generate payment reference
+      const paymentReference = `reservation_${reservation.id}_${Date.now()}`;
+
+      // Create payment record
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          amount: Math.round(finalTotal * 100), // Convert to kobo
+          currency: 'NGN',
+          type: 'reservation',
+          property_id: property.id,
+          related_id: reservation.id,
+          related_type: 'reservations',
+          status: 'pending',
+          method: 'card',
+          provider: 'paystack',
+          reference: paymentReference,
+          metadata: {
+            reservation_id: reservation.id,
+            property_title: property.title,
+            check_in: values.from_date,
+            check_out: values.to_date,
+            nights,
+            guests: {
+              adults: values.adults,
+              children: values.children || 0,
+              infants: values.infants || 0
+            }
+          }
         });
 
-      if (error) throw error;
+      if (paymentError) throw paymentError;
 
-      toast({
-        title: 'Reservation Submitted',
-        description: 'Your reservation request has been sent to the property owner'
+      // Initialize Paystack payment
+      if (!paystackService.isConfigured()) {
+        toast({
+          title: 'Payment Configuration Error',
+          description: 'Payment system is not properly configured',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      await paystackService.initializePayment({
+        amount: finalTotal,
+        email: user.email!,
+        reference: paymentReference,
+        metadata: {
+          user_id: user.id,
+          reservation_id: reservation.id,
+          property_id: property.id,
+          type: 'reservation'
+        },
+        onSuccess: (transaction) => {
+          toast({
+            title: 'Payment Successful',
+            description: 'Your reservation has been confirmed!'
+          });
+          form.reset();
+          onOpenChange(false);
+        },
+        onCancel: () => {
+          toast({
+            title: 'Payment Cancelled',
+            description: 'Your reservation payment was cancelled',
+            variant: 'destructive'
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: 'Payment Error',
+            description: 'There was an error processing your payment',
+            variant: 'destructive'
+          });
+          console.error('Payment error:', error);
+        }
       });
 
-      form.reset();
-      onOpenChange(false);
     } catch (error) {
       console.error('Error submitting reservation:', error);
       toast({
@@ -123,6 +210,9 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
   const watchedFromDate = form.watch('from_date');
   const watchedToDate = form.watch('to_date');
   const nights = calculateNights(watchedFromDate, watchedToDate);
+  const total = calculateTotal();
+  const serviceFee = Math.round(total * 0.1);
+  const finalTotal = total + serviceFee;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -248,6 +338,25 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
               )}
             />
 
+            {nights > 0 && (
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>₦{property?.price?.amount?.toLocaleString()} × {nights} nights</span>
+                  <span>₦{total.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Service fee</span>
+                  <span>₦{serviceFee.toLocaleString()}</span>
+                </div>
+                <div className="border-t pt-2">
+                  <div className="flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₦{finalTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
@@ -257,8 +366,8 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Submitting...' : 'Submit Reservation'}
+              <Button type="submit" disabled={loading || nights === 0}>
+                {loading ? 'Processing...' : 'Pay & Reserve'}
               </Button>
             </div>
           </form>

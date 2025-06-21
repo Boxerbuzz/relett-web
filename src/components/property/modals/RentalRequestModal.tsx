@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { paystackService } from '@/lib/paystack';
 import {
   Dialog,
   DialogContent,
@@ -71,7 +72,25 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      // Calculate rental amount based on property price and payment plan
+      const basePrice = property?.price?.amount || 0;
+      let rentalAmount = basePrice;
+      
+      // Adjust amount based on payment plan
+      switch (values.payment_plan) {
+        case 'monthly':
+          rentalAmount = basePrice;
+          break;
+        case 'quarterly':
+          rentalAmount = basePrice * 3;
+          break;
+        case 'annually':
+          rentalAmount = basePrice * 12;
+          break;
+      }
+
+      // Create rental record first
+      const { data: rental, error: rentalError } = await supabase
         .from('rentals')
         .insert({
           user_id: user.id,
@@ -80,19 +99,88 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
           payment_plan: values.payment_plan,
           move_in_date: values.move_in_date,
           message: values.message,
+          price: rentalAmount,
           status: 'pending',
           payment_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (rentalError) throw rentalError;
+
+      // Generate payment reference
+      const paymentReference = `rental_${rental.id}_${Date.now()}`;
+
+      // Create payment record
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          amount: Math.round(rentalAmount * 100), // Convert to kobo
+          currency: 'NGN',
+          type: 'rental',
+          property_id: property.id,
+          related_id: rental.id,
+          related_type: 'rentals',
+          status: 'pending',
+          method: 'card',
+          provider: 'paystack',
+          reference: paymentReference,
+          metadata: {
+            rental_id: rental.id,
+            property_title: property.title,
+            payment_plan: values.payment_plan,
+            move_in_date: values.move_in_date
+          }
         });
 
-      if (error) throw error;
+      if (paymentError) throw paymentError;
 
-      toast({
-        title: 'Rental Request Submitted',
-        description: 'Your rental request has been sent to the property owner'
+      // Initialize Paystack payment
+      if (!paystackService.isConfigured()) {
+        toast({
+          title: 'Payment Configuration Error',
+          description: 'Payment system is not properly configured',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      await paystackService.initializePayment({
+        amount: rentalAmount,
+        email: user.email!,
+        reference: paymentReference,
+        metadata: {
+          user_id: user.id,
+          rental_id: rental.id,
+          property_id: property.id,
+          type: 'rental'
+        },
+        onSuccess: (transaction) => {
+          toast({
+            title: 'Payment Successful',
+            description: 'Your rental payment has been processed successfully'
+          });
+          form.reset();
+          onOpenChange(false);
+        },
+        onCancel: () => {
+          toast({
+            title: 'Payment Cancelled',
+            description: 'Your payment was cancelled',
+            variant: 'destructive'
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: 'Payment Error',
+            description: 'There was an error processing your payment',
+            variant: 'destructive'
+          });
+          console.error('Payment error:', error);
+        }
       });
 
-      form.reset();
-      onOpenChange(false);
     } catch (error) {
       console.error('Error submitting rental request:', error);
       toast({
@@ -102,6 +190,22 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateAmount = () => {
+    const basePrice = property?.price?.amount || 0;
+    const paymentPlan = form.watch('payment_plan');
+    
+    switch (paymentPlan) {
+      case 'monthly':
+        return basePrice;
+      case 'quarterly':
+        return basePrice * 3;
+      case 'annually':
+        return basePrice * 12;
+      default:
+        return basePrice;
     }
   };
 
@@ -171,6 +275,18 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
               )}
             />
 
+            {form.watch('payment_plan') && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm font-medium">Payment Amount</div>
+                <div className="text-lg font-bold text-primary">
+                  ₦{calculateAmount().toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600">
+                  {form.watch('payment_plan')} payment
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
@@ -181,7 +297,7 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Submitting...' : 'Submit Request'}
+                {loading ? 'Processing...' : 'Pay & Submit Request'}
               </Button>
             </div>
           </form>
