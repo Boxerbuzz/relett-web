@@ -211,15 +211,8 @@ export function ProfileWizard({ onComplete }: ProfileWizardProps) {
           state_of_origin: formData.state_of_origin,
           lga: formData.lga,
           middle_name: formData.middle_name,
-          address: {
-            city: formData.address.city,
-            state: formData.address.state,
-            landmark: formData.address.landmark,
-            latitude: formData.address.latitude,
-            longitude: formData.address.longitude,
-            addressLine1: formData.address.addressLine1,
-            addressLine2: formData.address.addressLine2,
-          },
+          // Ensure address is stored as a proper JSON object
+          address: formData.address as any,
         })
         .eq("id", user?.id);
 

@@ -15,6 +15,11 @@ import { InspectionModal } from '@/components/property/modals/InspectionModal';
 import { OfferModal } from '@/components/property/modals/OfferModal';
 import { useToast } from '@/hooks/use-toast';
 
+interface PropertyImage {
+  url: string;
+  is_primary: boolean;
+}
+
 interface PropertyData {
   id: string;
   title: string;
@@ -26,10 +31,7 @@ interface PropertyData {
   amenities: string[];
   features: string[];
   status: string;
-  property_images: Array<{
-    url: string;
-    is_primary: boolean;
-  }>;
+  property_images: PropertyImage[];
   user_id: string;
 }
 
@@ -63,19 +65,27 @@ export default function PropertyDetails() {
     try {
       setLoading(true);
       
-      // Fetch property details
+      // Fetch property details with proper error handling for relations
       const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
         .select(`
           *,
-          property_images (url, is_primary)
+          property_images!inner (url, is_primary)
         `)
         .eq('id', id)
         .single();
 
       if (propertyError) throw propertyError;
 
-      setProperty(propertyData);
+      // Ensure property_images is always an array
+      const processedPropertyData: PropertyData = {
+        ...propertyData,
+        property_images: Array.isArray(propertyData.property_images) 
+          ? propertyData.property_images 
+          : []
+      };
+
+      setProperty(processedPropertyData);
 
       // Fetch agent details
       const { data: agentData, error: agentError } = await supabase
