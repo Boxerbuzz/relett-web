@@ -4108,7 +4108,7 @@ export type Database = {
       }
       users: {
         Row: {
-          address: Json | null
+          address: string | null
           avatar: string | null
           bio: string | null
           city: string | null
@@ -4141,7 +4141,7 @@ export type Database = {
             | null
         }
         Insert: {
-          address?: Json | null
+          address?: string | null
           avatar?: string | null
           bio?: string | null
           city?: string | null
@@ -4174,7 +4174,7 @@ export type Database = {
             | null
         }
         Update: {
-          address?: Json | null
+          address?: string | null
           avatar?: string | null
           bio?: string | null
           city?: string | null
@@ -4667,7 +4667,7 @@ export type Database = {
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
-          address: Json | null
+          address: string | null
           avatar: string | null
           bio: string | null
           city: string | null
@@ -4835,7 +4835,13 @@ export type Database = {
         | "cancelled"
         | "disputed"
       agreement_type: "sale" | "lease" | "transfer" | "mortgage" | "easement"
-      app_role: "admin" | "landowner" | "verifier" | "agent" | "investor"
+      app_role:
+        | "admin"
+        | "landowner"
+        | "verifier"
+        | "agent"
+        | "investor"
+        | "user"
       compliance_status: "compliant" | "non_compliant" | "pending" | "expired"
       compliance_type:
         | "tax_payment"
@@ -5015,7 +5021,7 @@ export const Constants = {
         "disputed",
       ],
       agreement_type: ["sale", "lease", "transfer", "mortgage", "easement"],
-      app_role: ["admin", "landowner", "verifier", "agent", "investor"],
+      app_role: ["admin", "landowner", "verifier", "agent", "investor", "user"],
       compliance_status: ["compliant", "non_compliant", "pending", "expired"],
       compliance_type: [
         "tax_payment",

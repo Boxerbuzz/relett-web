@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -39,6 +40,8 @@ import DatabaseDocumentation from "@/pages/DatabaseDocumentation";
 import DatabaseSchema from "@/pages/DatabaseSchema";
 import DataFlow from "@/pages/DataFlow";
 import AddProperty from "@/pages/AddProperty";
+import PropertyDetails from "@/pages/PropertyDetails";
+import UserBookings from "@/pages/UserBookings";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 

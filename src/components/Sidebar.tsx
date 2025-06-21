@@ -44,6 +44,7 @@ const mainNavigation = [
   { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent'] },
 ];
 
