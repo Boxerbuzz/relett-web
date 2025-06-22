@@ -33,7 +33,7 @@ interface Property {
 
 // Extended interface for dialog components
 interface PropertyForDialog {
-  id: number;
+  id: string;
   title: string;
   location: string;
   size: string;
@@ -164,7 +164,7 @@ const MyProperty = () => {
   const handleViewDetails = (property: Property) => {
     // Transform Property to PropertyForDialog
     const propertyForDialog: PropertyForDialog = {
-      id: parseInt(property.id.slice(-8), 16), // Convert string ID to number for dialog
+      id: property.id,
       title: property.title,
       location: getLocationString(property.location),
       size: getPropertySize(property.specification),

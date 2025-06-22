@@ -81,6 +81,8 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
     }
   }, [open, propertyId]);
 
+  console.log(propertyId);
+
   const fetchPropertyDetails = async () => {
     try {
       setLoading(true);
@@ -89,11 +91,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
         .from('properties')
         .select(`
           *,
-          tokenized_properties (
-            token_price,
-            total_supply,
-            expected_roi
-          ),
+          tokenized_properties:tokenized_properties_property_id_fkey(*),
           property_images (
             url,
             is_primary
@@ -101,6 +99,8 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
         `)
         .eq('id', propertyId)
         .maybeSingle();
+
+        ///https://wossuijahchhtjzphsgh.supabase.co/rest/v1/properties?select=*%2Ctokenized_properties%3Atokenized_properties_property_id_fkey%28*%29%2Cproperty_images%28url%2Cis_primary%29&id=eq.134994583
 
       if (error) throw error;
       if (data) {
