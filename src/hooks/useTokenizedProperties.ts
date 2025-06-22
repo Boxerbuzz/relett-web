@@ -75,7 +75,7 @@ export function useTokenizedProperties() {
           *,
           tokenized_properties!token_holdings_tokenized_property_id_fkey (
             *,
-            properties!tokenized_properties_property_id_fkey (
+            properties!properties_tokenized_property_id_fkey (
               id,
               title,
               location,
