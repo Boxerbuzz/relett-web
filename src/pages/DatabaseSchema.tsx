@@ -1,5 +1,5 @@
 
-import { DatabaseDocumentation } from '@/pages/DatabaseDocumentation';
+import DatabaseDocumentation from '@/pages/DatabaseDocumentation';
 
 // Redirect to the unified database documentation page
 const DatabaseSchema = () => {

@@ -1,7 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FlowContainer } from '@/components/flows/FlowContainer';
+import { getFlowData } from '@/lib/flowData';
 import { 
   GitBranch, 
   Database, 
@@ -48,7 +48,10 @@ const DataFlow = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[700px] border rounded-lg">
-                  <FlowContainer flowType="system-architecture" />
+                  <FlowContainer 
+                    {...getFlowData('system-architecture')}
+                    title="System Architecture"
+                  />
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="p-4 bg-blue-50 rounded-lg">
@@ -81,7 +84,10 @@ const DataFlow = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[700px] border rounded-lg">
-                  <FlowContainer flowType="user-journey" />
+                  <FlowContainer 
+                    {...getFlowData('user-journey')}
+                    title="User Journey"
+                  />
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-semibold mb-2">Key User Flows:</h4>
@@ -109,7 +115,10 @@ const DataFlow = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[700px] border rounded-lg">
-                  <FlowContainer flowType="property" />
+                  <FlowContainer 
+                    {...getFlowData('property')}
+                    title="Property Management"
+                  />
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="p-4 bg-orange-50 rounded-lg">
@@ -138,7 +147,10 @@ const DataFlow = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[700px] border rounded-lg">
-                  <FlowContainer flowType="financial" />
+                  <FlowContainer 
+                    {...getFlowData('financial')}
+                    title="Financial Flow"
+                  />
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="p-4 bg-red-50 rounded-lg">
@@ -171,7 +183,10 @@ const DataFlow = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[700px] border rounded-lg">
-                  <FlowContainer flowType="database" />
+                  <FlowContainer 
+                    {...getFlowData('database')}
+                    title="Database Schema"
+                  />
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-semibold mb-2">Database Architecture:</h4>

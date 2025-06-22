@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { FlowContainer } from '@/components/flows/FlowContainer';
 import { getDatabaseDomains, getTablesByDomain } from '@/lib/databaseSchema';
+import { getFlowData } from '@/lib/flowData';
 import { 
   Database, 
   Table, 
@@ -173,7 +174,10 @@ const DatabaseDocumentation = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[800px] border rounded-lg">
-                  <FlowContainer flowType="database" />
+                  <FlowContainer 
+                    {...getFlowData('database')}
+                    title="Database Schema"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -306,7 +310,10 @@ const DatabaseDocumentation = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-[600px] border rounded-lg">
-                  <FlowContainer flowType="system-architecture" />
+                  <FlowContainer 
+                    {...getFlowData('system-architecture')}
+                    title="System Data Flow"
+                  />
                 </div>
               </CardContent>
             </Card>
