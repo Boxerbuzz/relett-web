@@ -4,7 +4,7 @@ import { Node } from '@xyflow/react';
 const schemaMarkdown = `
 #### 🏠 Property Management Core
 properties - Main property listings with details, pricing, location
-property_images - Property photos and media
+property_images - Property photos and media gallery
 property_documents - Legal documents, certificates, deeds
 property_valuations - AI and professional property valuations
 property_creation_workflows - Multi-step property creation process tracking
@@ -15,7 +15,7 @@ property_reviews - User reviews and ratings for properties
 property_inquiries - Contact requests and inquiries for properties
 
 #### 🏛️ Land Registry & Legal
-land_titles - Official land ownership records
+land_titles - Official land ownership records and titles
 legal_agreements - Contracts, leases, sale agreements
 compliance_records - Tax, permits, regulatory compliance
 compliance_reports - Regulatory reporting for authorities
@@ -23,51 +23,49 @@ document_verification_requests - Document review queue for verifiers
 
 #### 🪙 Tokenization & Investment
 tokenized_properties - Properties converted to digital tokens
-token_holdings - Individual investor token ownership
+token_holdings - Individual investor token ownership records
 token_transactions - Token buying/selling/transfer records
 revenue_distributions - Dividend payments to token holders
-dividend_payments - Individual payment records
+dividend_payments - Individual payment records to investors
 investment_tracking - Portfolio performance tracking
 investment_groups - Collaborative investment pools
 investment_discussions - Group chat for investors
 investment_analytics - Performance metrics and insights
-auction_listings - Property auctions and bidding
+auction_listings - Property auctions and bidding system
+investment_polls - Investment group voting and polls
+poll_options - Available voting choices for polls
+poll_votes - Individual vote records for polls
 
 #### 👤 User Management & Authentication
-users - Core user profiles and basic info
+users - Core user profiles from Supabase Auth (referenced)
+accounts - User wallet balances and points system
 user_roles - Role assignments (admin, agent, investor, etc.)
-user_profiles - Extended user profile information
-user_devices - Device registration for security and notifications
-user_preferences - User settings and preferences
-identity_verifications - KYC identity verification
+identity_verifications - KYC identity verification records
 kyc_documents - Identity documents for verification
-verifier_credentials - Professional verifier licenses
 sanctions_screening - Government sanctions checking
+verifier_credentials - Professional verifier licenses
 
 #### 💰 Financial & Payment Systems
-accounts - User wallet balances and points
-payments - Transaction records
+payments - Transaction records for all payments
 payment_methods - Saved payment cards/methods
 payment_sessions - Active payment processing sessions
 escrow_accounts - Secure transaction holding accounts
-withdrawal_requests - Cash-out requests from users
-transaction_fees - Fee calculations and records
-wallets - Cryptocurrency wallet connections
-financial_reports - User investment reports
+financial_reports - User investment reports and analytics
 
 #### 🔐 Security & Compliance
 aml_checks - Anti-money laundering screening
-audit_trails - Complete activity logging
+audit_trails - Complete activity logging system
 identity_audit_logs - Identity verification audit trail
 backup_recovery - System backup management
-api_keys - API access management
+api_keys - API access management and rate limiting
 
 #### 💬 Communication & Chat
 conversations - Chat rooms and groups
-messages - Individual chat messages
+messages - Individual chat messages in conversations
+chat_messages - Alternative message storage system
 message_attachments - File sharing in chats
 message_reactions - Emoji reactions on messages
-typing_indicators - Real-time typing status
+conversation_contexts - AI conversation state management
 
 #### 🔔 Notifications & Alerts
 notifications - All user notifications
@@ -76,34 +74,27 @@ notification_deliveries - Delivery status tracking
 notification_templates - Pre-defined message templates
 system_notifications - Platform-wide announcements
 
-#### 🎯 User Interaction & Engagement
-saved_searches - Saved search criteria
-portfolio_allocations - Investment diversification targets
-
 #### 🏢 Business Operations
-inspections - Property inspection scheduling
+inspections - Property inspection scheduling and management
 rentals - Rental agreements and management
 reservations - Property viewing appointments
-feedbacks - User feedback and support
+feedbacks - User feedback and support tickets
 contacts_us - Contact form submissions
 
-#### 📈 Analytics & Reporting
+#### 📈 Analytics & AI
 market_analytics - Market trends and insights
+ai_property_valuations - AI-generated property valuations
 learning_patterns - AI learning and pattern recognition
 agent_interactions - AI agent conversation tracking
 agent_performance_metrics - Agent effectiveness metrics
-conversation_contexts - AI conversation state management
 
 #### 🌳 Environmental & Sustainability
+trees - Available trees for environmental donations
 tree_donations - Environmental contribution tracking
 
-#### 🤖 AI & Machine Learning
-ai_property_valuations - AI-generated property valuations
-
-#### 🗳️ Investment Polling System
-investment_polls - Investment group voting polls
-poll_options - Available voting choices
-poll_votes - Individual vote records
+#### 🎯 User Engagement
+saved_searches - Saved search criteria and alerts
+portfolio_allocations - Investment diversification targets
 
 #### 🔧 System & Infrastructure
 smart_contracts - Blockchain contract management
@@ -147,10 +138,10 @@ export function generateDatabaseNodes(): Node[] {
 
   const BORDER_PADDING = 50;
   const GROUP_PADDING = 20;
-  const NODE_WIDTH = 180;
-  const NODE_HEIGHT = 40;
-  const NODES_PER_ROW = 4;
-  const GROUP_VERTICAL_SPACING = 100;
+  const NODE_WIDTH = 200;
+  const NODE_HEIGHT = 45;
+  const NODES_PER_ROW = 3;
+  const GROUP_VERTICAL_SPACING = 120;
   
   let currentY = BORDER_PADDING;
 
@@ -158,14 +149,18 @@ export function generateDatabaseNodes(): Node[] {
     const tableCount = domain.tables.length;
     const numRows = Math.ceil(tableCount / NODES_PER_ROW);
     const groupWidth = (NODE_WIDTH + GROUP_PADDING) * Math.min(tableCount, NODES_PER_ROW) + GROUP_PADDING;
-    const groupHeight = numRows * (NODE_HEIGHT + GROUP_PADDING) + GROUP_PADDING;
+    const groupHeight = numRows * (NODE_HEIGHT + GROUP_PADDING) + GROUP_PADDING * 2;
 
     const groupId = `group-${domain.name.replace(/\s+/g, '-')}`;
     nodes.push({
       id: groupId,
       type: 'domain',
       position: { x: BORDER_PADDING, y: currentY },
-      data: { label: domain.name },
+      data: { 
+        label: domain.name,
+        tableCount: tableCount,
+        description: `${tableCount} tables in this domain`
+      },
       style: {
         width: groupWidth,
         height: groupHeight,
@@ -181,9 +176,13 @@ export function generateDatabaseNodes(): Node[] {
         type: 'table',
         position: {
           x: col * (NODE_WIDTH + GROUP_PADDING) + GROUP_PADDING,
-          y: row * (NODE_HEIGHT + GROUP_PADDING) + GROUP_PADDING * 2,
+          y: row * (NODE_HEIGHT + GROUP_PADDING) + GROUP_PADDING * 3,
         },
-        data: { label: table.name, description: table.description },
+        data: { 
+          label: table.name, 
+          description: table.description,
+          domain: domain.name
+        },
         parentId: groupId,
         extent: 'parent',
       });
@@ -193,4 +192,19 @@ export function generateDatabaseNodes(): Node[] {
   });
 
   return nodes;
+}
+
+export function getDatabaseDomains() {
+  return parseSchemaMarkdown(schemaMarkdown);
+}
+
+export function getTablesByDomain() {
+  const domains = parseSchemaMarkdown(schemaMarkdown);
+  const tablesByDomain: Record<string, any[]> = {};
+  
+  domains.forEach(domain => {
+    tablesByDomain[domain.name] = domain.tables;
+  });
+  
+  return tablesByDomain;
 }

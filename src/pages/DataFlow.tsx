@@ -1,177 +1,192 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { FlowSelector } from '@/components/flows/FlowSelector';
-import { UserJourneyFlow } from '@/components/flows/flows/UserJourneyFlow';
-import { SystemArchitectureFlow } from '@/components/flows/flows/SystemArchitectureFlow';
-import { PropertyFlow } from '@/components/flows/flows/PropertyFlow';
-import { FinancialFlow } from '@/components/flows/flows/FinancialFlow';
-import { DatabaseFlow } from '@/components/flows/flows/DatabaseFlow';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FlowContainer } from '@/components/flows/FlowContainer';
+import { 
+  GitBranch, 
+  Database, 
+  Zap, 
+  Users, 
+  CreditCard,
+  MessageSquare,
+  Activity
+} from 'lucide-react';
 
 const DataFlow = () => {
-  const navigate = useNavigate();
-  const [activeFlow, setActiveFlow] = useState('overview');
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto p-6 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <Activity className="w-8 h-8 text-blue-600" />
+            Data Flow Documentation
+          </h1>
+          <p className="text-xl text-gray-600">
+            Visual representation of how data flows through the Relett platform across different processes.
+          </p>
+        </div>
 
-  const renderFlowContent = () => {
-    switch (activeFlow) {
-      case 'user-journey':
-        return <UserJourneyFlow />;
-      case 'system-architecture':
-        return <SystemArchitectureFlow />;
-      case 'property-flow':
-        return <PropertyFlow />;
-      case 'financial-flow':
-        return <FinancialFlow />;
-      case 'database-schema':
-        return <DatabaseFlow />;
-      default:
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Tabs defaultValue="system" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="system">System Architecture</TabsTrigger>
+            <TabsTrigger value="user-journey">User Journey</TabsTrigger>
+            <TabsTrigger value="property">Property Flow</TabsTrigger>
+            <TabsTrigger value="financial">Financial Flow</TabsTrigger>
+            <TabsTrigger value="database">Database Schema</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="system" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  System Architecture
+                  <GitBranch className="w-5 h-5" />
+                  System Architecture Flow
                 </CardTitle>
+                <CardDescription>
+                  High-level overview of how different system components interact
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-700">
-                  Our platform follows a modern microservices architecture with clear separation of concerns:
-                </p>
-                <div className="space-y-3">
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-blue-600">Frontend Layer</h4>
-                    <p className="text-sm text-gray-600">React + TypeScript with shadcn/ui components</p>
+              <CardContent>
+                <div className="h-[700px] border rounded-lg">
+                  <FlowContainer flowType="system-architecture" />
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">Frontend Layer</h4>
+                    <p className="text-blue-700">React app with real-time features, responsive design, and interactive components.</p>
                   </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-green-600">API Layer</h4>
-                    <p className="text-sm text-gray-600">Supabase Edge Functions for business logic</p>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-semibold text-green-900 mb-2">Backend Services</h4>
+                    <p className="text-green-700">Supabase edge functions, database triggers, and real-time subscriptions.</p>
                   </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-purple-600">Database Layer</h4>
-                    <p className="text-sm text-gray-600">PostgreSQL with Row Level Security (RLS)</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-semibold text-orange-600">Blockchain Layer</h4>
-                    <p className="text-sm text-gray-600">Hedera Hashgraph for tokenization and consensus</p>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <h4 className="font-semibold text-purple-900 mb-2">External APIs</h4>
+                    <p className="text-purple-700">Payment processing, notifications, AI services, and blockchain integration.</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
 
+          <TabsContent value="user-journey" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Data Flow Principles</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  User Journey Flow
+                </CardTitle>
+                <CardDescription>
+                  How users interact with the platform from registration to investment
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</div>
-                    <div>
-                      <h4 className="font-semibold">Event-Driven Architecture</h4>
-                      <p className="text-sm text-gray-600">Database triggers and webhooks drive system responses</p>
-                    </div>
+              <CardContent>
+                <div className="h-[700px] border rounded-lg">
+                  <FlowContainer flowType="user-journey" />
+                </div>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2">Key User Flows:</h4>
+                  <ul className="text-sm space-y-1 text-gray-600">
+                    <li>• Registration → KYC Verification → Property Discovery</li>
+                    <li>• Property Listing → Document Upload → Verification Process</li>
+                    <li>• Investment → Payment Processing → Token Holdings</li>
+                    <li>• Communication → Chat Systems → Notifications</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="property" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Property Management Flow
+                </CardTitle>
+                <CardDescription>
+                  Property lifecycle from creation to tokenization and investment
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[700px] border rounded-lg">
+                  <FlowContainer flowType="property" />
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <h4 className="font-semibold text-orange-900 mb-2">Property Creation</h4>
+                    <p className="text-orange-700">Multi-step wizard for property listing with document verification and AI valuation.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</div>
-                    <div>
-                      <h4 className="font-semibold">Immutable Audit Trails</h4>
-                      <p className="text-sm text-gray-600">All actions are logged for compliance and security</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</div>
-                    <div>
-                      <h4 className="font-semibold">Blockchain Anchoring</h4>
-                      <p className="text-sm text-gray-600">Critical data is anchored to Hedera for immutability</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">4</div>
-                    <div>
-                      <h4 className="font-semibold">Real-time Updates</h4>
-                      <p className="text-sm text-gray-600">WebSocket connections for live data synchronization</p>
-                    </div>
+                  <div className="p-4 bg-teal-50 rounded-lg">
+                    <h4 className="font-semibold text-teal-900 mb-2">Tokenization Process</h4>
+                    <p className="text-teal-700">Convert verified properties into investable tokens with legal compliance.</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        );
-    }
-  };
+          </TabsContent>
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with back button */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-            <div className="ml-4">
-              <h1 className="text-xl font-bold text-gray-900">Data Flow & System Architecture</h1>
-              <p className="text-sm text-gray-600">Interactive system workflow visualization</p>
-            </div>
-          </div>
-          
-          <Button onClick={() => navigate('/database-docs')} variant="outline" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Database Docs
-          </Button>
-        </div>
-      </header>
-      
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <FlowSelector activeFlow={activeFlow} onFlowChange={setActiveFlow} />
-        
-        {renderFlowContent()}
+          <TabsContent value="financial" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Financial & Payment Flow
+                </CardTitle>
+                <CardDescription>
+                  Payment processing, escrow management, and revenue distribution
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[700px] border rounded-lg">
+                  <FlowContainer flowType="financial" />
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="p-4 bg-red-50 rounded-lg">
+                    <h4 className="font-semibold text-red-900 mb-2">Payment Processing</h4>
+                    <p className="text-red-700">Paystack integration with webhook handling for real-time payment updates.</p>
+                  </div>
+                  <div className="p-4 bg-yellow-50 rounded-lg">
+                    <h4 className="font-semibold text-yellow-900 mb-2">Escrow Management</h4>
+                    <p className="text-yellow-700">Secure fund holding during property transactions and investments.</p>
+                  </div>
+                  <div className="p-4 bg-indigo-50 rounded-lg">
+                    <h4 className="font-semibold text-indigo-900 mb-2">Revenue Distribution</h4>
+                    <p className="text-indigo-700">Automated dividend payments to token holders and commission distribution.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Key Integration Points */}
-        {activeFlow === 'overview' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Integration Points</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-blue-600 mb-2">Hedera Blockchain</h3>
-                  <p className="text-sm text-gray-600">Token creation, consensus timestamps, immutable voting records, smart contract deployment</p>
+          <TabsContent value="database" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Database Schema Relationships
+                </CardTitle>
+                <CardDescription>
+                  Interactive view of database tables and their relationships
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[700px] border rounded-lg">
+                  <FlowContainer flowType="database" />
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-green-600 mb-2">Payment Providers</h3>
-                  <p className="text-sm text-gray-600">Paystack, Flutterwave integration for Nigerian market, multi-currency support</p>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2">Database Architecture:</h4>
+                  <ul className="text-sm space-y-1 text-gray-600">
+                    <li>• <strong>Property Core:</strong> Properties, images, documents, valuations</li>
+                    <li>• <strong>User Management:</strong> Authentication, roles, verification, KYC</li>
+                    <li>• <strong>Financial System:</strong> Payments, escrow, revenue distribution</li>
+                    <li>• <strong>Communication:</strong> Chat, notifications, messaging</li>
+                    <li>• <strong>Analytics:</strong> Tracking, performance, AI insights</li>
+                  </ul>
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-purple-600 mb-2">Identity Verification</h3>
-                  <p className="text-sm text-gray-600">NIN, BVN verification through Nigerian identity APIs, document OCR processing</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-orange-600 mb-2">AI Services</h3>
-                  <p className="text-sm text-gray-600">Property valuation, market analysis, document processing, fraud detection</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-red-600 mb-2">Communication</h3>
-                  <p className="text-sm text-gray-600">Real-time chat, email notifications, SMS alerts, push notifications</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-semibold text-teal-600 mb-2">Government APIs</h3>
-                  <p className="text-sm text-gray-600">Land registry integration, compliance checking, regulatory reporting</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
