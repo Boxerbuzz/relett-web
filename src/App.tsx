@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -85,6 +84,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <Dashboard />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/me"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <UserBookings />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -222,7 +231,9 @@ function App() {
                   <Route
                     path="/agent/inspections"
                     element={
-                      <ProtectedRoute requiredRole="agent">
+                      <ProtectedRoute
+                        requiredRole={["agent", "landowner", "admin"]}
+                      >
                         <Layout>
                           <AgentInspections />
                         </Layout>
@@ -232,7 +243,9 @@ function App() {
                   <Route
                     path="/agent/rentals"
                     element={
-                      <ProtectedRoute requiredRole="agent">
+                      <ProtectedRoute
+                        requiredRole={["agent", "landowner", "admin"]}
+                      >
                         <Layout>
                           <AgentRentals />
                         </Layout>
@@ -242,7 +255,9 @@ function App() {
                   <Route
                     path="/agent/reservations"
                     element={
-                      <ProtectedRoute requiredRole="agent">
+                      <ProtectedRoute
+                        requiredRole={["agent", "landowner", "admin"]}
+                      >
                         <Layout>
                           <AgentReservations />
                         </Layout>
@@ -252,7 +267,9 @@ function App() {
                   <Route
                     path="/agent/calendar"
                     element={
-                      <ProtectedRoute requiredRole="agent">
+                      <ProtectedRoute
+                        requiredRole={["agent", "landowner", "admin"]}
+                      >
                         <Layout>
                           <AgentCalendar />
                         </Layout>

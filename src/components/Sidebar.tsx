@@ -42,29 +42,29 @@ interface SidebarProps {
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent'] },
+  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent', 'user'] },
 ];
 
 const propertyNavigation = [
-  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
-  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
-  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
+  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin', 'user'] },
+  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin', 'user'] },
+  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin', 'user'] },
+  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor', 'user'] },
 ];
 
 const agentNavigation = [
-  { name: 'Inspections', href: '/agent/inspections', icon: Eye, roles: ['agent', 'admin'] },
-  { name: 'Rentals', href: '/agent/rentals', icon: Buildings, roles: ['agent', 'admin'] },
-  { name: 'Reservations', href: '/agent/reservations', icon: Users, roles: ['agent', 'admin'] },
-  { name: 'Calendar', href: '/agent/calendar', icon: Calendar, roles: ['agent', 'admin'] },
+  { name: 'Inspections', href: '/agent/inspections', icon: Eye, roles: ['agent', 'admin', 'landowner'] },
+  { name: 'Rentals', href: '/agent/rentals', icon: Buildings, roles: ['agent', 'admin', 'landowner'] },
+  { name: 'Reservations', href: '/agent/reservations', icon: Users, roles: ['agent', 'admin', 'landowner'] },
+  { name: 'Calendar', href: '/agent/calendar', icon: Calendar, roles: ['agent', 'admin', 'landowner'] },
 ];
 
 const settingsNavigation = [
-  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
-  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
