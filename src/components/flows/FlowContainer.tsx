@@ -18,12 +18,16 @@ import '@xyflow/react/dist/style.css';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, Maximize, Download } from 'lucide-react';
+import { TableNode, DomainNode } from './nodes/DatabaseNodes';
+
+const nodeTypes = {
+  table: TableNode,
+  domain: DomainNode,
+};
 
 interface FlowContainerProps {
   nodes: Node[];
   edges: Edge[];
-  nodeTypes?: Record<string, React.ComponentType<any>>;
-  edgeTypes?: Record<string, React.ComponentType<any>>;
   title: string;
   onNodeClick?: (event: React.MouseEvent, node: Node) => void;
   onEdgeClick?: (event: React.MouseEvent, edge: Edge) => void;
@@ -32,8 +36,6 @@ interface FlowContainerProps {
 export function FlowContainer({
   nodes: initialNodes,
   edges: initialEdges,
-  nodeTypes,
-  edgeTypes,
   title,
   onNodeClick,
   onEdgeClick,
@@ -55,14 +57,10 @@ export function FlowContainer({
     [onNodeClick]
   );
 
-  const fitView = useCallback(() => {
-    // This will be handled by the ReactFlow instance
-  }, []);
-
   return (
-    <Card className="h-[600px] w-full relative">
+    <Card className="h-[800px] w-full relative">
       <div className="absolute top-4 left-4 z-10">
-        <h3 className="text-lg font-semibold bg-white px-2 py-1 rounded shadow">
+        <h3 className="text-lg font-semibold bg-white px-3 py-2 rounded shadow-md border">
           {title}
         </h3>
       </div>
@@ -76,9 +74,9 @@ export function FlowContainer({
         onNodeClick={handleNodeClick}
         onEdgeClick={onEdgeClick}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         fitView
         className="bg-gray-50"
+        fitViewOptions={{ padding: 0.1, minZoom: 0.1, maxZoom: 1.5 }}
       >
         <Controls />
         <MiniMap 
@@ -102,19 +100,39 @@ export function FlowContainer({
         <div className="absolute top-4 right-4 w-80 bg-white p-4 rounded-lg shadow-lg border z-20">
           <h4 className="font-semibold mb-2">{String(selectedNode.data.label || '')}</h4>
           <p className="text-sm text-gray-600">{String(selectedNode.data.description || '')}</p>
-          {selectedNode.data.details && (
-            <div className="mt-2 space-y-1">
-              {Object.entries(selectedNode.data.details as Record<string, any>).map(([key, value]) => (
-                <div key={key} className="text-xs">
-                  <span className="font-medium">{key}:</span> {String(value)}
-                </div>
-              ))}
+          {selectedNode.data.fields && (
+            <div className="mt-3">
+              <div className="text-sm font-semibold text-gray-700 mb-2">Fields ({selectedNode.data.fields.length}):</div>
+              <div className="max-h-40 overflow-y-auto space-y-1">
+                {selectedNode.data.fields.slice(0, 15).map((field: string, index: number) => (
+                  <div key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    {field}
+                  </div>
+                ))}
+                {selectedNode.data.fields.length > 15 && (
+                  <div className="text-xs text-gray-500 italic">
+                    ... and {selectedNode.data.fields.length - 15} more fields
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {selectedNode.data.relationships && selectedNode.data.relationships.length > 0 && (
+            <div className="mt-3">
+              <div className="text-sm font-semibold text-blue-700 mb-2">Relationships:</div>
+              <div className="space-y-1">
+                {selectedNode.data.relationships.map((rel: string, index: number) => (
+                  <div key={index} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                    {rel}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           <Button 
             size="sm" 
             variant="ghost" 
-            className="mt-2"
+            className="mt-3"
             onClick={() => setSelectedNode(null)}
           >
             Close

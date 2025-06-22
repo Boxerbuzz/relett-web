@@ -1,6 +1,6 @@
 
 import { Node, Edge } from '@xyflow/react';
-import { generateDatabaseNodes } from './databaseSchema';
+import { generateDatabaseNodes, generateDatabaseEdges } from './databaseSchema';
 
 export interface FlowData {
   nodes: Node[];
@@ -143,7 +143,7 @@ export function getFinancialFlow(): FlowData {
 
 export function getDatabaseFlow(): FlowData {
   const nodes = generateDatabaseNodes();
-  const edges: Edge[] = []; // Database relationships would be complex, keeping simple for now
+  const edges = generateDatabaseEdges();
   return { nodes, edges };
 }
 
