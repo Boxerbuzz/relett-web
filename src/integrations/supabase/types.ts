@@ -4864,7 +4864,14 @@ export type Database = {
         | "government_consent"
         | "tax_clearance"
         | "other"
-      identity_type: "nin" | "bvn" | "cac" | "passport" | "drivers_license"
+      identity_type:
+        | "nin"
+        | "bvn"
+        | "cac"
+        | "passport"
+        | "drivers_license"
+        | "national_id"
+        | "voters_card"
       investment_terms: "fixed" | "variable" | "hybrid"
       land_title_status:
         | "draft"
@@ -5046,7 +5053,15 @@ export const Constants = {
         "tax_clearance",
         "other",
       ],
-      identity_type: ["nin", "bvn", "cac", "passport", "drivers_license"],
+      identity_type: [
+        "nin",
+        "bvn",
+        "cac",
+        "passport",
+        "drivers_license",
+        "national_id",
+        "voters_card",
+      ],
       investment_terms: ["fixed", "variable", "hybrid"],
       land_title_status: [
         "draft",
