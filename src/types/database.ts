@@ -1,7 +1,8 @@
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected' | 'expired'
-export type IdentityType = 'nin' | 'bvn' | 'cac' | 'passport' | 'drivers_license'
+export type IdentityType = 'nin' | 'bvn' | 'cac' | 'passport' | 'drivers_license' | 'national_id' | 'voters_card'
 export type AppRole = 'admin' | 'verifier' | 'agent' | 'landowner' | 'investor'
 export type VerifierType = 'surveyor' | 'lawyer' | 'estate_agent' | 'government_official' | 'chartered_surveyor'
 export type Gender = 'male' | 'female' | 'other'
