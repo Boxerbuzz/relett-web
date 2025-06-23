@@ -95,13 +95,18 @@ export function useTokenizedProperties() {
         .eq('user_id', user?.id)
         .in('tokenized_property_id', tokenizedPropertyIds);
 
-      // Get property images
-      const propertyIds = holdingsData
+      // Get property images - properly extract property IDs
+      const propertyIds: string[] = holdingsData
         ?.map(h => {
           const property = h.tokenized_properties?.properties;
-          return Array.isArray(property) ? property[0]?.id : property?.id;
+          if (Array.isArray(property) && property.length > 0) {
+            return property[0]?.id;
+          } else if (property && typeof property === 'object' && 'id' in property) {
+            return (property as any).id;
+          }
+          return null;
         })
-        .filter(Boolean) || [];
+        .filter((id): id is string => Boolean(id)) || [];
 
       const { data: imagesData } = await supabase
         .from('property_images')
