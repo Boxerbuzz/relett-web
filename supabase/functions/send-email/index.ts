@@ -1,16 +1,33 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface EmailRequest {
+  to: string;
+  template: string;
+  data: Record<string, unknown>;
+}
 
-const EMAIL_TEMPLATES = {
+interface EmailTemplate {
+  subject: (data: Record<string, unknown>) => string;
+  html: (data: Record<string, unknown>) => string;
+  text: (data: Record<string, unknown>) => string;
+}
+
+interface EmailResponse {
+  success: boolean;
+  messageId: string;
+}
+
+const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
   'property-verification': {
-    subject: (data: any) => `Property Verification Update - ${data.propertyTitle}`,
-    html: (data: any) => `
+    subject: (data) => `Property Verification Update - ${data.propertyTitle}`,
+    html: (data) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Property Verification Update</h2>
         <p>Hello,</p>
@@ -21,14 +38,14 @@ const EMAIL_TEMPLATES = {
         }
         <p>Thank you for using our platform.</p>
         <hr>
-        <small>This email was sent on ${new Date(data.timestamp).toLocaleDateString()}</small>
+        <small>This email was sent on ${new Date(data.timestamp as string).toLocaleDateString()}</small>
       </div>
     `,
-    text: (data: any) => `Property Verification Update\n\nYour property "${data.propertyTitle}" has been ${data.verificationStatus}.`
+    text: (data) => `Property Verification Update\n\nYour property "${data.propertyTitle}" has been ${data.verificationStatus}.`
   },
   'welcome': {
-    subject: (data: any) => `Welcome to our platform, ${data.userName}!`,
-    html: (data: any) => `
+    subject: (data) => `Welcome to our platform, ${data.userName}!`,
+    html: (data) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Welcome to Our Real Estate Platform!</h2>
         <p>Hello ${data.userName},</p>
@@ -43,43 +60,32 @@ const EMAIL_TEMPLATES = {
         <p>Best regards,<br>The Platform Team</p>
       </div>
     `,
-    text: (data: any) => `Welcome ${data.userName}! Thank you for joining our real estate platform.`
+    text: (data) => `Welcome ${data.userName}! Thank you for joining our real estate platform.`
   }
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { to, template, data } = await req.json();
+    const { to, template, data }: EmailRequest = await req.json();
 
     if (!to || !template) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
-    const emailTemplate = EMAIL_TEMPLATES[template as keyof typeof EMAIL_TEMPLATES];
+    const emailTemplate = EMAIL_TEMPLATES[template];
     if (!emailTemplate) {
-      return new Response(JSON.stringify({ error: 'Invalid template' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Invalid template'), 400);
     }
 
     // Get email service credentials
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const sendgridApiKey = Deno.env.get('SENDGRID_API_KEY');
 
-    let emailResult;
+    let emailResult: EmailResponse;
 
     if (resendApiKey) {
       // Use Resend
@@ -93,23 +99,16 @@ serve(async (req) => {
       emailResult = { success: true, messageId: `mock_${Date.now()}` };
     }
 
-    return new Response(JSON.stringify(emailResult), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createResponse(createSuccessResponse(emailResult));
 
   } catch (error) {
     console.error('Email sending error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Failed to send email',
-      details: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Failed to send email', errorMessage), 500);
   }
 });
 
-async function sendWithResend(apiKey: string, to: string, template: any, data: any) {
+async function sendWithResend(apiKey: string, to: string, template: EmailTemplate, data: Record<string, unknown>): Promise<EmailResponse> {
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -133,7 +132,7 @@ async function sendWithResend(apiKey: string, to: string, template: any, data: a
   return { success: true, messageId: result.id };
 }
 
-async function sendWithSendGrid(apiKey: string, to: string, template: any, data: any) {
+async function sendWithSendGrid(apiKey: string, to: string, template: EmailTemplate, data: Record<string, unknown>): Promise<EmailResponse> {
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
     headers: {
@@ -164,5 +163,5 @@ async function sendWithSendGrid(apiKey: string, to: string, template: any, data:
     throw new Error(`SendGrid API error: ${error}`);
   }
 
-  return { success: true, messageId: response.headers.get('x-message-id') };
+  return { success: true, messageId: response.headers.get('x-message-id') || 'unknown' };
 }

@@ -1,10 +1,25 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface FileScamRequest {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  fileHash: string;
+}
+
+interface ScanResult {
+  isClean: boolean;
+  threats?: string[];
+  scanTimestamp: string;
+  scanVersion: string;
+}
 
 // Known malicious file signatures (simplified for demo)
 const MALICIOUS_SIGNATURES = [
@@ -18,17 +33,14 @@ const SUSPICIOUS_EXTENSIONS = [
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const { fileName, fileSize, mimeType, fileHash } = await req.json();
+    const { fileName, fileSize, mimeType, fileHash }: FileScamRequest = await req.json();
 
     if (!fileName || !fileHash) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
     const threats: string[] = [];
@@ -55,7 +67,7 @@ serve(async (req) => {
     }
 
     // Check against known malicious hashes (in production, use a threat intelligence API)
-    const knownMaliciousHashes = [
+    const knownMaliciousHashes: string[] = [
       // Add known malicious file hashes here
     ];
 
@@ -82,23 +94,17 @@ serve(async (req) => {
       console.log('VirusTotal scanning would happen here');
     }
 
-    return new Response(JSON.stringify({
+    const result: ScanResult = {
       isClean,
       threats: threats.length > 0 ? threats : undefined,
       scanTimestamp: new Date().toISOString(),
       scanVersion: '1.0.0'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(result));
 
   } catch (error) {
     console.error('File scan error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'File scan failed',
-      details: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createResponse(createErrorResponse('File scan failed', error instanceof Error ? error.message : String(error)), 500);
   }
 });

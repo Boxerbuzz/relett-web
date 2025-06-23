@@ -1,29 +1,107 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface SearchFilters {
+  query?: string;
+  location?: {
+    city?: string;
+    state?: string;
+  };
+  propertyType?: string[];
+  price?: {
+    min?: number;
+    max?: number;
+  };
+  features?: string[];
+  amenities?: string[];
+  bedrooms?: {
+    min?: number;
+    max?: number;
+  };
+  bathrooms?: {
+    min?: number;
+    max?: number;
+  };
+  sortBy?: string;
+  limit?: number;
+  offset?: number;
+}
+
+interface PropertyImage {
+  url: string;
+  is_primary?: boolean;
+}
+
+interface PropertyResult {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  price: {
+    amount: number;
+    currency: string;
+  };
+  location: {
+    city: string;
+    state: string;
+    address: string;
+  };
+  images: string[];
+  features: string[];
+  amenities: string[];
+  score: number;
+  highlights: string[];
+}
+
+interface LocationFacet {
+  name: string;
+  count: number;
+}
+
+interface PriceRangeFacet {
+  range: string;
+  count: number;
+}
+
+interface PropertyTypeFacet {
+  type: string;
+  count: number;
+}
+
+interface SearchFacets {
+  locations: LocationFacet[];
+  priceRanges: PriceRangeFacet[];
+  propertyTypes: PropertyTypeFacet[];
+}
+
+interface SearchResponse {
+  results: PropertyResult[];
+  totalCount: number;
+  suggestions: string[];
+  facets: SearchFacets;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { filters } = await req.json();
+    const supabase = createTypedSupabaseClient();
+    const { filters }: { filters: SearchFilters } = await req.json();
 
     // In production, this would use Elasticsearch or Algolia
     // For now, we'll implement enhanced Supabase search with better ranking
 
-    let query = supabaseClient
+    let query = supabase
       .from('properties')
       .select(`
         id,
@@ -129,15 +207,15 @@ serve(async (req) => {
     if (error) throw error;
 
     // Transform results
-    const results = (properties || []).map((property, index) => ({
+    const results: PropertyResult[] = (properties || []).map((property, index) => ({
       id: property.id,
       title: property.title,
       description: property.description,
       type: property.type,
-      price: property.price,
-      location: property.location,
+      price: property.price as { amount: number; currency: string },
+      location: property.location as { city: string; state: string; address: string },
       images: Array.isArray(property.property_images) 
-        ? property.property_images.map((img: any) => img.url).filter(Boolean)
+        ? property.property_images.map((img: PropertyImage) => img.url).filter(Boolean)
         : [],
       features: property.features || [],
       amenities: property.amenities || [],
@@ -146,44 +224,38 @@ serve(async (req) => {
     }));
 
     // Generate facets
-    const facets = await generateFacets(supabaseClient, filters);
+    const facets = await generateFacets(supabase, filters);
 
     // Generate suggestions
     const suggestions = filters.query ? await generateSuggestions(filters.query) : [];
 
-    return new Response(JSON.stringify({
+    const response: SearchResponse = {
       results,
       totalCount: count || 0,
       suggestions,
       facets
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Advanced search error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Search failed',
-      details: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createResponse(handleSupabaseError(error), 500);
   }
 });
 
-function calculateRelevanceScore(property: any, query?: string, position: number = 0): number {
+function calculateRelevanceScore(property: Record<string, unknown>, query?: string, position: number = 0): number {
   let score = 100 - position; // Base score decreases with position
 
   // Boost based on engagement
-  score += (property.views || 0) * 0.1;
-  score += (property.likes || 0) * 0.5;
+  score += ((property.views as number) || 0) * 0.1;
+  score += ((property.likes as number) || 0) * 0.5;
 
   // Boost if query matches title more than description
   if (query) {
     const queryLower = query.toLowerCase();
-    const titleMatch = property.title?.toLowerCase().includes(queryLower);
-    const descMatch = property.description?.toLowerCase().includes(queryLower);
+    const titleMatch = (property.title as string)?.toLowerCase().includes(queryLower);
+    const descMatch = (property.description as string)?.toLowerCase().includes(queryLower);
     
     if (titleMatch) score += 20;
     if (descMatch) score += 10;
@@ -192,63 +264,64 @@ function calculateRelevanceScore(property: any, query?: string, position: number
   return Math.round(score);
 }
 
-function generateHighlights(property: any, query?: string): string[] {
+function generateHighlights(property: Record<string, unknown>, query?: string): string[] {
   if (!query) return [];
 
   const highlights: string[] = [];
   const queryLower = query.toLowerCase();
 
   // Check title
-  if (property.title?.toLowerCase().includes(queryLower)) {
+  if ((property.title as string)?.toLowerCase().includes(queryLower)) {
     highlights.push(`Title: ...${property.title}...`);
   }
 
   // Check description (first 100 chars containing query)
-  if (property.description?.toLowerCase().includes(queryLower)) {
-    const index = property.description.toLowerCase().indexOf(queryLower);
+  if ((property.description as string)?.toLowerCase().includes(queryLower)) {
+    const description = property.description as string;
+    const index = description.toLowerCase().indexOf(queryLower);
     const start = Math.max(0, index - 50);
-    const end = Math.min(property.description.length, index + 50);
-    highlights.push(`...${property.description.substring(start, end)}...`);
+    const end = Math.min(description.length, index + 50);
+    highlights.push(`...${description.substring(start, end)}...`);
   }
 
   return highlights;
 }
 
-async function generateFacets(supabaseClient: any, filters: any) {
+async function generateFacets(supabase: ReturnType<typeof createTypedSupabaseClient>, filters: SearchFilters): Promise<SearchFacets> {
   // Generate location facets
-  const { data: locationData } = await supabaseClient
+  const { data: locationData } = await supabase
     .from('properties')
     .select('location->city')
     .eq('status', 'active')
     .limit(100);
 
-  const locationCounts = new Map();
-  locationData?.forEach((item: any) => {
-    const city = item.location?.city;
+  const locationCounts = new Map<string, number>();
+  locationData?.forEach((item) => {
+    const city = (item.location as { city?: string })?.city;
     if (city) {
       locationCounts.set(city, (locationCounts.get(city) || 0) + 1);
     }
   });
 
-  const locations = Array.from(locationCounts.entries())
+  const locations: LocationFacet[] = Array.from(locationCounts.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
   // Generate property type facets
-  const { data: typeData } = await supabaseClient
+  const { data: typeData } = await supabase
     .from('properties')
     .select('type')
     .eq('status', 'active');
 
-  const typeCounts = new Map();
-  typeData?.forEach((item: any) => {
+  const typeCounts = new Map<string, number>();
+  typeData?.forEach((item) => {
     if (item.type) {
       typeCounts.set(item.type, (typeCounts.get(item.type) || 0) + 1);
     }
   });
 
-  const propertyTypes = Array.from(typeCounts.entries())
+  const propertyTypes: PropertyTypeFacet[] = Array.from(typeCounts.entries())
     .map(([type, count]) => ({ type, count }))
     .sort((a, b) => b.count - a.count);
 

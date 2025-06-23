@@ -1,10 +1,18 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface VoteRequest {
+  pollId: string;
+  voterId: string;
+  optionId: string;
+  votingPower: number;
 }
 
 interface VoteRecord {
@@ -16,25 +24,22 @@ interface VoteRecord {
   signature?: string;
 }
 
+interface VoteResponse {
+  success: boolean;
+  hederaTransactionId: string | null;
+  consensusTimestamp: string | null;
+  topicId: string | null;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    );
-
-    const { pollId, voterId, optionId, votingPower } = await req.json();
+    const supabase = createTypedSupabaseClient();
+    const { pollId, voterId, optionId, votingPower }: VoteRequest = await req.json();
 
     console.log('Recording vote:', { pollId, voterId, optionId, votingPower });
 
@@ -48,9 +53,9 @@ serve(async (req) => {
     };
 
     // Real Hedera integration - submit to Consensus Service
-    let hederaTransactionId = null;
-    let consensusTimestamp = null;
-    let hederaTopicId = null;
+    let hederaTransactionId: string | null = null;
+    let consensusTimestamp: string | null = null;
+    let hederaTopicId: string | null = null;
 
     try {
       // Get Hedera credentials from environment
@@ -82,7 +87,7 @@ serve(async (req) => {
 
           const topicCreateResponse = await topicCreateTx.execute(client);
           const topicCreateReceipt = await topicCreateResponse.getReceipt(client);
-          hederaTopicId = topicCreateReceipt.topicId?.toString();
+          hederaTopicId = topicCreateReceipt.topicId?.toString() || null;
 
           // Update poll with topic ID
           await supabase
@@ -145,30 +150,18 @@ serve(async (req) => {
       throw updateError;
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        hederaTransactionId,
-        consensusTimestamp,
-        topicId: hederaTopicId
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    const response: VoteResponse = {
+      success: true,
+      hederaTransactionId,
+      consensusTimestamp,
+      topicId: hederaTopicId
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Error recording vote:', error);
-    return new Response(
-      JSON.stringify({
-        error: 'Failed to record vote',
-        details: error.message
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Failed to record vote', errorMessage), 500);
   }
 });

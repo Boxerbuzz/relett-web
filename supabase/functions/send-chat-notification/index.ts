@@ -1,33 +1,55 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { 
+  createTypedSupabaseClient, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface ChatNotificationRequest {
+  record: {
+    id: string;
+    conversation_id: string;
+    sender_id: string;
+    content: string;
+  };
+}
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+interface NotificationResult {
+  participantId: string;
+  success: boolean;
+  error?: unknown;
+}
+
+interface User {
+  first_name: string;
+  last_name: string;
+}
+
+interface Conversation {
+  id: string;
+  name: string;
+  participants: string[];
+  users?: User;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const { record } = await req.json();
+    const { record }: ChatNotificationRequest = await req.json();
     
     if (!record || !record.conversation_id || !record.sender_id) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid message record' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('Invalid message record'), 400);
     }
 
     console.log('Processing chat notification for message:', record.id);
+
+    const supabase = createTypedSupabaseClient();
 
     // Get conversation details and participants
     const { data: conversation, error: conversationError } = await supabase
@@ -38,10 +60,7 @@ serve(async (req) => {
 
     if (conversationError || !conversation) {
       console.error('Conversation not found:', conversationError);
-      return new Response(
-        JSON.stringify({ error: 'Conversation not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('Conversation not found'), 404);
     }
 
     // Get sender details
@@ -53,14 +72,11 @@ serve(async (req) => {
 
     if (senderError || !sender) {
       console.error('Sender not found:', senderError);
-      return new Response(
-        JSON.stringify({ error: 'Sender not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('Sender not found'), 404);
     }
 
     // Notify all participants except the sender
-    const participantsToNotify = conversation.participants.filter(
+    const participantsToNotify = (conversation as Conversation).participants.filter(
       (participantId: string) => participantId !== record.sender_id
     );
 
@@ -70,7 +86,7 @@ serve(async (req) => {
       const { data, error } = await supabase.rpc('create_notification_with_delivery', {
         p_user_id: participantId,
         p_type: 'chat',
-        p_title: `New message in ${conversation.name}`,
+        p_title: `New message in ${(conversation as Conversation).name}`,
         p_message: `${sender.first_name} ${sender.last_name}: ${record.content.substring(0, 100)}${record.content.length > 100 ? '...' : ''}`,
         p_metadata: {
           conversation_id: record.conversation_id,
@@ -86,7 +102,8 @@ serve(async (req) => {
         console.error(`Failed to create notification for user ${participantId}:`, error);
       }
 
-      return { participantId, success: !error, error };
+      const result: NotificationResult = { participantId, success: !error, error };
+      return result;
     });
 
     const results = await Promise.all(notificationPromises);
@@ -94,20 +111,18 @@ serve(async (req) => {
 
     console.log(`Successfully created ${successCount}/${results.length} notifications`);
 
-    return new Response(JSON.stringify({
+    const response = {
       success: true,
       notified_count: successCount,
       total_participants: results.length,
       results
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Error in send-chat-notification function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Chat notification failed', errorMessage), 500);
   }
 });

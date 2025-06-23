@@ -1,51 +1,107 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface PropertyData {
+  id?: string;
+  propertyType: string;
+  category: string;
+  location?: {
+    state?: string;
+    city?: string;
+    address?: string;
+  };
+}
+
+interface ComparableProperty {
+  title?: string;
+  price?: {
+    amount?: number;
+  };
+  location?: {
+    city?: string;
+  };
+}
+
+interface MarketData {
+  metric_type: string;
+  metric_value: number;
+  calculation_date: string;
+}
+
+interface PropertyValuationRequest {
+  propertyData: PropertyData;
+}
+
+interface PropertyValuationResponse {
+  estimatedValue: number;
+  currency: string;
+  valuationMethod: string;
+  marketAnalysis: string;
+  confidenceScore: number;
+  comparableCount: number;
+  keyFactors: string[];
+  marketTrends: string;
+  metadata: {
+    aiModel: string;
+    analysisTimestamp: string;
+    dataPoints: {
+      comparables: number;
+      marketMetrics: number;
+    };
+  };
+}
+
+interface AIAnalysis {
+  estimatedValue?: number;
+  confidenceScore?: number;
+  marketAnalysis?: string;
+  keyFactors?: string[];
+  marketTrends?: string;
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return createCorsResponse();
   }
 
   try {
-    const { propertyData } = await req.json()
+    const { propertyData }: PropertyValuationRequest = await req.json();
 
     // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
+    const supabase = createTypedSupabaseClient();
 
     // Get comparable properties from database
-    const { data: comparableProperties, error: comparableError } = await supabaseClient
+    const { data: comparableProperties, error: comparableError } = await supabase
       .from('properties')
       .select('title, price, location, specification, type, category')
       .eq('type', propertyData.propertyType)
       .eq('category', propertyData.category)
       .neq('id', propertyData.id || '')
-      .limit(10)
+      .limit(10);
 
     if (comparableError) {
-      console.error('Error fetching comparable properties:', comparableError)
+      console.error('Error fetching comparable properties:', comparableError);
     }
 
     // Get market analytics data
-    const { data: marketData, error: marketError } = await supabaseClient
+    const { data: marketData, error: marketError } = await supabase
       .from('market_analytics')
       .select('*')
       .eq('property_type', propertyData.propertyType)
       .eq('location_id', propertyData.location?.state)
       .order('calculation_date', { ascending: false })
-      .limit(5)
+      .limit(5);
 
     if (marketError) {
-      console.error('Error fetching market data:', marketError)
+      console.error('Error fetching market data:', marketError);
     }
 
     // Prepare data for AI analysis
@@ -59,12 +115,12 @@ Property Details:
 - Address: ${propertyData.location?.address}
 
 Comparable Properties Data:
-${comparableProperties?.map(p => `
+${(comparableProperties as ComparableProperty[])?.map(p => `
 - ${p.title}: ₦${p.price?.amount?.toLocaleString()} (${p.location?.city})
 `).join('') || 'No comparable properties found'}
 
 Market Analytics:
-${marketData?.map(m => `
+${(marketData as MarketData[])?.map(m => `
 - ${m.metric_type}: ${m.metric_value} (${m.calculation_date})
 `).join('') || 'No market data available'}
 
@@ -81,7 +137,7 @@ Respond in JSON format with these fields:
 - marketAnalysis (string): Detailed analysis explanation
 - keyFactors (array): List of key valuation factors
 - marketTrends (string): Current market trends assessment
-`
+`;
 
     // Call OpenAI API
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -105,21 +161,21 @@ Respond in JSON format with these fields:
         temperature: 0.3,
         max_tokens: 2000
       }),
-    })
+    });
 
     if (!openAIResponse.ok) {
-      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`)
+      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
     }
 
-    const aiResult = await openAIResponse.json()
-    const aiContent = aiResult.choices[0].message.content
+    const aiResult = await openAIResponse.json();
+    const aiContent = aiResult.choices[0].message.content;
 
     // Parse AI response
-    let aiAnalysis
+    let aiAnalysis: AIAnalysis;
     try {
-      aiAnalysis = JSON.parse(aiContent)
+      aiAnalysis = JSON.parse(aiContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
+      console.error('Failed to parse AI response:', parseError);
       // Fallback to basic analysis if parsing fails
       aiAnalysis = {
         estimatedValue: Math.floor(Math.random() * 50000000) + 10000000,
@@ -127,14 +183,14 @@ Respond in JSON format with these fields:
         marketAnalysis: aiContent || 'AI analysis generated but format needs adjustment.',
         keyFactors: ['Location', 'Property Type', 'Market Conditions'],
         marketTrends: 'Market data suggests stable growth in the area.'
-      }
+      };
     }
 
     // Ensure numeric values are valid
-    const estimatedValue = Number(aiAnalysis.estimatedValue) || Math.floor(Math.random() * 50000000) + 10000000
-    const confidenceScore = Math.min(Math.max(Number(aiAnalysis.confidenceScore) || 65, 0), 100)
+    const estimatedValue = Number(aiAnalysis.estimatedValue) || Math.floor(Math.random() * 50000000) + 10000000;
+    const confidenceScore = Math.min(Math.max(Number(aiAnalysis.confidenceScore) || 65, 0), 100);
 
-    const response = {
+    const response: PropertyValuationResponse = {
       estimatedValue,
       currency: 'NGN',
       valuationMethod: 'ai_assisted',
@@ -147,36 +203,17 @@ Respond in JSON format with these fields:
         aiModel: 'gpt-4o',
         analysisTimestamp: new Date().toISOString(),
         dataPoints: {
-            comparables: comparableProperties?.length || 0,
-            marketMetrics: marketData?.length || 0
+          comparables: comparableProperties?.length || 0,
+          marketMetrics: marketData?.length || 0
         }
       }
-    }
+    };
 
-    return new Response(
-      JSON.stringify(response),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    )
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Error in AI valuation:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: 'Failed to generate AI valuation',
-        details: error.message 
-      }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    )
+    console.error('Error in AI valuation:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Failed to generate AI valuation', errorMessage), 500);
   }
-})
+});

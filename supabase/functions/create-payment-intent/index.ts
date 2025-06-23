@@ -1,38 +1,46 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  createAuthenticatedClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface PaymentIntentRequest {
+  amount: number;
+  currency: string;
+  purpose: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface PaymentIntentResponse {
+  success: boolean;
+  payment_url: string;
+  reference: string;
+  session_id: string;
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
+    const authHeader = req.headers.get('Authorization')!;
+    const supabaseClient = createAuthenticatedClient(authHeader);
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
-      throw new Error('Unauthorized')
+      return createResponse(createErrorResponse('Unauthorized'), 401);
     }
 
-    const { amount, currency, purpose, metadata } = await req.json()
+    const { amount, currency, purpose, metadata }: PaymentIntentRequest = await req.json();
 
     // Validate required fields
     if (!amount || !currency || !purpose) {
-      throw new Error('Missing required fields: amount, currency, purpose')
+      return createResponse(createErrorResponse('Missing required fields: amount, currency, purpose'), 400);
     }
 
     // Create payment session record
@@ -50,9 +58,9 @@ serve(async (req) => {
         payment_provider: 'paystack'
       })
       .select()
-      .single()
+      .single();
 
-    if (sessionError) throw sessionError
+    if (sessionError) throw sessionError;
 
     // Initialize Paystack payment
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
@@ -74,12 +82,12 @@ serve(async (req) => {
           ...metadata
         }
       })
-    })
+    });
 
-    const paystackData = await paystackResponse.json()
+    const paystackData = await paystackResponse.json();
 
     if (!paystackData.status) {
-      throw new Error(paystackData.message || 'Payment initialization failed')
+      throw new Error(paystackData.message || 'Payment initialization failed');
     }
 
     // Update payment session with external reference
@@ -93,29 +101,20 @@ serve(async (req) => {
           access_code: paystackData.data.access_code
         }
       })
-      .eq('id', paymentSession.id)
+      .eq('id', paymentSession.id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        payment_url: paystackData.data.authorization_url,
-        reference: paystackData.data.reference,
-        session_id: paymentSession.id
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+    const response: PaymentIntentResponse = {
+      success: true,
+      payment_url: paystackData.data.authorization_url,
+      reference: paystackData.data.reference,
+      session_id: paymentSession.id
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Payment intent error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
-    )
+    console.error('Payment intent error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Payment intent creation failed', errorMessage), 400);
   }
-})
+});

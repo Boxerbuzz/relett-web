@@ -1,52 +1,80 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+interface RevenueDistributionRequest {
+  tokenized_property_id: string;
+  total_revenue: number;
+  distribution_type: string;
+  source_description: string;
+}
+
+interface RevenueDistributionResponse {
+  success: boolean;
+  distribution: Record<string, unknown>;
+  payments_processed: number;
+  total_distributed: number;
+  revenue_per_token: number;
+  message: string;
+}
+
+interface TokenizedProperty {
+  id: string;
+  total_supply: string;
+  token_name: string;
+}
+
+interface TokenHolder {
+  id: string;
+  holder_id: string;
+  tokens_owned: string;
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    )
+    const supabase = createTypedSupabaseClient();
 
     const {
       tokenized_property_id,
       total_revenue,
       distribution_type,
       source_description
-    } = await req.json()
+    }: RevenueDistributionRequest = await req.json();
 
     // Validate required fields
     if (!tokenized_property_id || !total_revenue || !distribution_type || !source_description) {
-      throw new Error('Missing required fields for revenue distribution')
+      return createResponse(createErrorResponse('Missing required fields for revenue distribution'), 400);
     }
 
     // Get tokenized property details
-    const { data: tokenizedProperty, error: propertyError } = await supabaseClient
+    const { data: tokenizedProperty, error: propertyError } = await supabase
       .from('tokenized_properties')
       .select('*')
       .eq('id', tokenized_property_id)
-      .single()
+      .single();
 
     if (propertyError || !tokenizedProperty) {
-      throw new Error('Tokenized property not found')
+      return createResponse(createErrorResponse('Tokenized property not found'), 404);
     }
 
+    const property = tokenizedProperty as TokenizedProperty;
+
     // Calculate revenue per token
-    const totalSupply = parseFloat(tokenizedProperty.total_supply)
-    const revenuePerToken = total_revenue / totalSupply
+    const totalSupply = parseFloat(property.total_supply);
+    const revenuePerToken = total_revenue / totalSupply;
 
     // Create revenue distribution record
-    const { data: distribution, error: distributionError } = await supabaseClient
+    const { data: distribution, error: distributionError } = await supabase
       .from('revenue_distributions')
       .insert({
         tokenized_property_id,
@@ -61,33 +89,33 @@ serve(async (req) => {
         }
       })
       .select()
-      .single()
+      .single();
 
-    if (distributionError) throw distributionError
+    if (distributionError) throw distributionError;
 
     // Get all token holders
-    const { data: tokenHolders, error: holdersError } = await supabaseClient
+    const { data: tokenHolders, error: holdersError } = await supabase
       .from('token_holdings')
       .select('*')
       .eq('tokenized_property_id', tokenized_property_id)
-      .gt('tokens_owned', '0')
+      .gt('tokens_owned', '0');
 
-    if (holdersError) throw holdersError
+    if (holdersError) throw holdersError;
 
     if (!tokenHolders || tokenHolders.length === 0) {
-      throw new Error('No token holders found')
+      return createResponse(createErrorResponse('No token holders found'), 404);
     }
 
     // Create dividend payment records for each holder
-    const dividendPayments = []
+    const dividendPayments = [];
     
-    for (const holder of tokenHolders) {
-      const tokensOwned = parseFloat(holder.tokens_owned)
-      const dividendAmount = tokensOwned * revenuePerToken
-      const taxWithholding = dividendAmount * 0.1 // 10% tax withholding
-      const netAmount = dividendAmount - taxWithholding
+    for (const holder of tokenHolders as TokenHolder[]) {
+      const tokensOwned = parseFloat(holder.tokens_owned);
+      const dividendAmount = tokensOwned * revenuePerToken;
+      const taxWithholding = dividendAmount * 0.1; // 10% tax withholding
+      const netAmount = dividendAmount - taxWithholding;
 
-      const { data: payment, error: paymentError } = await supabaseClient
+      const { data: payment, error: paymentError } = await supabase
         .from('dividend_payments')
         .insert({
           revenue_distribution_id: distribution.id,
@@ -101,87 +129,78 @@ serve(async (req) => {
           payment_method: 'bank_transfer'
         })
         .select()
-        .single()
+        .single();
 
       if (paymentError) {
-        console.error('Error creating dividend payment:', paymentError)
-        continue
+        console.error('Error creating dividend payment:', paymentError);
+        continue;
       }
 
-      dividendPayments.push(payment)
+      dividendPayments.push(payment);
 
       // Update user's account balance
-      await supabaseClient
+      await supabase
         .from('accounts')
         .update({
-          amount: supabaseClient.raw('amount + ?', [netAmount])
+          amount: supabase.raw('amount + ?', [netAmount])
         })
         .eq('user_id', holder.holder_id)
-        .eq('type', 'wallet')
+        .eq('type', 'wallet');
 
       // Update investment tracking
-      await supabaseClient
+      await supabase
         .from('investment_tracking')
         .update({
-          total_dividends_received: supabaseClient.raw('total_dividends_received + ?', [netAmount]),
+          total_dividends_received: supabase.raw('total_dividends_received + ?', [netAmount]),
           last_dividend_amount: netAmount,
           last_dividend_date: new Date().toISOString()
         })
         .eq('user_id', holder.holder_id)
-        .eq('tokenized_property_id', tokenized_property_id)
+        .eq('tokenized_property_id', tokenized_property_id);
 
       // Send notification to token holder
-      await supabaseClient.functions.invoke('process-notification', {
+      await supabase.functions.invoke('process-notification', {
         body: {
           user_id: holder.holder_id,
           type: 'investment',
           title: 'Dividend Payment Received',
-          message: `You've received a dividend payment of $${netAmount.toFixed(2)} from ${tokenizedProperty.token_name}.`,
+          message: `You've received a dividend payment of $${netAmount.toFixed(2)} from ${property.token_name}.`,
           metadata: {
             amount: netAmount,
             gross_amount: dividendAmount,
             tax_withholding: taxWithholding,
             tokens_owned: tokensOwned,
-            property_name: tokenizedProperty.token_name
+            property_name: property.token_name
           },
           action_url: `/tokens/${tokenized_property_id}`,
           action_label: 'View Investment'
         }
-      })
+      });
     }
 
     // Mark dividend payments as paid
-    await supabaseClient
+    await supabase
       .from('dividend_payments')
       .update({
         status: 'paid',
         paid_at: new Date().toISOString()
       })
-      .eq('revenue_distribution_id', distribution.id)
+      .eq('revenue_distribution_id', distribution.id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        distribution,
-        payments_processed: dividendPayments.length,
-        total_distributed: total_revenue,
-        revenue_per_token: revenuePerToken,
-        message: 'Revenue distribution completed successfully'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+    const response: RevenueDistributionResponse = {
+      success: true,
+      distribution,
+      payments_processed: dividendPayments.length,
+      total_distributed: total_revenue,
+      revenue_per_token: revenuePerToken,
+      message: 'Revenue distribution completed successfully'
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Revenue distribution error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
-    )
+    console.error('Revenue distribution error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Revenue distribution failed', errorMessage), 400);
   }
-})
+});

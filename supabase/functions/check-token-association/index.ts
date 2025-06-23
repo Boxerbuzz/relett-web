@@ -1,48 +1,48 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   Client,
   AccountId,
   TokenId,
   AccountInfoQuery
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface TokenAssociationRequest {
+  tokenId: string;
+  accountId: string;
+}
+
+interface TokenAssociationResponse {
+  isAssociated: boolean;
+  accountId: string;
+  tokenId: string;
+  message?: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { tokenId, accountId } = await req.json();
+    const { tokenId, accountId }: TokenAssociationRequest = await req.json();
 
     if (!tokenId || !accountId) {
-      return new Response(JSON.stringify({ error: 'Missing token ID or account ID' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing token ID or account ID'), 400);
     }
 
     // Get Hedera credentials
@@ -51,12 +51,13 @@ serve(async (req) => {
 
     if (!hederaAccountId || !hederaPrivateKey) {
       // Mock association check for development
-      return new Response(JSON.stringify({
+      const mockResponse: TokenAssociationResponse = {
         isAssociated: true,
+        accountId,
+        tokenId,
         message: 'Mock token association check for development'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     try {
@@ -76,35 +77,24 @@ serve(async (req) => {
       
       client.close();
 
-      return new Response(JSON.stringify({
+      const response: TokenAssociationResponse = {
         isAssociated,
         accountId: account.toString(),
         tokenId: token.toString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(response));
 
     } catch (hederaError) {
       console.error('Hedera association check error:', hederaError);
       
-      return new Response(JSON.stringify({ 
-        isAssociated: false,
-        error: 'Failed to check token association',
-        details: hederaError.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
+      return createResponse(createErrorResponse('Failed to check token association', errorMessage), 500);
     }
 
   } catch (error) {
     console.error('Token association check error:', error);
-    return new Response(JSON.stringify({ 
-      isAssociated: false,
-      error: 'Internal server error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

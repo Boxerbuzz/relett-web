@@ -1,31 +1,39 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface SMSNotificationRequest {
+  phoneNumber: string;
+  message: string;
+  notificationId?: string;
+}
+
+interface SMSResponse {
+  success: boolean;
+  message: string;
+  sid: string;
+  status?: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { phoneNumber, message, notificationId } = await req.json();
+    const { phoneNumber, message, notificationId }: SMSNotificationRequest = await req.json();
 
     if (!phoneNumber || !message) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
+
+    const supabase = createTypedSupabaseClient();
 
     // Get Twilio credentials
     const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
@@ -37,7 +45,7 @@ serve(async (req) => {
       
       // Log mock delivery
       if (notificationId) {
-        await supabaseClient
+        await supabase
           .from('notification_delivery_logs')
           .insert({
             notification_id: notificationId,
@@ -48,13 +56,13 @@ serve(async (req) => {
           });
       }
 
-      return new Response(JSON.stringify({
+      const mockResponse: SMSResponse = {
         success: true,
         message: 'Mock SMS sent (development mode)',
         sid: `mock_sms_${Date.now()}`
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     // Send SMS via Twilio
@@ -83,7 +91,7 @@ serve(async (req) => {
 
     // Log delivery status
     if (notificationId) {
-      await supabaseClient
+      await supabase
         .from('notification_delivery_logs')
         .insert({
           notification_id: notificationId,
@@ -95,43 +103,34 @@ serve(async (req) => {
         });
     }
 
-    return new Response(JSON.stringify({
+    const response: SMSResponse = {
       success: true,
       message: 'SMS sent successfully',
       sid: twilioData.sid,
       status: twilioData.status
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('SMS notification error:', error);
     
     // Log failed delivery
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
+    const supabase = createTypedSupabaseClient();
     const { notificationId } = await req.json().catch(() => ({}));
     if (notificationId) {
-      await supabaseClient
+      await supabase
         .from('notification_delivery_logs')
         .insert({
           notification_id: notificationId,
           channel: 'sms',
           status: 'failed',
           provider: 'twilio',
-          error_message: error.message
+          error_message: error instanceof Error ? error.message : String(error)
         });
     }
 
-    return new Response(JSON.stringify({ 
-      error: 'Failed to send SMS',
-      details: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Failed to send SMS', errorMessage), 500);
   }
 });

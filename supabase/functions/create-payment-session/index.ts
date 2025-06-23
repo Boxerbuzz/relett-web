@@ -1,52 +1,56 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser,
+  createTypedSupabaseClient
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface PaymentSessionRequest {
+  amount: number;
+  currency?: string;
+  purpose: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface PaymentSessionResponse {
+  session_id: string;
+  checkout_url: string;
+  provider: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { amount, currency = 'USD', purpose, metadata = {} } = await req.json();
+    const { amount, currency = 'USD', purpose, metadata = {} }: PaymentSessionRequest = await req.json();
 
     if (!amount || !purpose) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
+
+    const supabase = createTypedSupabaseClient();
 
     // Create payment session in database
     const sessionId = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
-    const { data: session, error: dbError } = await supabaseClient
+    const { data: session, error: dbError } = await supabase
       .from('payment_sessions')
       .insert({
-        user_id: user.id,
+        user_id: userResult.data.id,
         session_id: sessionId,
         amount: Math.round(amount * 100), // Convert to cents
         currency,
@@ -60,10 +64,7 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('Database error:', dbError);
-      return new Response(JSON.stringify({ error: 'Failed to create session' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Failed to create session'), 500);
     }
 
     // Create Stripe checkout session (when STRIPE_SECRET_KEY is available)
@@ -90,30 +91,27 @@ serve(async (req) => {
 
       if (stripeResponse.ok) {
         const stripeSession = await stripeResponse.json();
-        return new Response(JSON.stringify({
+        const response: PaymentSessionResponse = {
           session_id: sessionId,
           checkout_url: stripeSession.url,
           provider: 'stripe'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        };
+        return createResponse(createSuccessResponse(response));
       }
     }
 
     // Fallback for development or when Stripe is not configured
-    return new Response(JSON.stringify({
+    const response: PaymentSessionResponse = {
       session_id: sessionId,
       checkout_url: `${req.headers.get('origin')}/payment/mock?session_id=${sessionId}`,
       provider: 'mock'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Payment session error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

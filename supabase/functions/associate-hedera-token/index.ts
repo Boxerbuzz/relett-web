@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   Client,
   AccountId,
@@ -9,42 +8,44 @@ import {
   TokenAssociateTransaction,
   Hbar
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface TokenAssociationRequest {
+  tokenId: string;
+  investorAccountId: string;
+  investorPrivateKey: string;
+}
+
+interface TokenAssociationResponse {
+  success: boolean;
+  transaction_id: string;
+  message: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { tokenId, investorAccountId, investorPrivateKey } = await req.json();
+    const { tokenId, investorAccountId, investorPrivateKey }: TokenAssociationRequest = await req.json();
 
     if (!tokenId || !investorAccountId || !investorPrivateKey) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
     // Get Hedera credentials
@@ -52,13 +53,12 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      return new Response(JSON.stringify({
+      const mockResponse: TokenAssociationResponse = {
         success: true,
         message: 'Mock token association for development',
         transaction_id: `mock_assoc_${Date.now()}`
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     // Initialize Hedera client
@@ -85,10 +85,11 @@ serve(async (req) => {
       console.log('Token association successful:', associateSubmit.transactionId.toString());
 
       // Store association record
-      const { error: insertError } = await supabaseClient
+      const supabase = createTypedSupabaseClient();
+      const { error: insertError } = await supabase
         .from('token_associations')
         .insert({
-          user_id: user.id,
+          user_id: userResult.data.id,
           token_id: tokenId,
           hedera_account_id: investorAccountId,
           transaction_id: associateSubmit.transactionId.toString(),
@@ -102,32 +103,25 @@ serve(async (req) => {
 
       client.close();
 
-      return new Response(JSON.stringify({
+      const response: TokenAssociationResponse = {
         success: true,
         transaction_id: associateSubmit.transactionId.toString(),
         message: 'Token association successful'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(response));
 
     } catch (hederaError) {
       console.error('Hedera association error:', hederaError);
       client.close();
       
-      return new Response(JSON.stringify({ 
-        error: 'Failed to associate token',
-        details: hederaError.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
+      return createResponse(createErrorResponse('Failed to associate token', errorMessage), 500);
     }
 
   } catch (error) {
     console.error('Token association error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

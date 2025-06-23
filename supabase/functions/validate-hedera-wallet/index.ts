@@ -1,52 +1,52 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
 import {
   Client,
   AccountId,
   PrivateKey,
   AccountBalanceQuery,
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+interface WalletValidationRequest {
+  accountId: string;
+  privateKey: string;
+}
+
+interface WalletValidationResponse {
+  valid: boolean;
+  balance?: number;
+  accountId?: string;
+  message?: string;
+  error?: string;
+  details?: string;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const authHeader = req.headers.get("Authorization")!;
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { accountId, privateKey } = await req.json();
+    const { accountId, privateKey }: WalletValidationRequest = await req.json();
 
     if (!accountId || !privateKey) {
-      return new Response(
-        JSON.stringify({ error: "Missing account ID or private key" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return createResponse(createErrorResponse("Missing account ID or private key"), 400);
     }
 
     // Get Hedera credentials for network access
@@ -55,16 +55,12 @@ serve(async (req) => {
 
     if (!hederaAccountId || !hederaPrivateKey) {
       // Mock validation for development
-      return new Response(
-        JSON.stringify({
-          valid: true,
-          balance: 100.0,
-          message: "Mock wallet validation for development",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      const mockResponse: WalletValidationResponse = {
+        valid: true,
+        balance: 100.0,
+        message: "Mock wallet validation for development",
+      };
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     try {
@@ -77,47 +73,30 @@ serve(async (req) => {
 
       // Test the credentials by getting account balance
       const balanceQuery = new AccountBalanceQuery().setAccountId(account);
-
       const balance = await balanceQuery.execute(client);
 
       client.close();
 
-      return new Response(
-        JSON.stringify({
-          valid: true,
-          balance: parseFloat(balance.hbars.toString()),
-          accountId: account.toString(),
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      const response: WalletValidationResponse = {
+        valid: true,
+        balance: parseFloat(balance.hbars.toString()),
+        accountId: account.toString(),
+      };
+
+      return createResponse(createSuccessResponse(response));
     } catch (hederaError) {
       console.error("Hedera validation error:", hederaError);
 
-      return new Response(
-        JSON.stringify({
-          valid: false,
-          error: "Invalid wallet credentials or network error",
-          details: hederaError.message,
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      const errorResponse: WalletValidationResponse = {
+        valid: false,
+        error: "Invalid wallet credentials or network error",
+        details: hederaError instanceof Error ? hederaError.message : String(hederaError),
+      };
+
+      return createResponse(createErrorResponse(errorResponse.error!, errorResponse.details), 400);
     }
   } catch (error) {
     console.error("Wallet validation error:", error);
-    return new Response(
-      JSON.stringify({
-        valid: false,
-        error: "Internal server error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createResponse(handleSupabaseError(error), 500);
   }
 });

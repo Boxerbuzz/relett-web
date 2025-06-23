@@ -1,16 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
 interface BookingRecord {
   id: string;
@@ -21,7 +17,33 @@ interface BookingRecord {
   type: 'reservation' | 'rental' | 'inspection';
 }
 
-async function getPropertyAndOwner(propertyId: string) {
+interface BookingNotificationRequest {
+  record: BookingRecord;
+  old_record?: BookingRecord;
+}
+
+interface Property {
+  id: string;
+  title?: string;
+  location?: Record<string, unknown>;
+  users?: User;
+}
+
+interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface NotificationContent {
+  title: string;
+  getUserMessage: (property: Property) => string;
+  getOwnerMessage: (user: User, property: Property) => string;
+  getAgentMessage: (user: User, property: Property) => string;
+}
+
+async function getPropertyAndOwner(propertyId: string, supabase: ReturnType<typeof createTypedSupabaseClient>) {
   const { data: property, error } = await supabase
     .from('properties')
     .select(`
@@ -31,77 +53,70 @@ async function getPropertyAndOwner(propertyId: string) {
     .eq('id', propertyId)
     .single();
 
-  return { property, error };
+  return { property: property as Property | null, error };
 }
 
-async function getUserDetails(userId: string) {
+async function getUserDetails(userId: string, supabase: ReturnType<typeof createTypedSupabaseClient>) {
   const { data: user, error } = await supabase
     .from('users')
     .select('id, first_name, last_name, email')
     .eq('id', userId)
     .single();
 
-  return { user, error };
+  return { user: user as User | null, error };
 }
 
-function getNotificationContent(record: BookingRecord, isStatusChange: boolean = false) {
+function getNotificationContent(record: BookingRecord, isStatusChange: boolean = false): NotificationContent {
   const { type, status } = record;
   
   if (isStatusChange) {
     return {
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} Status Updated`,
-      getUserMessage: (property: any) => `Your ${type} for "${property.title}" has been ${status}`,
-      getOwnerMessage: (user: any, property: any) => `${user.first_name} ${user.last_name}'s ${type} for "${property.title}" is now ${status}`,
-      getAgentMessage: (user: any, property: any) => `${type} by ${user.first_name} ${user.last_name} for "${property.title}" is now ${status}`
+      getUserMessage: (property) => `Your ${type} for "${property.title}" has been ${status}`,
+      getOwnerMessage: (user, property) => `${user.first_name} ${user.last_name}'s ${type} for "${property.title}" is now ${status}`,
+      getAgentMessage: (user, property) => `${type} by ${user.first_name} ${user.last_name} for "${property.title}" is now ${status}`
     };
   } else {
     return {
       title: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Request`,
-      getUserMessage: (property: any) => `Your ${type} request for "${property.title}" has been submitted`,
-      getOwnerMessage: (user: any, property: any) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`,
-      getAgentMessage: (user: any, property: any) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`
+      getUserMessage: (property) => `Your ${type} request for "${property.title}" has been submitted`,
+      getOwnerMessage: (user, property) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`,
+      getAgentMessage: (user, property) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`
     };
   }
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const { record, old_record } = await req.json();
+    const { record, old_record }: BookingNotificationRequest = await req.json();
     
     if (!record || !record.user_id || !record.property_id) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid booking record' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('Invalid booking record'), 400);
     }
 
     console.log('Processing booking notification:', record.id, record.type);
+
+    const supabase = createTypedSupabaseClient();
 
     // Determine if this is a status change or new booking
     const isStatusChange = old_record && old_record.status !== record.status;
     
     // Get property and owner details
-    const { property, error: propertyError } = await getPropertyAndOwner(record.property_id);
+    const { property, error: propertyError } = await getPropertyAndOwner(record.property_id, supabase);
     if (propertyError || !property) {
       console.error('Property not found:', propertyError);
-      return new Response(
-        JSON.stringify({ error: 'Property not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('Property not found'), 404);
     }
 
     // Get user details
-    const { user, error: userError } = await getUserDetails(record.user_id);
+    const { user, error: userError } = await getUserDetails(record.user_id, supabase);
     if (userError || !user) {
       console.error('User not found:', userError);
-      return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('User not found'), 404);
     }
 
     const content = getNotificationContent(record, isStatusChange);
@@ -179,20 +194,18 @@ serve(async (req) => {
 
     console.log(`Successfully created ${results.length - errors.length}/${results.length} notifications`);
 
-    return new Response(JSON.stringify({
+    const response = {
       success: true,
       notifications_sent: results.length - errors.length,
       total_notifications: results.length,
       errors: errors.length > 0 ? errors : undefined
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    };
+
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Error in send-booking-notification function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Booking notification failed', errorMessage), 500);
   }
 });

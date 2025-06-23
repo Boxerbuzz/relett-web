@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   Client,
   AccountId,
@@ -10,42 +9,47 @@ import {
   TokenSupplyType,
   Hbar
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface TokenCreationRequest {
+  tokenizedPropertyId: string;
+  tokenName: string;
+  tokenSymbol: string;
+  totalSupply: number;
+  memo?: string;
+}
+
+interface TokenCreationResponse {
+  success: boolean;
+  token_id: string;
+  transaction_id: string;
+  message: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { tokenizedPropertyId, tokenName, tokenSymbol, totalSupply, memo } = await req.json();
+    const { tokenizedPropertyId, tokenName, tokenSymbol, totalSupply, memo }: TokenCreationRequest = await req.json();
 
     if (!tokenizedPropertyId || !tokenName || !tokenSymbol || !totalSupply) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
     // Get Hedera credentials
@@ -58,7 +62,8 @@ serve(async (req) => {
       // Mock token creation for development
       const mockTokenId = `0.0.${Math.floor(Math.random() * 1000000)}`;
       
-      const { error: updateError } = await supabaseClient
+      const supabase = createTypedSupabaseClient();
+      const { error: updateError } = await supabase
         .from('tokenized_properties')
         .update({
           hedera_token_id: mockTokenId,
@@ -68,20 +73,17 @@ serve(async (req) => {
 
       if (updateError) {
         console.error('Database update error:', updateError);
-        return new Response(JSON.stringify({ error: 'Failed to update token' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse(createErrorResponse('Failed to update token'), 500);
       }
 
-      return new Response(JSON.stringify({
+      const mockResponse: TokenCreationResponse = {
         success: true,
         token_id: mockTokenId,
         transaction_id: `mock_tx_${Date.now()}`,
         message: 'Mock token created for development'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     // Initialize Hedera client
@@ -125,7 +127,8 @@ serve(async (req) => {
       console.log('Token created successfully:', tokenId.toString());
 
       // Update database with real token information
-      const { error: updateError } = await supabaseClient
+      const supabase = createTypedSupabaseClient();
+      const { error: updateError } = await supabase
         .from('tokenized_properties')
         .update({
           hedera_token_id: tokenId.toString(),
@@ -140,42 +143,32 @@ serve(async (req) => {
 
       if (updateError) {
         console.error('Database update error:', updateError);
-        return new Response(JSON.stringify({ error: 'Token created but database update failed' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse(createErrorResponse('Token created but database update failed'), 500);
       }
 
       // Close client
       client.close();
 
-      return new Response(JSON.stringify({
+      const response: TokenCreationResponse = {
         success: true,
         token_id: tokenId.toString(),
         transaction_id: tokenCreateSubmit.transactionId.toString(),
         message: 'Hedera token created successfully'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(response));
 
     } catch (hederaError) {
       console.error('Hedera token creation error:', hederaError);
       client.close();
       
-      return new Response(JSON.stringify({ 
-        error: 'Failed to create Hedera token',
-        details: hederaError.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
+      return createResponse(createErrorResponse('Failed to create Hedera token', errorMessage), 500);
     }
 
   } catch (error) {
     console.error('Token creation error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

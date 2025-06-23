@@ -1,47 +1,51 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   Client,
   AccountId,
   AccountBalanceQuery
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface BalanceRequest {
+  accountId: string;
+}
+
+interface TokenBalance {
+  tokenId: string;
+  balance: string;
+}
+
+interface BalanceResponse {
+  balance: number;
+  tokens: TokenBalance[];
+  accountId: string;
+  message?: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { accountId } = await req.json();
+    const { accountId }: BalanceRequest = await req.json();
 
     if (!accountId) {
-      return new Response(JSON.stringify({ error: 'Missing account ID' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse(createErrorResponse('Missing account ID'), 400);
     }
 
     // Get Hedera credentials
@@ -50,13 +54,13 @@ serve(async (req) => {
 
     if (!hederaAccountId || !hederaPrivateKey) {
       // Mock balance for development
-      return new Response(JSON.stringify({
+      const mockResponse: BalanceResponse = {
         balance: 100.0,
         tokens: [],
+        accountId,
         message: 'Mock balance check for development'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+      return createResponse(createSuccessResponse(mockResponse));
     }
 
     try {
@@ -71,7 +75,7 @@ serve(async (req) => {
         .execute(client);
       
       // Convert token balances to array
-      const tokenBalances: Array<{ tokenId: string; balance: string }> = [];
+      const tokenBalances: TokenBalance[] = [];
       if (balance.tokens) {
         Object.entries(balance.tokens).forEach(([tokenId, amount]) => {
           tokenBalances.push({
@@ -83,33 +87,24 @@ serve(async (req) => {
       
       client.close();
 
-      return new Response(JSON.stringify({
+      const response: BalanceResponse = {
         balance: parseFloat(balance.hbars.toString()),
         tokens: tokenBalances,
         accountId: account.toString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      };
+
+      return createResponse(createSuccessResponse(response));
 
     } catch (hederaError) {
       console.error('Hedera balance query error:', hederaError);
       
-      return new Response(JSON.stringify({ 
-        error: 'Failed to get account balance',
-        details: hederaError.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
+      return createResponse(createErrorResponse('Failed to get account balance', errorMessage), 500);
     }
 
   } catch (error) {
     console.error('Balance query error:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Internal server error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });
