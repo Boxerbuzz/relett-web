@@ -418,3 +418,6 @@ This document describes the comprehensive backend system for managing user defau
 - Monitor database query performance
 - Check notification delivery success rates
 - Analyze user interaction patterns
+
+
+`### firebase deploy --only hosting:web-relett`

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -59,7 +58,7 @@ serve(async (req) => {
     // Log the update
     await supabase.from('audit_trails').insert({
       user_id: user_id,
-      resource_type: 'user_preferences',
+      resource_type: 'notification_preferences',
       resource_id: user_id,
       action: 'preferences_updated',
       new_values: {
