@@ -97,7 +97,10 @@ export function useTokenizedProperties() {
 
       // Get property images
       const propertyIds = holdingsData
-        ?.map(h => h.tokenized_properties?.properties?.id)
+        ?.map(h => {
+          const property = h.tokenized_properties?.properties;
+          return Array.isArray(property) ? property[0]?.id : property?.id;
+        })
         .filter(Boolean) || [];
 
       const { data: imagesData } = await supabase
@@ -171,7 +174,9 @@ export function useTokenizedProperties() {
       // Transform and enrich data
       const enrichedProperties: TokenizedPropertyData[] = holdingsData?.map(holding => {
         const tokenizedProperty = holding.tokenized_properties;
-        const property = tokenizedProperty?.properties;
+        const property = Array.isArray(tokenizedProperty?.properties) 
+          ? tokenizedProperty.properties[0] 
+          : tokenizedProperty?.properties;
         const investmentTracking = investmentTrackingByProperty[holding.tokenized_property_id];
         const propertyId = property?.id;
 
