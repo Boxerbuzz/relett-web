@@ -14,7 +14,8 @@ const supabase = createClient<Database>(
 );
 
 // Use the actual schema from the database types
-type IdentityVerificationData = Database["public"]["Tables"]["identity_verifications"]["Row"];
+type IdentityVerificationData =
+  Database["public"]["Tables"]["identity_verifications"]["Row"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,11 +29,11 @@ serve(async (req) => {
       user_id: verificationData.user_id,
       verification_id: verificationData.id,
       identity_type: verificationData.identity_type,
-      full_name: verificationData.full_name
+      full_name: verificationData.full_name,
     });
 
     if (!verificationData.user_id) {
-      throw new Error("user_id is required");
+      throw new Error("user id is required");
     }
 
     // Update user verification status to pending
@@ -40,7 +41,7 @@ serve(async (req) => {
       .from("users")
       .update({
         verification_status: "pending",
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq("id", verificationData.user_id);
 
@@ -54,7 +55,9 @@ serve(async (req) => {
       p_user_id: verificationData.user_id,
       p_type: "verification_updates",
       p_title: "Identity Verification Submitted",
-      p_message: `Your ${verificationData.identity_type?.toUpperCase()} verification for ${verificationData.full_name} has been submitted and is now under review. You'll be notified once the review is complete.`,
+      p_message: `Your ${verificationData.identity_type?.toUpperCase()} verification for ${
+        verificationData.full_name
+      } has been submitted and is now under review. You'll be notified once the review is complete.`,
       p_metadata: {
         verification_submission: true,
         verification_id: verificationData.id,
@@ -73,7 +76,7 @@ serve(async (req) => {
       resource_id: verificationData.id,
       action: "verification_status_updated",
       old_values: {
-        verification_status: "unverified"
+        verification_status: "unverified",
       },
       new_values: {
         verification_status: "pending",
@@ -85,7 +88,10 @@ serve(async (req) => {
       },
     });
 
-    console.log("Successfully updated verification status to pending for user:", verificationData.user_id);
+    console.log(
+      "Successfully updated verification status to pending for user:",
+      verificationData.user_id
+    );
 
     return new Response(
       JSON.stringify({
@@ -93,21 +99,17 @@ serve(async (req) => {
         message: "User verification status updated to pending",
         user_id: verificationData.user_id,
         verification_status: "pending",
-        identity_type: verificationData.identity_type
+        identity_type: verificationData.identity_type,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
-
   } catch (error) {
     console.error("Error in update-user-verification-status function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
-    );
+    return new Response(JSON.stringify({ error: error }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
