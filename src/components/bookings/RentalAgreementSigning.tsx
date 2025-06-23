@@ -75,6 +75,10 @@ export function RentalAgreementSigning({
     }
   };
 
+  const handleTermsChange = (checked: boolean | "indeterminate") => {
+    setTermsAccepted(checked === true);
+  };
+
   const agreementTerms = [
     "The tenant agrees to pay rent on time according to the specified payment plan.",
     "The property must be maintained in good condition throughout the rental period.",
@@ -192,7 +196,7 @@ export function RentalAgreementSigning({
                     <Checkbox 
                       id="terms" 
                       checked={termsAccepted}
-                      onCheckedChange={setTermsAccepted}
+                      onCheckedChange={handleTermsChange}
                     />
                     <label 
                       htmlFor="terms" 
