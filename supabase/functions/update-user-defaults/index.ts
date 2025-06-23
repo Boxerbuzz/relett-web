@@ -1,15 +1,14 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  corsHeaders 
+} from '../shared/supabase-client.ts';
 
 interface UpdateDefaultsRequest {
   user_id: string;
@@ -27,20 +26,19 @@ interface UpdateDefaultsRequest {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
     const { user_id, preferences, notification_types, portfolio_targets }: UpdateDefaultsRequest = await req.json();
     
     if (!user_id) {
-      return new Response(
-        JSON.stringify({ error: 'user_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('user_id is required'), 400);
     }
 
     console.log('Updating user defaults for:', user_id);
+
+    const supabase = createTypedSupabaseClient();
 
     // Call the database function to update defaults
     const { data, error } = await supabase.rpc('update_user_defaults', {
@@ -52,7 +50,7 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error updating user defaults:', error);
-      throw error;
+      return createResponse(handleSupabaseError(error), 500);
     }
 
     // Log the update
@@ -70,18 +68,12 @@ serve(async (req) => {
 
     console.log('Successfully updated user defaults for:', user_id);
 
-    return new Response(JSON.stringify({
-      success: true,
+    return createResponse(createSuccessResponse({
       message: 'User defaults updated successfully'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    }));
 
   } catch (error) {
     console.error('Error in update-user-defaults function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createResponse(handleSupabaseError(error), 500);
   }
 });

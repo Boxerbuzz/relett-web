@@ -1,16 +1,13 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
 interface TrackInteractionRequest {
   property_id: string;
@@ -23,20 +20,19 @@ interface TrackInteractionRequest {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
     const { property_id, user_id, interaction_type, metadata = {}, ip_address, user_agent }: TrackInteractionRequest = await req.json();
     
     if (!property_id || !user_id || !interaction_type) {
-      return new Response(
-        JSON.stringify({ error: 'property_id, user_id, and interaction_type are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createResponse(createErrorResponse('property_id, user_id, and interaction_type are required'), 400);
     }
 
     console.log('Tracking interaction:', { property_id, user_id, interaction_type });
+
+    const supabase = createTypedSupabaseClient();
 
     // Call the database function to track the interaction
     const { error: trackError } = await supabase.rpc('track_property_interaction', {
@@ -48,7 +44,7 @@ serve(async (req) => {
 
     if (trackError) {
       console.error('Error tracking interaction:', trackError);
-      throw trackError;
+      return createResponse(handleSupabaseError(trackError), 500);
     }
 
     // Handle specific interaction types
@@ -114,19 +110,13 @@ serve(async (req) => {
 
     console.log('Successfully tracked interaction:', interaction_type);
 
-    return new Response(JSON.stringify({
-      success: true,
+    return createResponse(createSuccessResponse({
       message: 'Interaction tracked successfully',
       interaction_type
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    }));
 
   } catch (error) {
     console.error('Error in track-interaction function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createResponse(handleSupabaseError(error), 500);
   }
 });

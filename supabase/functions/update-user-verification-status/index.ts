@@ -1,24 +1,21 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 import { Database } from "../types/database.types.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-const supabase = createClient<Database>(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
 
 // Use the actual schema from the database types
 type IdentityVerificationData = Database["public"]["Tables"]["identity_verifications"]["Row"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
@@ -32,8 +29,10 @@ serve(async (req) => {
     });
 
     if (!verificationData.user_id) {
-      throw new Error("user_id is required");
+      return createResponse(createErrorResponse('user_id is required'), 400);
     }
+
+    const supabase = createTypedSupabaseClient();
 
     // Update user verification status to pending
     const { error: updateError } = await supabase
@@ -46,7 +45,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error("Error updating user verification status:", updateError);
-      throw updateError;
+      return createResponse(handleSupabaseError(updateError), 500);
     }
 
     // Create notification for user about verification submission
@@ -87,27 +86,15 @@ serve(async (req) => {
 
     console.log("Successfully updated verification status to pending for user:", verificationData.user_id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User verification status updated to pending",
-        user_id: verificationData.user_id,
-        verification_status: "pending",
-        identity_type: verificationData.identity_type
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createResponse(createSuccessResponse({
+      message: "User verification status updated to pending",
+      user_id: verificationData.user_id,
+      verification_status: "pending",
+      identity_type: verificationData.identity_type
+    }));
 
   } catch (error) {
     console.error("Error in update-user-verification-status function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
-    );
+    return createResponse(handleSupabaseError(error), 500);
   }
 });

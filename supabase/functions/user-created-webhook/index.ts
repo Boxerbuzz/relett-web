@@ -1,6 +1,11 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { 
+  createTypedSupabaseClient, 
+  handleSupabaseError, 
+  createSuccessResponse, 
+  createResponse,
+  createCorsResponse 
+} from '../shared/supabase-client.ts';
 
 // Local type definition for the user data we expect
 interface UserData {
@@ -13,26 +18,17 @@ interface UserData {
   phone?: string;
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
     const userData: UserData = await req.json();
 
     console.log("Processing new user creation:", userData.id);
+
+    const supabase = createTypedSupabaseClient();
 
     // Update users table with metadata from signup
     const fullName = `${userData?.first_name || ""} ${
@@ -201,21 +197,12 @@ serve(async (req) => {
 
     console.log("Successfully processed user creation for:", userData.id);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "User defaults created successfully",
-        user_id: userData.id,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return createResponse(createSuccessResponse({
+      message: "User defaults created successfully",
+      user_id: userData.id,
+    }));
   } catch (error) {
     console.error("Error processing user creation:", error);
-    return new Response(JSON.stringify({ error: error }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return createResponse(handleSupabaseError(error), 500);
   }
 });
