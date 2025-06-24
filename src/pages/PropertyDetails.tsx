@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Bed, Bath, Square, Calendar, Phone, Mail, User } from 'lucide-react';
+import { MapPin, Bed, Shower, Square, Calendar, Phone, Envelope, User } from 'phosphor-react';
 import { RentalRequestModal } from '@/components/property/modals/RentalRequestModal';
 import { ReservationModal } from '@/components/property/modals/ReservationModal';
 import { InspectionModal } from '@/components/property/modals/InspectionModal';
@@ -264,7 +264,7 @@ export default function PropertyDetails() {
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <Bath className="w-5 h-5 mr-1" />
+                      <Shower className="w-5 h-5 mr-1" />
                       <span className="text-lg font-semibold">{property.specification?.bathrooms || 0}</span>
                     </div>
                     <div className="text-sm text-gray-600">Bathrooms</div>
@@ -360,7 +360,7 @@ export default function PropertyDetails() {
                     )}
                     {agent.email && (
                       <div className="flex items-center">
-                        <Mail className="w-4 h-4 mr-3 text-gray-500" />
+                        <Envelope className="w-4 h-4 mr-3 text-gray-500" />
                         <span className="text-sm">{agent.email}</span>
                       </div>
                     )}
