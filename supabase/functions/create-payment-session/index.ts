@@ -47,7 +47,7 @@ serve(async (req) => {
     const sessionId = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
-    const { data: session, error: dbError } = await supabase
+    const { data: _session, error: dbError } = await supabase
       .from('payment_sessions')
       .insert({
         user_id: userResult.data.id,

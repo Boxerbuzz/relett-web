@@ -1,92 +1,70 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
-  createTypedSupabaseClient, 
-  handleSupabaseError, 
+  createTypedSupabaseClient,
   createSuccessResponse, 
-  createErrorResponse,
   createResponse,
   createCorsResponse 
 } from '../shared/supabase-client.ts';
 
 interface SearchFilters {
   query?: string;
+  category?: string;
+  type?: string;
+  status?: string;
   location?: {
-    city?: string;
     state?: string;
+    city?: string;
+    lga?: string;
   };
-  propertyType?: string[];
   price?: {
     min?: number;
     max?: number;
+    currency?: string;
   };
-  features?: string[];
+  size?: {
+    min?: number;
+    max?: number;
+  };
   amenities?: string[];
-  bedrooms?: {
+  features?: string[];
+  yearBuilt?: {
     min?: number;
     max?: number;
   };
-  bathrooms?: {
+  ratings?: {
     min?: number;
-    max?: number;
   };
+  isVerified?: boolean;
+  isTokenized?: boolean;
+  isFeatured?: boolean;
+}
+
+interface SearchOptions {
   sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
   limit?: number;
-  offset?: number;
-}
-
-interface PropertyImage {
-  url: string;
-  is_primary?: boolean;
-}
-
-interface PropertyResult {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  price: {
-    amount: number;
-    currency: string;
-  };
-  location: {
-    city: string;
-    state: string;
-    address: string;
-  };
-  images: string[];
-  features: string[];
-  amenities: string[];
-  score: number;
-  highlights: string[];
-}
-
-interface LocationFacet {
-  name: string;
-  count: number;
-}
-
-interface PriceRangeFacet {
-  range: string;
-  count: number;
-}
-
-interface PropertyTypeFacet {
-  type: string;
-  count: number;
+  includeFacets?: boolean;
+  includeAnalytics?: boolean;
 }
 
 interface SearchFacets {
-  locations: LocationFacet[];
-  priceRanges: PriceRangeFacet[];
-  propertyTypes: PropertyTypeFacet[];
+  categories: Array<{ value: string; count: number }>;
+  types: Array<{ value: string; count: number }>;
+  locations: Array<{ value: string; count: number }>;
+  priceRanges: Array<{ range: string; count: number }>;
+  amenities: Array<{ value: string; count: number }>;
 }
 
 interface SearchResponse {
-  results: PropertyResult[];
-  totalCount: number;
-  suggestions: string[];
-  facets: SearchFacets;
+  results: unknown[];
+  total: number;
+  page: number;
+  limit: number;
+  facets?: SearchFacets;
+  suggestions?: string[];
+  executionTime: number;
 }
 
 serve(async (req) => {
@@ -94,258 +72,274 @@ serve(async (req) => {
     return createCorsResponse();
   }
 
+  const startTime = performance.now();
+
   try {
+    const { filters, options }: { filters: SearchFilters; options: SearchOptions } = await req.json();
+    
     const supabase = createTypedSupabaseClient();
-    const { filters }: { filters: SearchFilters } = await req.json();
+    
+    // Build the query
+    let query = supabase.from('properties').select(`
+      id,
+      title,
+      description,
+      category,
+      type,
+      status,
+      price,
+      location,
+      specification,
+      amenities,
+      features,
+      year_built,
+      ratings,
+      review_count,
+      views,
+      likes,
+      favorites,
+      is_verified,
+      is_tokenized,
+      is_featured,
+      backdrop,
+      created_at,
+      updated_at,
+      user_id
+    `);
 
-    // In production, this would use Elasticsearch or Algolia
-    // For now, we'll implement enhanced Supabase search with better ranking
-
-    let query = supabase
-      .from('properties')
-      .select(`
-        id,
-        title,
-        description,
-        type,
-        price,
-        location,
-        features,
-        amenities,
-        created_at,
-        views,
-        likes,
-        property_images!left(url, is_primary)
-      `)
-      .eq('status', 'active')
-      .eq('is_deleted', false);
-
-    // Text search with ranking
+    // Apply filters
     if (filters.query) {
-      query = query.textSearch('title,description', filters.query);
+      query = query.or(`title.ilike.%${filters.query}%,description.ilike.%${filters.query}%`);
     }
 
-    // Location filtering
-    if (filters.location?.city) {
-      query = query.ilike('location->>city', `%${filters.location.city}%`);
+    if (filters.category) {
+      query = query.eq('category', filters.category);
+    }
+
+    if (filters.type) {
+      query = query.eq('type', filters.type);
+    }
+
+    if (filters.status) {
+      query = query.eq('status', filters.status);
     }
 
     if (filters.location?.state) {
-      query = query.ilike('location->>state', `%${filters.location.state}%`);
+      query = query.eq('location->>state', filters.location.state);
     }
 
-    // Property type filtering
-    if (filters.propertyType && filters.propertyType.length > 0) {
-      query = query.in('type', filters.propertyType);
+    if (filters.location?.city) {
+      query = query.eq('location->>city', filters.location.city);
     }
 
-    // Price filtering
-    if (filters.price?.min !== undefined) {
-      query = query.gte('price->amount', filters.price.min);
+    if (filters.location?.lga) {
+      query = query.eq('location->>lga', filters.location.lga);
     }
 
-    if (filters.price?.max !== undefined) {
-      query = query.lte('price->amount', filters.price.max);
+    if (filters.price?.min !== undefined || filters.price?.max !== undefined) {
+      const currency = filters.price.currency || 'NGN';
+      if (filters.price.min !== undefined) {
+        query = query.gte(`price->${currency}`, filters.price.min);
+      }
+      if (filters.price.max !== undefined) {
+        query = query.lte(`price->${currency}`, filters.price.max);
+      }
     }
 
-    // Features filtering
-    if (filters.features && filters.features.length > 0) {
-      query = query.contains('features', filters.features);
+    if (filters.size?.min !== undefined || filters.size?.max !== undefined) {
+      if (filters.size.min !== undefined) {
+        query = query.gte('specification->>area', filters.size.min);
+      }
+      if (filters.size.max !== undefined) {
+        query = query.lte('specification->>area', filters.size.max);
+      }
     }
 
-    // Amenities filtering
     if (filters.amenities && filters.amenities.length > 0) {
-      query = query.contains('amenities', filters.amenities);
+      query = query.overlaps('amenities', filters.amenities);
     }
 
-    // Bedroom filtering
-    if (filters.bedrooms?.min !== undefined) {
-      query = query.gte('specification->bedrooms', filters.bedrooms.min);
+    if (filters.features && filters.features.length > 0) {
+      query = query.overlaps('features', filters.features);
     }
 
-    if (filters.bedrooms?.max !== undefined) {
-      query = query.lte('specification->bedrooms', filters.bedrooms.max);
+    if (filters.yearBuilt?.min !== undefined || filters.yearBuilt?.max !== undefined) {
+      if (filters.yearBuilt.min !== undefined) {
+        query = query.gte('year_built', filters.yearBuilt.min.toString());
+      }
+      if (filters.yearBuilt.max !== undefined) {
+        query = query.lte('year_built', filters.yearBuilt.max.toString());
+      }
     }
 
-    // Bathroom filtering
-    if (filters.bathrooms?.min !== undefined) {
-      query = query.gte('specification->bathrooms', filters.bathrooms.min);
+    if (filters.ratings?.min !== undefined) {
+      query = query.gte('ratings', filters.ratings.min);
     }
 
-    if (filters.bathrooms?.max !== undefined) {
-      query = query.lte('specification->bathrooms', filters.bathrooms.max);
+    if (filters.isVerified !== undefined) {
+      query = query.eq('is_verified', filters.isVerified);
     }
 
-    // Sorting
-    switch (filters.sortBy) {
-      case 'price_asc':
-        query = query.order('price->amount', { ascending: true });
-        break;
-      case 'price_desc':
-        query = query.order('price->amount', { ascending: false });
-        break;
-      case 'date_asc':
-        query = query.order('created_at', { ascending: true });
-        break;
-      case 'date_desc':
-        query = query.order('created_at', { ascending: false });
-        break;
-      case 'relevance':
-      default:
-        // Custom relevance scoring (views + likes)
-        query = query.order('views', { ascending: false });
-        break;
+    if (filters.isTokenized !== undefined) {
+      query = query.eq('is_tokenized', filters.isTokenized);
     }
 
-    // Pagination
-    const limit = Math.min(filters.limit || 20, 100);
-    const offset = filters.offset || 0;
+    if (filters.isFeatured !== undefined) {
+      query = query.eq('is_featured', filters.isFeatured);
+    }
+
+    // Apply sorting
+    const sortBy = options.sortBy || 'created_at';
+    const sortOrder = options.sortOrder || 'desc';
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+
+    // Apply pagination
+    const page = Math.max(1, options.page || 1);
+    const limit = Math.min(100, Math.max(1, options.limit || 20));
+    const offset = (page - 1) * limit;
+
     query = query.range(offset, offset + limit - 1);
 
-    const { data: properties, error, count } = await query;
+    // Execute query
+    const { data: results, error, count } = await query;
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
-    // Transform results
-    const results: PropertyResult[] = (properties || []).map((property, index) => ({
-      id: property.id,
-      title: property.title,
-      description: property.description,
-      type: property.type,
-      price: property.price as { amount: number; currency: string },
-      location: property.location as { city: string; state: string; address: string },
-      images: Array.isArray(property.property_images) 
-        ? property.property_images.map((img: PropertyImage) => img.url).filter(Boolean)
-        : [],
-      features: property.features || [],
-      amenities: property.amenities || [],
-      score: calculateRelevanceScore(property, filters.query, index),
-      highlights: generateHighlights(property, filters.query)
-    }));
+    // Generate facets if requested
+    let facets: SearchFacets | undefined;
+    if (options.includeFacets) {
+      facets = await generateFacets(supabase, filters);
+    }
 
-    // Generate facets
-    const facets = await generateFacets(supabase, filters);
+    // Generate suggestions if requested
+    let suggestions: string[] | undefined;
+    if (filters.query && filters.query.length > 2) {
+      suggestions = await generateSuggestions(filters.query);
+    }
 
-    // Generate suggestions
-    const suggestions = filters.query ? await generateSuggestions(filters.query) : [];
+    const executionTimeMs = performance.now() - startTime;
 
     const response: SearchResponse = {
-      results,
-      totalCount: count || 0,
+      results: results || [],
+      total: count || 0,
+      page,
+      limit,
+      facets,
       suggestions,
-      facets
+      executionTime: Math.round(executionTimeMs)
     };
 
     return createResponse(createSuccessResponse(response));
 
   } catch (error) {
     console.error('Advanced search error:', error);
-    return createResponse(handleSupabaseError(error), 500);
+    const executionTimeMs = performance.now() - startTime;
+    
+    return createResponse(createSuccessResponse({
+      results: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      executionTime: Math.round(executionTimeMs),
+      error: error instanceof Error ? error.message : 'Search failed'
+    }));
   }
 });
 
-function calculateRelevanceScore(property: Record<string, unknown>, query?: string, position: number = 0): number {
-  let score = 100 - position; // Base score decreases with position
+async function generateFacets(supabase: ReturnType<typeof createTypedSupabaseClient>, _filters: SearchFilters): Promise<SearchFacets> {
+  try {
+    // Get category counts
+    const { data: categories } = await supabase
+      .from('properties')
+      .select('category')
+      .not('category', 'is', null);
 
-  // Boost based on engagement
-  score += ((property.views as number) || 0) * 0.1;
-  score += ((property.likes as number) || 0) * 0.5;
+    // Get type counts
+    const { data: types } = await supabase
+      .from('properties')
+      .select('type')
+      .not('type', 'is', null);
 
-  // Boost if query matches title more than description
-  if (query) {
-    const queryLower = query.toLowerCase();
-    const titleMatch = (property.title as string)?.toLowerCase().includes(queryLower);
-    const descMatch = (property.description as string)?.toLowerCase().includes(queryLower);
-    
-    if (titleMatch) score += 20;
-    if (descMatch) score += 10;
+    // Get location counts (states)
+    const { data: locations } = await supabase
+      .from('properties')
+      .select('location')
+      .not('location', 'is', null);
+
+    // Process and count facets
+    const categoryFacets = processFacetCounts(categories, 'category');
+    const typeFacets = processFacetCounts(types, 'type');
+    const locationFacets = processLocationFacets(locations);
+
+    return {
+      categories: categoryFacets,
+      types: typeFacets,
+      locations: locationFacets,
+      priceRanges: [],
+      amenities: []
+    };
+
+  } catch (error) {
+    console.error('Error generating facets:', error);
+    return {
+      categories: [],
+      types: [],
+      locations: [],
+      priceRanges: [],
+      amenities: []
+    };
   }
-
-  return Math.round(score);
 }
 
-function generateHighlights(property: Record<string, unknown>, query?: string): string[] {
-  if (!query) return [];
-
-  const highlights: string[] = [];
-  const queryLower = query.toLowerCase();
-
-  // Check title
-  if ((property.title as string)?.toLowerCase().includes(queryLower)) {
-    highlights.push(`Title: ...${property.title}...`);
-  }
-
-  // Check description (first 100 chars containing query)
-  if ((property.description as string)?.toLowerCase().includes(queryLower)) {
-    const description = property.description as string;
-    const index = description.toLowerCase().indexOf(queryLower);
-    const start = Math.max(0, index - 50);
-    const end = Math.min(description.length, index + 50);
-    highlights.push(`...${description.substring(start, end)}...`);
-  }
-
-  return highlights;
-}
-
-async function generateFacets(supabase: ReturnType<typeof createTypedSupabaseClient>, filters: SearchFilters): Promise<SearchFacets> {
-  // Generate location facets
-  const { data: locationData } = await supabase
-    .from('properties')
-    .select('location->city')
-    .eq('status', 'active')
-    .limit(100);
-
-  const locationCounts = new Map<string, number>();
-  locationData?.forEach((item) => {
-    const city = (item.location as { city?: string })?.city;
-    if (city) {
-      locationCounts.set(city, (locationCounts.get(city) || 0) + 1);
+function processFacetCounts(data: unknown[] | null, field: string): Array<{ value: string; count: number }> {
+  if (!data) return [];
+  
+  const counts: Record<string, number> = {};
+  data.forEach(item => {
+    const value = (item as Record<string, unknown>)[field] as string;
+    if (value) {
+      counts[value] = (counts[value] || 0) + 1;
     }
   });
 
-  const locations: LocationFacet[] = Array.from(locationCounts.entries())
-    .map(([name, count]) => ({ name, count }))
+  return Object.entries(counts)
+    .map(([value, count]) => ({ value, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
+}
 
-  // Generate property type facets
-  const { data: typeData } = await supabase
-    .from('properties')
-    .select('type')
-    .eq('status', 'active');
-
-  const typeCounts = new Map<string, number>();
-  typeData?.forEach((item) => {
-    if (item.type) {
-      typeCounts.set(item.type, (typeCounts.get(item.type) || 0) + 1);
+function processLocationFacets(data: unknown[] | null): Array<{ value: string; count: number }> {
+  if (!data) return [];
+  
+  const counts: Record<string, number> = {};
+  data.forEach(item => {
+    const location = (item as Record<string, unknown>).location as Record<string, unknown>;
+    if (location?.state) {
+      const state = location.state as string;
+      counts[state] = (counts[state] || 0) + 1;
     }
   });
 
-  const propertyTypes: PropertyTypeFacet[] = Array.from(typeCounts.entries())
-    .map(([type, count]) => ({ type, count }))
-    .sort((a, b) => b.count - a.count);
-
-  return {
-    locations,
-    priceRanges: [
-      { range: '0-100000', count: 0 },
-      { range: '100000-500000', count: 0 },
-      { range: '500000-1000000', count: 0 },
-      { range: '1000000+', count: 0 }
-    ],
-    propertyTypes
-  };
+  return Object.entries(counts)
+    .map(([value, count]) => ({ value, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
 }
 
-async function generateSuggestions(query: string): Promise<string[]> {
-  // Simple suggestion generation - in production use ML/AI
+function generateSuggestions(query: string): Promise<string[]> {
+  // Simple suggestion generation based on common property terms
   const commonTerms = [
-    'apartment', 'house', 'condo', 'villa', 'studio',
-    'lagos', 'abuja', 'port harcourt', 'kano', 'ibadan',
-    'swimming pool', 'parking', 'garden', 'security'
+    'apartment', 'house', 'villa', 'duplex', 'bungalow',
+    'office', 'shop', 'warehouse', 'land', 'commercial',
+    '2 bedroom', '3 bedroom', '4 bedroom', 'studio',
+    'furnished', 'unfurnished', 'serviced', 'luxury'
   ];
 
-  return commonTerms
+  const suggestions = commonTerms
     .filter(term => term.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 5);
+
+  return Promise.resolve(suggestions);
 }

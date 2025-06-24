@@ -9,7 +9,7 @@ export interface SupabaseError {
   code?: string;
 }
 
-export interface SuccessResponse<T = any> {
+export interface SuccessResponse<T = unknown> {
   success: true;
   data: T;
   message?: string;
@@ -21,7 +21,7 @@ export interface ErrorResponse {
   details?: string;
 }
 
-export type ApiResponse<T = any> = SuccessResponse<T> | ErrorResponse;
+export type ApiResponse<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
 // Create typed Supabase client factory
 export function createTypedSupabaseClient() {

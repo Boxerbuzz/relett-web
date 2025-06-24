@@ -6,7 +6,6 @@ import {
   PrivateKey,
   TokenCreateTransaction,
   TokenType,
-  TokenSupplyType,
   Hbar
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
 import { 

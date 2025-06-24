@@ -1,167 +1,193 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  Client,
+  AccountId,
+  PrivateKey,
+  TopicMessageSubmitTransaction,
+  Hbar
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 import { 
   createTypedSupabaseClient,
   createSuccessResponse, 
   createErrorResponse,
   createResponse,
-  createCorsResponse 
+  createCorsResponse,
+  verifyUser 
 } from '../shared/supabase-client.ts';
 
-interface VoteRequest {
-  pollId: string;
-  voterId: string;
-  optionId: string;
-  votingPower: number;
+interface PollVoteRequest {
+  poll_id: string;
+  poll_option_id?: string;
+  ranked_choices?: string[];
+  vote_data?: Record<string, unknown>;
 }
 
-interface VoteRecord {
-  pollId: string;
-  voterId: string;
-  optionId: string;
-  votingPower: number;
-  timestamp: string;
-  signature?: string;
-}
-
-interface VoteResponse {
+interface PollVoteResponse {
   success: boolean;
-  hederaTransactionId: string | null;
-  consensusTimestamp: string | null;
-  topicId: string | null;
+  vote_id: string;
+  hedera_transaction_id?: string;
+  message: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return createCorsResponse();
   }
 
   try {
+    const authHeader = req.headers.get('Authorization')!;
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
+    }
+
+    const { poll_id, poll_option_id, ranked_choices, vote_data }: PollVoteRequest = await req.json();
+
+    if (!poll_id) {
+      return createResponse(createErrorResponse('Missing poll ID'), 400);
+    }
+
     const supabase = createTypedSupabaseClient();
-    const { pollId, voterId, optionId, votingPower }: VoteRequest = await req.json();
+    const userId = userResult.data.id;
 
-    console.log('Recording vote:', { pollId, voterId, optionId, votingPower });
+    // Get poll details and check if user can vote
+    const { data: poll, error: pollError } = await supabase
+      .from('investment_polls')
+      .select('*, investment_groups(*)')
+      .eq('id', poll_id)
+      .single();
 
-    // Create vote record for Hedera Consensus Service
-    const voteRecord: VoteRecord = {
-      pollId,
-      voterId,
-      optionId,
-      votingPower,
-      timestamp: new Date().toISOString()
-    };
+    if (pollError || !poll) {
+      return createResponse(createErrorResponse('Poll not found'), 404);
+    }
 
-    // Real Hedera integration - submit to Consensus Service
-    let hederaTransactionId: string | null = null;
-    let consensusTimestamp: string | null = null;
-    let hederaTopicId: string | null = null;
+    if (poll.status !== 'active') {
+      return createResponse(createErrorResponse('Poll is not active'), 400);
+    }
 
-    try {
-      // Get Hedera credentials from environment
+    if (new Date() > new Date(poll.ends_at)) {
+      return createResponse(createErrorResponse('Poll has ended'), 400);
+    }
+
+    // Check if user already voted (if vote changes not allowed)
+    if (!poll.allow_vote_changes) {
+      const { data: existingVote } = await supabase
+        .from('poll_votes')
+        .select('id')
+        .eq('poll_id', poll_id)
+        .eq('voter_id', userId)
+        .single();
+
+      if (existingVote) {
+        return createResponse(createErrorResponse('You have already voted on this poll'), 400);
+      }
+    }
+
+    // Calculate voting power
+    const { data: votingPowerData } = await supabase.rpc('calculate_voting_power', {
+      p_poll_id: poll_id,
+      p_voter_id: userId
+    });
+
+    const votingPower = votingPowerData || 1.0;
+
+    let hederaTransactionId: string | undefined;
+
+    // Submit to Hedera Consensus Service if topic ID is available
+    if (poll.hedera_topic_id) {
       const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID');
       const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
-      
+
       if (hederaAccountId && hederaPrivateKey) {
-        // Import Hedera SDK
-        const { Client, TopicMessageSubmitTransaction, TopicCreateTransaction, AccountId, PrivateKey } = await import('https://esm.sh/@hashgraph/sdk@2.65.1');
-        
-        // Create Hedera client
-        const client = Client.forTestnet();
-        client.setOperator(AccountId.fromString(hederaAccountId), PrivateKey.fromStringECDSA(hederaPrivateKey));
+        try {
+          const client = Client.forTestnet();
+          const operatorId = AccountId.fromString(hederaAccountId);
+          const operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
+          client.setOperator(operatorId, operatorKey);
 
-        // Check if poll already has a topic ID
-        const { data: pollData } = await supabase
-          .from('investment_polls')
-          .select('hedera_topic_id')
-          .eq('id', pollId)
-          .single();
-
-        hederaTopicId = pollData?.hedera_topic_id;
-
-        // Create topic if it doesn't exist
-        if (!hederaTopicId) {
-          const topicCreateTx = new TopicCreateTransaction()
-            .setTopicMemo(`Investment Poll: ${pollId}`)
-            .setAdminKey(PrivateKey.fromStringECDSA(hederaPrivateKey));
-
-          const topicCreateResponse = await topicCreateTx.execute(client);
-          const topicCreateReceipt = await topicCreateResponse.getReceipt(client);
-          hederaTopicId = topicCreateReceipt.topicId?.toString() || null;
-
-          // Update poll with topic ID
-          await supabase
-            .from('investment_polls')
-            .update({ hedera_topic_id: hederaTopicId })
-            .eq('id', pollId);
-        }
-
-        // Submit vote message to Hedera Consensus Service
-        if (hederaTopicId) {
-          const messageJson = JSON.stringify({
-            action: 'vote_cast',
-            ...voteRecord
+          const voteMessage = JSON.stringify({
+            poll_id,
+            voter_id: userId,
+            poll_option_id,
+            ranked_choices,
+            vote_data,
+            voting_power: votingPower,
+            timestamp: new Date().toISOString()
           });
 
-          const submitTx = new TopicMessageSubmitTransaction()
-            .setTopicId(hederaTopicId)
-            .setMessage(messageJson);
+          const submitTransaction = new TopicMessageSubmitTransaction()
+            .setTopicId(poll.hedera_topic_id)
+            .setMessage(voteMessage)
+            .setMaxTransactionFee(new Hbar(2));
 
-          const submitResponse = await submitTx.execute(client);
-          const submitReceipt = await submitResponse.getReceipt(client);
+          const submitResponse = await submitTransaction.execute(client);
+          const _submitReceipt = await submitResponse.getReceipt(client);
           
           hederaTransactionId = submitResponse.transactionId.toString();
-          consensusTimestamp = new Date().toISOString(); // This would be from the receipt in real implementation
           
-          console.log('Vote submitted to Hedera:', {
-            topicId: hederaTopicId,
-            transactionId: hederaTransactionId
-          });
+          client.close();
+          console.log('Vote submitted to Hedera:', hederaTransactionId);
+        } catch (hederaError) {
+          console.error('Hedera submission error:', hederaError);
+          // Continue without Hedera - this is not a blocking error
         }
-
-        client.close();
-      } else {
-        console.log('Hedera credentials not found, using mock data');
-        // Fallback to mock data for development
-        hederaTopicId = `0.0.${Math.floor(Math.random() * 1000000)}`;
-        hederaTransactionId = `0.0.${Math.floor(Math.random() * 1000000)}-${Date.now()}`;
-        consensusTimestamp = new Date().toISOString();
       }
-    } catch (hederaError) {
-      console.error('Hedera integration error:', hederaError);
-      // Fallback to mock data if Hedera fails
-      hederaTopicId = `0.0.${Math.floor(Math.random() * 1000000)}`;
-      hederaTransactionId = `0.0.${Math.floor(Math.random() * 1000000)}-${Date.now()}`;
-      consensusTimestamp = new Date().toISOString();
     }
 
-    // Update the vote record with Hedera information
-    const { error: updateError } = await supabase
+    // Store vote in database
+    const { data: vote, error: voteError } = await supabase
       .from('poll_votes')
-      .update({
+      .upsert({
+        poll_id,
+        voter_id: userId,
+        poll_option_id,
+        ranked_choices,
+        vote_data: vote_data || {},
+        voting_power: votingPower,
+        vote_weight: votingPower,
         hedera_transaction_id: hederaTransactionId,
-        hedera_consensus_timestamp: consensusTimestamp
+        voted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'poll_id,voter_id'
       })
-      .eq('poll_id', pollId)
-      .eq('voter_id', voterId);
+      .select()
+      .single();
 
-    if (updateError) {
-      console.error('Error updating vote with Hedera info:', updateError);
-      throw updateError;
+    if (voteError) {
+      console.error('Vote storage error:', voteError);
+      return createResponse(createErrorResponse('Failed to record vote'), 500);
     }
 
-    const response: VoteResponse = {
+    // Create notification for poll creator
+    await supabase.rpc('create_notification_with_delivery', {
+      p_user_id: poll.created_by,
+      p_type: 'poll_updates',
+      p_title: 'New Vote Received',
+      p_message: `A new vote has been cast on your poll`,
+      p_metadata: {
+        poll_id,
+        voter_id: userId,
+        poll_title: poll.title
+      },
+      p_action_url: `/investment/polls/${poll_id}`,
+      p_action_label: 'View Poll'
+    });
+
+    const response: PollVoteResponse = {
       success: true,
-      hederaTransactionId,
-      consensusTimestamp,
-      topicId: hederaTopicId
+      vote_id: vote.id,
+      hedera_transaction_id: hederaTransactionId,
+      message: 'Vote recorded successfully'
     };
 
     return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Error recording vote:', error);
+    console.error('Poll vote error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return createResponse(createErrorResponse('Failed to record vote', errorMessage), 500);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

@@ -1,266 +1,176 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   Client,
   AccountId,
-  PrivateKey,
-  TokenId,
-  TransferTransaction,
-  Hbar
+  PrivateKey
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { 
+  createTypedSupabaseClient,
+  createSuccessResponse, 
+  createErrorResponse,
+  createResponse,
+  createCorsResponse,
+  verifyUser 
+} from '../shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface RevenueDistributionRequest {
+  tokenizedPropertyId: string;
+  totalRevenue: number;
+  distributionType: string;
+  sourceDescription: string;
+}
+
+interface RevenueDistributionResponse {
+  success: boolean;
+  distribution_id: string;
+  total_holders: number;
+  message: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const authHeader = req.headers.get('Authorization')!;
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const userResult = await verifyUser(authHeader);
+    
+    if (!userResult.success) {
+      return createResponse(userResult, 401);
     }
 
-    const { 
-      revenueDistributionId,
+    const {
       tokenizedPropertyId,
       totalRevenue,
-      distributionType,
-      sourceDescription 
-    } = await req.json();
+      _distributionType,
+      _sourceDescription
+    }: RevenueDistributionRequest = await req.json();
 
-    if (!revenueDistributionId || !tokenizedPropertyId || !totalRevenue) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!tokenizedPropertyId || !totalRevenue) {
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
+    const supabase = createTypedSupabaseClient();
+
     // Get tokenized property details
-    const { data: tokenizedProperty, error: propertyError } = await supabaseClient
+    const { data: property, error: propertyError } = await supabase
       .from('tokenized_properties')
       .select('*')
       .eq('id', tokenizedPropertyId)
       .single();
 
-    if (propertyError || !tokenizedProperty) {
-      return new Response(JSON.stringify({ error: 'Property not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (propertyError || !property) {
+      return createResponse(createErrorResponse('Tokenized property not found'), 404);
     }
 
-    // Get all token holders
-    const { data: holdings, error: holdingsError } = await supabaseClient
-      .from('token_holdings')
-      .select(`
-        *,
-        users!token_holdings_holder_id_fkey(id, first_name, last_name, email)
-      `)
-      .eq('tokenized_property_id', tokenizedPropertyId);
+    // Calculate revenue per token
+    const totalSupply = parseFloat(property.total_supply);
+    const revenuePerToken = totalRevenue / totalSupply;
 
-    if (holdingsError || !holdings || holdings.length === 0) {
-      return new Response(JSON.stringify({ error: 'No token holders found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Calculate total tokens in circulation
-    const totalTokens = holdings.reduce((sum, holding) => 
-      sum + parseInt(holding.tokens_owned), 0);
-
-    if (totalTokens === 0) {
-      return new Response(JSON.stringify({ error: 'No tokens in circulation' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const revenuePerToken = totalRevenue / totalTokens;
-
-    console.log('Processing revenue distribution:', {
-      totalRevenue,
-      totalTokens,
-      revenuePerToken,
-      holdersCount: holdings.length
-    });
-
-    // Get Hedera credentials
+    // For development without Hedera credentials
     const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID');
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
-    const distributions = [];
-    const taxRate = 0.1; // 10% tax withholding
+    if (!hederaAccountId || !hederaPrivateKey) {
+      // Mock distribution for development
+      const mockResponse: RevenueDistributionResponse = {
+        success: true,
+        distribution_id: `mock_dist_${Date.now()}`,
+        total_holders: 0,
+        message: 'Mock revenue distribution for development'
+      };
+      return createResponse(createSuccessResponse(mockResponse));
+    }
 
-    for (const holding of holdings) {
-      const tokensOwned = parseInt(holding.tokens_owned);
-      const revenueShare = tokensOwned * revenuePerToken;
-      const taxWithholding = revenueShare * taxRate;
-      const netAmount = revenueShare - taxWithholding;
+    // Initialize Hedera client
+    const client = Client.forTestnet();
+    const operatorId = AccountId.fromString(hederaAccountId);
+    const operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
+    client.setOperator(operatorId, operatorKey);
 
-      // Create dividend payment record
-      const { data: dividendPayment, error: paymentError } = await supabaseClient
-        .from('dividend_payments')
+    try {
+      // Get all token holders
+      const { data: holders, error: holdersError } = await supabase
+        .from('token_holdings')
+        .select('*')
+        .eq('tokenized_property_id', tokenizedPropertyId);
+
+      if (holdersError) {
+        throw holdersError;
+      }
+
+      // Create revenue distribution record
+      const { data: distribution, error: distributionError } = await supabase
+        .from('revenue_distributions')
         .insert({
-          revenue_distribution_id: revenueDistributionId,
-          recipient_id: holding.holder_id,
-          token_holding_id: holding.id,
-          amount: revenueShare,
-          net_amount: netAmount,
-          tax_withholding: taxWithholding,
-          currency: 'USD',
-          status: 'pending',
-          payment_method: 'hedera_transfer'
+          tokenized_property_id: tokenizedPropertyId,
+          total_revenue: totalRevenue,
+          revenue_per_token: revenuePerToken,
+          distribution_date: new Date().toISOString(),
+          distribution_type: 'rental_income',
+          source_description: 'Property rental revenue'
         })
         .select()
         .single();
 
-      if (paymentError) {
-        console.error('Error creating dividend payment:', paymentError);
-        continue;
+      if (distributionError) {
+        throw distributionError;
       }
 
-      distributions.push({
-        holding,
-        payment: dividendPayment,
-        tokensOwned,
-        revenueShare,
-        netAmount
-      });
-    }
+      // Create dividend payment records for each holder
+      const dividendPayments = holders?.map(holder => {
+        const tokensOwned = parseFloat(holder.tokens_owned);
+        const dividendAmount = tokensOwned * revenuePerToken;
+        const taxWithholding = dividendAmount * 0.1; // 10% tax withholding
+        const netAmount = dividendAmount - taxWithholding;
 
-    // Process Hedera transfers if credentials are available
-    let successfulTransfers = 0;
-    let failedTransfers = 0;
+        return {
+          revenue_distribution_id: distribution.id,
+          token_holding_id: holder.id,
+          recipient_id: holder.holder_id,
+          amount: dividendAmount,
+          net_amount: netAmount,
+          tax_withholding: taxWithholding,
+          currency: 'USD',
+          payment_method: 'hedera_transfer',
+          status: 'pending'
+        };
+      }) || [];
 
-    if (hederaAccountId && hederaPrivateKey && tokenizedProperty.hedera_token_id) {
-      const client = Client.forTestnet();
-      const operatorId = AccountId.fromString(hederaAccountId);
-      const operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
-      client.setOperator(operatorId, operatorKey);
+      if (dividendPayments.length > 0) {
+        const { error: paymentsError } = await supabase
+          .from('dividend_payments')
+          .insert(dividendPayments);
 
-      for (const distribution of distributions) {
-        try {
-          // Note: This is a simplified example. In practice, you'd need:
-          // 1. A stable coin token for USD transfers
-          // 2. Proper account IDs for each holder
-          // 3. More sophisticated error handling
-          
-          console.log(`Processing payment for holder ${distribution.holding.holder_id}: $${distribution.netAmount.toFixed(2)}`);
-          
-          // Update payment status to completed (mock for now)
-          await supabaseClient
-            .from('dividend_payments')
-            .update({
-              status: 'paid',
-              paid_at: new Date().toISOString(),
-              external_transaction_id: `hedera_${Date.now()}_${distribution.holding.holder_id}`
-            })
-            .eq('id', distribution.payment.id);
-
-          successfulTransfers++;
-
-        } catch (transferError) {
-          console.error(`Transfer failed for holder ${distribution.holding.holder_id}:`, transferError);
-          
-          await supabaseClient
-            .from('dividend_payments')
-            .update({
-              status: 'failed',
-              external_transaction_id: `failed_${Date.now()}_${distribution.holding.holder_id}`
-            })
-            .eq('id', distribution.payment.id);
-
-          failedTransfers++;
+        if (paymentsError) {
+          console.error('Error creating dividend payments:',paymentsError);
         }
       }
 
       client.close();
-    } else {
-      // Mock processing for development
-      for (const distribution of distributions) {
-        await supabaseClient
-          .from('dividend_payments')
-          .update({
-            status: 'paid',
-            paid_at: new Date().toISOString(),
-            external_transaction_id: `mock_${Date.now()}_${distribution.holding.holder_id}`
-          })
-          .eq('id', distribution.payment.id);
 
-        successfulTransfers++;
-      }
+      const response: RevenueDistributionResponse = {
+        success: true,
+        distribution_id: distribution.id,
+        total_holders: holders?.length || 0,
+        message: 'Revenue distribution initiated successfully'
+      };
+
+      return createResponse(createSuccessResponse(response));
+
+    } catch (hederaError) {
+      console.error('Hedera distribution error:', hederaError);
+      client.close();
+      
+      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
+      return createResponse(createErrorResponse('Failed to distribute revenue', errorMessage), 500);
     }
-
-    // Update revenue distribution status
-    await supabaseClient
-      .from('revenue_distributions')
-      .update({
-        metadata: {
-          processed_at: new Date().toISOString(),
-          total_holders: holdings.length,
-          successful_transfers: successfulTransfers,
-          failed_transfers: failedTransfers,
-          revenue_per_token: revenuePerToken
-        }
-      })
-      .eq('id', revenueDistributionId);
-
-    // Send notifications to holders
-    for (const distribution of distributions) {
-      await supabaseClient.functions.invoke('process-notification', {
-        body: {
-          user_id: distribution.holding.holder_id,
-          type: 'investment',
-          title: 'Revenue Distribution Received',
-          message: `You have received $${distribution.netAmount.toFixed(2)} from ${tokenizedProperty.token_name} revenue distribution.`,
-          metadata: {
-            property_id: tokenizedPropertyId,
-            distribution_id: revenueDistributionId,
-            amount: distribution.netAmount,
-            tokens_owned: distribution.tokensOwned
-          }
-        }
-      });
-    }
-
-    return new Response(JSON.stringify({
-      success: true,
-      message: 'Revenue distribution completed',
-      summary: {
-        total_holders: holdings.length,
-        total_revenue: totalRevenue,
-        revenue_per_token: revenuePerToken,
-        successful_transfers: successfulTransfers,
-        failed_transfers: failedTransfers
-      }
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
   } catch (error) {
     console.error('Revenue distribution error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });
