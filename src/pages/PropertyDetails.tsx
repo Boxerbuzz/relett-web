@@ -14,6 +14,7 @@ import { ReservationModal } from '@/components/property/modals/ReservationModal'
 import { InspectionModal } from '@/components/property/modals/InspectionModal';
 import { OfferModal } from '@/components/property/modals/OfferModal';
 import { useToast } from '@/hooks/use-toast';
+import { getAmenityById } from '@/types/amenities';
 
 interface PropertyImage {
   url: string;
@@ -317,7 +318,7 @@ export default function PropertyDetails() {
                         {property.amenities.map((amenity, index) => (
                           <li key={index} className="flex items-center">
                             <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                            {amenity}
+                            {getAmenityById(amenity)?.name || amenity}
                           </li>
                         ))}
                       </ul>

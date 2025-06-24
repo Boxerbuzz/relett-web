@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -15,7 +10,6 @@ import { AnalyticsProvider } from "@/components/monitoring/AnalyticsProvider";
 // Pages
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
-import Index from "@/pages/Index";
 import Marketplace from "@/pages/Marketplace";
 import Tokens from "@/pages/Tokens";
 import Investment from "@/pages/Investment";
@@ -315,6 +309,15 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <DataFlow />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/property/:id"
+                    element={
+                      <ProtectedRoute>
+                        <PropertyDetails />
                       </ProtectedRoute>
                     }
                   />
