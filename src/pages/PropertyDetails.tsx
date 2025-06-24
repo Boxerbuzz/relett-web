@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Bed, Shower, Square, Calendar, Phone, Envelope, User } from 'phosphor-react';
 import { RentalRequestModal } from '@/components/property/modals/RentalRequestModal';
 import { ReservationModal } from '@/components/property/modals/ReservationModal';
-import { InspectionModal } from '@/components/property/modals/InspectionModal';
 import { OfferModal } from '@/components/property/modals/OfferModal';
+import { LocationAnalysis } from '@/components/property/LocationAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { getAmenityById } from '@/types/amenities';
 
@@ -123,15 +125,12 @@ export default function PropertyDetails() {
   const getActionsByCategory = (category: string) => {
     const actions = {
       rent: [
-        { label: 'Request Inspection', action: () => setActiveModal('inspection') },
         { label: 'Rent Now', action: () => setActiveModal('rental'), primary: true }
       ],
       shortlet: [
-        { label: 'Request Inspection', action: () => setActiveModal('inspection') },
         { label: 'Reserve Now', action: () => setActiveModal('reservation'), primary: true }
       ],
       buy: [
-        { label: 'Request Inspection', action: () => setActiveModal('inspection') },
         { label: 'Make an Offer', action: () => setActiveModal('offer'), primary: true }
       ]
     };
@@ -167,16 +166,12 @@ export default function PropertyDetails() {
     );
   }
 
-  const primaryImage = property.property_images?.find(img => img.is_primary)?.url 
-    || property.property_images?.[0]?.url 
-    || '/placeholder.svg';
-
   const actions = getActionsByCategory(property.category);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Fixed Header */}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -203,6 +198,26 @@ export default function PropertyDetails() {
             
             {/* Action CTAs */}
             <div className="hidden sm:flex items-center gap-3">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    Request Inspection
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Request Property Inspection</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <p className="text-gray-600 mb-4">
+                      Schedule an inspection for "{property.title}"
+                    </p>
+                    {/* Inspection form content can be added here */}
+                    <Button className="w-full">Schedule Inspection</Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
               {actions.map((action, index) => (
                 <Button
                   key={index}
@@ -218,175 +233,204 @@ export default function PropertyDetails() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Image Gallery */}
-            <Card>
-              <CardContent className="p-0">
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {property.property_images?.map((image, index) => (
-                      <CarouselItem key={index}>
-                        <div className="aspect-[16/9] relative">
-                          <img
-                            src={image.url}
-                            alt={`Property view ${index + 1}`}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
+      {/* Main Content Area */}
+      <div className="flex-1 flex">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+            {/* Scrollable Main Content */}
+            <div className="lg:col-span-2">
+              <ScrollArea className="h-[calc(100vh-200px)]">
+                <div className="space-y-8 pr-4">
+                  {/* Image Gallery */}
+                  <Card>
+                    <CardContent className="p-0">
+                      <Carousel className="w-full">
+                        <CarouselContent>
+                          {property.property_images?.map((image, index) => (
+                            <CarouselItem key={index}>
+                              <div className="aspect-[16/9] relative">
+                                <img
+                                  src={image.url}
+                                  alt={`Property view ${index + 1}`}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              </div>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-4" />
+                        <CarouselNext className="right-4" />
+                      </Carousel>
+                    </CardContent>
+                  </Card>
+
+                  {/* Property Summary */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Property Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-primary">{formatPrice(property.price)}</div>
+                          <div className="text-sm text-gray-600">Price</div>
                         </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-4" />
-                  <CarouselNext className="right-4" />
-                </Carousel>
-              </CardContent>
-            </Card>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center mb-1">
+                            <Bed className="w-5 h-5 mr-1" />
+                            <span className="text-lg font-semibold">{property.specification?.bedrooms || 0}</span>
+                          </div>
+                          <div className="text-sm text-gray-600">Bedrooms</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center mb-1">
+                            <Shower className="w-5 h-5 mr-1" />
+                            <span className="text-lg font-semibold">{property.specification?.bathrooms || 0}</span>
+                          </div>
+                          <div className="text-sm text-gray-600">Bathrooms</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center mb-1">
+                            <Square className="w-5 h-5 mr-1" />
+                            <span className="text-lg font-semibold">{property.specification?.area || 'N/A'}</span>
+                          </div>
+                          <div className="text-sm text-gray-600">Sq ft</div>
+                        </div>
+                      </div>
+                      
+                      <Separator className="my-6" />
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3">Description</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          {property.description || 'No description available.'}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-            {/* Property Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{formatPrice(property.price)}</div>
-                    <div className="text-sm text-gray-600">Price</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <Bed className="w-5 h-5 mr-1" />
-                      <span className="text-lg font-semibold">{property.specification?.bedrooms || 0}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">Bedrooms</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <Shower className="w-5 h-5 mr-1" />
-                      <span className="text-lg font-semibold">{property.specification?.bathrooms || 0}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">Bathrooms</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <Square className="w-5 h-5 mr-1" />
-                      <span className="text-lg font-semibold">{property.specification?.area || 'N/A'}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">Sq ft</div>
-                  </div>
-                </div>
-                
-                <Separator className="my-6" />
-                
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Description</h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    {property.description || 'No description available.'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                  {/* Features & Amenities */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Features & Amenities</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {property.features && property.features.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold mb-3">Features</h4>
+                            <ul className="space-y-2">
+                              {property.features.map((feature, index) => (
+                                <li key={index} className="flex items-center">
+                                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {property.amenities && property.amenities.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold mb-3">Amenities</h4>
+                            <ul className="space-y-2">
+                              {property.amenities.map((amenity, index) => (
+                                <li key={index} className="flex items-center">
+                                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                                  {getAmenityById(amenity)?.name || amenity}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-            {/* Features & Amenities */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Features & Amenities</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {property.features && property.features.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold mb-3">Features</h4>
-                      <ul className="space-y-2">
-                        {property.features.map((feature, index) => (
-                          <li key={index} className="flex items-center">
-                            <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  {property.amenities && property.amenities.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold mb-3">Amenities</h4>
-                      <ul className="space-y-2">
-                        {property.amenities.map((amenity, index) => (
-                          <li key={index} className="flex items-center">
-                            <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                            {getAmenityById(amenity)?.name || amenity}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Location Analysis */}
+                  <LocationAnalysis propertyId={property.id} />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </ScrollArea>
+            </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Agent Info */}
-            {agent && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Property Agent</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      {agent.avatar ? (
-                        <img src={agent.avatar} alt="Agent" className="w-12 h-12 rounded-full" />
-                      ) : (
-                        <User className="w-6 h-6 text-gray-500" />
+            {/* Sticky Sidebar */}
+            <div className="lg:sticky lg:top-32 lg:h-fit space-y-6">
+              {/* Agent Info */}
+              {agent && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Property Agent</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        {agent.avatar ? (
+                          <img src={agent.avatar} alt="Agent" className="w-12 h-12 rounded-full" />
+                        ) : (
+                          <User className="w-6 h-6 text-gray-500" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{agent.first_name} {agent.last_name}</h4>
+                        <p className="text-sm text-gray-600">Property Agent</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {agent.phone && (
+                        <div className="flex items-center">
+                          <Phone className="w-4 h-4 mr-3 text-gray-500" />
+                          <span className="text-sm">{agent.phone}</span>
+                        </div>
+                      )}
+                      {agent.email && (
+                        <div className="flex items-center">
+                          <Envelope className="w-4 h-4 mr-3 text-gray-500" />
+                          <span className="text-sm">{agent.email}</span>
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <h4 className="font-semibold">{agent.first_name} {agent.last_name}</h4>
-                      <p className="text-sm text-gray-600">Property Agent</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {agent.phone && (
-                      <div className="flex items-center">
-                        <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                        <span className="text-sm">{agent.phone}</span>
-                      </div>
-                    )}
-                    {agent.email && (
-                      <div className="flex items-center">
-                        <Envelope className="w-4 h-4 mr-3 text-gray-500" />
-                        <span className="text-sm">{agent.email}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Button className="w-full mt-4" variant="outline">
-                    Contact Agent
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                    
+                    <Button className="w-full mt-4" variant="outline">
+                      Contact Agent
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Mobile Action CTAs */}
-            <div className="sm:hidden space-y-3">
-              {actions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant={action.primary ? 'default' : 'outline'}
-                  onClick={action.action}
-                  className="w-full"
-                  size="lg"
-                >
-                  {action.label}
-                </Button>
-              ))}
+              {/* Mobile Action CTAs */}
+              <div className="sm:hidden space-y-3">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-full" size="lg">
+                      Request Inspection
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Request Property Inspection</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6">
+                      <p className="text-gray-600 mb-4">
+                        Schedule an inspection for "{property.title}"
+                      </p>
+                      <Button className="w-full">Schedule Inspection</Button>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+
+                {actions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant={action.primary ? 'default' : 'outline'}
+                    onClick={action.action}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -401,12 +445,6 @@ export default function PropertyDetails() {
       
       <ReservationModal
         open={activeModal === 'reservation'}
-        onOpenChange={() => setActiveModal(null)}
-        property={property}
-      />
-      
-      <InspectionModal
-        open={activeModal === 'inspection'}
         onOpenChange={() => setActiveModal(null)}
         property={property}
       />
