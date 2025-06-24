@@ -119,7 +119,7 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
   };
 
   return (
-    <SheetContent className="w-[400px] sm:w-[540px]">
+    <SheetContent className="w-full sm:w-[400px] sm:max-w-[540px]">
       <SheetHeader>
         <SheetTitle>Request Inspection</SheetTitle>
         <SheetDescription>

@@ -233,7 +233,7 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[540px]">
+      <SheetContent className="w-full sm:w-[400px] sm:max-w-[540px]">
         <SheetHeader>
           <SheetTitle>Make Reservation</SheetTitle>
           <SheetDescription>

@@ -107,7 +107,7 @@ export function OfferSheet({ open, onOpenChange, property }: OfferSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[540px]">
+      <SheetContent className="w-full sm:w-[400px] sm:max-w-[540px]">
         <SheetHeader>
           <SheetTitle>Make an Offer</SheetTitle>
           <SheetDescription>
