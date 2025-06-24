@@ -91,21 +91,37 @@ export function AdvancedMarketplace() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="search" className="flex items-center gap-2">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full relative"
+      >
+        <TabsList className="w-full flex overflow-x-auto md:grid md:grid-cols-4 px-2 md:px-0">
+          <TabsTrigger
+            value="search"
+            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1 ml-1 md:ml-0"
+          >
             <MagnifyingGlass className="w-4 h-4" />
             Search & Browse
           </TabsTrigger>
-          <TabsTrigger value="tokenized" className="flex items-center gap-2">
+          <TabsTrigger
+            value="tokenized"
+            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
+          >
             <Coins className="w-4 h-4" />
             Tokenized Properties
           </TabsTrigger>
-          <TabsTrigger value="groups" className="flex items-center gap-2">
+          <TabsTrigger
+            value="groups"
+            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
+          >
             <Users className="w-4 h-4" />
             Investment Groups
           </TabsTrigger>
-          <TabsTrigger value="compare" className="flex items-center gap-2">
+          <TabsTrigger
+            value="compare"
+            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1 mr-1 md:mr-0"
+          >
             <GitDiff className="w-4 h-4" />
             Compare ({compareProperties.length})
           </TabsTrigger>

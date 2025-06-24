@@ -1,22 +1,43 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { MapPin, Bed, Shower, Square, Calendar, Phone, Envelope, User } from 'phosphor-react';
-import { RentalRequestModal } from '@/components/property/modals/RentalRequestModal';
-import { ReservationModal } from '@/components/property/modals/ReservationModal';
-import { OfferModal } from '@/components/property/modals/OfferModal';
-import { LocationAnalysis } from '@/components/property/LocationAnalysis';
-import { useToast } from '@/hooks/use-toast';
-import { getAmenityById } from '@/types/amenities';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  MapPin,
+  Bed,
+  Shower,
+  Square,
+  Calendar,
+  Phone,
+  Envelope,
+  User,
+} from "phosphor-react";
+import { RentalRequestModal } from "@/components/property/modals/RentalRequestModal";
+import { ReservationModal } from "@/components/property/modals/ReservationModal";
+import { OfferModal } from "@/components/property/modals/OfferModal";
+import { LocationAnalysis } from "@/components/property/LocationAnalysis";
+import { useToast } from "@/hooks/use-toast";
+import { getAmenityById } from "@/types/amenities";
+import { MessageCircle } from "lucide-react";
 
 interface PropertyImage {
   url: string;
@@ -52,7 +73,7 @@ export default function PropertyDetails() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,15 +88,17 @@ export default function PropertyDetails() {
   const fetchPropertyDetails = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch property details with proper error handling for relations
       const { data: propertyData, error: propertyError } = await supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           property_images!inner (url, is_primary)
-        `)
-        .eq('id', id)
+        `
+        )
+        .eq("id", id)
         .single();
 
       if (propertyError) throw propertyError;
@@ -83,31 +106,30 @@ export default function PropertyDetails() {
       // Ensure property_images is always an array
       const processedPropertyData: PropertyData = {
         ...propertyData,
-        property_images: Array.isArray(propertyData.property_images) 
-          ? propertyData.property_images 
-          : []
+        property_images: Array.isArray(propertyData.property_images)
+          ? propertyData.property_images
+          : [],
       };
 
       setProperty(processedPropertyData);
 
       // Fetch agent details
       const { data: agentData, error: agentError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, phone, email, avatar')
-        .eq('id', propertyData.user_id)
+        .from("users")
+        .select("id, first_name, last_name, phone, email, avatar")
+        .eq("id", propertyData.user_id)
         .single();
 
       if (agentError) throw agentError;
       setAgent(agentData);
-
     } catch (error) {
-      console.error('Error fetching property:', error);
+      console.error("Error fetching property:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load property details',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to load property details",
+        variant: "destructive",
       });
-      navigate('/marketplace');
+      navigate("/marketplace");
     } finally {
       setLoading(false);
     }
@@ -115,34 +137,52 @@ export default function PropertyDetails() {
 
   const getStatusColor = (category: string) => {
     switch (category) {
-      case 'rent': return 'bg-blue-100 text-blue-800';
-      case 'shortlet': return 'bg-green-100 text-green-800';
-      case 'buy': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "rent":
+        return "bg-blue-100 text-blue-800";
+      case "shortlet":
+        return "bg-green-100 text-green-800";
+      case "buy":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getActionsByCategory = (category: string) => {
     const actions = {
       rent: [
-        { label: 'Rent Now', action: () => setActiveModal('rental'), primary: true }
+        {
+          label: "Rent Now",
+          action: () => setActiveModal("rental"),
+          primary: true,
+        },
       ],
       shortlet: [
-        { label: 'Reserve Now', action: () => setActiveModal('reservation'), primary: true }
+        {
+          label: "Reserve Now",
+          action: () => setActiveModal("reservation"),
+          primary: true,
+        },
       ],
       buy: [
-        { label: 'Make an Offer', action: () => setActiveModal('offer'), primary: true }
-      ]
+        {
+          label: "Make an Offer",
+          action: () => setActiveModal("offer"),
+          primary: true,
+        },
+      ],
     };
-    
+
     return actions[category as keyof typeof actions] || [];
   };
 
   const formatPrice = (price: any) => {
-    if (typeof price === 'object' && price.amount) {
-      return `₦${price.amount.toLocaleString()}${price.period ? `/${price.period}` : ''}`;
+    if (typeof price === "object" && price.amount) {
+      return `₦${price.amount.toLocaleString()}${
+        price.period ? `/${price.period}` : ""
+      }`;
     }
-    return 'Price on request';
+    return "Price on request";
   };
 
   if (loading) {
@@ -157,8 +197,10 @@ export default function PropertyDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Property not found</h1>
-          <Button onClick={() => navigate('/marketplace')}>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Property not found
+          </h1>
+          <Button onClick={() => navigate("/marketplace")}>
             Back to Marketplace
           </Button>
         </div>
@@ -168,6 +210,8 @@ export default function PropertyDetails() {
 
   const actions = getActionsByCategory(property.category);
 
+  const address = `${property.location?.city}, ${property.location?.state}`;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Fixed Header */}
@@ -175,9 +219,9 @@ export default function PropertyDetails() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/marketplace')}
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/marketplace")}
                 className="mb-4"
               >
                 ← Back to Marketplace
@@ -192,10 +236,10 @@ export default function PropertyDetails() {
               </div>
               <div className="flex items-center text-gray-600">
                 <MapPin className="w-4 h-4 mr-1" />
-                <span>{property.location?.address || 'Location not specified'}</span>
+                <span>{address || "Location not specified"}</span>
               </div>
             </div>
-            
+
             {/* Action CTAs */}
             <div className="hidden sm:flex items-center gap-3">
               <Sheet>
@@ -217,11 +261,11 @@ export default function PropertyDetails() {
                   </div>
                 </SheetContent>
               </Sheet>
-              
+
               {actions.map((action, index) => (
                 <Button
                   key={index}
-                  variant={action.primary ? 'default' : 'outline'}
+                  variant={action.primary ? "default" : "outline"}
                   onClick={action.action}
                   size="lg"
                 >
@@ -235,11 +279,11 @@ export default function PropertyDetails() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
             {/* Scrollable Main Content */}
             <div className="lg:col-span-2">
-              <ScrollArea className="h-[calc(100vh-200px)]">
+              <ScrollArea className="h-[calc(100vh-200px)] py-8">
                 <div className="space-y-8 pr-4">
                   {/* Image Gallery */}
                   <Card>
@@ -272,38 +316,48 @@ export default function PropertyDetails() {
                     <CardContent>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-primary">{formatPrice(property.price)}</div>
+                          <div className="text-2xl font-bold text-primary">
+                            {formatPrice(property.price)}
+                          </div>
                           <div className="text-sm text-gray-600">Price</div>
                         </div>
                         <div className="text-center">
                           <div className="flex items-center justify-center mb-1">
                             <Bed className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">{property.specification?.bedrooms || 0}</span>
+                            <span className="text-lg font-semibold">
+                              {property.specification?.bedrooms || 0}
+                            </span>
                           </div>
                           <div className="text-sm text-gray-600">Bedrooms</div>
                         </div>
                         <div className="text-center">
                           <div className="flex items-center justify-center mb-1">
                             <Shower className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">{property.specification?.bathrooms || 0}</span>
+                            <span className="text-lg font-semibold">
+                              {property.specification?.bathrooms || 0}
+                            </span>
                           </div>
                           <div className="text-sm text-gray-600">Bathrooms</div>
                         </div>
                         <div className="text-center">
                           <div className="flex items-center justify-center mb-1">
                             <Square className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">{property.specification?.area || 'N/A'}</span>
+                            <span className="text-lg font-semibold">
+                              {property.specification?.area || "N/A"}
+                            </span>
                           </div>
                           <div className="text-sm text-gray-600">Sq ft</div>
                         </div>
                       </div>
-                      
+
                       <Separator className="my-6" />
-                      
+
                       <div>
-                        <h3 className="text-lg font-semibold mb-3">Description</h3>
+                        <h3 className="text-lg font-semibold mb-3">
+                          Description
+                        </h3>
                         <p className="text-gray-700 leading-relaxed">
-                          {property.description || 'No description available.'}
+                          {property.description || "No description available."}
                         </p>
                       </div>
                     </CardContent>
@@ -329,20 +383,21 @@ export default function PropertyDetails() {
                             </ul>
                           </div>
                         )}
-                        
-                        {property.amenities && property.amenities.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold mb-3">Amenities</h4>
-                            <ul className="space-y-2">
-                              {property.amenities.map((amenity, index) => (
-                                <li key={index} className="flex items-center">
-                                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                                  {getAmenityById(amenity)?.name || amenity}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+
+                        {property.amenities &&
+                          property.amenities.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold mb-3">Amenities</h4>
+                              <ul className="space-y-2">
+                                {property.amenities.map((amenity, index) => (
+                                  <li key={index} className="flex items-center">
+                                    <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                                    {getAmenityById(amenity)?.name || amenity}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                       </div>
                     </CardContent>
                   </Card>
@@ -354,7 +409,7 @@ export default function PropertyDetails() {
             </div>
 
             {/* Sticky Sidebar */}
-            <div className="lg:sticky lg:top-32 lg:h-fit space-y-6">
+            <div className="lg:sticky lg:top-32 lg:h-fit space-y-6 py-8">
               {/* Agent Info */}
               {agent && (
                 <Card>
@@ -365,17 +420,23 @@ export default function PropertyDetails() {
                     <div className="flex items-center space-x-4 mb-4">
                       <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
                         {agent.avatar ? (
-                          <img src={agent.avatar} alt="Agent" className="w-12 h-12 rounded-full" />
+                          <img
+                            src={agent.avatar}
+                            alt="Agent"
+                            className="w-12 h-12 rounded-full"
+                          />
                         ) : (
                           <User className="w-6 h-6 text-gray-500" />
                         )}
                       </div>
                       <div>
-                        <h4 className="font-semibold">{agent.first_name} {agent.last_name}</h4>
+                        <h4 className="font-semibold">
+                          {agent.first_name} {agent.last_name}
+                        </h4>
                         <p className="text-sm text-gray-600">Property Agent</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       {agent.phone && (
                         <div className="flex items-center">
@@ -390,9 +451,10 @@ export default function PropertyDetails() {
                         </div>
                       )}
                     </div>
-                    
+
                     <Button className="w-full mt-4" variant="outline">
-                      Contact Agent
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Message Agent
                     </Button>
                   </CardContent>
                 </Card>
@@ -422,7 +484,7 @@ export default function PropertyDetails() {
                 {actions.map((action, index) => (
                   <Button
                     key={index}
-                    variant={action.primary ? 'default' : 'outline'}
+                    variant={action.primary ? "default" : "outline"}
                     onClick={action.action}
                     className="w-full"
                     size="lg"
@@ -438,19 +500,19 @@ export default function PropertyDetails() {
 
       {/* Modals */}
       <RentalRequestModal
-        open={activeModal === 'rental'}
+        open={activeModal === "rental"}
         onOpenChange={() => setActiveModal(null)}
         property={property}
       />
-      
+
       <ReservationModal
-        open={activeModal === 'reservation'}
+        open={activeModal === "reservation"}
         onOpenChange={() => setActiveModal(null)}
         property={property}
       />
-      
+
       <OfferModal
-        open={activeModal === 'offer'}
+        open={activeModal === "offer"}
         onOpenChange={() => setActiveModal(null)}
         property={property}
       />

@@ -5,18 +5,14 @@ import { ReactNode, useState } from 'react';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { AddPropertyForm } from './property/AddPropertyForm';
-import { useLocation } from 'react-router-dom';
 
 interface LayoutProps {
   children: ReactNode;
+  stripPadding?: boolean;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
-
-  const isAddPropertyPage = location.pathname === '/add-property';
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
@@ -44,13 +40,9 @@ export function Layout({ children }: LayoutProps) {
         </div>
         
         {/* Page Content - Properly spaced below fixed header */}
-        <main className="flex-1 mt-16 p-4 md:p-6 overflow-x-hidden overflow-y-auto">
-          <div className="max-w-full min-w-0 w-full">
-            {isAddPropertyPage ? (
-              <AddPropertyForm />
-            ) : (
-              children
-            )}
+        <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto">
+          <div className={`max-w-full min-w-0 w-full ${stripPadding ? 'p-0' : 'p-4 md:p-6'}`}>
+            {children}
           </div>
         </main>
       </div>

@@ -23,7 +23,8 @@ import {
   Calendar,
   CaretRight,
   Tree,
-  Heart
+  Heart,
+  Chat ,
 } from 'phosphor-react';
 import {
   Collapsible,
@@ -46,6 +47,7 @@ const mainNavigation = [
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent', 'user'] },
+  { name: 'Messaging', href: '/messaging', icon: Chat, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
 ];
 
 const propertyNavigation = [
