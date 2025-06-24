@@ -96,7 +96,7 @@ serve(async (req) => {
       .from('market_analytics')
       .select('*')
       .eq('property_type', propertyData.propertyType)
-      .eq('location_id', propertyData.location?.state)
+      .eq('location_id', propertyData.location?.state || '')
       .order('calculation_date', { ascending: false })
       .limit(5);
 

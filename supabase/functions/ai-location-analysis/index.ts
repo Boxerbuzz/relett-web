@@ -1,13 +1,12 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  createTypedSupabaseClient, 
-  handleSupabaseError, 
-  createSuccessResponse, 
+import {
+  createTypedSupabaseClient,
+  handleSupabaseError,
+  createSuccessResponse,
   createErrorResponse,
   createResponse,
-  createCorsResponse 
-} from '../shared/supabase-client.ts';
+  createCorsResponse,
+} from "../shared/supabase-client.ts";
 
 interface LocationAnalysisRequest {
   propertyId: string;
@@ -126,7 +125,10 @@ serve(async (req) => {
     const { propertyId }: LocationAnalysisRequest = await req.json();
 
     if (!propertyId) {
-      return createResponse(createErrorResponse("Property ID is required"), 400);
+      return createResponse(
+        createErrorResponse("Property ID is required"),
+        400
+      );
     }
 
     const supabase = createTypedSupabaseClient();
@@ -152,7 +154,7 @@ serve(async (req) => {
     // Get nearby properties for context
     const { data: nearbyProperties } = await supabase
       .from("properties")
-      .select("title, price, location, type, category")
+      .select("id, title, price, location, type, category")
       .eq("location->>state", state)
       .eq("location->>city", city)
       .neq("id", propertyId)
@@ -166,12 +168,26 @@ Property Location Details:
 - Address: ${address}
 - City: ${city}
 - State: ${state}
-- Coordinates: ${coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"}
+- Coordinates: ${
+      coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"
+    }
 
 Nearby Properties Context:
-${nearbyProperties?.slice(0, 10).map((p: Property) => `
+${
+  nearbyProperties
+    ?.slice(0, 10)
+    .map(
+      (p: {
+        title: string | null;
+        price: any;
+        type: string;
+        category: string;
+      }) => `
 - ${p.title}: ₦${p.price?.amount?.toLocaleString()} (${p.type} - ${p.category})
-`).join("") || "Limited nearby property data"}
+`
+    )
+    .join("") || "Limited nearby property data"
+}
 
 Please provide a comprehensive analysis covering:
 
@@ -241,28 +257,32 @@ Respond in JSON format with these fields:
 `;
 
     // Call OpenAI API
-    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Provide detailed, accurate location intelligence.",
-          },
-          {
-            role: "user",
-            content: aiPrompt,
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 3000,
-      }),
-    });
+    const openAIResponse = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Provide detailed, accurate location intelligence.",
+            },
+            {
+              role: "user",
+              content: aiPrompt,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 3000,
+        }),
+      }
+    );
 
     if (!openAIResponse.ok) {
       throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
@@ -287,7 +307,10 @@ Respond in JSON format with these fields:
         securityAssessment: {
           score: 75,
           factors: ["Police presence", "Community watch"],
-          recommendations: ["Install security systems", "Join neighborhood watch"],
+          recommendations: [
+            "Install security systems",
+            "Join neighborhood watch",
+          ],
         },
         transportation: {
           score: 70,
@@ -329,7 +352,8 @@ Respond in JSON format with these fields:
           riskLevel: "Medium",
         },
         overallScore: 75,
-        summary: "Location analysis generated with limited data processing capability.",
+        summary:
+          "Location analysis generated with limited data processing capability.",
       };
     }
 

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   createTypedSupabaseClient, 
@@ -209,13 +208,13 @@ serve(async (req) => {
     // Transform results
     const results: PropertyResult[] = (properties || []).map((property, index) => ({
       id: property.id,
-      title: property.title,
-      description: property.description,
+      title: property.title || 'Untitled Property',
+      description: property.description || 'No description available',
       type: property.type,
       price: property.price as { amount: number; currency: string },
       location: property.location as { city: string; state: string; address: string },
       images: Array.isArray(property.property_images) 
-        ? property.property_images.map((img: PropertyImage) => img.url).filter(Boolean)
+        ? property.property_images.map((img: { url: string; is_primary: boolean | null }) => img.url).filter(Boolean)
         : [],
       features: property.features || [],
       amenities: property.amenities || [],
@@ -297,7 +296,7 @@ async function generateFacets(supabase: ReturnType<typeof createTypedSupabaseCli
 
   const locationCounts = new Map<string, number>();
   locationData?.forEach((item) => {
-    const city = (item.location as { city?: string })?.city;
+    const city = item.city as string;
     if (city) {
       locationCounts.set(city, (locationCounts.get(city) || 0) + 1);
     }
