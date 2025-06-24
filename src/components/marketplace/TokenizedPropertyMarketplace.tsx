@@ -1,26 +1,21 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { BuyTokenDialog } from '@/components/dialogs/BuyTokenDialog';
-import { 
-  Coins, 
-  TrendingUp, 
-  Users, 
-  Calendar,
-  MapPin,
-  Target,
-  DollarSign,
-  BarChart3,
-  Shield
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { BuyTokenDialog } from "@/components/dialogs/BuyTokenDialog";
+import { Coins, Calendar, MapPin, Target, Shield } from "phosphor-react";
 
 interface TokenizedProperty {
   id: string;
@@ -53,9 +48,10 @@ interface TokenizedProperty {
 export function TokenizedPropertyMarketplace() {
   const [properties, setProperties] = useState<TokenizedProperty[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProperty, setSelectedProperty] = useState<TokenizedProperty | null>(null);
+  const [selectedProperty, setSelectedProperty] =
+    useState<TokenizedProperty | null>(null);
   const [showBuyDialog, setShowBuyDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,8 +62,9 @@ export function TokenizedPropertyMarketplace() {
     try {
       // First fetch tokenized properties with basic property and land title info
       const { data: tokenizedData, error } = await supabase
-        .from('tokenized_properties')
-        .select(`
+        .from("tokenized_properties")
+        .select(
+          `
           *,
           property:properties(
             id,
@@ -76,9 +73,10 @@ export function TokenizedPropertyMarketplace() {
             location
           ),
           land_title:land_titles(location_address)
-        `)
-        .in('status', ['minted', 'active'])
-        .order('created_at', { ascending: false });
+        `
+        )
+        .in("status", ["minted", "active"])
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -87,47 +85,54 @@ export function TokenizedPropertyMarketplace() {
         (tokenizedData || []).map(async (property) => {
           // Get token holdings to calculate available tokens and investor count
           const { data: holdings } = await supabase
-            .from('token_holdings')
-            .select('tokens_owned, holder_id')
-            .eq('tokenized_property_id', property.id);
+            .from("token_holdings")
+            .select("tokens_owned, holder_id")
+            .eq("tokenized_property_id", property.id);
 
           // Get property images separately if property exists
           let propertyImages: Array<{ url: string; is_primary: boolean }> = [];
           if (property.property?.id) {
             const { data: images } = await supabase
-              .from('property_images')
-              .select('url, is_primary')
-              .eq('property_id', property.property.id);
-            
+              .from("property_images")
+              .select("url, is_primary")
+              .eq("property_id", property.property.id);
+
             propertyImages = images || [];
           }
 
-          const totalSold = holdings?.reduce((sum, holding) => 
-            sum + parseInt(holding.tokens_owned), 0) || 0;
+          const totalSold =
+            holdings?.reduce(
+              (sum, holding) => sum + parseInt(holding.tokens_owned),
+              0
+            ) || 0;
           const availableTokens = parseInt(property.total_supply) - totalSold;
-          const investorCount = new Set(holdings?.map(h => h.holder_id) || []).size;
-          const fundingProgress = (totalSold / parseInt(property.total_supply)) * 100;
+          const investorCount = new Set(holdings?.map((h) => h.holder_id) || [])
+            .size;
+          const fundingProgress =
+            (totalSold / parseInt(property.total_supply)) * 100;
 
           return {
             ...property,
-            property: property.property ? {
-              ...property.property,
-              property_images: propertyImages
-            } : undefined,
+            property: property.property
+              ? {
+                  ...property.property,
+                  property_images: propertyImages,
+                }
+              : undefined,
             available_tokens: availableTokens,
             investor_count: investorCount,
-            funding_progress: fundingProgress
+            funding_progress: fundingProgress,
           };
         })
       );
 
       setProperties(propertiesWithMetrics);
     } catch (error) {
-      console.error('Error fetching tokenized properties:', error);
+      console.error("Error fetching tokenized properties:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch tokenized properties',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch tokenized properties",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -141,13 +146,15 @@ export function TokenizedPropertyMarketplace() {
 
   const getPrimaryImage = (property: TokenizedProperty) => {
     const images = property.property?.property_images || [];
-    return images.find(img => img.is_primary)?.url || 
-           images[0]?.url || 
-           '/placeholder.svg';
+    return (
+      images.find((img) => img.is_primary)?.url ||
+      images[0]?.url ||
+      "/placeholder.svg"
+    );
   };
 
   const getStatusBadge = (status: string, fundingProgress: number = 0) => {
-    if (status === 'active' && fundingProgress < 100) {
+    if (status === "active" && fundingProgress < 100) {
       return <Badge className="bg-green-100 text-green-800">Funding</Badge>;
     }
     if (fundingProgress >= 100) {
@@ -157,18 +164,18 @@ export function TokenizedPropertyMarketplace() {
   };
 
   const getRiskLevel = (roi: number) => {
-    if (roi < 8) return { level: 'Low', color: 'text-green-600' };
-    if (roi < 15) return { level: 'Medium', color: 'text-yellow-600' };
-    return { level: 'High', color: 'text-red-600' };
+    if (roi < 8) return { level: "Low", color: "text-green-600" };
+    if (roi < 15) return { level: "Medium", color: "text-yellow-600" };
+    return { level: "High", color: "text-red-600" };
   };
 
-  const filteredProperties = properties.filter(property => {
+  const filteredProperties = properties.filter((property) => {
     switch (activeTab) {
-      case 'funding':
+      case "funding":
         return (property.funding_progress || 0) < 100;
-      case 'funded':
+      case "funded":
         return (property.funding_progress || 0) >= 100;
-      case 'high-roi':
+      case "high-roi":
         return property.expected_roi >= 12;
       default:
         return true;
@@ -188,7 +195,9 @@ export function TokenizedPropertyMarketplace() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Tokenized Properties</h2>
-          <p className="text-gray-600">Invest in fractional real estate ownership</p>
+          <p className="text-gray-600">
+            Invest in fractional real estate ownership
+          </p>
         </div>
         <Badge className="bg-blue-100 text-blue-800">
           {properties.length} Properties Available
@@ -210,7 +219,9 @@ export function TokenizedPropertyMarketplace() {
                 <div className="text-center py-8 text-gray-500">
                   <Coins className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <p>No tokenized properties found</p>
-                  <p className="text-sm">Check back later for new investment opportunities</p>
+                  <p className="text-sm">
+                    Check back later for new investment opportunities
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -218,7 +229,7 @@ export function TokenizedPropertyMarketplace() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProperties.map((property) => {
                 const risk = getRiskLevel(property.expected_roi);
-                
+
                 return (
                   <Card key={property.id} className="overflow-hidden">
                     <div className="relative">
@@ -228,7 +239,10 @@ export function TokenizedPropertyMarketplace() {
                         className="w-full h-48 object-cover"
                       />
                       <div className="absolute top-3 left-3 flex gap-2">
-                        {getStatusBadge(property.status, property.funding_progress)}
+                        {getStatusBadge(
+                          property.status,
+                          property.funding_progress
+                        )}
                         <Badge className={`${risk.color} bg-white`}>
                           {risk.level} Risk
                         </Badge>
@@ -236,10 +250,13 @@ export function TokenizedPropertyMarketplace() {
                     </div>
 
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">{property.token_name}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {property.token_name}
+                      </CardTitle>
                       <CardDescription className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        {property.land_title?.location_address || 'Location not specified'}
+                        {property.land_title?.location_address ||
+                          "Location not specified"}
                       </CardDescription>
                     </CardHeader>
 
@@ -248,19 +265,29 @@ export function TokenizedPropertyMarketplace() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <p className="text-sm text-gray-600">Token Price</p>
-                          <p className="font-semibold">${property.token_price}</p>
+                          <p className="font-semibold">
+                            ${property.token_price}
+                          </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-gray-600">Expected ROI</p>
-                          <p className="font-semibold text-green-600">{property.expected_roi}%</p>
+                          <p className="font-semibold text-green-600">
+                            {property.expected_roi}%
+                          </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm text-gray-600">Min Investment</p>
-                          <p className="font-semibold">${property.minimum_investment}</p>
+                          <p className="text-sm text-gray-600">
+                            Min Investment
+                          </p>
+                          <p className="font-semibold">
+                            ${property.minimum_investment}
+                          </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-gray-600">Lock Period</p>
-                          <p className="font-semibold">{property.lock_up_period_months}m</p>
+                          <p className="font-semibold">
+                            {property.lock_up_period_months}m
+                          </p>
                         </div>
                       </div>
 
@@ -268,12 +295,19 @@ export function TokenizedPropertyMarketplace() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Funding Progress</span>
-                          <span>{(property.funding_progress || 0).toFixed(1)}%</span>
+                          <span>
+                            {(property.funding_progress || 0).toFixed(1)}%
+                          </span>
                         </div>
-                        <Progress value={property.funding_progress || 0} className="h-2" />
+                        <Progress
+                          value={property.funding_progress || 0}
+                          className="h-2"
+                        />
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>{property.investor_count || 0} investors</span>
-                          <span>{property.available_tokens || 0} tokens available</span>
+                          <span>
+                            {property.available_tokens || 0} tokens available
+                          </span>
                         </div>
                       </div>
 
@@ -281,11 +315,16 @@ export function TokenizedPropertyMarketplace() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Target className="w-4 h-4" />
-                          <span>Total Value: ${property.total_value_usd.toLocaleString()}</span>
+                          <span>
+                            Total Value: $
+                            {property.total_value_usd.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
-                          <span>Dividends: {property.revenue_distribution_frequency}</span>
+                          <span>
+                            Dividends: {property.revenue_distribution_frequency}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Shield className="w-4 h-4" />
@@ -294,12 +333,14 @@ export function TokenizedPropertyMarketplace() {
                       </div>
 
                       {/* Action Button */}
-                      <Button 
+                      <Button
                         onClick={() => handleBuyTokens(property)}
                         className="w-full"
                         disabled={(property.available_tokens || 0) === 0}
                       >
-                        {(property.available_tokens || 0) === 0 ? 'Sold Out' : 'Invest Now'}
+                        {(property.available_tokens || 0) === 0
+                          ? "Sold Out"
+                          : "Invest Now"}
                       </Button>
                     </CardContent>
                   </Card>

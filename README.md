@@ -370,14 +370,14 @@ This document describes the comprehensive backend system for managing user defau
    - `portfolio_allocations`
    - `user_preferences`
 
-### Property Interactions
+### Property Interaction(s)
 
 1. View a property (should increment view count)
 2. Like a property (should create record in `property_likes`)
 3. Favorite a property (should create record in `property_favorites`)
 4. Make an inquiry (should notify property owner)
 
-### Notifications
+### Notification(s)
 
 1. Change a property price (should notify users who favorited it)
 2. Update verification status (should notify the user)
@@ -418,6 +418,5 @@ This document describes the comprehensive backend system for managing user defau
 - Monitor database query performance
 - Check notification delivery success rates
 - Analyze user interaction patterns
-
 
 `### firebase deploy --only hosting:web-relett`

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { X, MapPin, Bed, Bath, Square, Star } from 'lucide-react';
+import { X, MapPin, Bed, Shower, Square, Star } from 'phosphor-react';
+import { getAmenityById } from '@/types/amenities';
 
 interface Property {
   id: string;
@@ -138,7 +139,7 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                       <span>{property.specification?.bedrooms || 'N/A'}</span>
                     </div>
                     <div className="flex items-center">
-                      <Bath className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <Shower className="h-4 w-4 mr-1 text-muted-foreground" />
                       <span>{property.specification?.bathrooms || 'N/A'}</span>
                     </div>
                     <div className="flex items-center">
@@ -156,7 +157,7 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                   <div className="space-y-1">
                     {getAllAmenities().map((amenity) => (
                       <div key={amenity} className="flex items-center justify-between text-sm">
-                        <span>{amenity}</span>
+                        <span>{getAmenityById(amenity)?.name || amenity}</span>
                         <span className={property.amenities?.includes(amenity) ? 'text-green-600' : 'text-red-600'}>
                           {property.amenities?.includes(amenity) ? '✓' : '✗'}
                         </span>

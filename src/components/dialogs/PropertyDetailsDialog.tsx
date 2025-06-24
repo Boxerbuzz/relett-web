@@ -25,6 +25,7 @@ import {
   Car,
   Loader2
 } from 'lucide-react';
+import { getAmenityById } from '@/types/amenities';
 
 interface PropertyData {
   id: string;
@@ -309,7 +310,7 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                           {property.amenities?.map((amenity, index) => (
                             <div key={index} className="flex items-center gap-2 text-sm">
                               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span>{amenity}</span>
+                              <span>{getAmenityById(amenity)?.name || amenity}</span>
                             </div>
                           ))}
                         </div>

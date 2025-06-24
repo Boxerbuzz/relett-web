@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedPropertySearch } from './AdvancedPropertySearch';
@@ -10,12 +9,12 @@ import { TokenizedPropertyMarketplace } from './TokenizedPropertyMarketplace';
 import { InvestmentGroupManager } from '../investment/InvestmentGroupManager';
 import { usePropertySearch } from '@/hooks/usePropertySearch';
 import { 
-  Search, 
-  GitCompare, 
+  MagnifyingGlass, 
+  GitDiff, 
   Coins, 
   Users,
-  TrendingUp
-} from 'lucide-react';
+  TrendUp
+} from 'phosphor-react';
 
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState([]);
@@ -29,6 +28,20 @@ export function AdvancedMarketplace() {
     searchProperties, 
     clearResults 
   } = usePropertySearch();
+
+  // Add initial fetch when component mounts
+  useEffect(() => {
+    // Fetch featured properties or recent listings initially
+    const fetchInitialProperties = async () => {
+      await searchProperties({
+        limit: 12,
+        offset: 0,
+        sortBy: 'created_desc'
+      });
+    };
+
+    fetchInitialProperties();
+  }, []);
 
   const handleSearch = async (filters: any) => {
     clearResults();
@@ -78,7 +91,7 @@ export function AdvancedMarketplace() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="search" className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
+            <MagnifyingGlass className="w-4 h-4" />
             Search & Browse
           </TabsTrigger>
           <TabsTrigger value="tokenized" className="flex items-center gap-2">
@@ -90,7 +103,7 @@ export function AdvancedMarketplace() {
             Investment Groups
           </TabsTrigger>
           <TabsTrigger value="compare" className="flex items-center gap-2">
-            <GitCompare className="w-4 h-4" />
+            <GitDiff className="w-4 h-4" />
             Compare ({compareProperties.length})
           </TabsTrigger>
         </TabsList>
@@ -111,7 +124,7 @@ export function AdvancedMarketplace() {
                     className="cursor-pointer hover:bg-blue-50"
                     onClick={() => setActiveTab('compare')}
                   >
-                    <GitCompare className="w-3 h-3 mr-1" />
+                    <GitDiff className="w-3 h-3 mr-1" />
                     Compare {compareProperties.length} properties
                   </Badge>
                 )}
@@ -215,7 +228,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
           </p>
           {property.ratings > 0 && (
             <div className="flex items-center text-sm text-gray-600">
-              <TrendingUp className="w-4 h-4 mr-1" />
+              <TrendUp className="w-4 h-4 mr-1" />
               {property.ratings.toFixed(1)}
             </div>
           )}
