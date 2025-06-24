@@ -11,9 +11,9 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Bed, Shower, Square, Calendar, Phone, Envelope, User } from 'phosphor-react';
-import { RentalRequestModal } from '@/components/property/modals/RentalRequestModal';
-import { ReservationModal } from '@/components/property/modals/ReservationModal';
-import { OfferModal } from '@/components/property/modals/OfferModal';
+import { InspectionSheet } from '@/components/property/sheets/InspectionSheet';
+import { ReservationSheet } from '@/components/property/sheets/ReservationSheet';
+import { OfferSheet } from '@/components/property/sheets/OfferSheet';
 import { LocationAnalysis } from '@/components/property/LocationAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { getAmenityById } from '@/types/amenities';
@@ -56,7 +56,7 @@ export default function PropertyDetails() {
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [activeSheet, setActiveSheet] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -125,13 +125,13 @@ export default function PropertyDetails() {
   const getActionsByCategory = (category: string) => {
     const actions = {
       rent: [
-        { label: 'Rent Now', action: () => setActiveModal('rental'), primary: true }
+        { label: 'Rent Now', action: () => setActiveSheet('rental'), primary: true }
       ],
       shortlet: [
-        { label: 'Reserve Now', action: () => setActiveModal('reservation'), primary: true }
+        { label: 'Reserve Now', action: () => setActiveSheet('reservation'), primary: true }
       ],
       buy: [
-        { label: 'Make an Offer', action: () => setActiveModal('offer'), primary: true }
+        { label: 'Make an Offer', action: () => setActiveSheet('offer'), primary: true }
       ]
     };
     
@@ -198,24 +198,13 @@ export default function PropertyDetails() {
             
             {/* Action CTAs */}
             <div className="hidden sm:flex items-center gap-3">
-              <Sheet>
+              <Sheet open={activeSheet === 'inspection'} onOpenChange={(open) => setActiveSheet(open ? 'inspection' : null)}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="lg">
                     Request Inspection
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Request Property Inspection</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <p className="text-gray-600 mb-4">
-                      Schedule an inspection for "{property.title}"
-                    </p>
-                    {/* Inspection form content can be added here */}
-                    <Button className="w-full">Schedule Inspection</Button>
-                  </div>
-                </SheetContent>
+                <InspectionSheet property={property} onClose={() => setActiveSheet(null)} />
               </Sheet>
               
               {actions.map((action, index) => (
@@ -400,23 +389,13 @@ export default function PropertyDetails() {
 
               {/* Mobile Action CTAs */}
               <div className="sm:hidden space-y-3">
-                <Sheet>
+                <Sheet open={activeSheet === 'inspection'} onOpenChange={(open) => setActiveSheet(open ? 'inspection' : null)}>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="w-full" size="lg">
                       Request Inspection
                     </Button>
                   </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>Request Property Inspection</SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6">
-                      <p className="text-gray-600 mb-4">
-                        Schedule an inspection for "{property.title}"
-                      </p>
-                      <Button className="w-full">Schedule Inspection</Button>
-                    </div>
-                  </SheetContent>
+                  <InspectionSheet property={property} onClose={() => setActiveSheet(null)} />
                 </Sheet>
 
                 {actions.map((action, index) => (
@@ -436,22 +415,16 @@ export default function PropertyDetails() {
         </div>
       </div>
 
-      {/* Modals */}
-      <RentalRequestModal
-        open={activeModal === 'rental'}
-        onOpenChange={() => setActiveModal(null)}
+      {/* Sheets */}
+      <ReservationSheet
+        open={activeSheet === 'reservation'}
+        onOpenChange={(open) => setActiveSheet(open ? 'reservation' : null)}
         property={property}
       />
       
-      <ReservationModal
-        open={activeModal === 'reservation'}
-        onOpenChange={() => setActiveModal(null)}
-        property={property}
-      />
-      
-      <OfferModal
-        open={activeModal === 'offer'}
-        onOpenChange={() => setActiveModal(null)}
+      <OfferSheet
+        open={activeSheet === 'offer'}
+        onOpenChange={(open) => setActiveSheet(open ? 'offer' : null)}
         property={property}
       />
     </div>
