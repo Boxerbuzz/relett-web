@@ -21,12 +21,6 @@ interface ScanResult {
   scanVersion: string;
 }
 
-// Known malicious file signatures (simplified for demo)
-const MALICIOUS_SIGNATURES = [
-  'PK\x03\x04', // ZIP files can contain malware
-  '\x4d\x5a', // PE executable header
-];
-
 const SUSPICIOUS_EXTENSIONS = [
   '.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.vbs', '.js'
 ];

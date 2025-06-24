@@ -80,7 +80,7 @@ serve(async (req) => {
       // Sign with investor's private key
       const associateSign = await associateTx.sign(investorKey);
       const associateSubmit = await associateSign.execute(client);
-      const associateReceipt = await associateSubmit.getReceipt(client);
+      const _associateReceipt = await associateSubmit.getReceipt(client);
 
       console.log('Token association successful:', associateSubmit.transactionId.toString());
 

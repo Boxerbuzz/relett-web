@@ -7,7 +7,6 @@ import {
   AccountBalanceQuery,
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
 import { 
-  createTypedSupabaseClient, 
   handleSupabaseError, 
   createSuccessResponse, 
   createErrorResponse,
@@ -69,7 +68,7 @@ serve(async (req) => {
 
       // Validate the provided credentials
       const account = AccountId.fromString(accountId);
-      const key = PrivateKey.fromStringECDSA(privateKey);
+      const _key = PrivateKey.fromStringECDSA(privateKey);
 
       // Test the credentials by getting account balance
       const balanceQuery = new AccountBalanceQuery().setAccountId(account);

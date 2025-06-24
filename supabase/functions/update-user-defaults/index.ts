@@ -6,8 +6,7 @@ import {
   createSuccessResponse, 
   createErrorResponse,
   createResponse,
-  createCorsResponse,
-  corsHeaders 
+  createCorsResponse 
 } from '../shared/supabase-client.ts';
 
 interface UpdateDefaultsRequest {
@@ -41,7 +40,7 @@ serve(async (req) => {
     const supabase = createTypedSupabaseClient();
 
     // Call the database function to update defaults
-    const { data, error } = await supabase.rpc('update_user_defaults', {
+    const { data: _data, error } = await supabase.rpc('update_user_defaults', {
       p_user_id: user_id,
       p_preferences: preferences || null,
       p_notification_types: notification_types || null,

@@ -1,21 +1,26 @@
-
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
-  createTypedSupabaseClient, 
-  handleSupabaseError, 
+  createTypedSupabaseClient,
   createSuccessResponse, 
   createErrorResponse,
   createResponse,
   createCorsResponse 
 } from '../shared/supabase-client.ts';
 
-interface TrackInteractionRequest {
-  property_id: string;
+interface InteractionRequest {
   user_id: string;
-  interaction_type: 'view' | 'like' | 'favorite' | 'share' | 'inquiry' | 'contact';
-  metadata?: Record<string, any>;
+  property_id: string;
+  interaction_type: string;
+  metadata?: Record<string, unknown>;
+  session_id?: string;
   ip_address?: string;
   user_agent?: string;
+}
+
+interface InteractionResponse {
+  success: boolean;
+  interaction_id: string;
+  message: string;
 }
 
 serve(async (req) => {
@@ -24,65 +29,67 @@ serve(async (req) => {
   }
 
   try {
-    const { property_id, user_id, interaction_type, metadata = {}, ip_address, user_agent }: TrackInteractionRequest = await req.json();
-    
-    if (!property_id || !user_id || !interaction_type) {
-      return createResponse(createErrorResponse('property_id, user_id, and interaction_type are required'), 400);
-    }
+    const {
+      user_id,
+      property_id,
+      interaction_type,
+      metadata = {},
+      session_id,
+      ip_address,
+      user_agent
+    }: InteractionRequest = await req.json();
 
-    console.log('Tracking interaction:', { property_id, user_id, interaction_type });
+    if (!user_id || !property_id || !interaction_type) {
+      return createResponse(createErrorResponse('Missing required fields'), 400);
+    }
 
     const supabase = createTypedSupabaseClient();
 
-    // Call the database function to track the interaction
-    const { error: trackError } = await supabase.rpc('track_property_interaction', {
-      p_property_id: property_id,
-      p_user_id: user_id,
-      p_interaction_type: interaction_type,
-      p_metadata: metadata
-    });
+    // Record the interaction in audit trails
+    const { data: auditTrail, error: auditError } = await supabase
+      .from('audit_trails')
+      .insert({
+        user_id,
+        resource_type: 'property',
+        resource_id: property_id,
+        action: interaction_type,
+        new_values: metadata,
+        session_id,
+        ip_address: ip_address ? ip_address : null,
+        user_agent
+      })
+      .select()
+      .single();
 
-    if (trackError) {
-      console.error('Error tracking interaction:', trackError);
-      return createResponse(handleSupabaseError(trackError), 500);
+    if (auditError) {
+      console.error('Audit trail error:', auditError);
+      return createResponse(createErrorResponse('Failed to record interaction'), 500);
     }
 
-    // Handle specific interaction types
+    // Update property counters based on interaction type
     switch (interaction_type) {
-      case 'view':
-        // Insert into property_views table for detailed tracking
-        await supabase.from('property_views').insert({
-          property_id,
-          user_id,
-          ip_address,
-          user_agent,
-          location_data: metadata.location || null,
-          device_type: metadata.device_type || null,
-          referrer: metadata.referrer || null,
-          session_id: metadata.session_id || null,
-          view_duration: metadata.view_duration || null
-        });
+      case 'view': {
+        await supabase
+          .from('properties')
+          .update({ views: supabase.sql`COALESCE(views, 0) + 1` })
+          .eq('id', property_id);
         break;
-
-      case 'like':
-        // Insert into property_likes table
-        await supabase.from('property_likes').upsert({
-          property_id,
-          user_id
-        }, { onConflict: 'property_id,user_id' });
+      }
+      case 'like': {
+        await supabase
+          .from('properties')
+          .update({ likes: supabase.sql`COALESCE(likes, 0) + 1` })
+          .eq('id', property_id);
         break;
-
-      case 'favorite':
-        // Insert into property_favorites table
-        await supabase.from('property_favorites').upsert({
-          property_id,
-          user_id,
-          list_name: metadata.list_name || 'default',
-          notes: metadata.notes || null
-        }, { onConflict: 'property_id,user_id' });
+      }
+      case 'favorite': {
+        await supabase
+          .from('properties')
+          .update({ favorites: supabase.sql`COALESCE(favorites, 0) + 1` })
+          .eq('id', property_id);
         break;
-
-      case 'inquiry':
+      }
+      case 'inquiry': {
         // Create notification for property owner
         const { data: property } = await supabase
           .from('properties')
@@ -106,17 +113,23 @@ serve(async (req) => {
           });
         }
         break;
+      }
+      default:
+        // Other interaction types don't need special handling
+        break;
     }
 
-    console.log('Successfully tracked interaction:', interaction_type);
+    const response: InteractionResponse = {
+      success: true,
+      interaction_id: auditTrail.id,
+      message: 'Interaction tracked successfully'
+    };
 
-    return createResponse(createSuccessResponse({
-      message: 'Interaction tracked successfully',
-      interaction_type
-    }));
+    return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Error in track-interaction function:', error);
-    return createResponse(handleSupabaseError(error), 500);
+    console.error('Interaction tracking error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });

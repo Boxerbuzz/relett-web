@@ -1,7 +1,7 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
-  createTypedSupabaseClient, 
+  createTypedSupabaseClient,
   createSuccessResponse, 
   createErrorResponse,
   createResponse,
@@ -9,30 +9,15 @@ import {
 } from '../shared/supabase-client.ts';
 
 interface ChatNotificationRequest {
-  record: {
-    id: string;
-    conversation_id: string;
-    sender_id: string;
-    content: string;
-  };
+  message_id: string;
+  conversation_id: string;
+  sender_id: string;
 }
 
-interface NotificationResult {
-  participantId: string;
+interface ChatNotificationResponse {
   success: boolean;
-  error?: unknown;
-}
-
-interface User {
-  first_name: string;
-  last_name: string;
-}
-
-interface Conversation {
-  id: string;
-  name: string;
-  participants: string[];
-  users?: User;
+  notifications_sent: number;
+  message: string;
 }
 
 serve(async (req) => {
@@ -41,88 +26,98 @@ serve(async (req) => {
   }
 
   try {
-    const { record }: ChatNotificationRequest = await req.json();
-    
-    if (!record || !record.conversation_id || !record.sender_id) {
-      return createResponse(createErrorResponse('Invalid message record'), 400);
+    const { message_id, conversation_id, sender_id }: ChatNotificationRequest = await req.json();
+
+    if (!message_id || !conversation_id || !sender_id) {
+      return createResponse(createErrorResponse('Missing required fields'), 400);
     }
 
-    console.log('Processing chat notification for message:', record.id);
-
     const supabase = createTypedSupabaseClient();
+
+    // Get message details
+    const { data: message, error: messageError } = await supabase
+      .from('messages')
+      .select('content, sender, type, property_id')
+      .eq('id', message_id)
+      .single();
+
+    if (messageError || !message) {
+      return createResponse(createErrorResponse('Message not found'), 404);
+    }
 
     // Get conversation details and participants
     const { data: conversation, error: conversationError } = await supabase
       .from('conversations')
-      .select('*, users:admin_id(first_name, last_name)')
-      .eq('id', record.conversation_id)
+      .select('name, participants, type, admin_id')
+      .eq('id', conversation_id)
       .single();
 
     if (conversationError || !conversation) {
-      console.error('Conversation not found:', conversationError);
       return createResponse(createErrorResponse('Conversation not found'), 404);
     }
 
-    // Get sender details
-    const { data: sender, error: senderError } = await supabase
-      .from('users')
-      .select('first_name, last_name')
-      .eq('id', record.sender_id)
+    // Get sender profile
+    const { data: senderProfile } = await supabase
+      .from('user_profiles')
+      .select('first_name, last_name, avatar')
+      .eq('user_id', sender_id)
       .single();
 
-    if (senderError || !sender) {
-      console.error('Sender not found:', senderError);
-      return createResponse(createErrorResponse('Sender not found'), 404);
+    const senderName = senderProfile 
+      ? `${senderProfile.first_name} ${senderProfile.last_name}`.trim() 
+      : message.sender;
+
+    // Create notifications for all participants except the sender
+    const recipients = conversation.participants.filter((id: string) => id !== sender_id);
+    
+    let notificationsSent = 0;
+
+    for (const recipientId of recipients) {
+      try {
+        // Create notification using the database function
+        const { data: _data, error } = await supabase.rpc('create_notification_with_delivery', {
+          p_user_id: recipientId,
+          p_type: 'chat_messages',
+          p_title: `New message from ${senderName}`,
+          p_message: message.type === 'text' 
+            ? message.content.substring(0, 100) + (message.content.length > 100 ? '...' : '')
+            : `Sent a ${message.type}`,
+          p_metadata: {
+            message_id,
+            conversation_id,
+            sender_id,
+            sender_name: senderName,
+            conversation_name: conversation.name,
+            message_type: message.type,
+            property_id: message.property_id
+          },
+          p_action_url: `/chat/${conversation_id}`,
+          p_action_label: 'View Chat',
+          p_image_url: senderProfile?.avatar,
+          p_sender_id: sender_id
+        });
+
+        if (!error) {
+          notificationsSent++;
+        } else {
+          console.error(`Failed to create notification for user ${recipientId}:`, error);
+        }
+      } catch (notificationError) {
+        console.error(`Error creating notification for user ${recipientId}:`, notificationError);
+      }
     }
 
-    // Notify all participants except the sender
-    const participantsToNotify = (conversation as Conversation).participants.filter(
-      (participantId: string) => participantId !== record.sender_id
-    );
-
-    console.log(`Notifying ${participantsToNotify.length} participants`);
-
-    const notificationPromises = participantsToNotify.map(async (participantId: string) => {
-      const { data, error } = await supabase.rpc('create_notification_with_delivery', {
-        p_user_id: participantId,
-        p_type: 'chat',
-        p_title: `New message in ${(conversation as Conversation).name}`,
-        p_message: `${sender.first_name} ${sender.last_name}: ${record.content.substring(0, 100)}${record.content.length > 100 ? '...' : ''}`,
-        p_metadata: {
-          conversation_id: record.conversation_id,
-          message_id: record.id,
-          sender_id: record.sender_id
-        },
-        p_action_url: `/conversations/${record.conversation_id}`,
-        p_action_label: 'View Conversation',
-        p_sender_id: record.sender_id
-      });
-
-      if (error) {
-        console.error(`Failed to create notification for user ${participantId}:`, error);
-      }
-
-      const result: NotificationResult = { participantId, success: !error, error };
-      return result;
-    });
-
-    const results = await Promise.all(notificationPromises);
-    const successCount = results.filter(r => r.success).length;
-
-    console.log(`Successfully created ${successCount}/${results.length} notifications`);
-
-    const response = {
+    const response: ChatNotificationResponse = {
       success: true,
-      notified_count: successCount,
-      total_participants: results.length,
-      results
+      notifications_sent: notificationsSent,
+      message: `Chat notifications sent to ${notificationsSent} participants`
     };
 
     return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Error in send-chat-notification function:', error);
+    console.error('Chat notification error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return createResponse(createErrorResponse('Chat notification failed', errorMessage), 500);
+    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }
 });
