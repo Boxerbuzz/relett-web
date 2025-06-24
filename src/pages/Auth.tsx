@@ -37,7 +37,8 @@ const Auth = () => {
     }
   }, [user, loading, navigate, location]);
 
-  if (loading) {
+  // Only show loading spinner if we're still checking auth state AND user is not set
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

@@ -27,7 +27,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
   
@@ -41,12 +41,12 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       await signIn(data.email, data.password);
     } catch (error) {
       console.error('Login error:', error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -84,7 +84,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
                 type="email"
                 placeholder="Enter your email"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('email')}
               />
             </div>
@@ -102,14 +102,14 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('password')}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                disabled={loading}
+                disabled={isSubmitting}
               >
                 {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -124,7 +124,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
               type="button"
               onClick={onForgotPassword}
               className="text-sm text-blue-600 hover:text-blue-700"
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Forgot password?
             </button>
@@ -133,9 +133,9 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
           <Button 
             type="submit" 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {loading ? (
+            {isSubmitting ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
@@ -152,7 +152,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
             <button
               onClick={onToggleMode}
               className="text-blue-600 hover:text-blue-700 font-medium"
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Sign up
             </button>
