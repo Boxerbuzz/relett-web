@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -45,7 +44,10 @@ const propertySchema = z.object({
       .min(1000, 'Price must be at least ₦1,000')
       .max(1000000000, 'Price cannot exceed ₦1 billion'),
     currency: z.string().default('NGN'),
-    type: z.enum(['sale', 'rent_monthly', 'rent_yearly'])
+    term: z.enum(['night', 'week', 'month', 'year']).default('month'),
+    deposit: z.number().optional(),
+    service_charge: z.number().optional(),
+    is_negotiable: z.boolean().default(false)
   }),
   location: z.object({
     address: z.string()
@@ -66,20 +68,30 @@ const propertySchema = z.object({
     coordinates: z.object({
       lat: z.number().min(-90).max(90).optional(),
       lng: z.number().min(-180).max(180).optional()
-    }).optional()
+    }).optional(),
+    landmark: z.string().optional(),
+    postal_code: z.string().optional()
   }),
   specification: z.object({
     bedrooms: z.number().min(0).max(20).optional(),
     bathrooms: z.number().min(0).max(20).optional(),
+    toilets: z.number().min(0).max(20).optional(),
     parking: z.number().min(0).max(50).optional(),
+    garages: z.number().min(0).max(50).optional(),
+    floors: z.number().min(0).max(100).optional(),
+    units: z.number().min(0).max(1000).optional(),
+    area: z.number().min(0).optional(),
+    area_unit: z.string().optional(),
     year_built: z.number()
       .min(1800, 'Year built cannot be before 1800')
       .max(new Date().getFullYear(), `Year built cannot be in the future`)
-      .optional()
+      .optional(),
+    is_furnished: z.boolean().default(false),
+    full_bedroom_count: z.number().min(0).max(20).optional(),
+    full_bathroom_count: z.number().min(0).max(20).optional()
   }),
-  sqrft: z.string()
-    .optional()
-    .refine((val) => !val || /^\d+(\.\d+)?$/.test(val), 'Square footage must be a valid number'),
+  sqrft: z.string().optional(),
+  max_guest: z.number().min(0).max(50).optional(),
   features: z.array(z.string().min(1, 'Feature cannot be empty')).default([]),
   amenities: z.array(z.string().min(1, 'Amenity cannot be empty')).default([]),
   documents: z.array(z.object({
@@ -91,7 +103,10 @@ const propertySchema = z.object({
     url: z.string().url('Invalid image URL'),
     is_primary: z.boolean().default(false),
     category: z.string().default('general')
-  })).min(1, 'At least one image is required')
+  })).min(1, 'At least one image is required'),
+  tags: z.array(z.string()).default([]),
+  is_exclusive: z.boolean().default(false),
+  is_featured: z.boolean().default(false)
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -126,13 +141,25 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
       price: {
         amount: 0,
         currency: 'NGN',
-        type: 'sale'
+        term: 'month',
+        deposit: 0,
+        service_charge: 0,
+        is_negotiable: false
       },
-      specification: {},
+      location: {
+        country: 'Nigeria'
+      },
+      specification: {
+        is_furnished: false
+      },
       features: [],
       amenities: [],
       documents: [],
-      images: []
+      images: [],
+      tags: [],
+      max_guest: 0,
+      is_exclusive: false,
+      is_featured: false
     }
   });
 
@@ -214,7 +241,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
   const onSubmit = async (data: PropertyFormData) => {
     try {
-      // Final validation
       const isValid = await form.trigger();
       if (!isValid) {
         toast({
@@ -227,7 +253,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
       console.log('Submitting property:', data);
 
-      // Validate required fields
       if (!data.documents || data.documents.length === 0) {
         toast({
           title: 'Validation Error',
@@ -246,7 +271,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         return;
       }
 
-      // Ensure coordinates are either complete or null
       const coordinates = data.location.coordinates?.lat && data.location.coordinates?.lng 
         ? {
             lat: data.location.coordinates.lat,
@@ -254,45 +278,69 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
           }
         : null;
 
-      // Transform form data to match the expected structure
-      const propertyData = {
-        basicInfo: {
+      // Create property with all fields properly mapped
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data: property, error: propertyError } = await supabase
+        .from('properties')
+        .insert({
+          user_id: user.id,
           title: data.title,
           description: data.description,
-          propertyType: data.type,
+          type: data.type,
+          sub_type: data.sub_type,
           category: data.category,
-          status: 'pending'
-        },
-        location: {
-          address: data.location.address,
-          city: data.location.city,
-          state: data.location.state,
-          country: data.location.country,
-          coordinates
-        },
-        documents: data.documents.map(doc => ({
-          id: crypto.randomUUID(),
-          name: doc.filename,
-          type: doc.type,
-          url: doc.url,
-          size: 0
-        })),
-        valuation: {
-          estimatedValue: data.price.amount,
-          currency: data.price.currency,
-          valuationMethod: 'user_estimate',
-          marketAnalysis: ''
-        }
-      };
+          condition: data.condition,
+          status: 'pending',
+          location: {
+            address: data.location.address,
+            city: data.location.city,
+            state: data.location.state,
+            country: data.location.country,
+            coordinates,
+            landmark: data.location.landmark || '',
+            postal_code: data.location.postal_code || ''
+          },
+          specification: data.specification,
+          price: data.price,
+          sqrft: data.sqrft || '',
+          max_guest: data.max_guest || 0,
+          features: data.features,
+          amenities: data.amenities,
+          tags: data.tags,
+          is_exclusive: data.is_exclusive,
+          is_featured: data.is_featured,
+          garages: data.specification.garages || 0
+        })
+        .select()
+        .single();
 
-      const property = await createProperty(propertyData);
-      
+      if (propertyError) throw propertyError;
+
+      // Store images
+      if (data.images && data.images.length > 0) {
+        const imageInserts = data.images.map(img => ({
+          property_id: property.id,
+          url: img.url,
+          is_primary: img.is_primary,
+          category: img.category
+        }));
+
+        const { error: imageError } = await supabase
+          .from('property_images')
+          .insert(imageInserts);
+
+        if (imageError) {
+          console.error('Error storing images:', imageError);
+        }
+      }
+
       toast({
         title: 'Success!',
         description: 'Property has been created successfully.',
       });
 
-      // Redirect to property details or list
       navigate('/land');
       
       if (onClose) onClose();

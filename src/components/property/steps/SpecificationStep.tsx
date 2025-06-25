@@ -1,3 +1,4 @@
+
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { getAmenities } from "@/types/amenities";
@@ -71,7 +73,15 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Property Specifications</h2>
+        <p className="text-gray-600 mb-6">
+          Provide detailed specifications about your property.
+        </p>
+      </div>
+
+      {/* Basic Specifications */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <FormField
           control={form.control}
           name="specification.bedrooms"
@@ -116,10 +126,94 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
 
         <FormField
           control={form.control}
+          name="specification.toilets"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Toilets</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="specification.parking"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Parking Spaces</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specification.garages"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Garages</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specification.floors"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Number of Floors</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specification.units"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Number of Units</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -155,22 +249,111 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="specification.full_bedroom_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Bedrooms</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
+      {/* Area and Size */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          control={form.control}
+          name="specification.area"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Area Size</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || undefined)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specification.area_unit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Area Unit</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="sqft">Square Feet</SelectItem>
+                  <SelectItem value="sqm">Square Meters</SelectItem>
+                  <SelectItem value="acres">Acres</SelectItem>
+                  <SelectItem value="hectares">Hectares</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sqrft"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Square Footage (Text)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 2,500 sq ft" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Furnished Status */}
       <FormField
         control={form.control}
-        name="sqrft"
+        name="specification.is_furnished"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Square Footage</FormLabel>
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl>
-              <Input placeholder="e.g., 2,500 sq ft" {...field} />
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
             </FormControl>
-            <FormMessage />
+            <div className="space-y-1 leading-none">
+              <FormLabel>Property is furnished</FormLabel>
+            </div>
           </FormItem>
         )}
       />
 
+      {/* Features Section */}
       <div>
         <FormLabel className="text-base font-medium mb-4 block">
           Features
@@ -202,7 +385,7 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
               }) => (
                 <div key={feature.id} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={features.includes(feature)}
+                    checked={features.includes(feature.id)}
                     onCheckedChange={(checked) => {
                       if (checked) addFeature(feature.id);
                       else removeFeature(feature.id);
@@ -231,6 +414,7 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
         </div>
       </div>
 
+      {/* Amenities Section */}
       <div>
         <FormLabel className="text-base font-medium mb-4 block">
           Amenities

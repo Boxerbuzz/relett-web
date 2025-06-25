@@ -1,3 +1,4 @@
+
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
@@ -20,19 +21,16 @@ interface LocationStepProps {
 export function LocationStep({ form }: LocationStepProps) {
   const handlePlaceSelect = (place: any) => {
     if (place) {
-      // Update all location fields automatically
       form.setValue("location.address", place.address);
       form.setValue("location.city", place.city);
       form.setValue("location.state", place.state);
       form.setValue("location.country", place.country);
 
-      // Set coordinates if available
       if (place.coordinates) {
         form.setValue("location.coordinates.lat", place.coordinates.lat);
         form.setValue("location.coordinates.lng", place.coordinates.lng);
       }
 
-      // Trigger validation
       form.trigger([
         "location.address",
         "location.city",
@@ -43,12 +41,18 @@ export function LocationStep({ form }: LocationStepProps) {
   };
 
   const handleAddressInputChange = (value: string) => {
-    // Update the address field as user types
     form.setValue("location.address", value);
   };
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Property Location</h2>
+        <p className="text-gray-600 mb-6">
+          Provide the exact location of your property for potential buyers/tenants.
+        </p>
+      </div>
+
       {/* Google Places Autocomplete */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader className="pb-3">
@@ -88,7 +92,7 @@ export function LocationStep({ form }: LocationStepProps) {
           name="location.address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Street Address</FormLabel>
+              <FormLabel>Street Address *</FormLabel>
               <FormControl>
                 <Input placeholder="123 Main Street" {...field} />
               </FormControl>
@@ -97,13 +101,43 @@ export function LocationStep({ form }: LocationStepProps) {
           )}
         />
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="location.landmark"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Landmark</FormLabel>
+                <FormControl>
+                  <Input placeholder="Near popular landmark" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location.postal_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Postal Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="100001" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="location.city"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>City</FormLabel>
+                <FormLabel>City *</FormLabel>
                 <FormControl>
                   <Input placeholder="Lagos" {...field} />
                 </FormControl>
@@ -117,7 +151,7 @@ export function LocationStep({ form }: LocationStepProps) {
             name="location.state"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>State</FormLabel>
+                <FormLabel>State *</FormLabel>
                 <FormControl>
                   <Input placeholder="Lagos State" {...field} />
                 </FormControl>
@@ -131,7 +165,7 @@ export function LocationStep({ form }: LocationStepProps) {
             name="location.country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country</FormLabel>
+                <FormLabel>Country *</FormLabel>
                 <FormControl>
                   <Input placeholder="Nigeria" {...field} />
                 </FormControl>

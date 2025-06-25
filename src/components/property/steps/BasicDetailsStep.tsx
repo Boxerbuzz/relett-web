@@ -4,12 +4,15 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface BasicDetailsStepProps {
   form: UseFormReturn<any>;
 }
 
 export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
+  const category = form.watch('category');
+
   return (
     <div className="space-y-6">
       <div>
@@ -69,7 +72,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormLabel>Sub Type *</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="e.g., Apartment, House, Office, etc."
+                  placeholder="e.g., apartment, house, duplex, etc."
                   {...field}
                 />
               </FormControl>
@@ -125,24 +128,175 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             </FormItem>
           )}
         />
+      </div>
 
+      {/* Price Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Pricing Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="price.amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price Amount (NGN) *</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0"
+                    min="1000"
+                    max="1000000000"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price.term"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price Term</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select term" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="night">Per Night</SelectItem>
+                    <SelectItem value="week">Per Week</SelectItem>
+                    <SelectItem value="month">Per Month</SelectItem>
+                    <SelectItem value="year">Per Year</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price.deposit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Deposit Amount</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="price.service_charge"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Service Charge</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price.is_negotiable"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Price is negotiable</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+
+      {/* Additional Settings */}
+      {category === 'shortlet' && (
         <FormField
           control={form.control}
-          name="price.amount"
+          name="max_guest"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price Amount (NGN) *</FormLabel>
+              <FormLabel>Maximum Guests</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   placeholder="0"
-                  min="1000"
-                  max="1000000000"
+                  min="0"
+                  max="50"
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="is_exclusive"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Exclusive listing</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="is_featured"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Featured property</FormLabel>
+              </div>
             </FormItem>
           )}
         />
