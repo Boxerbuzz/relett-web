@@ -1,18 +1,17 @@
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 import {
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from "@/components/ui/sheet";
 import {
   Form,
   FormControl,
@@ -20,32 +19,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
-  mode: z.string().min(1, 'Inspection mode is required'),
+  mode: z.string().min(1, "Inspection mode is required"),
   date: z.date({
-    required_error: 'Inspection date is required',
+    required_error: "Inspection date is required",
   }),
-  time: z.string().min(1, 'Preferred time is required'),
+  time: z.string().min(1, "Preferred time is required"),
   notes: z.string().optional(),
 });
 
@@ -62,18 +61,18 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      mode: '',
-      time: '',
-      notes: '',
+      mode: "",
+      time: "",
+      notes: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
       toast({
-        title: 'Authentication Required',
-        description: 'Please log in to request an inspection',
-        variant: 'destructive'
+        title: "Authentication Required",
+        description: "Please log in to request an inspection",
+        variant: "destructive",
       });
       return;
     }
@@ -82,36 +81,35 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
       setLoading(true);
 
       const inspectionDateTime = new Date(values.date);
-      const [hours, minutes] = values.time.split(':');
+      const [hours, minutes] = values.time.split(":");
       inspectionDateTime.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase
-        .from('inspections')
-        .insert({
-          user_id: user.id,
-          property_id: property.id,
-          agent_id: property.user_id,
-          mode: values.mode,
-          when: inspectionDateTime.toISOString(),
-          notes: values.notes,
-          status: 'pending'
-        });
+      const { error } = await supabase.from("inspections").insert({
+        user_id: user.id,
+        property_id: property.id,
+        agent_id: property.user_id,
+        mode: values.mode,
+        when: inspectionDateTime.toISOString(),
+        notes: values.notes,
+        status: "pending",
+      });
 
       if (error) throw error;
 
       toast({
-        title: 'Inspection Requested',
-        description: 'Your inspection request has been sent to the property agent'
+        title: "Inspection Requested",
+        description:
+          "Your inspection request has been sent to the property agent",
       });
 
       form.reset();
       onClose();
     } catch (error) {
-      console.error('Error submitting inspection request:', error);
+      console.error("Error submitting inspection request:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to submit inspection request',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to submit inspection request",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -135,14 +133,19 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Inspection Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select inspection type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="physical">Physical Inspection</SelectItem>
+                    <SelectItem value="physical">
+                      Physical Inspection
+                    </SelectItem>
                     <SelectItem value="virtual">Virtual Tour</SelectItem>
                     <SelectItem value="video_call">Video Call</SelectItem>
                   </SelectContent>
@@ -202,7 +205,14 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
               <FormItem>
                 <FormLabel>Preferred Time</FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} />
+                  <Input
+                    type="time"
+                    id="time-picker"
+                    step="1"
+                    defaultValue="10:30:00"
+                    className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -236,7 +246,7 @@ export function InspectionSheet({ property, onClose }: InspectionSheetProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Submitting...' : 'Request Inspection'}
+              {loading ? "Submitting..." : "Request Inspection"}
             </Button>
           </div>
         </form>
