@@ -189,3 +189,7 @@ export const getGroupedAmenities = () => {
 export const getAmenityById = (id: string): PropertyAmenity | undefined => {
   return amentiies.find((amenity) => amenity.id === id);
 };
+
+export const getAmenities = () => {
+  return amentiies;
+};
