@@ -16,7 +16,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { PropertyVerificationQueue } from "@/components/admin/PropertyVerificationQueue";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Users,
   CheckSquare,
@@ -52,6 +52,7 @@ export function AdminDashboard() {
   const [contactsCount, setContactsCount] = useState(0);
   const [waitlistCount, setWaitlistCount] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardStats();
@@ -129,6 +130,22 @@ export function AdminDashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerificationReview = (type: string) => {
+    switch (type) {
+      case 'identity':
+        navigate('/verification');
+        break;
+      case 'documents':
+        navigate('/property-verification');
+        break;
+      case 'properties':
+        navigate('/property-verification');
+        break;
+      default:
+        navigate('/verification');
     }
   };
 
@@ -419,7 +436,9 @@ export function AdminDashboard() {
                         <Badge variant="destructive">
                           {stats.pendingVerifications}
                         </Badge>
-                        <Button size="sm">Review</Button>
+                        <Button size="sm" onClick={() => handleVerificationReview('identity')}>
+                          Review
+                        </Button>
                       </div>
                     </div>
 
@@ -434,7 +453,9 @@ export function AdminDashboard() {
                         <Badge variant="destructive">
                           {stats.pendingDocuments}
                         </Badge>
-                        <Button size="sm">Review</Button>
+                        <Button size="sm" onClick={() => handleVerificationReview('documents')}>
+                          Review
+                        </Button>
                       </div>
                     </div>
 
@@ -447,7 +468,9 @@ export function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge variant="secondary">8</Badge>
-                        <Button size="sm">Review</Button>
+                        <Button size="sm" onClick={() => handleVerificationReview('properties')}>
+                          Review
+                        </Button>
                       </div>
                     </div>
                   </div>

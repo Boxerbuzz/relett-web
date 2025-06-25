@@ -1,8 +1,8 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { UserCheck, UserX, MoreHorizontal } from 'lucide-react';
+import { UserCheck, UserX } from 'lucide-react';
+import { UserActionsDropdown } from './UserActionsDropdown';
 
 interface User {
   id: string;
@@ -19,9 +19,10 @@ interface User {
 interface UserMobileCardProps {
   user: User;
   onToggleStatus: (userId: string, currentStatus: boolean) => void;
+  onUserUpdated: () => void;
 }
 
-export function UserMobileCard({ user, onToggleStatus }: UserMobileCardProps) {
+export function UserMobileCard({ user, onToggleStatus, onUserUpdated }: UserMobileCardProps) {
   const getStatusBadge = (user: User) => {
     if (!user.is_active) {
       return <Badge variant="destructive">Inactive</Badge>;
@@ -92,9 +93,7 @@ export function UserMobileCard({ user, onToggleStatus }: UserMobileCardProps) {
                 </>
               )}
             </Button>
-            <Button size="sm" variant="outline">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <UserActionsDropdown user={user} onUserUpdated={onUserUpdated} />
           </div>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+
 "use client";
 import * as React from "react";
 import {
@@ -12,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, MoreVertical, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, Send, MoreVertical, User, Phone, Video, Paperclip, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Mail = {
@@ -145,6 +148,8 @@ export function Messaging() {
   const [viewMode, setViewMode] = React.useState<ViewMode>("list");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [showUnreadsOnly, setShowUnreadsOnly] = React.useState(false);
+  const [replyMessage, setReplyMessage] = React.useState("");
+  const [unreadCount, setUnreadCount] = React.useState(3);
 
   // Handle message selection
   const handleMailSelect = (mail: Mail) => {
@@ -158,29 +163,49 @@ export function Messaging() {
     setSelectedMail(null);
   };
 
-  // Filter mails based on search query
-  const filteredMails = mails.filter(
-    (mail) =>
+  // Handle sending reply
+  const handleSendReply = () => {
+    if (!replyMessage.trim()) return;
+    
+    // TODO: Implement actual message sending
+    console.log('Sending reply:', replyMessage);
+    setReplyMessage("");
+    
+    // Show success feedback
+    // toast({ title: "Message sent", description: "Your reply has been sent successfully." });
+  };
+
+  // Filter mails based on search query and unread status
+  const filteredMails = mails.filter((mail) => {
+    const matchesSearch = 
       mail.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mail.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mail.teaser.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      mail.teaser.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesUnread = !showUnreadsOnly || Math.random() > 0.5; // Mock unread status
+    
+    return matchesSearch && matchesUnread;
+  });
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen bg-background">
       {/* Messages List Panel */}
       <div
         className={cn(
           "w-full lg:w-80 border-r border-border bg-background overflow-hidden transition-all duration-300",
-          // On mobile/tablet: show/hide based on viewMode
           "lg:block",
           viewMode === "list" ? "block" : "hidden lg:block"
         )}
       >
-        <div className="gap-3.5 border-b p-4">
+        <div className="border-b p-4">
           <div className="flex w-full items-center justify-between mb-4">
-            <div className="text-foreground text-base font-medium">
+            <div className="text-foreground text-base font-medium flex items-center gap-2">
               Messages
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="h-5 px-2 text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
             </div>
             <Label className="flex items-center gap-2 text-sm">
               <span className="hidden sm:inline">Unreads</span>
@@ -192,59 +217,63 @@ export function Messaging() {
             </Label>
           </div>
           <Input
-            placeholder="Type to search..."
+            placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full"
           />
         </div>
-        <div className="overflow-y-auto h-[calc(100vh-200px)]">
+        
+        <ScrollArea className="h-[calc(100vh-140px)]">
           <div className="px-0">
-            <div>
-              {filteredMails.map((mail) => (
-                <button
-                  title={mail.subject}
-                  type="button"
-                  key={mail.id}
-                  onClick={() => handleMailSelect(mail)}
-                  className={cn(
-                    "w-full hover:bg-muted hover:text-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight text-left last:border-b-0 transition-colors",
-                    selectedMail?.id === mail.id && "bg-muted"
-                  )}
-                >
-                  <div className="flex w-full items-center gap-2">
-                    <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center shrink-0">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="flex flex-col w-full">
+            {filteredMails.map((mail) => (
+              <button
+                key={mail.id}
+                onClick={() => handleMailSelect(mail)}
+                className={cn(
+                  "w-full hover:bg-muted hover:text-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight text-left last:border-b-0 transition-colors",
+                  selectedMail?.id === mail.id && "bg-muted"
+                )}
+              >
+                <div className="flex w-full items-center gap-3">
+                  <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center shrink-0">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex flex-col w-full min-w-0">
+                    <div className="flex items-center justify-between w-full">
                       <span className="font-medium truncate">{mail.name}</span>
-                      <span className="line-clamp-1 w-full text-xs text-muted-foreground text-left">
-                        {mail.teaser}
+                      <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                        {mail.date}
                       </span>
                     </div>
+                    <span className="text-xs font-medium truncate text-left">
+                      {mail.subject}
+                    </span>
+                    <span className="line-clamp-2 w-full text-xs text-muted-foreground text-left mt-1">
+                      {mail.teaser}
+                    </span>
                   </div>
-                </button>
-              ))}
-              {filteredMails.length === 0 && (
-                <div className="p-8 text-center text-muted-foreground">
-                  <p className="text-sm">No messages found</p>
-                  {searchQuery && (
-                    <p className="text-xs mt-1">
-                      Try adjusting your search query
-                    </p>
-                  )}
                 </div>
-              )}
-            </div>
+              </button>
+            ))}
+            {filteredMails.length === 0 && (
+              <div className="p-8 text-center text-muted-foreground">
+                <p className="text-sm">No messages found</p>
+                {searchQuery && (
+                  <p className="text-xs mt-1">
+                    Try adjusting your search query
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        </ScrollArea>
       </div>
 
       {/* Main Content Area */}
       <div
         className={cn(
           "flex-1 flex flex-col transition-all duration-300",
-          // On mobile/tablet: show/hide based on viewMode
           "lg:flex",
           viewMode === "detail" ? "flex" : "hidden lg:flex"
         )}
@@ -260,22 +289,28 @@ export function Messaging() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
 
-          <Breadcrumb>
+          <Breadcrumb className="flex-1">
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">All Inboxes</BreadcrumbLink>
+                <BreadcrumbLink href="#">All Messages</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 <BreadcrumbPage>
-                  {selectedMail ? selectedMail.subject : "Inbox"}
+                  {selectedMail ? selectedMail.subject : "Select a conversation"}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
           {selectedMail && (
-            <div className="ml-auto">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Phone className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Video className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="sm">
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -283,15 +318,18 @@ export function Messaging() {
           )}
         </header>
 
-        <div className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex flex-1 flex-col overflow-hidden">
           {selectedMail ? (
             // Message Detail View
             <div className="flex flex-col h-full">
               {/* Message Header */}
               <div className="border-b p-6 bg-background">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-muted-foreground" />
+                  </div>
                   <div className="flex-1">
-                    <h1 className="text-xl font-semibold mb-2">
+                    <h1 className="text-xl font-semibold mb-1">
                       {selectedMail.subject}
                     </h1>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -306,7 +344,7 @@ export function Messaging() {
               </div>
 
               {/* Message Content */}
-              <div className="flex-1 p-6 h-[calc(100vh-200px)] overflow-y-auto">
+              <ScrollArea className="flex-1 p-6">
                 <div className="prose prose-sm max-w-none">
                   {selectedMail.content.split("\n").map((paragraph, index) => (
                     <p
@@ -317,15 +355,40 @@ export function Messaging() {
                     </p>
                   ))}
                 </div>
-              </div>
+              </ScrollArea>
 
               {/* Reply Section */}
               <div className="border-t p-4 bg-background">
-                <div className="flex items-center gap-2">
-                  <Input placeholder="Type your reply..." className="flex-1" />
-                  <Button size="sm">
-                    <Send className="h-4 w-4" />
-                  </Button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm">
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <Smile className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <Input
+                      placeholder="Type your reply..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendReply();
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSendReply}
+                      disabled={!replyMessage.trim()}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -333,11 +396,14 @@ export function Messaging() {
             // Empty State
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center text-muted-foreground max-w-md">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-8 w-8" />
+                </div>
                 <h3 className="text-lg font-medium mb-2">
                   Select a conversation
                 </h3>
                 <p className="text-sm">
-                  Choose a message from the list to start reading and replying.
+                  Choose a message from the list to start reading and replying to your conversations.
                 </p>
               </div>
             </div>
