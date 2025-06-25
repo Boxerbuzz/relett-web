@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { usePropertyCreation } from '@/hooks/usePropertyCreation';
+import { supabase } from '@/integrations/supabase/client';
 import { BasicDetailsStep } from './steps/BasicDetailsStep';
 import { LocationStep } from './steps/LocationStep';
 import { SpecificationStep } from './steps/SpecificationStep';
