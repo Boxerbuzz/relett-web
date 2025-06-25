@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
@@ -226,7 +227,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -254,8 +254,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
-      // Don't set loading false here - let the auth state change handle it
     }
   };
 
@@ -266,7 +264,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     role: "landowner" | "verifier" | "agent"
   ) => {
     try {
-      setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -310,8 +307,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
-      // Don't set loading false here - let the auth state change handle it
     }
   };
 

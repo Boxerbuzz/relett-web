@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -38,7 +37,7 @@ interface SignUpFormProps {
 }
 
 export function SignUpForm({ onToggleMode }: SignUpFormProps) {
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp } = useAuth();
@@ -62,12 +61,12 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
 
   const onSubmit = async (data: SignUpForm) => {
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       await signUp(data.email, data.password, data.name, data.role);
     } catch (error) {
       console.error('Sign up error:', error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -104,7 +103,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 id="name"
                 placeholder="Enter your full name"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('name')}
               />
             </div>
@@ -122,7 +121,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type="email"
                 placeholder="Enter your email"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('email')}
               />
             </div>
@@ -140,7 +139,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type="tel"
                 placeholder="Enter your phone number"
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('phone')}
               />
             </div>
@@ -158,14 +157,14 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Create a password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('password')}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                disabled={loading}
+                disabled={isSubmitting}
               >
                 {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -184,14 +183,14 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 className="pl-10 pr-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                disabled={loading}
+                disabled={isSubmitting}
                 {...register('confirmPassword')}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                disabled={loading}
+                disabled={isSubmitting}
               >
                 {showConfirmPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -207,7 +206,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               <AccountTypeSelect
                 value={role}
                 onChange={(value) => setValue('role', value)}
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
             {errors.role && (
@@ -221,7 +220,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               checked={acceptTerms}
               onCheckedChange={(checked) => setValue('acceptTerms', checked as boolean)}
               className="mt-1"
-              disabled={loading}
+              disabled={isSubmitting}
             />
             <div className="grid gap-1.5 leading-none">
               <Label
@@ -246,9 +245,9 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
           <Button 
             type="submit" 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {loading ? (
+            {isSubmitting ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Creating account...
@@ -265,7 +264,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
             <button
               onClick={onToggleMode}
               className="text-blue-600 hover:text-blue-700 font-medium"
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Sign in
             </button>
