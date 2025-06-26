@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,8 +23,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, UserCheck, UserX, MoreHorizontal } from 'lucide-react';
+import { Search, UserCheck, UserX } from 'lucide-react';
 import { UserMobileCard } from './UserMobileCard';
+import { UserActionsDropdown } from './UserActionsDropdown';
 
 interface User {
   id: string;
@@ -45,6 +45,7 @@ export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -100,6 +101,11 @@ export function UserManagement() {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleUserUpdated = () => {
+    setRefreshTrigger(prev => prev + 1);
+    fetchUsers();
   };
 
   const filteredUsers = users.filter(user => {
@@ -215,6 +221,7 @@ export function UserManagement() {
               key={user.id}
               user={user}
               onToggleStatus={toggleUserStatus}
+              onUserUpdated={handleUserUpdated}
             />
           ))}
         </div>
@@ -258,9 +265,7 @@ export function UserManagement() {
                       >
                         {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <UserActionsDropdown user={user} onUserUpdated={handleUserUpdated} />
                     </div>
                   </TableCell>
                 </TableRow>
