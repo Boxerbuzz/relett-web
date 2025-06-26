@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ServiceCategoryCard } from './ServiceCategoryCard';
-import { Truck, Palette, Broom, Zap, Eye, Wrench } from 'lucide-react';
+import { Truck, Palette, Sparkles, Zap, Eye, Wrench } from 'lucide-react';
 
 export interface ServiceCategory {
   id: string;
@@ -30,7 +30,7 @@ const serviceCategories: ServiceCategory[] = [
     id: 'cleaners',
     name: 'Cleaning Services',
     description: 'Professional cleaning for homes, offices, and post-construction sites',
-    icon: Broom,
+    icon: Sparkles,
     providerCount: 67
   },
   {
