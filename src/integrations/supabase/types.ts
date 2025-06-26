@@ -3485,6 +3485,135 @@ export type Database = {
         }
         Relationships: []
       }
+      service_bookings: {
+        Row: {
+          budget_range: Json | null
+          conversation_id: string | null
+          created_at: string | null
+          customer_id: string
+          description: string | null
+          id: string
+          location: Json | null
+          preferred_date: string | null
+          provider_id: string
+          service_type: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget_range?: Json | null
+          conversation_id?: string | null
+          created_at?: string | null
+          customer_id: string
+          description?: string | null
+          id?: string
+          location?: Json | null
+          preferred_date?: string | null
+          provider_id: string
+          service_type: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget_range?: Json | null
+          conversation_id?: string | null
+          created_at?: string | null
+          customer_id?: string
+          description?: string | null
+          id?: string
+          location?: Json | null
+          preferred_date?: string | null
+          provider_id?: string
+          service_type?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_bookings_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bookings_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_providers: {
+        Row: {
+          availability: Json | null
+          business_name: string
+          category_id: string
+          certifications: string[] | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          location: Json | null
+          portfolio_images: string[] | null
+          pricing_info: Json | null
+          rating: number | null
+          review_count: number | null
+          services_offered: string[] | null
+          updated_at: string | null
+          user_id: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          availability?: Json | null
+          business_name: string
+          category_id: string
+          certifications?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location?: Json | null
+          portfolio_images?: string[] | null
+          pricing_info?: Json | null
+          rating?: number | null
+          review_count?: number | null
+          services_offered?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          availability?: Json | null
+          business_name?: string
+          category_id?: string
+          certifications?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          location?: Json | null
+          portfolio_images?: string[] | null
+          pricing_info?: Json | null
+          rating?: number | null
+          review_count?: number | null
+          services_offered?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       smart_contracts: {
         Row: {
           abi: Json

@@ -38,6 +38,7 @@ import UserBookings from "@/pages/UserBookings";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Services from "@/pages/Services";
+import ServiceCategory from "@/pages/ServiceCategory";
 import { Messaging } from "./pages/Messaging";
 
 const queryClient = new QueryClient({
@@ -110,6 +111,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <Services />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/services/:categoryId"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ServiceCategory />
                         </Layout>
                       </ProtectedRoute>
                     }

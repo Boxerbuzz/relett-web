@@ -4,17 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ServiceCategory } from './ServiceCategories';
 import { ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ServiceCategoryCardProps {
   category: ServiceCategory;
 }
 
 export function ServiceCategoryCard({ category }: ServiceCategoryCardProps) {
+  const navigate = useNavigate();
   const Icon = category.icon;
 
   const handleClick = () => {
-    // TODO: Navigate to category providers page
-    console.log(`Navigate to ${category.id} providers`);
+    navigate(`/services/${category.id}`);
   };
 
   return (
