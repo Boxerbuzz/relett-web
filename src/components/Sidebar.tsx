@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useLocation, Link } from 'react-router-dom';
@@ -24,7 +23,8 @@ import {
   CaretRight,
   Tree,
   Heart,
-  Chat ,
+  Chat,
+  Wrench,
 } from 'phosphor-react';
 import {
   Collapsible,
@@ -44,6 +44,7 @@ const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
   { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'Services', href: '/services', icon: Wrench, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent', 'user'] },

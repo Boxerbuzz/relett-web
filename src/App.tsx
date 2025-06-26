@@ -37,6 +37,7 @@ import PropertyDetails from "@/pages/PropertyDetails";
 import UserBookings from "@/pages/UserBookings";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Services from "@/pages/Services";
 import { Messaging } from "./pages/Messaging";
 
 const queryClient = new QueryClient({
@@ -99,6 +100,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <Marketplace />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/services"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Services />
                         </Layout>
                       </ProtectedRoute>
                     }
