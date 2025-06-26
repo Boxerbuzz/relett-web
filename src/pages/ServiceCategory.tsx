@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Star, MapPin, Phone, Mail } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ServiceProvider {
   id: string;
@@ -54,39 +53,66 @@ const categoryInfo = {
   }
 };
 
+// Mock data for demonstration
+const mockProviders: ServiceProvider[] = [
+  {
+    id: '1',
+    business_name: 'Swift Movers Lagos',
+    description: 'Professional moving services with over 10 years of experience. We handle residential and commercial moves with care.',
+    contact_phone: '+234 801 234 5678',
+    contact_email: 'info@swiftmovers.ng',
+    rating: 4.8,
+    review_count: 156,
+    years_experience: 10,
+    is_verified: true,
+    services_offered: ['Residential Moving', 'Commercial Moving', 'Packing Services', 'Storage Solutions'],
+    location: { city: 'Lagos', state: 'Lagos' },
+    user: {
+      first_name: 'Ahmed',
+      last_name: 'Ibrahim',
+      avatar: ''
+    }
+  },
+  {
+    id: '2',
+    business_name: 'Elite Interior Designs',
+    description: 'Creating beautiful and functional spaces that reflect your personality and lifestyle.',
+    contact_phone: '+234 802 345 6789',
+    contact_email: 'hello@eliteinteriors.ng',
+    rating: 4.9,
+    review_count: 89,
+    years_experience: 8,
+    is_verified: true,
+    services_offered: ['Interior Design', 'Space Planning', 'Furniture Selection', 'Color Consultation'],
+    location: { city: 'Abuja', state: 'FCT' },
+    user: {
+      first_name: 'Fatima',
+      last_name: 'Mohammed',
+      avatar: ''
+    }
+  }
+];
+
 export default function ServiceCategory() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProviders();
-  }, [categoryId]);
-
-  const fetchProviders = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('service_providers')
-        .select(`
-          *,
-          user:users!service_providers_user_id_fkey(
-            first_name,
-            last_name,
-            avatar
-          )
-        `)
-        .eq('category_id', categoryId)
-        .eq('is_active', true)
-        .eq('is_verified', true);
-
-      if (error) throw error;
-      setProviders(data || []);
-    } catch (error) {
-      console.error('Error fetching providers:', error);
-    } finally {
+    // For now, we'll use mock data. Later this can be replaced with actual Supabase query
+    // when the service_providers table is properly set up with real data
+    setLoading(true);
+    setTimeout(() => {
+      const filteredProviders = mockProviders.filter(provider => {
+        // Simple filtering based on category
+        if (categoryId === 'movers') return provider.business_name.toLowerCase().includes('movers');
+        if (categoryId === 'decorators') return provider.business_name.toLowerCase().includes('interior');
+        return false;
+      });
+      setProviders(filteredProviders);
       setLoading(false);
-    }
-  };
+    }, 500);
+  }, [categoryId]);
 
   const category = categoryInfo[categoryId as keyof typeof categoryInfo];
 

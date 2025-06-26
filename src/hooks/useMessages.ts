@@ -19,7 +19,7 @@ export interface MessageWithSender {
     last_name: string;
     email: string;
     avatar: string | null;
-  };
+  } | null;
 }
 
 export function useMessages(conversationId: string | null) {
@@ -65,24 +65,43 @@ export function useMessages(conversationId: string | null) {
     try {
       setLoading(true);
 
+      // First get the messages
       const { data: messagesData, error: messagesError } = await supabase
         .from('chat_messages')
-        .select(`
-          *,
-          sender:users!chat_messages_sender_id_fkey(
-            id,
-            first_name,
-            last_name,
-            email,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (messagesError) throw messagesError;
 
-      setMessages(messagesData || []);
+      // Then get sender details for each unique sender
+      const senderIds = [...new Set(messagesData?.map(m => m.sender_id).filter(Boolean) || [])];
+      
+      const sendersMap = new Map();
+      if (senderIds.length > 0) {
+        const { data: sendersData } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, email, avatar')
+          .in('id', senderIds);
+
+        sendersData?.forEach(sender => {
+          sendersMap.set(sender.id, sender);
+        });
+      }
+
+      // Combine messages with sender data
+      const messagesWithSenders = messagesData?.map(message => ({
+        ...message,
+        sender: sendersMap.get(message.sender_id) || {
+          id: message.sender_id,
+          first_name: 'Unknown',
+          last_name: 'User',
+          email: '',
+          avatar: null
+        }
+      })) || [];
+
+      setMessages(messagesWithSenders);
     } catch (err) {
       console.error('Error fetching messages:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch messages');

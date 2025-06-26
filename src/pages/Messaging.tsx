@@ -13,9 +13,9 @@ export function Messaging() {
   const conversationName = selectedConversation?.name || 'Conversation';
 
   return (
-    <div className="h-screen flex bg-gray-100">
+    <div className="h-screen flex bg-gray-100 overflow-hidden">
       {/* Sidebar with conversations */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <ConversationList
             selectedConversationId={selectedConversationId}
@@ -26,7 +26,7 @@ export function Messaging() {
       </div>
 
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <ChatArea
           conversationId={selectedConversationId}
           conversationName={conversationName}
