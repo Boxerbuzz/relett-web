@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Star, MapPin, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Phone, Envelope } from 'phosphor-react';
 
 interface ServiceProvider {
   id: string;
@@ -223,7 +223,7 @@ function ProviderCard({ provider }: { provider: ServiceProvider }) {
           )}
           {provider.contact_email && (
             <div className="flex items-center text-sm text-gray-600">
-              <Mail className="h-4 w-4 mr-2" />
+              <Envelope className="h-4 w-4 mr-2" />
               {provider.contact_email}
             </div>
           )}

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ServiceCategory } from './ServiceCategories';
-import { ChevronRight } from 'lucide-react';
+import { CaretRight } from 'phosphor-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ServiceCategoryCardProps {
@@ -28,7 +28,7 @@ export function ServiceCategoryCard({ category }: ServiceCategoryCardProps) {
           <div className="bg-blue-50 p-3 rounded-lg">
             <Icon className="h-6 w-6 text-blue-600" />
           </div>
-          <ChevronRight className="h-5 w-5 text-gray-400" />
+          <CaretRight className="h-5 w-5 text-gray-400" />
         </div>
         
         <div className="space-y-3">

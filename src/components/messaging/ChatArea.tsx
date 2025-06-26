@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/lib/auth';
-import { Send } from 'lucide-react';
+import { PaperPlaneTilt } from 'phosphor-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ChatAreaProps {
@@ -93,7 +93,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
             className="flex-1"
           />
           <Button type="submit" disabled={sending || !newMessage.trim()}>
-            <Send className="h-4 w-4" />
+            <PaperPlaneTilt className="h-4 w-4" />
           </Button>
         </form>
       </CardContent>

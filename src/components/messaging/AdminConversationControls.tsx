@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users } from 'phosphor-react';
 
 export function AdminConversationControls() {
   const { hasRole } = useUserRoles();
