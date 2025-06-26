@@ -109,15 +109,16 @@ export function useConversations() {
 
   const createConversation = async (participantEmail: string, name: string) => {
     try {
-      // Find user by email using the database function
+      // Find user by email using direct query
       const { data: userData, error: userError } = await supabase
-        .rpc('get_user_by_email', { user_email: participantEmail });
+        .from('users')
+        .select('id, email, first_name, last_name')
+        .eq('email', participantEmail)
+        .single();
 
-      if (userError || !userData || userData.length === 0) {
+      if (userError || !userData) {
         throw new Error('User not found with that email');
       }
-
-      const targetUser = userData[0];
 
       // Create conversation
       const { data: conversationData, error: conversationError } = await supabase
@@ -126,7 +127,7 @@ export function useConversations() {
           name,
           type: 'direct',
           admin_id: user?.id,
-          participants: [user?.id, targetUser.id]
+          participants: [user?.id, userData.id]
         })
         .select()
         .single();
