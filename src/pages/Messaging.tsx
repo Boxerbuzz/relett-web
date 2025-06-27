@@ -1,44 +1,3 @@
-// import React, { useState } from "react";
-// import { ConversationList } from "@/components/messaging/ConversationList";
-// import { ChatArea } from "@/components/messaging/ChatArea";
-// import { AdminConversationControls } from "@/components/messaging/AdminConversationControls";
-// import { useConversations } from "@/hooks/useConversations";
-
-// export function Messaging() {
-//   const [selectedConversationId, setSelectedConversationId] = useState<
-//     string | null
-//   >(null);
-//   const { conversations } = useConversations();
-
-//   const selectedConversation = conversations.find(
-//     (c) => c.id === selectedConversationId
-//   );
-//   const conversationName = selectedConversation?.name || "Conversation";
-
-//   return (
-//     <div className="h-screen flex bg-gray-100 overflow-hidden">
-//       {/* Sidebar with conversations */}
-//       <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
-//         <div className="flex-1 overflow-hidden">
-//           <ConversationList
-//             selectedConversationId={selectedConversationId}
-//             onSelectConversation={setSelectedConversationId}
-//           />
-//         </div>
-//         <AdminConversationControls />
-//       </div>
-
-//       {/* Main chat area */}
-//       <div className="flex-1 flex flex-col overflow-hidden">
-//         <ChatArea
-//           conversationId={selectedConversationId}
-//           conversationName={conversationName}
-//         />
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -61,10 +20,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, MoreVertical, User } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  PaperPlaneRightIcon,
+  DotsThreeCircleVerticalIcon,
+  UserIcon,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-import { ConversationList } from "@/components/messaging/ConversationList";
 import { ChatArea } from "@/components/messaging/ChatArea";
 import { AdminConversationControls } from "@/components/messaging/AdminConversationControls";
 import {
@@ -237,7 +200,7 @@ export function Messaging() {
             onClick={handleBackToList}
             className="lg:hidden"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeftIcon className="h-4 w-4" />
           </Button>
 
           <Breadcrumb>
@@ -257,7 +220,7 @@ export function Messaging() {
           {selectedConversation && (
             <div className="ml-auto">
               <Button variant="ghost" size="sm">
-                <MoreVertical className="h-4 w-4" />
+                <DotsThreeCircleVerticalIcon className="h-4 w-4" />
               </Button>
             </div>
           )}
