@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,6 +66,7 @@ export function RoleRequestManagement() {
       if (error) throw error;
       setRequests((data || []).map(item => ({
         ...item,
+        verification_status: item.verification_status || item.status || 'pending',
         user_profiles: item.user_profiles && !('error' in item.user_profiles) ? item.user_profiles : null
       })) as RoleRequest[]);
     } catch (error) {

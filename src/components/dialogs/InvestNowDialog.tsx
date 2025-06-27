@@ -18,11 +18,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import {
   CubeIcon,
-  DollarSignIcon,
+  CurrencyDollarIcon,
   CalculatorIcon,
   CreditCardIcon,
   ShieldCheckIcon,
-  TrendUpIcon
+  TrendUpIcon,
+  ArrowPathIcon
 } from '@phosphor-icons/react';
 
 interface InvestNowDialogProps {
@@ -156,8 +157,8 @@ export function InvestNowDialog({
           token_amount: tokens.toString(),
           price_per_token: tokenizedProperty.token_price,
           total_value: amount,
-          transaction_type: 'purchase',
-          status: 'completed'
+          transaction_type: 'purchase' as const,
+          status: 'completed' as const
         });
 
       if (transactionError) throw transactionError;
@@ -219,7 +220,7 @@ export function InvestNowDialog({
             <div>
               <Label htmlFor="investment-amount">Investment Amount (USD)</Label>
               <div className="relative">
-                <DollarSignIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <CurrencyDollarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="investment-amount"
                   type="number"
@@ -308,7 +309,7 @@ export function InvestNowDialog({
             >
               {loading ? (
                 <>
-                  <CircleNotchIcon className="h-4 w-4 mr-2 animate-spin" />
+                  <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (

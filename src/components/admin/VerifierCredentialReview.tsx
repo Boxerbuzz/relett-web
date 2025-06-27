@@ -82,7 +82,7 @@ export function VerifierCredentialReview() {
     }
   };
 
-  const handleReview = async (credentialId: string, decision: 'approved' | 'rejected') => {
+  const handleReview = async (credentialId: string, decision: 'verified' | 'rejected') => {
     try {
       setReviewingId(credentialId);
 
@@ -93,7 +93,7 @@ export function VerifierCredentialReview() {
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           reviewer_notes: reviewNotes,
-          is_active: decision === 'approved'
+          is_active: decision === 'verified'
         })
         .eq('id', credentialId);
 
@@ -121,7 +121,7 @@ export function VerifierCredentialReview() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
+      case 'verified': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -130,7 +130,7 @@ export function VerifierCredentialReview() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return CheckCircleIcon;
+      case 'verified': return CheckCircleIcon;
       case 'rejected': return XCircleIcon;
       default: return ClockIcon;
     }
@@ -241,12 +241,12 @@ export function VerifierCredentialReview() {
                       />
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleReview(credential.id, 'approved')}
+                          onClick={() => handleReview(credential.id, 'verified')}
                           disabled={reviewingId === credential.id}
                           className="bg-green-600 hover:bg-green-700"
                         >
                           <CheckCircleIcon className="h-4 w-4 mr-2" />
-                          Approve
+                          Verify
                         </Button>
                         <Button
                           onClick={() => handleReview(credential.id, 'rejected')}
