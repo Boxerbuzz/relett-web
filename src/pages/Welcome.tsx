@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -248,7 +247,7 @@ const Welcome = () => {
         <div className="flex justify-center gap-2 mb-4">
           {roles.map((role, index) => (
             <Badge key={index} variant="secondary" className="capitalize">
-              {role}
+              {String(role)}
             </Badge>
           ))}
         </div>
