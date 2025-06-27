@@ -1,75 +1,32 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetTrigger } from "@/components/ui/sheet";
-import {
+
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { InvestNowDialog } from '@/components/dialogs/InvestNowDialog';
+import { 
+  ArrowLeft,
   MapPin,
-  Bed,
-  Shower,
-  Square,
-  Phone,
-  Envelope,
-  User,
-} from "phosphor-react";
-import { InspectionSheet } from "@/components/property/sheets/InspectionSheet";
-import { ReservationSheet } from "@/components/property/sheets/ReservationSheet";
-import { OfferSheet } from "@/components/property/sheets/OfferSheet";
-import { LocationAnalysis } from "@/components/property/LocationAnalysis";
-import { useToast } from "@/hooks/use-toast";
-import { getAmenityById } from "@/types/amenities";
+  Eye,
+  Heart,
+  Star,
+  Calendar,
+  TrendingUp,
+  Shield,
+  User
+} from '@phosphor-icons/react';
 
-interface PropertyImage {
-  url: string;
-  is_primary: boolean;
-}
-
-interface PropertyData {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  price: any;
-  location: any;
-  specification: any;
-  amenities: string[];
-  features: string[];
-  status: string;
-  property_images: PropertyImage[];
-  user_id: string;
-}
-
-interface AgentData {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-  email: string;
-  avatar: string;
-}
-
-export default function PropertyDetails() {
+const PropertyDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
-
-  const [property, setProperty] = useState<PropertyData | null>(null);
-  const [agent, setAgent] = useState<AgentData | null>(null);
+  const [property, setProperty] = useState<any>(null);
+  const [tokenizedProperty, setTokenizedProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSheet, setActiveSheet] = useState<string | null>(null);
+  const [investDialogOpen, setInvestDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -80,422 +37,347 @@ export default function PropertyDetails() {
   const fetchPropertyDetails = async () => {
     try {
       setLoading(true);
-
-      // Fetch property details with proper error handling for relations
+      
+      // Fetch property details
       const { data: propertyData, error: propertyError } = await supabase
-        .from("properties")
-        .select(
-          `
+        .from('properties')
+        .select(`
           *,
-          property_images!inner (url, is_primary)
-        `
-        )
-        .eq("id", id)
+          property_images (url, is_primary),
+          property_reviews (rating, comment, user_name),
+          users!properties_user_id_fkey (first_name, last_name, user_type)
+        `)
+        .eq('id', id)
         .single();
 
       if (propertyError) throw propertyError;
 
-      // Ensure property_images is always an array
-      const processedPropertyData: PropertyData = {
-        ...propertyData,
-        property_images: Array.isArray(propertyData.property_images)
-          ? propertyData.property_images
-          : [],
-      };
+      setProperty(propertyData);
 
-      setProperty(processedPropertyData);
+      // Check if property is tokenized
+      if (propertyData.is_tokenized && propertyData.tokenized_property_id) {
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('tokenized_properties')
+          .select('*')
+          .eq('id', propertyData.tokenized_property_id)
+          .single();
 
-      // Fetch agent details
-      const { data: agentData, error: agentError } = await supabase
-        .from("users")
-        .select("id, first_name, last_name, phone, email, avatar")
-        .eq("id", propertyData.user_id)
-        .single();
+        if (!tokenError && tokenData) {
+          setTokenizedProperty(tokenData);
+        }
+      }
 
-      if (agentError) throw agentError;
-      setAgent(agentData);
+      // Increment view count
+      await supabase
+        .from('properties')
+        .update({ views: (propertyData.views || 0) + 1 })
+        .eq('id', id);
+
     } catch (error) {
-      console.error("Error fetching property:", error);
+      console.error('Error fetching property:', error);
       toast({
-        title: "Error",
-        description: "Failed to load property details",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load property details',
+        variant: 'destructive'
       });
-      navigate("/marketplace");
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (category: string) => {
-    switch (category) {
-      case "rent":
-        return "bg-blue-100 text-blue-800";
-      case "shortlet":
-        return "bg-green-100 text-green-800";
-      case "buy":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getActionsByCategory = (category: string) => {
-    const actions = {
-      rent: [
-        {
-          label: "Rent Now",
-          action: () => setActiveSheet("rental"),
-          primary: true,
-        },
-      ],
-      shortlet: [
-        {
-          label: "Reserve Now",
-          action: () => setActiveSheet("reservation"),
-          primary: true,
-        },
-      ],
-      buy: [
-        {
-          label: "Make an Offer",
-          action: () => setActiveSheet("offer"),
-          primary: true,
-        },
-      ],
-    };
-
-    return actions[category as keyof typeof actions] || [];
-  };
-
-  const formatPrice = (price: any) => {
-    if (typeof price === "object" && price.amount) {
-      return `₦${price.amount.toLocaleString()}${
-        price.period ? `/${price.period}` : ""
-      }`;
-    }
-    return "Price on request";
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="container mx-auto p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
       </div>
     );
   }
 
   if (!property) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Property not found
-          </h1>
-          <Button onClick={() => navigate("/marketplace")}>
-            Back to Marketplace
-          </Button>
-        </div>
+      <div className="container mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">Property Not Found</h1>
+        <Button onClick={() => navigate('/marketplace')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Properties
+        </Button>
       </div>
     );
   }
 
-  const actions = getActionsByCategory(property.category);
+  const primaryImage = property.property_images?.find((img: any) => img.is_primary)?.url || 
+                     property.property_images?.[0]?.url || 
+                     property.backdrop;
 
-  const address = `${property.location?.city}, ${property.location?.state}`;
+  const formatPrice = () => {
+    if (!property.price?.amount) return 'Price on request';
+    const currency = property.price.currency === 'USD' ? '$' : '₦';
+    return `${currency}${property.price.amount.toLocaleString()}`;
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Fixed Header */}
-      <div className="bg-white border-b shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/marketplace")}
-                className="mb-4"
-              >
-                ← Back to Marketplace
-              </Button>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {property.title}
-                </h1>
-                <Badge className={getStatusColor(property.category)}>
-                  {property.category}
-                </Badge>
+    <div className="container mx-auto p-6 max-w-6xl">
+      {/* Back Button */}
+      <Button 
+        variant="ghost" 
+        onClick={() => navigate(-1)}
+        className="mb-6"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back
+      </Button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Property Images */}
+          <Card>
+            {primaryImage ? (
+              <div 
+                className="h-96 bg-cover bg-center rounded-t-lg"
+                style={{ backgroundImage: `url(${primaryImage})` }}
+              />
+            ) : (
+              <div className="h-96 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                <MapPin className="h-16 w-16 text-gray-400" />
               </div>
-              <div className="flex items-center text-gray-600">
-                <MapPin className="w-4 h-4 mr-1" />
-                <span>{address || "Location not specified"}</span>
-              </div>
-            </div>
-
-            {/* Action CTAs */}
-            <div className="hidden sm:flex items-center gap-3">
-              <Sheet
-                open={activeSheet === "inspection"}
-                onOpenChange={(open) =>
-                  setActiveSheet(open ? "inspection" : null)
-                }
-              >
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="lg">
-                    Request Inspection
-                  </Button>
-                </SheetTrigger>
-                <InspectionSheet
-                  property={property}
-                  onClose={() => setActiveSheet(null)}
-                />
-              </Sheet>
-
-              {actions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant={action.primary ? "default" : "outline"}
-                  onClick={action.action}
-                  size="lg"
-                >
-                  {action.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-            {/* Scrollable Main Content */}
-            <div className="lg:col-span-2">
-              <ScrollArea className="h-[calc(100vh-200px)]">
-                <div className="space-y-8 pr-4">
-                  {/* Image Gallery */}
-                  <Card>
-                    <CardContent className="p-0">
-                      <Carousel className="w-full">
-                        <CarouselContent>
-                          {property.property_images?.map((image, index) => (
-                            <CarouselItem key={index}>
-                              <div className="aspect-[16/9] relative">
-                                <img
-                                  src={image.url}
-                                  alt={`Property view ${index + 1}`}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              </div>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="left-4" />
-                        <CarouselNext className="right-4" />
-                      </Carousel>
-                    </CardContent>
-                  </Card>
-
-                  {/* Property Summary */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Property Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-primary">
-                            {formatPrice(property.price)}
-                          </div>
-                          <div className="text-sm text-gray-600">Price</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center mb-1">
-                            <Bed className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">
-                              {property.specification?.bedrooms || 0}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-600">Bedrooms</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center mb-1">
-                            <Shower className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">
-                              {property.specification?.bathrooms || 0}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-600">Bathrooms</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center mb-1">
-                            <Square className="w-5 h-5 mr-1" />
-                            <span className="text-lg font-semibold">
-                              {property.specification?.area || "N/A"}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-600">Sq ft</div>
-                        </div>
-                      </div>
-
-                      <Separator className="my-6" />
-
-                      <div>
-                        <h3 className="text-lg font-semibold mb-3">
-                          Description
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed">
-                          {property.description || "No description available."}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Features & Amenities */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Features & Amenities</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {property.features && property.features.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold mb-3">Features</h4>
-                            <ul className="space-y-2">
-                              {property.features.map((feature, index) => (
-                                <li key={index} className="flex items-center">
-                                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {property.amenities &&
-                          property.amenities.length > 0 && (
-                            <div>
-                              <h4 className="font-semibold mb-3">Amenities</h4>
-                              <ul className="space-y-2">
-                                {property.amenities.map((amenity, index) => (
-                                  <li key={index} className="flex items-center">
-                                    <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                                    {getAmenityById(amenity)?.name || amenity}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Location Analysis */}
-                  <LocationAnalysis propertyId={property.id} />
+            )}
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="secondary">{property.category}</Badge>
+                    {property.is_featured && (
+                      <Badge className="bg-yellow-500">
+                        <Star className="h-3 w-3 mr-1" />
+                        Featured
+                      </Badge>
+                    )}
+                    {property.is_tokenized && (
+                      <Badge className="bg-purple-500">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        Tokenized
+                      </Badge>
+                    )}
+                  </div>
+                  <h1 className="text-3xl font-bold mb-2">{property.title}</h1>
+                  <div className="flex items-center gap-2 text-gray-600 mb-4">
+                    <MapPin className="h-4 w-4" />
+                    <span>{property.location?.address || 'Location not specified'}</span>
+                  </div>
                 </div>
-              </ScrollArea>
-            </div>
-
-            {/* Sticky Sidebar */}
-            <div className="lg:sticky lg:top-32 lg:h-fit space-y-6">
-              {/* Agent Info */}
-              {agent && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Property Agent</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        {agent.avatar ? (
-                          <img
-                            src={agent.avatar}
-                            alt="Agent"
-                            className="w-12 h-12 rounded-full"
-                          />
-                        ) : (
-                          <User className="w-6 h-6 text-gray-500" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">
-                          {agent.first_name} {agent.last_name}
-                        </h4>
-                        <p className="text-sm text-gray-600">Property Agent</p>
-                      </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    {formatPrice()}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-4 w-4" />
+                      {property.views || 0}
                     </div>
-
-                    <div className="space-y-3">
-                      {agent.phone && (
-                        <div className="flex items-center">
-                          <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                          <span className="text-sm">{agent.phone}</span>
-                        </div>
-                      )}
-                      {agent.email && (
-                        <div className="flex items-center">
-                          <Envelope className="w-4 h-4 mr-3 text-gray-500" />
-                          <span className="text-sm">{agent.email}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-1">
+                      <Heart className="h-4 w-4" />
+                      {property.likes || 0}
                     </div>
+                    {property.ratings && (
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-current text-yellow-500" />
+                        {property.ratings.toFixed(1)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-                    <Button className="w-full mt-4" variant="outline">
-                      Contact Agent
-                    </Button>
-                  </CardContent>
-                </Card>
+              {/* Property Description */}
+              {property.description && (
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-2">Description</h3>
+                  <p className="text-gray-700 leading-relaxed">{property.description}</p>
+                </div>
               )}
 
-              {/* Mobile Action CTAs */}
-              <div className="sm:hidden space-y-3">
-                <Sheet
-                  open={activeSheet === "inspection"}
-                  onOpenChange={(open) =>
-                    setActiveSheet(open ? "inspection" : null)
-                  }
-                >
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="w-full" size="lg">
-                      Request Inspection
-                    </Button>
-                  </SheetTrigger>
-                  <InspectionSheet
-                    property={property}
-                    onClose={() => setActiveSheet(null)}
-                  />
-                </Sheet>
+              {/* Property Features */}
+              {property.features && property.features.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-2">Features</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {property.features.map((feature: string, index: number) => (
+                      <Badge key={index} variant="outline">{feature}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                {actions.map((action, index) => (
-                  <Button
-                    key={index}
-                    variant={action.primary ? "default" : "outline"}
-                    onClick={action.action}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {action.label}
-                  </Button>
-                ))}
+              {/* Property Specifications */}
+              {property.specification && (
+                <div>
+                  <h3 className="font-semibold mb-2">Specifications</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {Object.entries(property.specification).map(([key, value]) => (
+                      <div key={key} className="text-sm">
+                        <span className="text-gray-600 capitalize">{key.replace('_', ' ')}:</span>
+                        <span className="ml-2 font-medium">{value as string}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Property Reviews */}
+          {property.property_reviews && property.property_reviews.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Reviews</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {property.property_reviews.map((review: any, index: number) => (
+                    <div key={index} className="border-b pb-4 last:border-b-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < review.rating ? 'fill-current text-yellow-500' : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-medium">{review.user_name}</span>
+                      </div>
+                      <p className="text-gray-700">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Owner Info */}
+          {property.users && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Property Owner
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
+                    <User className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="font-semibold">
+                    {property.users.first_name} {property.users.last_name}
+                  </h3>
+                  <Badge variant="outline" className="mt-1">
+                    {property.users.user_type}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Investment Info */}
+          {tokenizedProperty && (
+            <Card className="border-2 border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                  <TrendingUp className="h-5 w-5" />
+                  Investment Opportunity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Token Symbol</span>
+                    <span className="font-medium">{tokenizedProperty.token_symbol}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Token Price</span>
+                    <span className="font-medium">${tokenizedProperty.token_price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Expected ROI</span>
+                    <Badge className="bg-green-100 text-green-800">
+                      {tokenizedProperty.expected_roi}%
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Min. Investment</span>
+                    <span className="font-medium">${tokenizedProperty.minimum_investment.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => setInvestDialogOpen(true)}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={tokenizedProperty.status !== 'active'}
+                >
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Invest Now
+                </Button>
+
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Shield className="h-3 w-3" />
+                  <span>Secured by blockchain technology</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Property Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Property Stats</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Listed</span>
+                  <span className="text-sm font-medium">
+                    {new Date(property.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Status</span>
+                  <Badge variant={property.status === 'active' ? 'default' : 'secondary'}>
+                    {property.status}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Property ID</span>
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    {property.id.slice(0, 8)}...
+                  </code>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Sheets */}
-      <ReservationSheet
-        open={activeSheet === "reservation"}
-        onOpenChange={(open) => setActiveSheet(open ? "reservation" : null)}
-        property={property}
-      />
-
-      <OfferSheet
-        open={activeSheet === "offer"}
-        onOpenChange={(open) => setActiveSheet(open ? "offer" : null)}
-        property={property}
-      />
+      {/* Investment Dialog */}
+      {tokenizedProperty && (
+        <InvestNowDialog
+          open={investDialogOpen}
+          onOpenChange={setInvestDialogOpen}
+          property={tokenizedProperty}
+        />
+      )}
     </div>
   );
-}
+};
+
+export default PropertyDetails;

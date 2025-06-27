@@ -949,10 +949,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "document_verification_requests_assigned_verifier_fkey1"
+            columns: ["assigned_verifier"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "document_verification_requests_document_id_fkey"
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "property_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_verification_requests_requested_by_fkey1"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -3787,6 +3801,13 @@ export type Database = {
           vesting_schedule?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "token_holdings_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "token_holdings_tokenized_property_id_fkey"
             columns: ["tokenized_property_id"]
