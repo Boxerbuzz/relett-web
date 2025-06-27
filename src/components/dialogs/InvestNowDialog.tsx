@@ -148,7 +148,7 @@ export function InvestNowDialog({
 
       if (trackingError) throw trackingError;
 
-      // Create token transaction record
+      // Create token transaction record - using 'transfer' as transaction_type
       const { error: transactionError } = await supabase
         .from('token_transactions')
         .insert({
@@ -157,8 +157,8 @@ export function InvestNowDialog({
           token_amount: tokens.toString(),
           price_per_token: tokenizedProperty.token_price,
           total_value: amount,
-          transaction_type: 'purchase' as const,
-          status: 'confirmed' as const
+          transaction_type: 'transfer',
+          status: 'confirmed'
         });
 
       if (transactionError) throw transactionError;
