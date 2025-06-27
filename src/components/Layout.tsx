@@ -1,10 +1,11 @@
+"use client";
 
-'use client';
-
-import { ReactNode, useState } from 'react';
-import { Navbar } from './Navbar';
-import { Sidebar } from './Sidebar';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ReactNode, useState } from "react";
+import { Navbar } from "./Navbar";
+import { Sidebar } from "./Sidebar";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useAuth } from "@/lib/auth";
+import Intercom from "@intercom/messenger-js-sdk";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +14,18 @@ interface LayoutProps {
 
 export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, session } = useAuth();
+
+  console.log(session?.access_token);
+
+  Intercom({
+    intercom_user_jwt: session?.access_token,
+    app_id: "msg20icm",
+    user_id: user.id,
+    name: `${user.first_name} ${user.last_name}`,
+    email: user.email,
+    created_at: Date.parse(user.created_at),
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
@@ -22,7 +35,7 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
           <Sidebar />
         </div>
       </div>
-      
+
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
@@ -34,14 +47,16 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
       <div className="flex-1 flex flex-col min-h-screen md:ml-64 min-w-0">
         {/* Header - Fixed positioning at top */}
         <div className="fixed top-0 left-0 md:left-64 right-0 z-30 bg-white border-b border-gray-200 h-16">
-          <Navbar 
-            onToggleSidebar={() => setSidebarOpen(true)}
-          />
+          <Navbar onToggleSidebar={() => setSidebarOpen(true)} />
         </div>
-        
+
         {/* Page Content - Properly spaced below fixed header */}
         <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto">
-          <div className={`max-w-full min-w-0 w-full ${stripPadding ? 'p-0' : 'p-4 md:p-6'}`}>
+          <div
+            className={`max-w-full min-w-0 w-full ${
+              stripPadding ? "p-0" : "p-4 md:p-6"
+            }`}
+          >
             {children}
           </div>
         </main>

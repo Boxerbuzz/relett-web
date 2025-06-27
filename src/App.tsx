@@ -208,7 +208,7 @@ function App() {
                   <Route
                     path="/property-verification"
                     element={
-                      <ProtectedRoute requiredRole="verifier">
+                      <ProtectedRoute>
                         <Layout>
                           <PropertyVerification />
                         </Layout>

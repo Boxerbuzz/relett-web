@@ -35,16 +35,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Error getting session:", error);
         setUser(null);
         setLoading(false);
+        setSession(null);
         return;
       }
 
       if (session?.user) {
         console.log("Session exists, fetching user profile...");
         await fetchOrCreateUserProfile(session.user);
+        setSession(session);
       } else {
         console.log("No existing session found");
         setUser(null);
         setLoading(false);
+        setSession(null);
       }
     };
 
@@ -59,21 +62,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (event === "SIGNED_IN" && session?.user) {
         fetchOrCreateUserProfile(session.user);
+        setSession(session);
       }
 
       if (event === "SIGNED_OUT") {
         setUser(null);
         setLoading(false);
+        setSession(null);
       }
 
       if (event === "INITIAL_SESSION" && session?.user) {
         fetchOrCreateUserProfile(session.user);
+        setSession(session);
       }
 
       if (event === "INITIAL_SESSION" && !session?.user) {
         console.log("No session, setting user to null and loading to false");
         setUser(null);
-        setLoading(false);
+        setLoading(false);  
+        setSession(null);
       }
     });
 
@@ -336,7 +343,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   console.log("AuthProvider render - loading:", loading, "user:", user);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, session }}>
       <WalletProvider>{children}</WalletProvider>
     </AuthContext.Provider>
   );

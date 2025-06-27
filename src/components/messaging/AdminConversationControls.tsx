@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useConversations } from '@/hooks/useConversations';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Plus, Users } from 'phosphor-react';
+import { PlusIcon, UsersIcon } from '@phosphor-icons/react';
 
 export function AdminConversationControls() {
   const { hasRole } = useUserRoles();
@@ -79,7 +79,7 @@ export function AdminConversationControls() {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
-            <Plus className="h-4 w-4" />
+            <PlusIcon className="h-4 w-4" />
             Start New Conversation
           </CardTitle>
         </CardHeader>
@@ -116,7 +116,7 @@ export function AdminConversationControls() {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <UsersIcon className="h-4 w-4" />
             Join Existing Conversation
           </CardTitle>
         </CardHeader>

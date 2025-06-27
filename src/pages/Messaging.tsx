@@ -1,16 +1,19 @@
-
-import React, { useState } from 'react';
-import { ConversationList } from '@/components/messaging/ConversationList';
-import { ChatArea } from '@/components/messaging/ChatArea';
-import { AdminConversationControls } from '@/components/messaging/AdminConversationControls';
-import { useConversations } from '@/hooks/useConversations';
+import React, { useState } from "react";
+import { ConversationList } from "@/components/messaging/ConversationList";
+import { ChatArea } from "@/components/messaging/ChatArea";
+import { AdminConversationControls } from "@/components/messaging/AdminConversationControls";
+import { useConversations } from "@/hooks/useConversations";
 
 export function Messaging() {
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const { conversations } = useConversations();
 
-  const selectedConversation = conversations.find(c => c.id === selectedConversationId);
-  const conversationName = selectedConversation?.name || 'Conversation';
+  const selectedConversation = conversations.find(
+    (c) => c.id === selectedConversationId
+  );
+  const conversationName = selectedConversation?.name || "Conversation";
 
   return (
     <div className="h-screen flex bg-gray-100 overflow-hidden">
