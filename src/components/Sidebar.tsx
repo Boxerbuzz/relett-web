@@ -25,6 +25,7 @@ import {
   Heart,
   Chat,
   Wrench,
+  Star,
 } from 'phosphor-react';
 import {
   Collapsible,
@@ -41,6 +42,7 @@ interface SidebarProps {
 }
 
 const mainNavigation = [
+  { name: 'Welcome', href: '/welcome', icon: Star, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },

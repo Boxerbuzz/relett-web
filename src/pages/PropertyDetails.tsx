@@ -7,17 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
-import { Calendar } from "@/components/ui/calendar"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
 import { useToast } from '@/hooks/use-toast';
 import { useProperties } from '@/hooks/useProperties';
 import { useAuth } from '@/lib/auth';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { PropertyActionButtons } from '@/components/property/PropertyActionButtons';
 import {
   MapPinIcon,
   HeartIcon,
@@ -179,43 +174,11 @@ const PropertyDetails = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Investment Opportunity */}
-          {property?.tokenized_property_id && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BuildingIcon className="h-5 w-5 text-blue-500" />
-                  Invest in this Property
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-500">
-                  Become a fractional owner of this property and earn passive income.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-gray-600">Token Price:</span>
-                    <span className="font-medium">$100</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Expected ROI:</span>
-                    <span className="font-medium">8%</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Minimum Investment:</span>
-                    <span className="font-medium">$1,000</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Total Supply:</span>
-                    <span className="font-medium">1,000,000</span>
-                  </div>
-                </div>
-                <Button className="w-full" onClick={() => setShowInvestDialog(true)}>
-                  Invest Now
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* Property Action Buttons */}
+          <PropertyActionButtons 
+            property={property || {}}
+            onInvestClick={() => setShowInvestDialog(true)}
+          />
 
           {/* Contact Information */}
           <Card>
