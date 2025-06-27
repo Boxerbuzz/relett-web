@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ const UserDashboard = () => {
     },
     {
       label: "Investments",
-      value: portfolio?.holdings?.length?.toString() || "0",
+      value: portfolio?.properties?.length?.toString() || "0",
       icon: TrendUpIcon,
       color: "text-purple-600",
     },
@@ -198,7 +199,7 @@ const UserDashboard = () => {
       </Card>
 
       {/* Investment Portfolio Summary */}
-      {portfolio && portfolio.holdings && portfolio.holdings.length > 0 && (
+      {portfolio && portfolio.properties && portfolio.properties.length > 0 && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -229,7 +230,7 @@ const UserDashboard = () => {
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-600 font-medium">Properties</p>
                 <p className="text-2xl font-bold text-blue-800">
-                  {portfolio.holdings.length}
+                  {portfolio.properties.length}
                 </p>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">

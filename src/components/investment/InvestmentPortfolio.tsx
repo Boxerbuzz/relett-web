@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,8 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  TrendingUp, 
-  TrendingDown, 
   DollarSign, 
   PieChart, 
   Calendar,
@@ -18,6 +17,7 @@ import {
   Clock,
   Users
 } from 'lucide-react';
+import { TrendUpIcon, TrendDownIcon } from '@phosphor-icons/react';
 import { useInvestmentPortfolio } from '@/hooks/useInvestmentPortfolio';
 import { useAuth } from '@/lib/auth';
 
@@ -204,9 +204,9 @@ export function InvestmentPortfolio() {
                 <p className="text-2xl font-bold">{formatCurrency(metrics.currentValue)}</p>
                 <div className="flex items-center mt-1">
                   {metrics.unrealizedGains >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                    <TrendUpIcon className="h-4 w-4 text-green-600 mr-1" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
+                    <TrendDownIcon className="h-4 w-4 text-red-600 mr-1" />
                   )}
                   <span className={`text-sm font-medium ${
                     metrics.unrealizedGains >= 0 ? 'text-green-600' : 'text-red-600'
@@ -231,7 +231,7 @@ export function InvestmentPortfolio() {
                   {formatPercentage(metrics.totalROI)}
                 </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-purple-600" />
+              <TrendUpIcon className="h-8 w-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>

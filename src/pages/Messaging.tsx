@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -23,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeftIcon,
   PaperPlaneRightIcon,
-  DotsThreeCircleVerticalIcon,
+  DotsThreeVerticalIcon,
   UserIcon,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
@@ -167,17 +168,6 @@ export function Messaging() {
                   </button>
                 ))
               )}
-
-              {/* // filteredMails.length === 0 && (
-                //   <div className="p-8 text-center text-muted-foreground">
-                //     <p className="text-sm">No messages found</p>
-                //     {searchQuery && (
-                //       <p className="text-xs mt-1">
-                //         Try adjusting your search query
-                //       </p>
-                //     )}
-                //   </div>
-                // )} */}
             </div>
           </div>
         </div>
@@ -220,7 +210,7 @@ export function Messaging() {
           {selectedConversation && (
             <div className="ml-auto">
               <Button variant="ghost" size="sm">
-                <DotsThreeCircleVerticalIcon className="h-4 w-4" />
+                <DotsThreeVerticalIcon className="h-4 w-4" />
               </Button>
             </div>
           )}

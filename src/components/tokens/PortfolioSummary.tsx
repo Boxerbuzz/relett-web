@@ -2,7 +2,8 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Coins, MessageSquare } from 'lucide-react';
+import { DollarSign, MessageSquare, Coins } from 'lucide-react';
+import { TrendUpIcon } from '@phosphor-icons/react';
 
 interface PortfolioSummaryProps {
   totalPortfolioValue: number;
@@ -42,7 +43,7 @@ export function PortfolioSummary({
                 {totalROI.toFixed(1)}%
               </p>
             </div>
-            <TrendingUp size={20} className={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
+            <TrendUpIcon size={20} className={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
           </div>
         </CardContent>
       </Card>
