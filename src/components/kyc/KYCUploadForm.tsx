@@ -9,10 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import {
-  DocumentTextIcon,
-  CloudArrowUpIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon
+  FileText,
+  CloudArrowUp,
+  Warning,
+  CheckCircle
 } from '@phosphor-icons/react';
 
 export function KYCUploadForm() {
@@ -107,11 +107,11 @@ export function KYCUploadForm() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'verified':
-        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'rejected':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />;
+        return <Warning className="h-5 w-5 text-red-600" />;
       default:
-        return <DocumentTextIcon className="h-5 w-5 text-yellow-600" />;
+        return <FileText className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -132,7 +132,7 @@ export function KYCUploadForm() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CloudArrowUpIcon className="h-5 w-5" />
+            <CloudArrowUp className="h-5 w-5" />
             Upload KYC Documents
           </CardTitle>
         </CardHeader>
@@ -186,7 +186,7 @@ export function KYCUploadForm() {
         <CardContent>
           {documents.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <DocumentTextIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No documents uploaded yet</p>
             </div>
           ) : (

@@ -8,19 +8,19 @@ import { useAuth } from '@/lib/auth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useNavigate } from 'react-router-dom';
 import {
-  HomeIcon,
-  BuildingOfficeIcon,
-  ShieldCheckIcon,
-  CurrencyDollarIcon,
-  UserGroupIcon,
-  DocumentTextIcon,
-  MapPinIcon,
-  BellIcon,
-  ChartBarIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  PlayIcon
+  House,
+  Buildings,
+  ShieldCheck,
+  CurrencyDollar,
+  UsersThree,
+  FileText,
+  MapPin,
+  Bell,
+  ChartBar,
+  CheckCircle,
+  Warning,
+  Info,
+  Play
 } from '@phosphor-icons/react';
 
 const Welcome = () => {
@@ -31,26 +31,26 @@ const Welcome = () => {
 
   const featuresStatus = {
     working: [
-      { name: 'User Authentication & Profiles', icon: UserGroupIcon, path: '/profile' },
-      { name: 'Property Listings & Marketplace', icon: HomeIcon, path: '/marketplace' },
-      { name: 'Property Search & Filtering', icon: MapPinIcon, path: '/marketplace' },
-      { name: 'Investment Tracking', icon: CurrencyDollarIcon, path: '/tokens' },
-      { name: 'Admin Dashboard', icon: ChartBarIcon, path: '/admin', roles: ['admin'] },
-      { name: 'Messaging System', icon: BellIcon, path: '/messaging' },
-      { name: 'Property Verification', icon: ShieldCheckIcon, path: '/verification', roles: ['verifier', 'admin'] },
-      { name: 'Role Management', icon: UserGroupIcon, path: '/admin', roles: ['admin'] }
+      { name: 'User Authentication & Profiles', icon: UsersThree, path: '/profile' },
+      { name: 'Property Listings & Marketplace', icon: House, path: '/marketplace' },
+      { name: 'Property Search & Filtering', icon: MapPin, path: '/marketplace' },
+      { name: 'Investment Tracking', icon: CurrencyDollar, path: '/tokens' },
+      { name: 'Admin Dashboard', icon: ChartBar, path: '/admin', roles: ['admin'] },
+      { name: 'Messaging System', icon: Bell, path: '/messaging' },
+      { name: 'Property Verification', icon: ShieldCheck, path: '/verification', roles: ['verifier', 'admin'] },
+      { name: 'Role Management', icon: UsersThree, path: '/admin', roles: ['admin'] }
     ],
     inProgress: [
-      { name: 'Property Tokenization', icon: CurrencyDollarIcon },
-      { name: 'Investment Processing', icon: ChartBarIcon },
-      { name: 'KYC Verification UI', icon: DocumentTextIcon },
-      { name: 'Payment Integration', icon: CurrencyDollarIcon }
+      { name: 'Property Tokenization', icon: CurrencyDollar },
+      { name: 'Investment Processing', icon: ChartBar },
+      { name: 'KYC Verification UI', icon: FileText },
+      { name: 'Payment Integration', icon: CurrencyDollar }
     ],
     planned: [
-      { name: 'Mobile App', icon: HomeIcon },
-      { name: 'Advanced Analytics', icon: ChartBarIcon },
-      { name: 'AI Property Valuation', icon: BuildingOfficeIcon },
-      { name: 'Blockchain Integration', icon: ShieldCheckIcon }
+      { name: 'Mobile App', icon: House },
+      { name: 'Advanced Analytics', icon: ChartBar },
+      { name: 'AI Property Valuation', icon: Buildings },
+      { name: 'Blockchain Integration', icon: ShieldCheck }
     ]
   };
 
@@ -64,28 +64,28 @@ const Welcome = () => {
           description: 'Explore available properties in the marketplace',
           action: 'Go to Marketplace',
           path: '/marketplace',
-          icon: HomeIcon
+          icon: House
         },
         {
           title: 'View Property Details',
           description: 'Click on any property to see detailed information, photos, and investment opportunities',
           action: 'Try it now',
           path: '/marketplace',
-          icon: InformationCircleIcon
+          icon: Info
         },
         {
           title: 'Track Investments',
           description: 'Monitor your token holdings and returns',
           action: 'View Tokens',
           path: '/tokens',
-          icon: CurrencyDollarIcon
+          icon: CurrencyDollar
         },
         {
           title: 'Complete Your Profile',
           description: 'Add personal information and complete KYC verification',
           action: 'Update Profile',
           path: '/profile',
-          icon: UserGroupIcon
+          icon: UsersThree
         }
       ]
     },
@@ -98,28 +98,28 @@ const Welcome = () => {
           description: 'List your property with detailed information and photos',
           action: 'Add Property',
           path: '/add-property',
-          icon: BuildingOfficeIcon
+          icon: Buildings
         },
         {
           title: 'Manage Listings',
           description: 'View and edit your property listings',
           action: 'My Properties',
           path: '/my-land',
-          icon: HomeIcon
+          icon: House
         },
         {
           title: 'Tokenization Process',
           description: 'Convert your property into tradeable tokens',
           action: 'Learn More',
           path: '/tokens',
-          icon: CurrencyDollarIcon
+          icon: CurrencyDollar
         },
         {
           title: 'Handle Inquiries',
           description: 'Respond to potential buyers and investors',
           action: 'View Messages',
           path: '/messaging',
-          icon: BellIcon
+          icon: Bell
         }
       ]
     },
@@ -132,28 +132,28 @@ const Welcome = () => {
           description: 'Coordinate property viewings with clients',
           action: 'Manage Inspections',
           path: '/agent/inspections',
-          icon: ShieldCheckIcon
+          icon: ShieldCheck
         },
         {
           title: 'Handle Rentals',
           description: 'Process rental applications and agreements',
           action: 'View Rentals',
           path: '/agent/rentals',
-          icon: BuildingOfficeIcon
+          icon: Buildings
         },
         {
           title: 'Manage Reservations',
           description: 'Coordinate property reservations',
           action: 'View Reservations',
           path: '/agent/reservations',
-          icon: UserGroupIcon
+          icon: UsersThree
         },
         {
           title: 'Agent Calendar',
           description: 'Track all your appointments and deadlines',
           action: 'Open Calendar',
           path: '/agent/calendar',
-          icon: MapPinIcon
+          icon: MapPin
         }
       ]
     },
@@ -166,21 +166,21 @@ const Welcome = () => {
           description: 'Review property documents and validate authenticity',
           action: 'Start Verification',
           path: '/verification',
-          icon: ShieldCheckIcon
+          icon: ShieldCheck
         },
         {
           title: 'Document Review',
           description: 'Examine land titles, surveys, and legal documents',
           action: 'Review Documents',
           path: '/verification',
-          icon: DocumentTextIcon
+          icon: FileText
         },
         {
           title: 'KYC Verification',
           description: 'Verify user identity documents and information',
           action: 'KYC Dashboard',
           path: '/admin',
-          icon: UserGroupIcon
+          icon: UsersThree
         }
       ]
     },
@@ -193,38 +193,38 @@ const Welcome = () => {
           description: 'Overview of platform metrics and system health',
           action: 'Open Dashboard',
           path: '/admin',
-          icon: ChartBarIcon
+          icon: ChartBar
         },
         {
           title: 'User Management',
           description: 'Manage user accounts, roles, and permissions',
           action: 'Manage Users',
           path: '/admin',
-          icon: UserGroupIcon
+          icon: UsersThree
         },
         {
           title: 'KYC Review Center',
           description: 'Review and approve user verification documents',
           action: 'KYC Center',
           path: '/admin',
-          icon: DocumentTextIcon
+          icon: FileText
         },
         {
           title: 'System Monitoring',
           description: 'Monitor transactions, security, and performance',
           action: 'View Reports',
           path: '/admin',
-          icon: ShieldCheckIcon
+          icon: ShieldCheck
         }
       ]
     }
   };
 
   const getCurrentUserGuide = () => {
-    if (roles.includes('admin')) return userTypeGuides.admin;
-    if (roles.includes('verifier')) return userTypeGuides.verifier;
-    if (roles.includes('agent')) return userTypeGuides.agent;
-    if (roles.includes('landowner')) return userTypeGuides.landowner;
+    if (roles.includes('admin' as any)) return userTypeGuides.admin;
+    if (roles.includes('verifier' as any)) return userTypeGuides.verifier;
+    if (roles.includes('agent' as any)) return userTypeGuides.agent;
+    if (roles.includes('landowner' as any)) return userTypeGuides.landowner;
     return userTypeGuides.user;
   };
 
@@ -266,7 +266,7 @@ const Welcome = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <PlayIcon className="h-5 w-5 text-blue-600" />
+                <Play className="h-5 w-5 text-blue-600" />
                 {currentGuide.title}
               </CardTitle>
               <p className="text-gray-600">{currentGuide.description}</p>
@@ -305,7 +305,7 @@ const Welcome = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-700">
-                  <CheckCircleIcon className="h-5 w-5" />
+                  <CheckCircle className="h-5 w-5" />
                   Working Features
                 </CardTitle>
               </CardHeader>
@@ -337,7 +337,7 @@ const Welcome = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-yellow-700">
-                  <ExclamationTriangleIcon className="h-5 w-5" />
+                  <Warning className="h-5 w-5" />
                   In Development
                 </CardTitle>
               </CardHeader>
@@ -356,7 +356,7 @@ const Welcome = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-700">
-                  <InformationCircleIcon className="h-5 w-5" />
+                  <Info className="h-5 w-5" />
                   Roadmap
                 </CardTitle>
               </CardHeader>
@@ -383,7 +383,7 @@ const Welcome = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="flex-1">Account created successfully</span>
                   <Badge className="bg-green-600">Complete</Badge>
                 </div>
@@ -406,7 +406,7 @@ const Welcome = () => {
                   <Button size="sm" variant="outline">Explore</Button>
                 </div>
 
-                {roles.includes('landowner') && (
+                {roles.includes('landowner' as any) && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100" onClick={() => navigate('/add-property')}>
                     <div className="h-5 w-5 border-2 border-gray-400 rounded-full"></div>
                     <span className="flex-1">List your first property</span>

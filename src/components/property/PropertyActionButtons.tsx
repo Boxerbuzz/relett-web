@@ -7,12 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  HeartIcon,
-  ShareIcon,
-  CalendarIcon,
-  HomeIcon,
-  EyeIcon,
-  CurrencyDollarIcon
+  Heart,
+  ShareNetwork,
+  Calendar,
+  House,
+  Eye,
+  CurrencyDollar
 } from '@phosphor-icons/react';
 
 interface PropertyActionButtonsProps {
@@ -232,7 +232,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
               className="w-full bg-green-600 hover:bg-green-700"
               disabled={loading === 'invest'}
             >
-              <CurrencyDollarIcon className="h-4 w-4 mr-2" />
+              <CurrencyDollar className="h-4 w-4 mr-2" />
               {loading === 'invest' ? 'Processing...' : 'Invest Now'}
             </Button>
           </div>
@@ -247,7 +247,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
               disabled={loading === 'inspection'}
               className="w-full"
             >
-              <EyeIcon className="h-4 w-4 mr-2" />
+              <Eye className="h-4 w-4 mr-2" />
               {loading === 'inspection' ? 'Requesting...' : 'Request Inspection'}
             </Button>
             
@@ -257,7 +257,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
               disabled={loading === 'rental'}
               className="w-full"
             >
-              <HomeIcon className="h-4 w-4 mr-2" />
+              <House className="h-4 w-4 mr-2" />
               {loading === 'rental' ? 'Requesting...' : 'Request Rental'}
             </Button>
           </div>
@@ -268,7 +268,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
             disabled={loading === 'reservation'}
             className="w-full"
           >
-            <CalendarIcon className="h-4 w-4 mr-2" />
+            <Calendar className="h-4 w-4 mr-2" />
             {loading === 'reservation' ? 'Booking...' : 'Make Reservation'}
           </Button>
         </div>
@@ -282,7 +282,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
             disabled={loading === 'favorite'}
             className="flex-1"
           >
-            <HeartIcon className="h-4 w-4 mr-2" />
+            <Heart className="h-4 w-4 mr-2" />
             {loading === 'favorite' ? 'Saving...' : 'Save'}
           </Button>
           
@@ -292,7 +292,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
             onClick={handleShare}
             className="flex-1"
           >
-            <ShareIcon className="h-4 w-4 mr-2" />
+            <ShareNetwork className="h-4 w-4 mr-2" />
             Share
           </Button>
         </div>

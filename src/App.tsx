@@ -2,14 +2,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/lib/auth';
+import { AuthProvider } from '@/components/AuthProvider';
 import { Layout } from '@/components/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 // Page imports
 import Index from '@/pages/Index';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
+import Auth from '@/pages/Auth';
 import Welcome from '@/pages/Welcome';
 import Dashboard from '@/pages/Dashboard';
 import Admin from '@/pages/Admin';
@@ -19,20 +18,18 @@ import Notifications from '@/pages/Notifications';
 import Marketplace from '@/pages/Marketplace';
 import Services from '@/pages/Services';
 import PropertyDetails from '@/pages/PropertyDetails';
-import Me from '@/pages/Me';
+import UserBookings from '@/pages/UserBookings';
 import Tokens from '@/pages/Tokens';
 import MyLand from '@/pages/MyLand';
 import AddProperty from '@/pages/AddProperty';
 import Verification from '@/pages/Verification';
-import PropertyVerification from '@/pages/PropertyVerification';
 import Messaging from '@/pages/Messaging';
-import Map from '@/pages/Map';
 
 // Agent pages
-import AgentInspections from '@/pages/agent/Inspections';
-import AgentRentals from '@/pages/agent/Rentals';
-import AgentReservations from '@/pages/agent/Reservations';
-import AgentCalendar from '@/pages/agent/Calendar';
+import AgentInspections from '@/pages/AgentInspections';
+import AgentRentals from '@/pages/AgentRentals';
+import AgentReservations from '@/pages/AgentReservations';
+import AgentCalendar from '@/pages/AgentCalendar';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,8 +49,7 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/auth" element={<Auth />} />
               
               {/* Protected routes with layout */}
               <Route path="/welcome" element={
@@ -73,7 +69,7 @@ function App() {
               } />
               
               <Route path="/admin/*" element={
-                <ProtectedRoute requireRole="admin">
+                <ProtectedRoute requiredRole="admin">
                   <Layout>
                     <Admin />
                   </Layout>
@@ -131,7 +127,7 @@ function App() {
               <Route path="/me" element={
                 <ProtectedRoute>
                   <Layout>
-                    <Me />
+                    <UserBookings />
                   </Layout>
                 </ProtectedRoute>
               } />
@@ -168,26 +164,10 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/property-verification" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <PropertyVerification />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              
               <Route path="/messaging" element={
                 <ProtectedRoute>
                   <Layout>
                     <Messaging />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/map" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Map />
                   </Layout>
                 </ProtectedRoute>
               } />

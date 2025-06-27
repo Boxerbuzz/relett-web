@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { EmailVerificationStatus } from '@/components/profile/EmailVerificationStatus';
 import { KYCUploadForm } from '@/components/kyc/KYCUploadForm';
-import { UserIcon, DocumentTextIcon, BellIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { User, FileText, Bell, ShieldCheck } from '@phosphor-icons/react';
 
 const Profile = () => {
   return (
@@ -20,19 +19,19 @@ const Profile = () => {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile" className="flex items-center gap-2">
-            <UserIcon className="h-4 w-4" />
+            <User className="h-4 w-4" />
             Profile
           </TabsTrigger>
           <TabsTrigger value="kyc" className="flex items-center gap-2">
-            <DocumentTextIcon className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             KYC Verification
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
-            <ShieldCheckIcon className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4" />
             Security
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <BellIcon className="h-4 w-4" />
+            <Bell className="h-4 w-4" />
             Notifications
           </TabsTrigger>
         </TabsList>
