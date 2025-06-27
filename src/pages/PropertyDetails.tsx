@@ -8,15 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { InvestNowDialog } from '@/components/dialogs/InvestNowDialog';
 import { 
-  ArrowLeft,
-  MapPin,
-  Eye,
-  Heart,
-  Star,
-  Calendar,
-  TrendingUp,
-  Shield,
-  User
+  ArrowLeftIcon,
+  MapPinIcon,
+  EyeIcon,
+  HeartIcon,
+  StarIcon,
+  CalendarIcon,
+  TrendUpIcon,
+  ShieldIcon,
+  UserIcon
 } from '@phosphor-icons/react';
 
 const PropertyDetails = () => {
@@ -102,7 +102,7 @@ const PropertyDetails = () => {
       <div className="container mx-auto p-6 text-center">
         <h1 className="text-2xl font-bold mb-4">Property Not Found</h1>
         <Button onClick={() => navigate('/marketplace')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back to Properties
         </Button>
       </div>
@@ -127,7 +127,7 @@ const PropertyDetails = () => {
         onClick={() => navigate(-1)}
         className="mb-6"
       >
-        <ArrowLeft className="mr-2 h-4 w-4" />
+        <ArrowLeftIcon className="mr-2 h-4 w-4" />
         Back
       </Button>
 
@@ -143,7 +143,7 @@ const PropertyDetails = () => {
               />
             ) : (
               <div className="h-96 bg-gray-200 rounded-t-lg flex items-center justify-center">
-                <MapPin className="h-16 w-16 text-gray-400" />
+                <MapPinIcon className="h-16 w-16 text-gray-400" />
               </div>
             )}
             <CardContent className="p-6">
@@ -153,20 +153,20 @@ const PropertyDetails = () => {
                     <Badge variant="secondary">{property.category}</Badge>
                     {property.is_featured && (
                       <Badge className="bg-yellow-500">
-                        <Star className="h-3 w-3 mr-1" />
+                        <StarIcon className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
                     )}
                     {property.is_tokenized && (
                       <Badge className="bg-purple-500">
-                        <TrendingUp className="h-3 w-3 mr-1" />
+                        <TrendUpIcon className="h-3 w-3 mr-1" />
                         Tokenized
                       </Badge>
                     )}
                   </div>
                   <h1 className="text-3xl font-bold mb-2">{property.title}</h1>
                   <div className="flex items-center gap-2 text-gray-600 mb-4">
-                    <MapPin className="h-4 w-4" />
+                    <MapPinIcon className="h-4 w-4" />
                     <span>{property.location?.address || 'Location not specified'}</span>
                   </div>
                 </div>
@@ -176,16 +176,16 @@ const PropertyDetails = () => {
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
+                      <EyeIcon className="h-4 w-4" />
                       {property.views || 0}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Heart className="h-4 w-4" />
+                      <HeartIcon className="h-4 w-4" />
                       {property.likes || 0}
                     </div>
                     {property.ratings && (
                       <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-current text-yellow-500" />
+                        <StarIcon className="h-4 w-4 fill-current text-yellow-500" />
                         {property.ratings.toFixed(1)}
                       </div>
                     )}
@@ -243,7 +243,7 @@ const PropertyDetails = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
-                            <Star
+                            <StarIcon
                               key={i}
                               className={`h-4 w-4 ${
                                 i < review.rating ? 'fill-current text-yellow-500' : 'text-gray-300'
@@ -269,14 +269,14 @@ const PropertyDetails = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+                  <UserIcon className="h-5 w-5" />
                   Property Owner
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <User className="h-8 w-8 text-gray-400" />
+                    <UserIcon className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="font-semibold">
                     {property.users.first_name} {property.users.last_name}
@@ -294,7 +294,7 @@ const PropertyDetails = () => {
             <Card className="border-2 border-green-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-700">
-                  <TrendingUp className="h-5 w-5" />
+                  <TrendUpIcon className="h-5 w-5" />
                   Investment Opportunity
                 </CardTitle>
               </CardHeader>
@@ -325,12 +325,12 @@ const PropertyDetails = () => {
                   className="w-full bg-green-600 hover:bg-green-700"
                   disabled={tokenizedProperty.status !== 'active'}
                 >
-                  <TrendingUp className="mr-2 h-4 w-4" />
+                  <TrendUpIcon className="mr-2 h-4 w-4" />
                   Invest Now
                 </Button>
 
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Shield className="h-3 w-3" />
+                  <ShieldIcon className="h-3 w-3" />
                   <span>Secured by blockchain technology</span>
                 </div>
               </CardContent>

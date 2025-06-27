@@ -9,11 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
 import { 
-  TrendingUp,
-  CreditCard,
-  Shield,
-  Calculator,
-  CheckCircle
+  TrendUpIcon,
+  CreditCardIcon,
+  ShieldIcon,
+  CalculatorIcon,
+  CheckCircleIcon
 } from '@phosphor-icons/react';
 
 interface InvestNowDialogProps {
@@ -124,7 +124,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-600" />
+            <TrendUpIcon className="h-5 w-5 text-green-600" />
             Invest in {property.token_symbol}
           </DialogTitle>
         </DialogHeader>
@@ -177,7 +177,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
               <Card className="bg-blue-50">
                 <CardContent className="p-4">
                   <h3 className="font-medium mb-3 flex items-center gap-2">
-                    <Calculator className="h-4 w-4" />
+                    <CalculatorIcon className="h-4 w-4" />
                     Investment Summary
                   </h3>
                   <div className="space-y-2 text-sm">
@@ -236,7 +236,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
             </Card>
 
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Shield className="h-4 w-4" />
+              <ShieldIcon className="h-4 w-4" />
               <span>Your investment is secured by blockchain technology</span>
             </div>
 
@@ -245,7 +245,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
                 Back
               </Button>
               <Button onClick={handleConfirmInvestment} className="flex-1 bg-green-600 hover:bg-green-700">
-                <CreditCard className="mr-2 h-4 w-4" />
+                <CreditCardIcon className="mr-2 h-4 w-4" />
                 Confirm Investment
               </Button>
             </div>
@@ -267,7 +267,7 @@ export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialo
 
         {step === 'success' && (
           <div className="space-y-6 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto" />
             <div>
               <h3 className="font-medium mb-2 text-green-900">Investment Successful!</h3>
               <p className="text-sm text-gray-600 mb-4">
