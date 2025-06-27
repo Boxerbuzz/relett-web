@@ -246,8 +246,8 @@ const Welcome = () => {
           Your comprehensive platform for land tokenization and real estate investment
         </p>
         <div className="flex justify-center gap-2 mb-4">
-          {roles.map((role) => (
-            <Badge key={role} variant="secondary" className="capitalize">
+          {roles.map((role, index) => (
+            <Badge key={index} variant="secondary" className="capitalize">
               {role}
             </Badge>
           ))}
