@@ -66,7 +66,7 @@ export function TokenizedPropertyMarketplace() {
         .select(
           `
           *,
-          property:properties(
+          property:properties!tokenized_properties_property_id_fkey(
             id,
             title,
             description,

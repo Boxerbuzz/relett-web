@@ -9,8 +9,9 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    name: string,
-    role: "landowner" | "verifier" | "agent"
+    role: "landowner" | "verifier" | "agent" | "user",
+    firstName: string,
+    lastName: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
   session: Session | null;

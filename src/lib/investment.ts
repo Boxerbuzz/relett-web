@@ -90,7 +90,7 @@ export class InvestmentService {
         .from('tokenized_properties')
         .select(`
           *,
-          property:properties(*),
+          property:properties!tokenized_properties_property_id_fkey(*),
           land_title:land_titles(*)
         `)
         .eq('status', 'minted');
@@ -126,7 +126,7 @@ export class InvestmentService {
           *,
           tokenized_property:tokenized_properties(
             *,
-            property:properties(*),
+            property:properties!tokenized_properties_property_id_fkey(*),
             land_title:land_titles(*)
           )
         `)

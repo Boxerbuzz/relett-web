@@ -1,11 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth";
 import Intercom from "@intercom/messenger-js-sdk";
+import useIntercom from "@/hooks/useIntercom";
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,18 +15,20 @@ interface LayoutProps {
 
 export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, session } = useAuth();
+  const { intercomToken, user } = useIntercom();
 
-  console.log(session?.access_token);
-
-  Intercom({
-    intercom_user_jwt: session?.access_token,
-    app_id: "msg20icm",
-    user_id: user.id,
-    name: `${user.first_name} ${user.last_name}`,
-    email: user.email,
-    created_at: Date.parse(user.created_at),
-  });
+  useEffect(() => {
+    if (intercomToken && user) {
+      Intercom({
+        intercom_user_jwt: intercomToken,
+        app_id: "msg20icm",
+        user_id: user?.id,
+        name: `${user?.first_name} ${user?.last_name}`,
+        email: user?.email,
+        created_at: Date.parse(user?.created_at),
+      });
+    }
+  }, [intercomToken]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">

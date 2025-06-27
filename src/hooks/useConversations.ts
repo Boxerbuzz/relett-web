@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +27,11 @@ export interface ConversationWithDetails {
   }>;
 }
 
+// Global subscription manager to prevent multiple subscriptions
+let globalChannel: any = null;
+let subscriptionCount = 0;
+let globalCallbacks: (() => void)[] = [];
+
 export function useConversations() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
@@ -39,24 +43,43 @@ export function useConversations() {
 
     fetchConversations();
     
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('conversations-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'conversations'
-        },
-        () => {
-          fetchConversations();
-        }
-      )
-      .subscribe();
+    // Add this instance's callback to global callbacks
+    globalCallbacks.push(fetchConversations);
+    subscriptionCount++;
+
+    // Only create subscription if it doesn't exist
+    if (!globalChannel) {
+      globalChannel = supabase
+        .channel('conversations-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'conversations'
+          },
+          () => {
+            // Trigger all callbacks
+            globalCallbacks.forEach(callback => callback());
+          }
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      // Remove this instance's callback
+      const index = globalCallbacks.indexOf(fetchConversations);
+      if (index > -1) {
+        globalCallbacks.splice(index, 1);
+      }
+      subscriptionCount--;
+
+      // Remove subscription when no more instances
+      if (subscriptionCount === 0 && globalChannel) {
+        supabase.removeChannel(globalChannel);
+        globalChannel = null;
+        globalCallbacks = [];
+      }
     };
   }, [user]);
 

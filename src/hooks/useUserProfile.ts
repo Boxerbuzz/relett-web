@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface UserProfileData {
   // Core user data from users table
@@ -15,18 +15,24 @@ export interface UserProfileData {
   full_name: string | null;
   is_active: boolean | null;
   is_verified: boolean | null;
-  verification_status: 'verified' | 'pending' | 'unverified' | 'rejected' | 'expired' | null;
+  verification_status:
+    | "verified"
+    | "pending"
+    | "unverified"
+    | "rejected"
+    | "expired"
+    | null;
   created_at: string;
   updated_at: string | null;
   has_setup: boolean | null;
-  
+
   // Other fields that might be in the users table
   date_of_birth?: string | null;
   nationality?: string | null;
   state_of_origin?: string | null;
   lga?: string | null;
   middle_name?: string | null;
-  gender?: 'male' | 'female' | 'other' | null;
+  gender?: "male" | "female" | "other" | null;
   last_login?: string | null;
   address?: any | null;
 }
@@ -50,17 +56,17 @@ export function useUserProfile() {
     try {
       // Fetch user data directly from the consolidated users table
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user?.id)
+        .from("users")
+        .select("*")
+        .eq("id", user?.id)
         .single();
 
       if (userError) throw userError;
 
       setProfile(userData as UserProfileData);
     } catch (err) {
-      console.error('Error fetching profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+      console.error("Error fetching profile:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch profile");
     } finally {
       setLoading(false);
     }
@@ -70,9 +76,9 @@ export function useUserProfile() {
     try {
       // All updates go to the users table now
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update(updates)
-        .eq('id', user?.id);
+        .eq("id", user?.id);
 
       if (error) throw error;
 
@@ -80,8 +86,9 @@ export function useUserProfile() {
       await fetchProfile();
       return { data: profile, error: null };
     } catch (err) {
-      console.error('Error updating profile:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
+      console.error("Error updating profile:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update profile";
       setError(errorMessage);
       return { data: null, error: errorMessage };
     }
@@ -102,6 +109,6 @@ export function useUserProfile() {
     updateProfile,
     hasRole,
     getPrimaryRole,
-    refetch: fetchProfile
+    refetch: fetchProfile,
   };
 }

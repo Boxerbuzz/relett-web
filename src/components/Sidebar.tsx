@@ -41,7 +41,7 @@ interface SidebarProps {
 }
 
 const mainNavigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor'] },
+  { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
   { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Services', href: '/services', icon: Wrench, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
@@ -52,10 +52,10 @@ const mainNavigation = [
 ];
 
 const propertyNavigation = [
-  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin', 'user'] },
-  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin', 'user'] },
-  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin', 'user'] },
-  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor', 'user'] },
+  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
+  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
+  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
+  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
 ];
 
 const agentNavigation = [

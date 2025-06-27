@@ -42,7 +42,7 @@ export function MarketOverview() {
           total_supply,
           token_price,
           status,
-          property:properties(
+          property:properties!tokenized_properties_property_id_fkey(
             location,
             title
           ),

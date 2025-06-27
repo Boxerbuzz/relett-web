@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,18 +50,36 @@ export function ProfileCompletionWizard({ open, onOpenChange }: ProfileCompletio
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      first_name: profile?.first_name || '',
-      last_name: profile?.last_name || '',
-      phone: profile?.phone || '',
-      date_of_birth: profile?.date_of_birth || '',
-      gender: profile?.gender || 'other',
-      bio: profile?.bio || '',
-      nationality: profile?.nationality || '',
-      state_of_origin: profile?.state_of_origin || '',
-      lga: profile?.lga || '',
-      address: typeof profile?.address === 'object' ? profile?.address?.address_line : (profile?.address || ''),
+      first_name: '',
+      last_name: '',
+      phone: '',
+      date_of_birth: '',
+      gender: 'other',
+      bio: '',
+      nationality: '',
+      state_of_origin: '',
+      lga: '',
+      address: '',
     },
   });
+
+  // Reset form values when profile data becomes available
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        date_of_birth: profile.date_of_birth || '',
+        gender: profile.gender || 'other',
+        bio: profile.bio || '',
+        nationality: profile.nationality || '',
+        state_of_origin: profile.state_of_origin || '',
+        lga: profile.lga || '',
+        address: typeof profile.address === 'object' ? profile.address?.address_line : (profile.address || ''),
+      });
+    }
+  }, [profile, form]);
 
   const onSubmit = async (data: ProfileForm) => {
     try {

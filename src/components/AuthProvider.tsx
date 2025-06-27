@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
@@ -79,7 +78,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (event === "INITIAL_SESSION" && !session?.user) {
         console.log("No session, setting user to null and loading to false");
         setUser(null);
-        setLoading(false);  
+        setLoading(false);
         setSession(null);
       }
     });
@@ -120,12 +119,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!userData) {
         console.log("Step 5: User not found, creating new user...");
 
-        const [first_name, ...rest] = (
-          authUser.user_metadata?.name ||
-          authUser.email?.split("@")[0] ||
-          "User"
-        ).split(" ");
-        const last_name = rest.join(" ") || "";
+        // Try to get from dedicated fields first
+        let first_name = authUser.user_metadata?.firstName;
+        let last_name = authUser.user_metadata?.lastName;
+
+        // If dedicated fields don't exist, fall back to parsing
+        if (!first_name || !last_name) {
+          const [parsed_first, ...rest] = (
+            authUser.user_metadata?.name ||
+            authUser.email?.split("@")[0] ||
+            "User"
+          ).split(" ");
+
+          first_name = first_name || parsed_first;
+          last_name = last_name || rest.join(" ") || "";
+        }
 
         const newUser = {
           id: authUser.id,
@@ -133,7 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           first_name: first_name || null,
           last_name: last_name || null,
           phone: authUser.user_metadata?.phone || null,
-          user_type: authUser.user_metadata?.user_type || "landowner",
+          user_type: authUser.user_metadata?.user_type || "user",
           avatar: authUser.user_metadata?.avatar_url || null,
         };
 
@@ -164,7 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { error: roleError } = await supabase.from("user_roles").insert([
           {
             user_id: authUser.id,
-            role: newUser.user_type as any,
+            role: newUser.user_type,
           },
         ]);
 
@@ -234,7 +242,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -267,8 +275,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUp = async (
     email: string,
     password: string,
-    name: string,
-    role: "landowner" | "verifier" | "agent"
+    role: "landowner" | "verifier" | "agent" | "user",
+    firstName: string,
+    lastName: string,
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -279,7 +288,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            name,
+            first_name: firstName,
+            last_name: lastName,
+            name: `${firstName} ${lastName}`,
             user_type: role,
           },
         },
@@ -343,7 +354,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   console.log("AuthProvider render - loading:", loading, "user:", user);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, session }}>
+    <AuthContext.Provider
+      value={{ user, loading, signIn, signUp, signOut, session }}
+    >
       <WalletProvider>{children}</WalletProvider>
     </AuthContext.Provider>
   );

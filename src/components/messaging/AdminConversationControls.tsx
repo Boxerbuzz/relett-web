@@ -1,73 +1,56 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useConversations } from "@/hooks/useConversations";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { PlusIcon, UsersIcon } from "@phosphor-icons/react";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useConversations } from '@/hooks/useConversations';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { PlusIcon, UsersIcon } from '@phosphor-icons/react';
-
-export function AdminConversationControls() {
-  const { hasRole } = useUserRoles();
-  const { createConversation, joinConversation } = useConversations();
+// Create New Conversation Dialog Component
+function CreateConversationDialog() {
+  const { createConversation } = useConversations();
   const { toast } = useToast();
-  const [participantEmail, setParticipantEmail] = useState('');
-  const [conversationName, setConversationName] = useState('');
-  const [conversationIdToJoin, setConversationIdToJoin] = useState('');
+  const [participantEmail, setParticipantEmail] = useState("");
+  const [conversationName, setConversationName] = useState("");
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Only show admin controls if user is admin
-  if (!hasRole('admin')) {
-    return null;
-  }
-
-  const handleCreateConversation = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!participantEmail.trim() || !conversationName.trim()) return;
 
     try {
       setLoading(true);
-      await createConversation(participantEmail.trim(), conversationName.trim());
-      
+      await createConversation(
+        participantEmail.trim(),
+        conversationName.trim()
+      );
+
       toast({
-        title: 'Success',
-        description: 'Conversation created successfully'
+        title: "Success",
+        description: "Conversation created successfully",
       });
-      
-      setParticipantEmail('');
-      setConversationName('');
+
+      setParticipantEmail("");
+      setConversationName("");
+      setOpen(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create conversation',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleJoinConversation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!conversationIdToJoin.trim()) return;
-
-    try {
-      setLoading(true);
-      await joinConversation(conversationIdToJoin.trim());
-      
-      toast({
-        title: 'Success',
-        description: 'Joined conversation successfully'
-      });
-      
-      setConversationIdToJoin('');
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to join conversation',
-        variant: 'destructive'
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create conversation",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -75,69 +58,150 @@ export function AdminConversationControls() {
   };
 
   return (
-    <div className="space-y-4 p-4 border-t">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <PlusIcon className="h-4 w-4" />
-            Start New Conversation
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleCreateConversation} className="space-y-3">
-            <div>
-              <Label htmlFor="participantEmail" className="text-sm">User Email</Label>
-              <Input
-                id="participantEmail"
-                type="email"
-                value={participantEmail}
-                onChange={(e) => setParticipantEmail(e.target.value)}
-                placeholder="Enter user email"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="conversationName" className="text-sm">Conversation Name</Label>
-              <Input
-                id="conversationName"
-                value={conversationName}
-                onChange={(e) => setConversationName(e.target.value)}
-                placeholder="Enter conversation name"
-                required
-              />
-            </div>
-            <Button type="submit" disabled={loading} className="w-full">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <PlusIcon className="h-4 w-4" />
+          New Conversation
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Start New Conversation</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="participantEmail">User Email</Label>
+            <Input
+              id="participantEmail"
+              type="email"
+              value={participantEmail}
+              onChange={(e) => setParticipantEmail(e.target.value)}
+              placeholder="Enter user email"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="conversationName">Conversation Name</Label>
+            <Input
+              id="conversationName"
+              value={conversationName}
+              onChange={(e) => setConversationName(e.target.value)}
+              placeholder="Enter conversation name"
+              required
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
               Create Conversation
             </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <UsersIcon className="h-4 w-4" />
-            Join Existing Conversation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleJoinConversation} className="space-y-3">
-            <div>
-              <Label htmlFor="conversationId" className="text-sm">Conversation ID</Label>
-              <Input
-                id="conversationId"
-                value={conversationIdToJoin}
-                onChange={(e) => setConversationIdToJoin(e.target.value)}
-                placeholder="Enter conversation ID"
-                required
-              />
-            </div>
-            <Button type="submit" disabled={loading} className="w-full">
+// Join Existing Conversation Dialog Component
+function JoinConversationDialog() {
+  const { joinConversation } = useConversations();
+  const { toast } = useToast();
+  const [conversationId, setConversationId] = useState("");
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!conversationId.trim()) return;
+
+    try {
+      setLoading(true);
+      await joinConversation(conversationId.trim());
+
+      toast({
+        title: "Success",
+        description: "Joined conversation successfully",
+      });
+
+      setConversationId("");
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to join conversation",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <UsersIcon className="h-4 w-4" />
+          Join Conversation
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Join Existing Conversation</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="conversationId">Conversation ID</Label>
+            <Input
+              id="conversationId"
+              value={conversationId}
+              onChange={(e) => setConversationId(e.target.value)}
+              placeholder="Enter conversation ID"
+              required
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
               Join Conversation
             </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Main Admin Controls Component
+export function AdminConversationControls() {
+  const { hasRole } = useUserRoles();
+
+  // Only show admin controls if user is admin
+  if (!hasRole("admin")) {
+    return null;
+  }
+
+  return (
+    <div className="flex gap-2 p-4 border-t">
+      <CreateConversationDialog />
+      <JoinConversationDialog />
     </div>
   );
 }
