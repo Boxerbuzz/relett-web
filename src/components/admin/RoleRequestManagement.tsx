@@ -13,7 +13,7 @@ import {
   XCircle, 
   Clock,
   Phone,
-  Mail,
+  Envelope,
   FileText,
   Calendar
 } from '@phosphor-icons/react';
@@ -34,7 +34,7 @@ interface RoleRequest {
     first_name: string;
     last_name: string;
     phone_number?: string;
-  };
+  } | null;
 }
 
 export function RoleRequestManagement() {
@@ -61,7 +61,7 @@ export function RoleRequestManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      setRequests((data || []) as RoleRequest[]);
     } catch (error) {
       console.error('Error fetching role requests:', error);
       toast({
@@ -98,9 +98,10 @@ export function RoleRequestManagement() {
           .from('user_roles')
           .insert({
             user_id: selectedRequest.user_id,
-            role: selectedRequest.requested_role,
+            role: selectedRequest.requested_role as any,
             is_active: true,
-            assigned_by: user?.id
+            assigned_by: user?.id,
+            assigned_at: new Date().toISOString()
           });
 
         if (roleError) throw roleError;

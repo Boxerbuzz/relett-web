@@ -13,7 +13,7 @@ import {
   User, 
   CheckCircle, 
   XCircle, 
-  Award,
+  Certificate,
   Calendar,
   FileText,
   TrendUp,
@@ -44,7 +44,7 @@ interface VerifierCredential {
     first_name: string;
     last_name: string;
     phone_number?: string;
-  };
+  } | null;
 }
 
 export function VerifierCredentialReview() {
@@ -71,7 +71,10 @@ export function VerifierCredentialReview() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCredentials(data || []);
+      setCredentials((data || []).map(item => ({
+        ...item,
+        documents: Array.isArray(item.documents) ? item.documents : []
+      })) as VerifierCredential[]);
     } catch (error) {
       console.error('Error fetching verifier credentials:', error);
       toast({
@@ -109,7 +112,8 @@ export function VerifierCredentialReview() {
             user_id: selectedCredential.user_id,
             role: 'verifier',
             is_active: true,
-            assigned_by: user?.id
+            assigned_by: user?.id,
+            assigned_at: new Date().toISOString()
           });
 
         if (roleError && !roleError.message.includes('duplicate')) {
@@ -218,7 +222,7 @@ export function VerifierCredentialReview() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-gray-400" />
+                    <Certificate className="h-4 w-4 text-gray-400" />
                     <span>{credential.license_name}</span>
                   </div>
                   

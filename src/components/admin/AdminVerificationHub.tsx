@@ -9,7 +9,7 @@ import {
   Users, 
   Shield, 
   FileText, 
-  Award
+  Certificate
 } from '@phosphor-icons/react';
 
 export function AdminVerificationHub() {
@@ -33,7 +33,7 @@ export function AdminVerificationHub() {
             KYC Review
           </TabsTrigger>
           <TabsTrigger value="verifier-credentials" className="flex items-center gap-2">
-            <Award className="h-4 w-4" />
+            <Certificate className="h-4 w-4" />
             Verifier Credentials
           </TabsTrigger>
         </TabsList>

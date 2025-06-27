@@ -34,7 +34,7 @@ interface KYCDocument {
     first_name: string;
     last_name: string;
     phone_number?: string;
-  };
+  } | null;
 }
 
 interface IdentityVerification {
@@ -49,7 +49,7 @@ interface IdentityVerification {
   user_profiles?: {
     first_name: string;
     last_name: string;
-  };
+  } | null;
 }
 
 export function KYCReviewDashboard() {
@@ -91,8 +91,8 @@ export function KYCReviewDashboard() {
 
       if (identityError) throw identityError;
 
-      setKycDocuments(docsData || []);
-      setIdentityVerifications(identityData || []);
+      setKycDocuments((docsData || []) as KYCDocument[]);
+      setIdentityVerifications((identityData || []) as IdentityVerification[]);
     } catch (error) {
       console.error('Error fetching KYC data:', error);
       toast({

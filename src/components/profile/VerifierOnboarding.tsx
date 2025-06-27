@@ -15,7 +15,7 @@ import {
   CheckCircle,
   FileText,
   Calendar,
-  Award
+  Certificate
 } from '@phosphor-icons/react';
 
 export function VerifierOnboarding() {
@@ -91,7 +91,7 @@ export function VerifierOnboarding() {
         .from('verifier_credentials')
         .insert({
           user_id: user.id,
-          verifier_type: formData.verifier_type,
+          verifier_type: formData.verifier_type as any,
           license_number: formData.license_number,
           issuing_authority: formData.issuing_authority,
           license_name: formData.license_name,
@@ -155,7 +155,7 @@ export function VerifierOnboarding() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
+              <Certificate className="h-5 w-5" />
               Professional Information
             </CardTitle>
           </CardHeader>
