@@ -66,7 +66,7 @@ export function RoleRequestManagement() {
       if (error) throw error;
       setRequests((data || []).map(item => ({
         ...item,
-        verification_status: item.verification_status || item.status || 'pending',
+        verification_status: item.status || 'pending', // Use 'status' field from database
         user_profiles: item.user_profiles && !('error' in item.user_profiles) ? item.user_profiles : null
       })) as RoleRequest[]);
     } catch (error) {
@@ -91,7 +91,7 @@ export function RoleRequestManagement() {
       const { error: updateError } = await supabase
         .from('user_role_requests')
         .update({
-          verification_status: decision,
+          status: decision,
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           reviewer_notes: reviewNotes

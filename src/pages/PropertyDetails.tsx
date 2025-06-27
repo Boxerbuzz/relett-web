@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { Calendar } from "@/components/ui/calendar"
-import { DatePicker } from "@/components/ui/date-picker"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,8 +32,7 @@ import {
   MinusIcon,
   CalendarIcon,
   ArrowLeftIcon,
-  ImagePlusIcon,
-  LucideIcon
+  ImagesIcon
 } from '@phosphor-icons/react';
 
 import { InvestNowDialog } from '@/components/dialogs/InvestNowDialog';
@@ -132,7 +131,7 @@ const PropertyDetails = () => {
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <ImagePlusIcon className="h-12 w-12 text-gray-400" />
+            <ImagesIcon className="h-12 w-12 text-gray-400" />
           </div>
         )}
       </div>

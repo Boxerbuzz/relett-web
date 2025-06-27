@@ -23,7 +23,7 @@ import {
   CreditCardIcon,
   ShieldCheckIcon,
   TrendUpIcon,
-  ArrowPathIcon
+  SpinnerGapIcon
 } from '@phosphor-icons/react';
 
 interface InvestNowDialogProps {
@@ -158,7 +158,7 @@ export function InvestNowDialog({
           price_per_token: tokenizedProperty.token_price,
           total_value: amount,
           transaction_type: 'purchase' as const,
-          status: 'completed' as const
+          status: 'confirmed' as const
         });
 
       if (transactionError) throw transactionError;
@@ -309,7 +309,7 @@ export function InvestNowDialog({
             >
               {loading ? (
                 <>
-                  <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                  <SpinnerGapIcon className="h-4 w-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (
