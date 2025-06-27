@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,10 +70,16 @@ export function VerifierCredentialReview() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCredentials((data || []).map(item => ({
+      
+      // Transform data with proper type handling
+      const transformedData = (data || []).map(item => ({
         ...item,
-        documents: Array.isArray(item.documents) ? item.documents : []
-      })) as VerifierCredential[]);
+        documents: Array.isArray(item.documents) ? item.documents : [],
+        user_profiles: item.user_profiles && typeof item.user_profiles === 'object' && 
+                      'first_name' in item.user_profiles ? item.user_profiles : null
+      })) as unknown as VerifierCredential[];
+
+      setCredentials(transformedData);
     } catch (error) {
       console.error('Error fetching verifier credentials:', error);
       toast({

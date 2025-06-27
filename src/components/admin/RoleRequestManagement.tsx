@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,7 +60,15 @@ export function RoleRequestManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests((data || []) as RoleRequest[]);
+      
+      // Transform data with proper type handling
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        user_profiles: item.user_profiles && typeof item.user_profiles === 'object' && 
+                      'first_name' in item.user_profiles ? item.user_profiles : null
+      })) as unknown as RoleRequest[];
+
+      setRequests(transformedData);
     } catch (error) {
       console.error('Error fetching role requests:', error);
       toast({
