@@ -118,9 +118,9 @@ interface SearchCriteria {
   additionalInfo: string;
 }
 
-const PropertyVerification = () => {
+const PropertyLookup = () => {
   const { toast } = useToast();
-  const [verificationStep, setVerificationStep] = useState<
+  const [lookupStep, setLookupStep] = useState<
     "input" | "searching" | "results"
   >("input");
   const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({
@@ -261,7 +261,7 @@ const PropertyVerification = () => {
     return query;
   };
 
-  const handleVerification = async () => {
+  const handleLookup = async () => {
     // Check if user provided at least one search criterion
     const hasSearchCriteria = Object.entries(searchCriteria).some(
       ([key, value]) => {
@@ -283,7 +283,7 @@ const PropertyVerification = () => {
     }
 
     setLoading(true);
-    setVerificationStep("searching");
+    setLookupStep("searching");
 
     try {
       let query = buildSearchQuery();
@@ -390,7 +390,7 @@ const PropertyVerification = () => {
                 "No property found matching your search criteria. Please try different search terms.",
               variant: "destructive",
             });
-            setVerificationStep("input");
+            setLookupStep("input");
             return;
           }
 
@@ -402,7 +402,7 @@ const PropertyVerification = () => {
               "No property found matching your search criteria. Please try different search terms.",
             variant: "destructive",
           });
-          setVerificationStep("input");
+          setLookupStep("input");
           return;
         }
       } else {
@@ -415,7 +415,7 @@ const PropertyVerification = () => {
         setHederaValidation(hederaResult);
       }
 
-      setVerificationStep("results");
+      setLookupStep("results");
     } catch (error) {
       console.error("Error searching property:", error);
       toast({
@@ -423,7 +423,7 @@ const PropertyVerification = () => {
         description: "Failed to search properties. Please try again.",
         variant: "destructive",
       });
-      setVerificationStep("input");
+      setLookupStep("input");
     } finally {
       setLoading(false);
     }
@@ -490,15 +490,14 @@ const PropertyVerification = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-          Property Verification
+          Property Blockchain Lookup
         </h1>
         <p className="text-gray-600">
-          Search and verify property ownership with comprehensive blockchain
-          validation
+          Search and verify property ownership with comprehensive blockchain validation
         </p>
       </div>
 
-      {verificationStep === "input" && (
+      {lookupStep === "input" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -715,7 +714,7 @@ const PropertyVerification = () => {
             </div>
 
             <Button
-              onClick={handleVerification}
+              onClick={handleLookup}
               disabled={loading}
               className="w-full"
               size="lg"
@@ -727,7 +726,7 @@ const PropertyVerification = () => {
         </Card>
       )}
 
-      {verificationStep === "searching" && (
+      {lookupStep === "searching" && (
         <Card>
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4">
@@ -743,7 +742,7 @@ const PropertyVerification = () => {
         </Card>
       )}
 
-      {verificationStep === "results" && propertyData && (
+      {lookupStep === "results" && propertyData && (
         <div className="space-y-6">
           {/* Property Overview */}
           <Card>
@@ -1027,7 +1026,7 @@ const PropertyVerification = () => {
           {/* Actions */}
           <div className="flex gap-4">
             <Button
-              onClick={() => setVerificationStep("input")}
+              onClick={() => setLookupStep("input")}
               variant="outline"
             >
               <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
@@ -1044,4 +1043,4 @@ const PropertyVerification = () => {
   );
 };
 
-export default PropertyVerification;
+export default PropertyLookup;

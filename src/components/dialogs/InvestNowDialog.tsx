@@ -1,285 +1,332 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { 
-  TrendUpIcon,
-  CreditCardIcon,
-  ShieldIcon,
+import {
+  CubeIcon,
+  DollarSignIcon,
   CalculatorIcon,
-  CheckCircleIcon
+  CreditCardIcon,
+  ShieldCheckIcon,
+  TrendUpIcon
 } from '@phosphor-icons/react';
 
 interface InvestNowDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property?: {
+  tokenizedProperty: {
     id: string;
     token_name: string;
     token_symbol: string;
     token_price: number;
     minimum_investment: number;
     expected_roi: number;
-    total_value_usd: number;
-    status: string;
+    total_supply: string;
+    property_title?: string;
+    hedera_token_id?: string;
   };
 }
 
-export function InvestNowDialog({ open, onOpenChange, property }: InvestNowDialogProps) {
+export function InvestNowDialog({ 
+  open, 
+  onOpenChange, 
+  tokenizedProperty 
+}: InvestNowDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [investmentAmount, setInvestmentAmount] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [step, setStep] = useState<'amount' | 'confirm' | 'processing' | 'success'>('amount');
+  const [loading, setLoading] = useState(false);
 
-  const calculateTokens = () => {
-    if (!property || !investmentAmount) return 0;
-    return parseFloat(investmentAmount) / property.token_price;
-  };
+  const tokenAmount = investmentAmount ? 
+    Math.floor(parseFloat(investmentAmount) / tokenizedProperty.token_price) : 0;
 
-  const calculateProjectedReturns = () => {
-    if (!property || !investmentAmount) return 0;
-    return (parseFloat(investmentAmount) * property.expected_roi) / 100;
-  };
-
-  const handleProceed = () => {
-    if (!property || !investmentAmount) return;
-    
-    const amount = parseFloat(investmentAmount);
-    if (amount < property.minimum_investment) {
+  const handleInvestment = async () => {
+    if (!user) {
       toast({
-        title: 'Invalid Amount',
-        description: `Minimum investment is $${property.minimum_investment.toLocaleString()}`,
+        title: 'Authentication Required',
+        description: 'Please log in to make an investment',
         variant: 'destructive'
       });
       return;
     }
 
-    setStep('confirm');
-  };
-
-  const handleConfirmInvestment = async () => {
-    if (!property || !user) return;
-
-    setStep('processing');
-    setProcessing(true);
+    const amount = parseFloat(investmentAmount);
+    if (!amount || amount < tokenizedProperty.minimum_investment) {
+      toast({
+        title: 'Invalid Amount',
+        description: `Minimum investment is $${tokenizedProperty.minimum_investment.toLocaleString()}`,
+        variant: 'destructive'
+      });
+      return;
+    }
 
     try {
-      // Simulate investment processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      setLoading(true);
 
-      // In a real app, this would:
-      // 1. Process payment
-      // 2. Transfer tokens via Hedera
-      // 3. Update user's portfolio
-      // 4. Record the transaction
+      // Create payment session
+      const { data: paymentSession, error: paymentError } = await supabase
+        .functions.invoke('create-payment-session', {
+          body: {
+            amount: Math.round(amount * 100), // Convert to cents
+            currency: 'USD',
+            purpose: 'token_purchase',
+            metadata: {
+              tokenized_property_id: tokenizedProperty.id,
+              token_amount: tokenAmount,
+              token_price: tokenizedProperty.token_price,
+              hedera_token_id: tokenizedProperty.hedera_token_id
+            }
+          }
+        });
 
-      setStep('success');
-      
-      toast({
-        title: 'Investment Successful!',
-        description: `You've successfully invested $${investmentAmount} in ${property.token_name}`,
-      });
+      if (paymentError) {
+        throw new Error(paymentError.message);
+      }
 
-      // Auto-close after success
-      setTimeout(() => {
-        onOpenChange(false);
-        resetDialog();
-      }, 3000);
+      // Redirect to payment
+      if (paymentSession?.payment_url) {
+        window.location.href = paymentSession.payment_url;
+      } else {
+        // Simulate successful investment for demo
+        await simulateInvestment(amount, tokenAmount);
+      }
 
     } catch (error) {
       console.error('Investment error:', error);
       toast({
         title: 'Investment Failed',
-        description: 'There was an error processing your investment. Please try again.',
+        description: error instanceof Error ? error.message : 'Please try again later',
         variant: 'destructive'
       });
-      setStep('amount');
     } finally {
-      setProcessing(false);
+      setLoading(false);
     }
   };
 
-  const resetDialog = () => {
-    setStep('amount');
-    setInvestmentAmount('');
-    setProcessing(false);
-  };
+  const simulateInvestment = async (amount: number, tokens: number) => {
+    try {
+      // Create token holding record
+      const { error: holdingError } = await supabase
+        .from('token_holdings')
+        .insert({
+          holder_id: user!.id,
+          tokenized_property_id: tokenizedProperty.id,
+          tokens_owned: tokens.toString(),
+          purchase_price_per_token: tokenizedProperty.token_price,
+          total_investment: amount,
+          acquisition_date: new Date().toISOString()
+        });
 
-  const handleClose = () => {
-    onOpenChange(false);
-    resetDialog();
-  };
+      if (holdingError) throw holdingError;
 
-  if (!property) return null;
+      // Create investment tracking record
+      const { error: trackingError } = await supabase
+        .from('investment_tracking')
+        .insert({
+          user_id: user!.id,
+          tokenized_property_id: tokenizedProperty.id,
+          tokens_owned: tokens,
+          investment_amount: amount,
+          current_value: amount,
+          roi_percentage: 0
+        });
+
+      if (trackingError) throw trackingError;
+
+      // Create token transaction record
+      const { error: transactionError } = await supabase
+        .from('token_transactions')
+        .insert({
+          tokenized_property_id: tokenizedProperty.id,
+          to_holder: user!.id,
+          token_amount: tokens.toString(),
+          price_per_token: tokenizedProperty.token_price,
+          total_value: amount,
+          transaction_type: 'purchase',
+          status: 'completed'
+        });
+
+      if (transactionError) throw transactionError;
+
+      toast({
+        title: 'Investment Successful!',
+        description: `You have successfully invested $${amount.toLocaleString()} and received ${tokens} tokens.`
+      });
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Simulation error:', error);
+      throw error;
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TrendUpIcon className="h-5 w-5 text-green-600" />
-            Invest in {property.token_symbol}
+            <CubeIcon className="h-5 w-5 text-blue-600" />
+            Invest in {tokenizedProperty.token_name}
           </DialogTitle>
+          <DialogDescription>
+            Purchase tokens to become a fractional owner of this property
+          </DialogDescription>
         </DialogHeader>
 
-        {step === 'amount' && (
-          <div className="space-y-6">
-            {/* Property Info */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Property</span>
-                    <span className="font-medium">{property.token_name}</span>
+        <div className="space-y-6">
+          {/* Property Overview */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    ${tokenizedProperty.token_price}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Token Price</span>
-                    <span className="font-medium">${property.token_price}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Expected ROI</span>
-                    <Badge variant="secondary" className="text-green-600">
-                      {property.expected_roi}%
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Min. Investment</span>
-                    <span className="font-medium">${property.minimum_investment.toLocaleString()}</span>
-                  </div>
+                  <div className="text-sm text-gray-600">Per Token</div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {tokenizedProperty.expected_roi}%
+                  </div>
+                  <div className="text-sm text-gray-600">Expected ROI</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    ${tokenizedProperty.minimum_investment.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600">Min Investment</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Investment Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">Investment Amount (USD)</Label>
-              <Input
-                id="amount"
-                type="number"
-                min={property.minimum_investment}
-                step="0.01"
-                value={investmentAmount}
-                onChange={(e) => setInvestmentAmount(e.target.value)}
-                placeholder={`Min. $${property.minimum_investment}`}
-                className="text-lg"
-              />
+          {/* Investment Form */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="investment-amount">Investment Amount (USD)</Label>
+              <div className="relative">
+                <DollarSignIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="investment-amount"
+                  type="number"
+                  placeholder="Enter investment amount"
+                  value={investmentAmount}
+                  onChange={(e) => setInvestmentAmount(e.target.value)}
+                  className="pl-10"
+                  min={tokenizedProperty.minimum_investment}
+                />
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Minimum: ${tokenizedProperty.minimum_investment.toLocaleString()}
+              </div>
             </div>
 
-            {/* Investment Summary */}
-            {investmentAmount && parseFloat(investmentAmount) >= property.minimum_investment && (
-              <Card className="bg-blue-50">
+            {investmentAmount && tokenAmount > 0 && (
+              <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-4">
-                  <h3 className="font-medium mb-3 flex items-center gap-2">
-                    <CalculatorIcon className="h-4 w-4" />
-                    Investment Summary
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Investment Amount</span>
-                      <span className="font-medium">${parseFloat(investmentAmount).toLocaleString()}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalculatorIcon className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium">You will receive:</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Tokens to Receive</span>
-                      <span className="font-medium">{calculateTokens().toFixed(4)} {property.token_symbol}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Projected Annual Returns</span>
-                      <span className="font-medium text-green-600">${calculateProjectedReturns().toLocaleString()}</span>
-                    </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      {tokenAmount} {tokenizedProperty.token_symbol}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
             )}
+          </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={handleClose} className="flex-1">
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleProceed}
-                disabled={!investmentAmount || parseFloat(investmentAmount) < property.minimum_investment}
-                className="flex-1"
-              >
-                Continue
-              </Button>
+          <Separator />
+
+          {/* Investment Summary */}
+          <div className="space-y-3">
+            <h4 className="font-medium flex items-center gap-2">
+              <ShieldCheckIcon className="h-4 w-4" />
+              Investment Summary
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Property:</span>
+                <span className="font-medium">{tokenizedProperty.property_title}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Token Symbol:</span>
+                <span className="font-medium">{tokenizedProperty.token_symbol}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Investment Amount:</span>
+                <span className="font-medium">${parseFloat(investmentAmount || '0').toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tokens to Receive:</span>
+                <span className="font-medium">{tokenAmount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Expected Annual Return:</span>
+                <span className="font-medium text-green-600">
+                  ${((parseFloat(investmentAmount || '0') * tokenizedProperty.expected_roi) / 100).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Ownership Percentage:</span>
+                <span className="font-medium">
+                  {((tokenAmount / parseFloat(tokenizedProperty.total_supply)) * 100).toFixed(4)}%
+                </span>
+              </div>
             </div>
           </div>
-        )}
 
-        {step === 'confirm' && (
-          <div className="space-y-6">
-            <Card className="border-2 border-blue-200">
-              <CardContent className="p-4">
-                <h3 className="font-medium mb-3">Confirm Your Investment</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Property</span>
-                    <span className="font-medium">{property.token_name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Investment Amount</span>
-                    <span className="font-medium">${parseFloat(investmentAmount).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tokens to Receive</span>
-                    <span className="font-medium">{calculateTokens().toFixed(4)} {property.token_symbol}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <ShieldIcon className="h-4 w-4" />
-              <span>Your investment is secured by blockchain technology</span>
-            </div>
-
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep('amount')} className="flex-1">
-                Back
-              </Button>
-              <Button onClick={handleConfirmInvestment} className="flex-1 bg-green-600 hover:bg-green-700">
-                <CreditCardIcon className="mr-2 h-4 w-4" />
-                Confirm Investment
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleInvestment}
+              disabled={loading || !investmentAmount || parseFloat(investmentAmount) < tokenizedProperty.minimum_investment}
+              className="flex-1"
+            >
+              {loading ? (
+                <>
+                  <CircleNotchIcon className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCardIcon className="h-4 w-4 mr-2" />
+                  Invest Now
+                </>
+              )}
+            </Button>
           </div>
-        )}
 
-        {step === 'processing' && (
-          <div className="space-y-6 text-center">
-            <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-            <div>
-              <h3 className="font-medium mb-2">Processing Your Investment</h3>
-              <p className="text-sm text-gray-600">
-                We're processing your payment and transferring tokens to your wallet.
-                This may take a few moments.
-              </p>
-            </div>
+          {/* Disclaimer */}
+          <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+            <strong>Investment Disclaimer:</strong> Real estate investments carry risks. 
+            Past performance does not guarantee future results. Please review all 
+            property documentation before investing.
           </div>
-        )}
-
-        {step === 'success' && (
-          <div className="space-y-6 text-center">
-            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto" />
-            <div>
-              <h3 className="font-medium mb-2 text-green-900">Investment Successful!</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                You've successfully invested ${investmentAmount} in {property.token_name}.
-                Your tokens will be available in your portfolio shortly.
-              </p>
-              <Badge className="bg-green-100 text-green-800">
-                +{calculateTokens().toFixed(4)} {property.token_symbol}
-              </Badge>
-            </div>
-          </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );

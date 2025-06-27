@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -19,7 +20,7 @@ import Admin from "@/pages/Admin";
 import AdminContacts from "@/pages/AdminContacts";
 import AdminWaitlist from "@/pages/AdminWaitlist";
 import Verification from "@/pages/Verification";
-import PropertyVerification from "@/pages/PropertyVerification";
+import PropertyLookup from "@/pages/PropertyLookup";
 import HederaTokens from "@/pages/HederaTokens";
 import MapView from "@/pages/MapView";
 import Notifications from "@/pages/Notifications";
@@ -39,6 +40,7 @@ import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Services from "@/pages/Services";
 import ServiceCategory from "@/pages/ServiceCategory";
+import FavoritesPage from "@/pages/FavoritesPage";
 import { Messaging } from "./pages/Messaging";
 
 const queryClient = new QueryClient({
@@ -91,6 +93,16 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <UserBookings />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/favorites"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <FavoritesPage />
                         </Layout>
                       </ProtectedRoute>
                     }
@@ -206,11 +218,11 @@ function App() {
                     }
                   />
                   <Route
-                    path="/property-verification"
+                    path="/property-lookup"
                     element={
                       <ProtectedRoute>
                         <Layout>
-                          <PropertyVerification />
+                          <PropertyLookup />
                         </Layout>
                       </ProtectedRoute>
                     }

@@ -11,7 +11,7 @@ import {
   ShieldIcon,
   UserIcon,
   FileTextIcon,
-  SearchIcon
+  MagnifyingGlassIcon
 } from '@phosphor-icons/react';
 
 export function QuickActionsWidget() {
@@ -20,7 +20,7 @@ export function QuickActionsWidget() {
 
   const userActions = [
     {
-      icon: SearchIcon,
+      icon: MagnifyingGlassIcon,
       label: 'Browse Properties',
       description: 'Explore available properties',
       action: () => navigate('/marketplace'),

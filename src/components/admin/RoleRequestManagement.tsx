@@ -1,34 +1,37 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { 
-  User, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  Phone,
-  Envelope,
-  FileText,
-  Calendar
+import { useToast } from '@/hooks/use-toast';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  UserIcon,
+  BriefcaseIcon
 } from '@phosphor-icons/react';
 
 interface RoleRequest {
   id: string;
   user_id: string;
   requested_role: string;
-  status: string;
-  experience_years?: number;
-  credentials?: string;
   reason: string;
-  license_number?: string;
-  issuing_authority?: string;
-  contact_phone?: string;
+  credentials: string;
+  experience_years: number;
+  license_number: string;
+  issuing_authority: string;
+  contact_phone: string;
+  verification_status: string;
   created_at: string;
+  reviewed_at?: string;
+  reviewed_by?: string;
+  reviewer_notes?: string;
   user_profiles?: {
     first_name: string;
     last_name: string;
@@ -37,13 +40,11 @@ interface RoleRequest {
 }
 
 export function RoleRequestManagement() {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [requests, setRequests] = useState<RoleRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<RoleRequest | null>(null);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
-  const [processing, setProcessing] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchRoleRequests();
@@ -55,20 +56,19 @@ export function RoleRequestManagement() {
         .from('user_role_requests')
         .select(`
           *,
-          user_profiles(first_name, last_name, phone_number)
+          user_profiles!user_role_requests_user_id_fkey (
+            first_name,
+            last_name,
+            phone_number
+          )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Transform data with proper type handling
-      const transformedData = (data || []).map(item => ({
+      setRequests((data || []).map(item => ({
         ...item,
-        user_profiles: item.user_profiles && typeof item.user_profiles === 'object' && 
-                      'first_name' in item.user_profiles ? item.user_profiles : null
-      })) as unknown as RoleRequest[];
-
-      setRequests(transformedData);
+        user_profiles: item.user_profiles && !('error' in item.user_profiles) ? item.user_profiles : null
+      })) as RoleRequest[]);
     } catch (error) {
       console.error('Error fetching role requests:', error);
       toast({
@@ -81,281 +81,204 @@ export function RoleRequestManagement() {
     }
   };
 
-  const handleRequestDecision = async (requestId: string, decision: 'approved' | 'rejected') => {
-    if (!selectedRequest) return;
-
-    setProcessing(true);
+  const handleReview = async (requestId: string, decision: 'approved' | 'rejected') => {
     try {
+      setReviewingId(requestId);
+      const request = requests.find(r => r.id === requestId);
+      if (!request) return;
+
       // Update role request status
       const { error: updateError } = await supabase
         .from('user_role_requests')
         .update({
-          status: decision,
-          reviewed_by: user?.id,
+          verification_status: decision,
           reviewed_at: new Date().toISOString(),
-          review_notes: reviewNotes
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+          reviewer_notes: reviewNotes
         })
         .eq('id', requestId);
 
       if (updateError) throw updateError;
 
-      // If approved, assign the role
+      // If approved, grant the role
       if (decision === 'approved') {
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
-            user_id: selectedRequest.user_id,
-            role: selectedRequest.requested_role as any,
-            is_active: true,
-            assigned_by: user?.id,
-            assigned_at: new Date().toISOString()
+            user_id: request.user_id,
+            role: request.requested_role as any,
+            assigned_by: (await supabase.auth.getUser()).data.user?.id,
+            assigned_at: new Date().toISOString(),
+            is_active: true
           });
 
         if (roleError) throw roleError;
       }
 
+      await fetchRoleRequests();
+      setReviewNotes('');
+      setReviewingId(null);
+
       toast({
         title: 'Success',
-        description: `Role request ${decision} successfully`,
+        description: `Role request ${decision} successfully`
       });
-
-      setSelectedRequest(null);
-      setReviewNotes('');
-      fetchRoleRequests();
     } catch (error) {
-      console.error('Error processing request:', error);
+      console.error('Error reviewing role request:', error);
       toast({
         title: 'Error',
-        description: 'Failed to process role request',
+        description: 'Failed to review role request',
         variant: 'destructive'
       });
     } finally {
-      setProcessing(false);
+      setReviewingId(null);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
-    };
-    
-    return (
-      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const getRoleColor = (role: string) => {
-    const colors = {
-      agent: 'text-blue-600',
-      verifier: 'text-purple-600',
-      landowner: 'text-green-600',
-      surveyor: 'text-orange-600'
-    };
-    return colors[role as keyof typeof colors] || 'text-gray-600';
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved': return CheckCircleIcon;
+      case 'rejected': return XCircleIcon;
+      default: return ClockIcon;
+    }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Role Request Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Loading role requests...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Role Request Management</h2>
-        <div className="flex gap-2">
-          {['pending', 'approved', 'rejected'].map(status => (
-            <Badge key={status} variant="outline">
-              {status}: {requests.filter(r => r.status === status).length}
-            </Badge>
-          ))}
-        </div>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BriefcaseIcon className="h-5 w-5" />
+          Role Request Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {requests.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No role requests to review
+            </div>
+          ) : (
+            requests.map((request) => {
+              const StatusIcon = getStatusIcon(request.verification_status);
+              return (
+                <div key={request.id} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <UserIcon className="h-4 w-4 text-gray-500" />
+                        <span className="font-medium">
+                          {request.user_profiles?.first_name || 'Unknown'} {request.user_profiles?.last_name || 'User'}
+                        </span>
+                        <Badge variant="outline" className="capitalize">
+                          {request.requested_role}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <EnvelopeIcon className="h-3 w-3" />
+                          <span>{request.contact_phone}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BriefcaseIcon className="h-3 w-3" />
+                          <span>{request.experience_years} years experience</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getStatusColor(request.verification_status)}>
+                        <StatusIcon className="h-3 w-3 mr-1" />
+                        {request.verification_status}
+                      </Badge>
+                    </div>
+                  </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Requests List */}
-        <div className="lg:col-span-2 space-y-4">
-          {requests.map((request) => (
-            <Card 
-              key={request.id}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                selectedRequest?.id === request.id ? 'ring-2 ring-blue-500' : ''
-              }`}
-              onClick={() => setSelectedRequest(request)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <User className="h-8 w-8 text-gray-400" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <h3 className="font-semibold">
-                        {request.user_profiles?.first_name} {request.user_profiles?.last_name}
-                      </h3>
-                      <p className={`text-sm font-medium ${getRoleColor(request.requested_role)}`}>
-                        {request.requested_role.charAt(0).toUpperCase() + request.requested_role.slice(1)}
-                      </p>
+                      <label className="font-medium text-gray-700">Reason</label>
+                      <p className="text-gray-600">{request.reason}</p>
                     </div>
-                  </div>
-                  {getStatusBadge(request.status)}
-                </div>
-
-                <div className="space-y-2 text-sm text-gray-600">
-                  {request.experience_years && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{request.experience_years} years experience</span>
-                    </div>
-                  )}
-                  
-                  {request.contact_phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{request.contact_phone}</span>
-                    </div>
-                  )}
-
-                  {request.license_number && (
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      <span>License: {request.license_number}</span>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-sm text-gray-700 mt-3 line-clamp-2">
-                  {request.reason}
-                </p>
-
-                <div className="text-xs text-gray-500 mt-3">
-                  Submitted: {new Date(request.created_at).toLocaleDateString()}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {requests.length === 0 && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <User className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No role requests</h3>
-                <p className="text-gray-500">No pending role requests to review at this time.</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Request Details */}
-        <div className="lg:col-span-1">
-          {selectedRequest ? (
-            <Card className="sticky top-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Request Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Applicant Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Name:</strong> {selectedRequest.user_profiles?.first_name} {selectedRequest.user_profiles?.last_name}</p>
-                    <p><strong>Role:</strong> {selectedRequest.requested_role}</p>
-                    {selectedRequest.experience_years && (
-                      <p><strong>Experience:</strong> {selectedRequest.experience_years} years</p>
-                    )}
-                    {selectedRequest.contact_phone && (
-                      <p><strong>Phone:</strong> {selectedRequest.contact_phone}</p>
-                    )}
-                  </div>
-                </div>
-
-                {selectedRequest.credentials && (
-                  <div>
-                    <h4 className="font-medium mb-2">Credentials</h4>
-                    <p className="text-sm text-gray-700">{selectedRequest.credentials}</p>
-                  </div>
-                )}
-
-                {(selectedRequest.license_number || selectedRequest.issuing_authority) && (
-                  <div>
-                    <h4 className="font-medium mb-2">Professional License</h4>
-                    <div className="space-y-1 text-sm">
-                      {selectedRequest.license_number && (
-                        <p><strong>License Number:</strong> {selectedRequest.license_number}</p>
-                      )}
-                      {selectedRequest.issuing_authority && (
-                        <p><strong>Issuing Authority:</strong> {selectedRequest.issuing_authority}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <h4 className="font-medium mb-2">Reason for Request</h4>
-                  <p className="text-sm text-gray-700">{selectedRequest.reason}</p>
-                </div>
-
-                {selectedRequest.status === 'pending' && (
-                  <>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Review Notes</label>
+                      <label className="font-medium text-gray-700">Credentials</label>
+                      <p className="text-gray-600">{request.credentials}</p>
+                    </div>
+                    <div>
+                      <label className="font-medium text-gray-700">License Number</label>
+                      <p className="text-gray-600">{request.license_number}</p>
+                    </div>
+                    <div>
+                      <label className="font-medium text-gray-700">Issuing Authority</label>
+                      <p className="text-gray-600">{request.issuing_authority}</p>
+                    </div>
+                  </div>
+
+                  {request.verification_status === 'pending' && (
+                    <div className="border-t pt-4 space-y-3">
                       <Textarea
+                        placeholder="Add review notes..."
                         value={reviewNotes}
                         onChange={(e) => setReviewNotes(e.target.value)}
-                        placeholder="Add notes about your decision..."
-                        rows={3}
                       />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleReview(request.id, 'approved')}
+                          disabled={reviewingId === request.id}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircleIcon className="h-4 w-4 mr-2" />
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => handleReview(request.id, 'rejected')}
+                          disabled={reviewingId === request.id}
+                          variant="destructive"
+                        >
+                          <XCircleIcon className="h-4 w-4 mr-2" />
+                          Reject
+                        </Button>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleRequestDecision(selectedRequest.id, 'approved')}
-                        disabled={processing}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Approve
-                      </Button>
-                      <Button
-                        onClick={() => handleRequestDecision(selectedRequest.id, 'rejected')}
-                        disabled={processing}
-                        variant="destructive"
-                        className="flex-1"
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
+                  {request.reviewer_notes && (
+                    <div className="border-t pt-4">
+                      <label className="font-medium text-gray-700">Review Notes</label>
+                      <p className="text-gray-600 text-sm">{request.reviewer_notes}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Reviewed on {new Date(request.reviewed_at!).toLocaleDateString()}
+                      </p>
                     </div>
-                  </>
-                )}
-
-                {selectedRequest.status !== 'pending' && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-700">
-                      Status: {getStatusBadge(selectedRequest.status)}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Request</h3>
-                <p className="text-gray-500">Choose a role request from the list to review details and take action.</p>
-              </CardContent>
-            </Card>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
