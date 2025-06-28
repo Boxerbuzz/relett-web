@@ -8,12 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import {
   FileTextIcon,
-  UserIcon,
   CheckCircleIcon,
   XCircleIcon,
   EyeIcon,
   DownloadIcon,
-  ClockIcon,
   ShieldIcon,
 } from "@phosphor-icons/react";
 

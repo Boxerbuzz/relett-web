@@ -165,6 +165,7 @@ export function AdvancedMarketplace() {
               {hasMore && (
                 <div className="text-center">
                   <button
+                    type="button"
                     onClick={() =>
                       searchProperties({ offset: properties.length })
                     }

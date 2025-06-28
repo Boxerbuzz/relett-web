@@ -34,6 +34,7 @@ import AgentInspections from "@/pages/AgentInspections";
 import AgentRentals from "@/pages/AgentRentals";
 import AgentReservations from "@/pages/AgentReservations";
 import AgentCalendar from "@/pages/AgentCalendar";
+import MapView from "./pages/MapView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -149,6 +150,17 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <PropertyDetails />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/map"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MapView />
                     </Layout>
                   </ProtectedRoute>
                 }

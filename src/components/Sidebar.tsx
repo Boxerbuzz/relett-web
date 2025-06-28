@@ -1,75 +1,168 @@
+"use client";
 
-'use client';
-
-import { useLocation, Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/lib/auth';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { 
-  House, 
-  FileText, 
-  ShieldCheck, 
-  Storefront, 
-  Coins,
-  Gear,
-  MapPin,
-  Bell,
-  Plus,
-  MagnifyingGlass,
-  ChartBar,
-  Eye,
-  Buildings,
-  Users,
-  Calendar,
-  CaretRight,
-  Tree,
-  Heart,
-  Chat,
-  Wrench,
-  Star,
-} from 'phosphor-react';
+import { useLocation, Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import {
+  HouseIcon,
+  FileTextIcon,
+  ShieldCheckIcon,
+  StorefrontIcon,
+  CoinsIcon,
+  GearIcon,
+  MapPinIcon,
+  BellIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  ChartBarIcon,
+  EyeIcon,
+  BuildingsIcon,
+  UsersIcon,
+  CalendarIcon,
+  CaretRightIcon,
+  TreeIcon,
+  HeartIcon,
+  ChatIcon,
+  WrenchIcon,
+  StarIcon,
+} from "@phosphor-icons/react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { TreeDonationDialog } from '@/components/dialogs/TreeDonationDialog';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { TreeDonationDialog } from "@/components/dialogs/TreeDonationDialog";
+import { useState } from "react";
+import { UserIcon } from "@phosphor-icons/react";
 
 interface SidebarProps {
   onNavigate?: () => void;
 }
 
 const mainNavigation = [
-  { name: 'Welcome', href: '/welcome', icon: Star, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Dashboard', href: '/dashboard', icon: House, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Admin Dashboard', href: '/admin', icon: ChartBar, roles: ['admin'] },
-  { name: 'Marketplace', href: '/marketplace', icon: Storefront, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Services', href: '/services', icon: Wrench, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Property Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
-  { name: 'Messaging', href: '/messaging', icon: Chat, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  {
+    name: "Welcome",
+    href: "/welcome",
+    icon: StarIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: HouseIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Admin Dashboard",
+    href: "/admin",
+    icon: ChartBarIcon,
+    roles: ["admin"],
+  },
+  {
+    name: "Marketplace",
+    href: "/marketplace",
+    icon: StorefrontIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Services",
+    href: "/services",
+    icon: WrenchIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Map View",
+    href: "/map",
+    icon: MapPinIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "My Bookings",
+    href: "/me",
+    icon: CalendarIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Property Verification",
+    href: "/verification",
+    icon: ShieldCheckIcon,
+    roles: ["verifier", "admin"],
+  },
+  {
+    name: "Messaging",
+    href: "/messaging",
+    icon: ChatIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Notifications",
+    href: "/notifications",
+    icon: BellIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: GearIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Profile",
+    href: "/profile",
+    icon: UserIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
 ];
 
 const propertyNavigation = [
-  { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
-  { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
-  { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
+  {
+    name: "My Property",
+    href: "/my-land",
+    icon: FileTextIcon,
+    roles: ["landowner", "admin"],
+  },
+  {
+    name: "Add Property",
+    href: "/add-property",
+    icon: PlusIcon,
+    roles: ["landowner", "admin"],
+  },
+  {
+    name: "Tokens",
+    href: "/tokens",
+    icon: CoinsIcon,
+    roles: ["landowner", "admin", "investor"],
+  },
 ];
 
 const agentNavigation = [
-  { name: 'Inspections', href: '/agent/inspections', icon: Eye, roles: ['agent', 'admin', 'landowner'] },
-  { name: 'Rentals', href: '/agent/rentals', icon: Buildings, roles: ['agent', 'admin', 'landowner'] },
-  { name: 'Reservations', href: '/agent/reservations', icon: Users, roles: ['agent', 'admin', 'landowner'] },
-  { name: 'Calendar', href: '/agent/calendar', icon: Calendar, roles: ['agent', 'admin', 'landowner'] },
-];
-
-const settingsNavigation = [
-  { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Settings & Profile', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  {
+    name: "Inspections",
+    href: "/agent/inspections",
+    icon: EyeIcon,
+    roles: ["agent", "admin", "landowner"],
+  },
+  {
+    name: "Rentals",
+    href: "/agent/rentals",
+    icon: BuildingsIcon,
+    roles: ["agent", "admin", "landowner"],
+  },
+  {
+    name: "Reservations",
+    href: "/agent/reservations",
+    icon: UsersIcon,
+    roles: ["agent", "admin", "landowner"],
+  },
+  {
+    name: "Calendar",
+    href: "/agent/calendar",
+    icon: CalendarIcon,
+    roles: ["agent", "admin", "landowner"],
+  },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {
@@ -82,8 +175,8 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const [treeDonationOpen, setTreeDonationOpen] = useState(false);
 
   const filterNavigation = (items: typeof mainNavigation) => {
-    return items.filter(item => {
-      if (hasRole('admin')) {
+    return items.filter((item) => {
+      if (hasRole("admin")) {
         return true;
       }
       return user?.role && item.roles.includes(user.role);
@@ -93,12 +186,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const filteredMainNav = filterNavigation(mainNavigation);
   const filteredPropertyNav = filterNavigation(propertyNavigation);
   const filteredAgentNav = filterNavigation(agentNavigation);
-  const filteredSettingsNav = filterNavigation(settingsNavigation);
 
-  const renderNavItem = (item: typeof mainNavigation[0]) => {
+  const renderNavItem = (item: (typeof mainNavigation)[0]) => {
     const Icon = item.icon;
     const isActive = location.pathname === item.href;
-    
+
     return (
       <Link
         key={item.name}
@@ -111,12 +203,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
         )}
       >
-        <Icon 
-          size={20} 
-          className={cn(
-            "mr-3",
-            isActive ? "text-blue-700" : "text-gray-500"
-          )} 
+        <Icon
+          size={20}
+          className={cn("mr-3", isActive ? "text-blue-700" : "text-gray-500")}
         />
         {item.name}
       </Link>
@@ -132,24 +221,22 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           <p className="text-sm text-gray-500">Land Tokenization</p>
         </div>
       </div>
-      
+
       {/* Navigation - Scrollable */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {/* Main Navigation */}
-        <div className="space-y-2">
-          {filteredMainNav.map(renderNavItem)}
-        </div>
+        <div className="space-y-2">{filteredMainNav.map(renderNavItem)}</div>
 
         {/* Property Management Section */}
         {filteredPropertyNav.length > 0 && (
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
               <span className="flex items-center">
-                <FileText size={16} className="mr-2" />
+                <FileTextIcon size={16} className="mr-2" />
                 Property Management
               </span>
-              <CaretRight 
-                size={16} 
+              <CaretRightIcon
+                size={16}
                 className={cn(
                   "transition-transform",
                   propertiesOpen && "rotate-90"
@@ -167,14 +254,14 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           <Collapsible open={agentToolsOpen} onOpenChange={setAgentToolsOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
               <span className="flex items-center">
-                <Eye size={16} className="mr-2" />
+                <EyeIcon size={16} className="mr-2" />
                 Agent Tools
                 <Badge variant="secondary" className="ml-2 text-xs">
                   Pro
                 </Badge>
               </span>
-              <CaretRight 
-                size={16} 
+              <CaretRightIcon
+                size={16}
                 className={cn(
                   "transition-transform",
                   agentToolsOpen && "rotate-90"
@@ -186,26 +273,6 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             </CollapsibleContent>
           </Collapsible>
         )}
-
-        {/* Settings Section */}
-        <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
-            <span className="flex items-center">
-              <Gear size={16} className="mr-2" />
-              Settings & Support
-            </span>
-            <CaretRight 
-              size={16} 
-              className={cn(
-                "transition-transform",
-                settingsOpen && "rotate-90"
-              )}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="ml-4 mt-2 space-y-1">
-            {filteredSettingsNav.map(renderNavItem)}
-          </CollapsibleContent>
-        </Collapsible>
       </nav>
 
       {/* Plant a Tree CTA with proper margins */}
@@ -213,7 +280,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <div className="text-center mb-3">
           <div className="flex justify-center mb-2">
             <div className="bg-green-100 p-2 rounded-full">
-              <Tree className="w-6 h-6 text-green-600" />
+              <TreeIcon className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <h3 className="text-sm font-semibold text-gray-900 mb-1">
@@ -223,12 +290,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             Help us offset carbon emissions from blockchain transactions
           </p>
         </div>
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           className="w-full bg-green-600 hover:bg-green-700 text-white"
           onClick={() => setTreeDonationOpen(true)}
         >
-          <Heart className="w-4 h-4 mr-2" />
+          <HeartIcon className="w-4 h-4 mr-2" />
           Donate Now
         </Button>
         <p className="text-xs text-center text-gray-500 mt-2">
@@ -237,9 +304,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       </div>
 
       {/* Tree Donation Dialog */}
-      <TreeDonationDialog 
-        open={treeDonationOpen} 
-        onOpenChange={setTreeDonationOpen} 
+      <TreeDonationDialog
+        open={treeDonationOpen}
+        onOpenChange={setTreeDonationOpen}
       />
     </div>
   );
