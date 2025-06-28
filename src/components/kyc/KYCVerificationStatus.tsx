@@ -120,7 +120,7 @@ export function KYCVerificationStatus({
                   Documents
                 </div>
                 <div className={`text-center ${getStepStatus(3) === 'complete' ? 'text-green-600' : getStepStatus(3) === 'current' ? 'text-blue-600' : 'text-gray-400'}`}>
-                  <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${getStepStatus(3) === 'complete' ? 'bg-green-600' : getStepStatus(3) === 'current' : 'bg-blue-600' : 'bg-gray-300'}`} />
+                  <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${getStepStatus(3) === 'complete' ? 'bg-green-600' : getStepStatus(3) === 'current' ? 'bg-blue-600' : 'bg-gray-300'}`} />
                   Review
                 </div>
                 <div className={`text-center ${getStepStatus(4) === 'complete' ? 'text-green-600' : getStepStatus(4) === 'current' ? 'text-blue-600' : 'text-gray-400'}`}>
