@@ -2,55 +2,69 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleRequestManagement } from "./RoleRequestManagement";
 import { KYCReviewDashboard } from "./KYCReviewDashboard";
 import { VerifierCredentialReview } from "./VerifierCredentialReview";
-import { UsersIcon, ShieldIcon, FileTextIcon } from "@phosphor-icons/react";
+import {
+  UsersIcon,
+  ShieldIcon,
+  FileTextIcon,
+  GavelIcon,
+} from "@phosphor-icons/react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 export function AdminVerificationHub() {
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <GavelIcon className="h-5 w-5" />
           Verification Management Hub
-        </h1>
-        <p className="text-gray-600">
+        </CardTitle>
+        <CardDescription>
           Manage role requests, KYC documents, and verifier credentials from a
           centralized dashboard.
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Tabs defaultValue="role-requests" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger
+              value="role-requests"
+              className="flex items-center gap-2"
+            >
+              <UsersIcon className="h-4 w-4" />
+              Role Requests
+            </TabsTrigger>
+            <TabsTrigger value="kyc-review" className="flex items-center gap-2">
+              <FileTextIcon className="h-4 w-4" />
+              KYC Review
+            </TabsTrigger>
+            <TabsTrigger
+              value="verifier-credentials"
+              className="flex items-center gap-2"
+            >
+              <ShieldIcon className="h-4 w-4" />
+              Verifier Credentials
+            </TabsTrigger>
+          </TabsList>
 
-      <Tabs defaultValue="role-requests" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger
-            value="role-requests"
-            className="flex items-center gap-2"
-          >
-            <UsersIcon className="h-4 w-4" />
-            Role Requests
-          </TabsTrigger>
-          <TabsTrigger value="kyc-review" className="flex items-center gap-2">
-            <FileTextIcon className="h-4 w-4" />
-            KYC Review
-          </TabsTrigger>
-          <TabsTrigger
-            value="verifier-credentials"
-            className="flex items-center gap-2"
-          >
-            <ShieldIcon className="h-4 w-4" />
-            Verifier Credentials
-          </TabsTrigger>
-        </TabsList>
+          <TabsContent value="role-requests">
+            <RoleRequestManagement />
+          </TabsContent>
 
-        <TabsContent value="role-requests">
-          <RoleRequestManagement />
-        </TabsContent>
+          <TabsContent value="kyc-review">
+            <KYCReviewDashboard />
+          </TabsContent>
 
-        <TabsContent value="kyc-review">
-          <KYCReviewDashboard />
-        </TabsContent>
-
-        <TabsContent value="verifier-credentials">
-          <VerifierCredentialReview />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="verifier-credentials">
+            <VerifierCredentialReview />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }

@@ -58,7 +58,7 @@ serve(async (req) => {
 
     // Get sender profile
     const { data: senderProfile } = await supabase
-      .from('user_profiles')
+      .from('users')
       .select('first_name, last_name, avatar')
       .eq('user_id', sender_id)
       .single();

@@ -27,7 +27,7 @@ interface KYCDocument {
   rejection_reason?: string;
   extracted_data?: any;
   created_at: string;
-  user_profiles?: {
+  user?: {
     first_name: string;
     last_name: string;
     phone_number?: string;
@@ -43,7 +43,7 @@ interface IdentityVerification {
   verification_status: string;
   verified_at?: string;
   created_at: string;
-  user_profiles?: {
+  user?: {
     first_name: string;
     last_name: string;
   } | null;
@@ -290,8 +290,8 @@ export function KYCReviewDashboard() {
                       <FileTextIcon className="h-8 w-8 text-blue-500" />
                       <div>
                         <h3 className="font-semibold">
-                          {document.user_profiles?.first_name}{" "}
-                          {document.user_profiles?.last_name}
+                          {document.user?.first_name}{" "}
+                          {document.user?.last_name}
                         </h3>
                         <p className="text-sm text-gray-600 capitalize">
                           {document.document_type.replace("_", " ")}
@@ -330,8 +330,8 @@ export function KYCReviewDashboard() {
                       </p>
                       <p>
                         <strong>Applicant:</strong>{" "}
-                        {selectedDocument.user_profiles?.first_name}{" "}
-                        {selectedDocument.user_profiles?.last_name}
+                        {selectedDocument.user?.first_name}{" "}
+                        {selectedDocument.user?.last_name}
                       </p>
                       <p>
                         <strong>Status:</strong>{" "}
@@ -442,8 +442,8 @@ export function KYCReviewDashboard() {
                     <ShieldIcon className="h-8 w-8 text-purple-500" />
                     <div>
                       <h3 className="font-semibold">
-                        {verification.user_profiles?.first_name}{" "}
-                        {verification.user_profiles?.last_name}
+                        {verification.user?.first_name}{" "}
+                        {verification.user?.last_name}
                       </h3>
                       <p className="text-sm text-gray-600">
                         {verification.identity_type.toUpperCase()}:{" "}

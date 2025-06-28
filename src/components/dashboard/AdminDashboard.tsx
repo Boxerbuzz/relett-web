@@ -303,12 +303,11 @@ export function AdminDashboard() {
           className="space-y-6 w-full"
         >
           <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="properties">Properties</TabsTrigger>
               <TabsTrigger value="verification-hub">KYC & Roles</TabsTrigger>
-              <TabsTrigger value="system">System</TabsTrigger>
             </TabsList>
           </ScrollArea>
 
@@ -416,49 +415,6 @@ export function AdminDashboard() {
               <div className="w-full">
                 <AdminVerificationHub />
               </div>
-            </TabsContent>
-
-            <TabsContent value="system" className="space-y-6 w-full">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckSquare className="h-5 w-5" />
-                    System Management
-                  </CardTitle>
-                  <CardDescription>
-                    System configuration and maintenance tools
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium">Backup & Recovery</h4>
-                        <p className="text-sm text-gray-600">
-                          Manage system backups and recovery procedures
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="secondary">Automated</Badge>
-                        <Button size="sm">Configure</Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium">API Management</h4>
-                        <p className="text-sm text-gray-600">
-                          Monitor API usage and manage rate limits
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="secondary">Active</Badge>
-                        <Button size="sm">View Logs</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
           </div>
         </Tabs>

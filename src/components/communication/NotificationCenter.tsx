@@ -44,16 +44,10 @@ interface Notification {
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
   const [showTester, setShowTester] = useState(false);
   const [selectedNotificationId, setSelectedNotificationId] =
     useState<string>("");
   const { toast } = useToast();
-  const {
-    preferences,
-    updatePreferences,
-    isLoading: preferencesLoading,
-  } = useNotificationPreferences();
   const { hasRole } = useUserRoles();
 
   useEffect(() => {
@@ -172,7 +166,7 @@ export function NotificationCenter() {
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  if (isLoading || preferencesLoading) {
+  if (isLoading) {
     return <LoadingSpinner size="lg" text="Loading notifications..." />;
   }
 
@@ -204,155 +198,11 @@ export function NotificationCenter() {
               Test
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            <GearSixIcon className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
         </div>
       </div>
 
       {/* Test Panel - also restrict to admin */}
       {showTester && hasRole("admin") && <NotificationTester />}
-
-      {/* Settings Panel */}
-      {showSettings && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-            <CardDescription>
-              Choose how you want to receive notifications
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Delivery Methods */}
-            <div>
-              <h4 className="font-medium mb-4">Delivery Methods</h4>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="email" className="text-sm">
-                    Email notifications
-                  </Label>
-                  <Switch
-                    id="email"
-                    checked={preferences.email_notifications}
-                    onCheckedChange={(checked) =>
-                      updatePreferences({ email_notifications: checked })
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="push" className="text-sm">
-                    Push notifications
-                  </Label>
-                  <Switch
-                    id="push"
-                    checked={preferences.push_notifications}
-                    onCheckedChange={(checked) =>
-                      updatePreferences({ push_notifications: checked })
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="sms" className="text-sm">
-                    SMS notifications
-                  </Label>
-                  <Switch
-                    id="sms"
-                    checked={preferences.sms_notifications}
-                    onCheckedChange={(checked) =>
-                      updatePreferences({ sms_notifications: checked })
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="dnd" className="text-sm">
-                    Do not disturb
-                  </Label>
-                  <Switch
-                    id="dnd"
-                    checked={preferences.do_not_disturb}
-                    onCheckedChange={(checked) =>
-                      updatePreferences({ do_not_disturb: checked })
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Quiet Hours */}
-            <div>
-              <h4 className="font-medium mb-4">Quiet Hours</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="quiet-start" className="text-sm">
-                    Start time
-                  </Label>
-                  <Input
-                    id="quiet-start"
-                    type="time"
-                    value={preferences.quiet_hours_start || "22:00"}
-                    onChange={(e) =>
-                      updatePreferences({ quiet_hours_start: e.target.value })
-                    }
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="quiet-end" className="text-sm">
-                    End time
-                  </Label>
-                  <Input
-                    id="quiet-end"
-                    type="time"
-                    value={preferences.quiet_hours_end || "07:00"}
-                    onChange={(e) =>
-                      updatePreferences({ quiet_hours_end: e.target.value })
-                    }
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Notification Types */}
-            <div>
-              <h4 className="font-medium mb-4">Notification Types</h4>
-              <div className="space-y-4">
-                {Object.entries(preferences.notification_types).map(
-                  ([key, value]) => (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between"
-                    >
-                      <Label htmlFor={key} className="text-sm">
-                        {key
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())}
-                      </Label>
-                      <Switch
-                        id={key}
-                        checked={value}
-                        onCheckedChange={(checked) =>
-                          updatePreferences({
-                            notification_types: {
-                              ...preferences.notification_types,
-                              [key]: checked,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Delivery Status for selected notification */}
       {selectedNotificationId && (

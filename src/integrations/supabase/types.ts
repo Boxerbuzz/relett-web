@@ -4651,7 +4651,22 @@ export type Database = {
           verified_by?: string | null
           verifier_type?: Database["public"]["Enums"]["verifier_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "verifier_credentials_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifier_credentials_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waitlist: {
         Row: {

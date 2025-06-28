@@ -1,36 +1,25 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Separator } from "@/components/ui/separator"
-import { useToast } from '@/hooks/use-toast';
-import { useProperties } from '@/hooks/useProperties';
-import { useAuth } from '@/lib/auth';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { PropertyActionButtons } from '@/components/property/PropertyActionButtons';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useProperties } from "@/hooks/useProperties";
+import { useAuth } from "@/lib/auth";
+import { PropertyActionButtons } from "@/components/property/PropertyActionButtons";
 import {
   MapPinIcon,
   HeartIcon,
   ShareNetworkIcon,
-  CheckCircleIcon,
-  ClockCounterClockwiseIcon,
   UserCircleIcon,
-  BuildingIcon,
   PhoneIcon,
   GlobeIcon,
-  PlusIcon,
-  MinusIcon,
-  CalendarIcon,
   ArrowLeftIcon,
-  ImagesIcon
-} from '@phosphor-icons/react';
+  ImagesIcon,
+} from "@phosphor-icons/react";
 
-import { InvestNowDialog } from '@/components/dialogs/InvestNowDialog';
+import { InvestNowDialog } from "@/components/dialogs/InvestNowDialog";
 
 const PropertyDetails = () => {
   const { propertyId } = useParams();
@@ -82,10 +71,8 @@ const PropertyDetails = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Error loading property
             </h3>
-            <p className="text-gray-500 mb-4">
-              {error}
-            </p>
-            <Button onClick={() => navigate('/marketplace')}>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <Button onClick={() => navigate("/marketplace")}>
               Browse Properties
             </Button>
           </CardContent>
@@ -121,7 +108,7 @@ const PropertyDetails = () => {
         {property?.backdrop ? (
           <img
             src={property.backdrop}
-            alt={property.title || 'Property'}
+            alt={property.title || "Property"}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -137,23 +124,29 @@ const PropertyDetails = () => {
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">{property?.title || 'Property Title'}</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                {property?.title || "Property Title"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center text-gray-600">
                 <MapPinIcon className="h-4 w-4 mr-2" />
-                <span>{property?.location?.address || 'Address not specified'}</span>
+                <span>
+                  {property?.location?.address || "Address not specified"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold text-green-600">
-                  ₦{property?.price?.amount?.toLocaleString() || 'Price on request'}
+                  ₦
+                  {property?.price?.amount?.toLocaleString() ||
+                    "Price on request"}
                 </p>
-                <Badge variant="secondary">
-                  {property?.category}
-                </Badge>
+                <Badge variant="secondary">{property?.category}</Badge>
               </div>
               <Separator />
-              <p>{property?.description || 'Property description goes here.'}</p>
+              <p>
+                {property?.description || "Property description goes here."}
+              </p>
             </CardContent>
           </Card>
 
@@ -175,7 +168,7 @@ const PropertyDetails = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Property Action Buttons */}
-          <PropertyActionButtons 
+          <PropertyActionButtons
             property={property || {}}
             onInvestClick={() => setShowInvestDialog(true)}
           />
@@ -188,15 +181,20 @@ const PropertyDetails = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center text-gray-600">
                 <UserCircleIcon className="h-4 w-4 mr-2" />
-                <span>{property?.contact?.name || 'Contact Name'}</span>
+                <span>{property?.contact?.name || "Contact Name"}</span>
               </div>
               <div className="flex items-center text-gray-600">
                 <PhoneIcon className="h-4 w-4 mr-2" />
-                <span>{property?.contact?.phone || 'Phone Number'}</span>
+                <span>{property?.contact?.phone || "Phone Number"}</span>
               </div>
               <div className="flex items-center text-gray-600">
                 <GlobeIcon className="h-4 w-4 mr-2" />
-                <a href={property?.contact?.website} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                <a
+                  href={property?.contact?.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500"
+                >
                   Website
                 </a>
               </div>
@@ -204,7 +202,7 @@ const PropertyDetails = () => {
           </Card>
         </div>
       </div>
-      
+
       {/* Investment Dialog */}
       {property?.tokenized_property_id && (
         <InvestNowDialog
@@ -212,14 +210,14 @@ const PropertyDetails = () => {
           onOpenChange={setShowInvestDialog}
           tokenizedProperty={{
             id: property.tokenized_property_id,
-            token_name: property.title || 'Property Token',
-            token_symbol: 'PROP',
+            token_name: property.title || "Property Token",
+            token_symbol: "PROP",
             token_price: 100,
             minimum_investment: 1000,
             expected_roi: 8,
-            total_supply: '1000000',
+            total_supply: "1000000",
             property_title: property.title,
-            hedera_token_id: undefined
+            hedera_token_id: undefined,
           }}
         />
       )}

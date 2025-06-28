@@ -1,11 +1,10 @@
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -13,8 +12,8 @@ import {
   CertificateIcon,
   FileTextIcon,
   CalendarIcon,
-  UserIcon
-} from '@phosphor-icons/react';
+  UserIcon,
+} from "@phosphor-icons/react";
 
 interface VerifierCredential {
   id: string;
@@ -32,10 +31,10 @@ interface VerifierCredential {
   reviewed_at?: string;
   reviewed_by?: string;
   reviewer_notes?: string;
-  user_profiles?: {
+  user?: {
     first_name: string;
     last_name: string;
-    phone_number?: string;
+    phone?: string;
   } | null;
 }
 
@@ -43,7 +42,7 @@ export function VerifierCredentialReview() {
   const [credentials, setCredentials] = useState<VerifierCredential[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
-  const [reviewNotes, setReviewNotes] = useState('');
+  const [reviewNotes, setReviewNotes] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,66 +52,73 @@ export function VerifierCredentialReview() {
   const fetchCredentials = async () => {
     try {
       const { data, error } = await supabase
-        .from('verifier_credentials')
-        .select(`
+        .from("verifier_credentials")
+        .select(
+          `
           *,
-          user_profiles!verifier_credentials_user_id_fkey (
+          user: users!verifier_credentials_user_id_fkey (
             first_name,
             last_name,
-            phone_number
+            phone
           )
-        `)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCredentials((data || []).map(item => ({
-        ...item,
-        documents: Array.isArray(item.documents) ? item.documents : [],
-        user_profiles: item.user_profiles && !('error' in item.user_profiles) ? item.user_profiles : null
-      })) as VerifierCredential[]);
+      setCredentials(
+        (data || []).map((item) => ({
+          ...item,
+          documents: Array.isArray(item.documents) ? item.documents : [],
+          user: item.user && !("error" in item.user) ? item.user : null,
+        })) as VerifierCredential[]
+      );
     } catch (error) {
-      console.error('Error fetching credentials:', error);
+      console.error("Error fetching credentials:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load verifier credentials',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to load verifier credentials",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReview = async (credentialId: string, decision: 'verified' | 'rejected') => {
+  const handleReview = async (
+    credentialId: string,
+    decision: "verified" | "rejected"
+  ) => {
     try {
       setReviewingId(credentialId);
 
       const { error } = await supabase
-        .from('verifier_credentials')
+        .from("verifier_credentials")
         .update({
           verification_status: decision,
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           reviewer_notes: reviewNotes,
-          is_active: decision === 'verified'
+          is_active: decision === "verified",
         })
-        .eq('id', credentialId);
+        .eq("id", credentialId);
 
       if (error) throw error;
 
       await fetchCredentials();
-      setReviewNotes('');
+      setReviewNotes("");
       setReviewingId(null);
 
       toast({
-        title: 'Success',
-        description: `Credential ${decision} successfully`
+        title: "Success",
+        description: `Credential ${decision} successfully`,
       });
     } catch (error) {
-      console.error('Error reviewing credential:', error);
+      console.error("Error reviewing credential:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to review credential',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to review credential",
+        variant: "destructive",
       });
     } finally {
       setReviewingId(null);
@@ -121,18 +127,25 @@ export function VerifierCredentialReview() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "verified":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'verified': return CheckCircleIcon;
-      case 'rejected': return XCircleIcon;
-      default: return ClockIcon;
+      case "verified":
+        return CheckCircleIcon;
+      case "rejected":
+        return XCircleIcon;
+      default:
+        return ClockIcon;
     }
   };
 
@@ -170,16 +183,20 @@ export function VerifierCredentialReview() {
             credentials.map((credential) => {
               const StatusIcon = getStatusIcon(credential.verification_status);
               return (
-                <div key={credential.id} className="border rounded-lg p-4 space-y-4">
+                <div
+                  key={credential.id}
+                  className="border rounded-lg p-4 space-y-4"
+                >
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <UserIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">
-                          {credential.user_profiles?.first_name || 'Unknown'} {credential.user_profiles?.last_name || 'User'}
+                          {credential.user?.first_name || "Unknown"}{" "}
+                          {credential.user?.last_name || "User"}
                         </span>
                         <Badge variant="outline" className="capitalize">
-                          {credential.verifier_type.replace('_', ' ')}
+                          {credential.verifier_type.replace("_", " ")}
                         </Badge>
                       </div>
                       <div className="text-sm text-gray-600">
@@ -190,7 +207,11 @@ export function VerifierCredentialReview() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(credential.verification_status)}>
+                      <Badge
+                        className={getStatusColor(
+                          credential.verification_status
+                        )}
+                      >
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {credential.verification_status}
                       </Badge>
@@ -199,30 +220,57 @@ export function VerifierCredentialReview() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <label className="font-medium text-gray-700">License Number</label>
-                      <p className="text-gray-600">{credential.license_number}</p>
+                      <label className="font-medium text-gray-700">
+                        License Number
+                      </label>
+                      <p className="text-gray-600">
+                        {credential.license_number}
+                      </p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">Issuing Authority</label>
-                      <p className="text-gray-600">{credential.issuing_authority}</p>
+                      <label className="font-medium text-gray-700">
+                        Issuing Authority
+                      </label>
+                      <p className="text-gray-600">
+                        {credential.issuing_authority}
+                      </p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">Issue Date</label>
-                      <p className="text-gray-600">{new Date(credential.issue_date).toLocaleDateString()}</p>
+                      <label className="font-medium text-gray-700">
+                        Issue Date
+                      </label>
+                      <p className="text-gray-600">
+                        {new Date(credential.issue_date).toLocaleDateString()}
+                      </p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">Expiry Date</label>
-                      <p className="text-gray-600">{new Date(credential.expiry_date).toLocaleDateString()}</p>
+                      <label className="font-medium text-gray-700">
+                        Expiry Date
+                      </label>
+                      <p className="text-gray-600">
+                        {new Date(credential.expiry_date).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
 
                   {credential.documents.length > 0 && (
                     <div>
-                      <label className="font-medium text-gray-700">Supporting Documents</label>
+                      <label className="font-medium text-gray-700">
+                        Supporting Documents
+                      </label>
                       <div className="flex gap-2 mt-2">
                         {credential.documents.map((doc, index) => (
-                          <Button key={index} variant="outline" size="sm" asChild>
-                            <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <FileTextIcon className="h-3 w-3 mr-1" />
                               {doc.name}
                             </a>
@@ -232,7 +280,7 @@ export function VerifierCredentialReview() {
                     </div>
                   )}
 
-                  {credential.verification_status === 'pending' && (
+                  {credential.verification_status === "pending" && (
                     <div className="border-t pt-4 space-y-3">
                       <Textarea
                         placeholder="Add review notes..."
@@ -241,7 +289,9 @@ export function VerifierCredentialReview() {
                       />
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleReview(credential.id, 'verified')}
+                          onClick={() =>
+                            handleReview(credential.id, "verified")
+                          }
                           disabled={reviewingId === credential.id}
                           className="bg-green-600 hover:bg-green-700"
                         >
@@ -249,7 +299,9 @@ export function VerifierCredentialReview() {
                           Verify
                         </Button>
                         <Button
-                          onClick={() => handleReview(credential.id, 'rejected')}
+                          onClick={() =>
+                            handleReview(credential.id, "rejected")
+                          }
                           disabled={reviewingId === credential.id}
                           variant="destructive"
                         >
@@ -262,10 +314,15 @@ export function VerifierCredentialReview() {
 
                   {credential.reviewer_notes && (
                     <div className="border-t pt-4">
-                      <label className="font-medium text-gray-700">Review Notes</label>
-                      <p className="text-gray-600 text-sm">{credential.reviewer_notes}</p>
+                      <label className="font-medium text-gray-700">
+                        Review Notes
+                      </label>
+                      <p className="text-gray-600 text-sm">
+                        {credential.reviewer_notes}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Reviewed on {new Date(credential.reviewed_at!).toLocaleDateString()}
+                        Reviewed on{" "}
+                        {new Date(credential.reviewed_at!).toLocaleDateString()}
                       </p>
                     </div>
                   )}

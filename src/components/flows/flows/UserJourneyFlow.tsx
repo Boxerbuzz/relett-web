@@ -24,7 +24,7 @@ const nodes: Node[] = [
       description: 'User signs up with email and basic information',
       status: 'completed',
       stepNumber: 1,
-      tables: ['users', 'user_profiles'],
+      tables: ['users'],
       estimatedTime: '2-3 minutes',
     },
   },

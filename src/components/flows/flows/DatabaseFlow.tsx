@@ -25,7 +25,6 @@ const generateSchemaEdges = (): Edge[] => {
   // Core relationships - only including tables that actually exist
   const relationships = [
     { from: 'user_roles', to: 'users' },
-    { from: 'user_profiles', to: 'users' },
     { from: 'user_devices', to: 'users' },
     { from: 'properties', to: 'users' },
     { from: 'property_images', to: 'properties' },

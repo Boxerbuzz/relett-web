@@ -1,7 +1,6 @@
+"use client";
 
-'use client';
-
-import { AdvancedMarketplace } from '@/components/marketplace/AdvancedMarketplace';
+import { AdvancedMarketplace } from "@/components/marketplace/AdvancedMarketplace";
 
 const Marketplace = () => {
   return (

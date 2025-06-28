@@ -1,22 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import { WelcomeCard } from "./WelcomeCard";
 import { LandownerDashboard } from "./LandownerDashboard";
 import { VerifierDashboard } from "./VerifierDashboard";
 import { AgentDashboard } from "./AgentDashboard";
 import { EmailVerificationStatus } from "../profile/EmailVerificationStatus";
 import { ProfileCompletionBanner } from "../profile/ProfileCompletionBanner";
-import { ProfileCompletionWizard } from "../profile/ProfileCompletionWizard";
 import { DashboardSkeleton } from "../ui/dashboard-skeleton";
 import UserDashboard from "./UserDashboard";
+import { useNavigate } from "react-router-dom";
 
 export function Dashboard() {
   const { user } = useAuth();
-  const { profile } = useUserProfile();
-  const [showProfileWizard, setShowProfileWizard] = useState(false);
+  const navigate = useNavigate();
 
   // Show loading state while profile is loading
   if (!user) {
@@ -24,7 +21,7 @@ export function Dashboard() {
   }
 
   const handleCompleteProfile = () => {
-    setShowProfileWizard(true);
+    navigate("/profile");
   };
 
   const renderRoleSpecificDashboard = () => {
@@ -55,12 +52,6 @@ export function Dashboard() {
 
       {/* Role-specific Dashboard Content */}
       <div className="w-full min-w-0">{renderRoleSpecificDashboard()}</div>
-
-      {/* Profile Completion Wizard */}
-      <ProfileCompletionWizard
-        open={showProfileWizard}
-        onOpenChange={setShowProfileWizard}
-      />
     </div>
   );
 }

@@ -31,10 +31,10 @@ interface RoleRequest {
   reviewed_at?: string;
   reviewed_by?: string;
   reviewer_notes?: string;
-  user_profiles?: {
+  user?: {
     first_name: string;
     last_name: string;
-    phone_number?: string;
+    phone?: string;
   } | null;
 }
 
@@ -55,10 +55,10 @@ export function RoleRequestManagement() {
         .from('user_role_requests')
         .select(`
           *,
-          user_profiles!user_role_requests_user_id_fkey (
+          user: users!user_role_requests_user_id_fkey (
             first_name,
             last_name,
-            phone_number
+            phone
           )
         `)
         .order('created_at', { ascending: false });
@@ -67,7 +67,7 @@ export function RoleRequestManagement() {
       setRequests((data || []).map(item => ({
         ...item,
         verification_status: item.status || 'pending', // Use 'status' field from database
-        user_profiles: item.user_profiles && !('error' in item.user_profiles) ? item.user_profiles : null
+        user: item.user && !('error' in item.user) ? item.user : null
       })) as RoleRequest[]);
     } catch (error) {
       console.error('Error fetching role requests:', error);
@@ -192,7 +192,7 @@ export function RoleRequestManagement() {
                       <div className="flex items-center gap-2">
                         <UserIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">
-                          {request.user_profiles?.first_name || 'Unknown'} {request.user_profiles?.last_name || 'User'}
+                          {request.user?.first_name || 'Unknown'} {request.user?.last_name || 'User'}
                         </span>
                         <Badge variant="outline" className="capitalize">
                           {request.requested_role}
