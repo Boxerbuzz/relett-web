@@ -51,7 +51,8 @@ export function PropertyCard({
     if (onViewDetails) {
       onViewDetails(property.id);
     } else {
-      navigate(`/property/${property.id}`);
+      // Fix the route to match App.tsx
+      navigate(`/properties/${property.id}`);
     }
   };
 

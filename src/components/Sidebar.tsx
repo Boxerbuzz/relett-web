@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useLocation, Link } from 'react-router-dom';
@@ -49,14 +50,13 @@ const mainNavigation = [
   { name: 'Services', href: '/services', icon: Wrench, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'Map View', href: '/map', icon: MapPin, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
   { name: 'My Bookings', href: '/me', icon: Calendar, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Property Verification', href: '/property-verification', icon: MagnifyingGlass, roles: ['landowner', 'verifier', 'admin', 'agent', 'user'] },
+  { name: 'Property Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Messaging', href: '/messaging', icon: Chat, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
 ];
 
 const propertyNavigation = [
   { name: 'My Property', href: '/my-land', icon: FileText, roles: ['landowner', 'admin'] },
   { name: 'Add Property', href: '/add-property', icon: Plus, roles: ['landowner', 'admin'] },
-  { name: 'Verification', href: '/verification', icon: ShieldCheck, roles: ['verifier', 'admin'] },
   { name: 'Tokens', href: '/tokens', icon: Coins, roles: ['landowner', 'admin', 'investor'] },
 ];
 
@@ -69,7 +69,7 @@ const agentNavigation = [
 
 const settingsNavigation = [
   { name: 'Notifications', href: '/notifications', icon: Bell, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
-  { name: 'Settings', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
+  { name: 'Settings & Profile', href: '/settings', icon: Gear, roles: ['landowner', 'verifier', 'admin', 'agent', 'investor', 'user'] },
 ];
 
 export function Sidebar({ onNavigate }: SidebarProps) {

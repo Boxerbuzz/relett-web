@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -16,7 +17,6 @@ import Auth from "@/pages/Auth";
 import Welcome from "@/pages/Welcome";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
-import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import Notifications from "@/pages/Notifications";
 import Marketplace from "@/pages/Marketplace";
@@ -98,17 +98,7 @@ function App() {
                 }
               />
 
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Profile />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
+              {/* Consolidated settings page with profile functionality */}
               <Route
                 path="/settings"
                 element={

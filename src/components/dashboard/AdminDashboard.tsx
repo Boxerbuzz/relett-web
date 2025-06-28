@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { PropertyVerificationQueue } from "@/components/admin/PropertyVerificationQueue";
+import { AdminVerificationHub } from "@/components/admin/AdminVerificationHub";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,6 +28,8 @@ import {
   Activity,
   Envelope,
   ArrowRight,
+  FileText,
+  Certificate,
 } from "phosphor-react";
 
 interface DashboardStats {
@@ -136,16 +139,16 @@ export function AdminDashboard() {
   const handleVerificationReview = (type: string) => {
     switch (type) {
       case 'identity':
-        navigate('/verification');
+        setActiveTab('verification-hub');
         break;
       case 'documents':
-        navigate('/property-verification');
+        setActiveTab('verification-hub');
         break;
       case 'properties':
-        navigate('/property-verification');
+        setActiveTab('properties');
         break;
       default:
-        navigate('/verification');
+        setActiveTab('verification-hub');
     }
   };
 
@@ -221,7 +224,59 @@ export function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('verification-hub')}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              KYC & Role Management
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pendingVerifications}</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Pending reviews
+              <ArrowRight className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('users')}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              User Management
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {loading ? "..." : stats.totalUsers}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Manage all users
+              <ArrowRight className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('properties')}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Property Verification
+            </CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {loading ? "..." : stats.pendingDocuments}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Pending reviews
+              <ArrowRight className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
+
         <Card className="hover:shadow-lg transition-shadow cursor-pointer">
           <Link to="/admin/contacts">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -239,61 +294,6 @@ export function AdminDashboard() {
             </CardContent>
           </Link>
         </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link to="/admin/users">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                User Management
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? "..." : stats.totalUsers}
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                Manage all users
-                <ArrowRight className="ml-2 h-3 w-3" />
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link to="/property-verification">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Verifications
-              </CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? "..." : stats.pendingVerifications}
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                Pending reviews
-                <ArrowRight className="ml-2 h-3 w-3" />
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link to="/admin/waitlist">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Waitlist</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{waitlistCount}</div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                Pending reviews
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
       </div>
 
       {/* Main Content Tabs */}
@@ -304,11 +304,12 @@ export function AdminDashboard() {
           className="space-y-6 w-full"
         >
           <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="properties">Properties</TabsTrigger>
-              <TabsTrigger value="verification">Verification</TabsTrigger>
+              <TabsTrigger value="verification-hub">KYC & Roles</TabsTrigger>
+              <TabsTrigger value="system">System</TabsTrigger>
             </TabsList>
           </ScrollArea>
 
@@ -412,65 +413,48 @@ export function AdminDashboard() {
               </div>
             </TabsContent>
 
-            <TabsContent value="verification" className="space-y-6 w-full">
+            <TabsContent value="verification-hub" className="space-y-6 w-full">
+              <div className="w-full">
+                <AdminVerificationHub />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="system" className="space-y-6 w-full">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CheckSquare className="h-5 w-5" />
-                    Verification Queue
+                    System Management
                   </CardTitle>
                   <CardDescription>
-                    Review pending verifications and documents
+                    System configuration and maintenance tools
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium">Identity Verifications</h4>
+                        <h4 className="font-medium">Backup & Recovery</h4>
                         <p className="text-sm text-gray-600">
-                          Pending user identity verification
+                          Manage system backups and recovery procedures
                         </p>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="destructive">
-                          {stats.pendingVerifications}
-                        </Badge>
-                        <Button size="sm" onClick={() => handleVerificationReview('identity')}>
-                          Review
-                        </Button>
+                        <Badge variant="secondary">Automated</Badge>
+                        <Button size="sm">Configure</Button>
                       </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium">Document Reviews</h4>
+                        <h4 className="font-medium">API Management</h4>
                         <p className="text-sm text-gray-600">
-                          Property documents awaiting review
+                          Monitor API usage and manage rate limits
                         </p>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="destructive">
-                          {stats.pendingDocuments}
-                        </Badge>
-                        <Button size="sm" onClick={() => handleVerificationReview('documents')}>
-                          Review
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium">Property Verifications</h4>
-                        <p className="text-sm text-gray-600">
-                          Properties pending verification
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="secondary">8</Badge>
-                        <Button size="sm" onClick={() => handleVerificationReview('properties')}>
-                          Review
-                        </Button>
+                        <Badge variant="secondary">Active</Badge>
+                        <Button size="sm">View Logs</Button>
                       </div>
                     </div>
                   </div>
