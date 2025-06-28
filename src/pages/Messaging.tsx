@@ -1,13 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMessages } from "@/hooks/useMessages";
-import { useAuth } from "@/lib/auth";
-import { PaperPlaneTilt } from "phosphor-react";
 import { formatDistanceToNow } from "date-fns";
-import { ChatIcon } from "@phosphor-icons/react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,26 +11,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeftIcon,
-  PaperPlaneRightIcon,
-  DotsThreeVerticalIcon,
-  UserIcon,
-} from "@phosphor-icons/react";
+import { ArrowLeftIcon, DotsThreeVerticalIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 import { ChatArea } from "@/components/messaging/ChatArea";
-import { AdminConversationControls } from "@/components/messaging/AdminConversationControls";
 import {
   ConversationWithDetails,
   useConversations,
 } from "@/hooks/useConversations";
 import { AdminActions } from "@/components/messaging/AdminActions";
-import { SidebarProvider } from "@/components/ui/sidebar";
 
 type ViewMode = "list" | "detail";
 

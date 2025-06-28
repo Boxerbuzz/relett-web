@@ -18,12 +18,13 @@ import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
 import { KYCVerificationStatus } from "./KYCVerificationStatus";
 import { IdentityDataForm } from "./IdentityDataForm";
 import {
-  FileText,
-  CloudArrowUp,
-  Warning,
-  CheckCircle,
-  X,
+  FileTextIcon,
+  WarningIcon,
+  CheckCircleIcon,
+  XIcon,
+  CloudArrowUpIcon,
 } from "@phosphor-icons/react";
+import { VerificationStatus } from "@/types/database";
 
 export function KYCUploadForm() {
   const { user } = useAuth();
@@ -32,12 +33,8 @@ export function KYCUploadForm() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [selectedDocType, setSelectedDocType] = useState("");
   const { uploadFile } = useSupabaseStorage();
-  const {
-    verifications,
-    loading,
-    isVerified,
-    hasAnyVerification,
-  } = useIdentityVerification();
+  const { verifications, loading, isVerified, hasAnyVerification } =
+    useIdentityVerification();
 
   const documentTypes = [
     { value: "passport", label: "International Passport" },
@@ -49,12 +46,15 @@ export function KYCUploadForm() {
   ];
 
   // Get the general verification status (not type-specific)
-  const verificationStatus = verifications.length > 0 
-    ? verifications[0].verification_status || "unverified"
-    : "unverified";
-  
-  const canUploadDocuments = hasAnyVerification() && verificationStatus !== "verified";
-  const showIdentityForm = !hasAnyVerification() && verificationStatus === "unverified";
+  const verificationStatus: VerificationStatus =
+    verifications.length > 0
+      ? verifications[0].verification_status || "unverified"
+      : "unverified";
+
+  const canUploadDocuments =
+    hasAnyVerification() && verificationStatus !== "verified";
+  const showIdentityForm =
+    !hasAnyVerification() && verificationStatus === "unverified";
 
   useEffect(() => {
     if (user) {
@@ -121,7 +121,7 @@ export function KYCUploadForm() {
 
       fetchDocuments();
       setSelectedDocType("");
-      
+
       // Reset file input
       if (e.target) {
         e.target.value = "";
@@ -174,11 +174,11 @@ export function KYCUploadForm() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "verified":
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
       case "rejected":
-        return <Warning className="h-5 w-5 text-red-600" />;
+        return <WarningIcon className="h-5 w-5 text-red-600" />;
       default:
-        return <FileText className="h-5 w-5 text-yellow-600" />;
+        return <FileTextIcon className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -212,9 +212,9 @@ export function KYCUploadForm() {
 
       {/* Identity Data Form - Show only if no verification exists */}
       {showIdentityForm && (
-        <IdentityDataForm 
+        <IdentityDataForm
           onSuccess={fetchDocuments}
-          disabled={verificationStatus === "verified"}
+          disabled={verificationStatus.toLowerCase() === "verified"}
         />
       )}
 
@@ -223,7 +223,7 @@ export function KYCUploadForm() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CloudArrowUp className="h-5 w-5" />
+              <CloudArrowUpIcon className="h-5 w-5" />
               Upload Supporting Documents
             </CardTitle>
           </CardHeader>
@@ -231,7 +231,10 @@ export function KYCUploadForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="document-type">Document Type</Label>
-                <Select value={selectedDocType} onValueChange={setSelectedDocType}>
+                <Select
+                  value={selectedDocType}
+                  onValueChange={setSelectedDocType}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select document type" />
                   </SelectTrigger>
@@ -304,14 +307,15 @@ export function KYCUploadForm() {
                     >
                       {doc.verification_status}
                     </span>
-                    {(doc.verification_status === "rejected" || verificationStatus !== "verified") && (
+                    {(doc.verification_status === "rejected" ||
+                      verificationStatus !== "verified") && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => removeDocument(doc.id)}
                         className="text-red-600 hover:text-red-700"
                       >
-                        <X className="h-4 w-4" />
+                        <XIcon className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
@@ -329,13 +333,24 @@ export function KYCUploadForm() {
             KYC Verification Process
           </h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Provide your identity information and upload clear, readable documents</li>
-            <li>• Our verification team reviews submissions within 24-48 hours</li>
-            <li>• You'll receive notifications about your verification status</li>
-            <li>• Verified users gain access to investment and tokenization features</li>
+            <li>
+              • Provide your identity information and upload clear, readable
+              documents
+            </li>
+            <li>
+              • Our verification team reviews submissions within 24-48 hours
+            </li>
+            <li>
+              • You'll receive notifications about your verification status
+            </li>
+            <li>
+              • Verified users gain access to investment and tokenization
+              features
+            </li>
             {verificationStatus === "rejected" && (
               <li className="text-red-700 font-medium">
-                • Your submission was rejected. Please review feedback and resubmit.
+                • Your submission was rejected. Please review feedback and
+                resubmit.
               </li>
             )}
           </ul>
