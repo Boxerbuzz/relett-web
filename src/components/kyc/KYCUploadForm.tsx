@@ -50,9 +50,13 @@ export function KYCUploadForm() {
     { value: "bank_statement", label: "Bank Statement" },
   ];
 
-  const verificationStatus = getVerificationStatus();
-  const canUploadDocuments = hasAnyVerification && verificationStatus !== "verified";
-  const showIdentityForm = !hasAnyVerification && verificationStatus === "unverified";
+  // Get the general verification status (not type-specific)
+  const verificationStatus = verifications.length > 0 
+    ? verifications[0].verification_status || "unverified"
+    : "unverified";
+  
+  const canUploadDocuments = hasAnyVerification() && verificationStatus !== "verified";
+  const showIdentityForm = !hasAnyVerification() && verificationStatus === "unverified";
 
   useEffect(() => {
     if (user) {
@@ -205,7 +209,7 @@ export function KYCUploadForm() {
       <KYCVerificationStatus
         status={verificationStatus}
         hasDocuments={documents.length > 0}
-        hasIdentityVerification={hasAnyVerification}
+        hasIdentityVerification={hasAnyVerification()}
       />
 
       {/* Identity Data Form - Show only if no verification exists */}
