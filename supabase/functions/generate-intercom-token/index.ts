@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   createCorsResponse,
@@ -5,7 +6,7 @@ import {
   verifyUser,
   corsHeaders,
 } from "../shared/supabase-client.ts";
-import { create } from "djwt";
+import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 const INTERCOM_SECRET = Deno.env.get("INTERCOM_SECRET_KEY");
 
