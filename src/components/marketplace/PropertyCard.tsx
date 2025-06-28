@@ -1,16 +1,14 @@
-
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Heart, 
-  Eye, 
-  MapPin, 
-  Calendar,
-  Star,
-  ArrowRight
-} from '@phosphor-icons/react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import {
+  HeartIcon,
+  EyeIcon,
+  MapPinIcon,
+  StarIcon,
+  ArrowRightIcon,
+} from "@phosphor-icons/react";
 
 interface PropertyCardProps {
   property: {
@@ -39,11 +37,11 @@ interface PropertyCardProps {
   className?: string;
 }
 
-export function PropertyCard({ 
-  property, 
+export function PropertyCard({
+  property,
   onViewDetails,
   onToggleFavorite,
-  className = "" 
+  className = "",
 }: PropertyCardProps) {
   const navigate = useNavigate();
 
@@ -64,31 +62,35 @@ export function PropertyCard({
   };
 
   const formatPrice = () => {
-    if (!property.price?.amount) return 'Price on request';
-    const currency = property.price.currency === 'USD' ? '$' : '₦';
+    if (!property.price?.amount) return "Price on request";
+    const currency = property.price.currency === "USD" ? "$" : "₦";
     return `${currency}${property.price.amount.toLocaleString()}`;
   };
 
   return (
-    <Card className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${className}`}>
+    <Card
+      className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${className}`}
+    >
       <div className="relative">
         {/* Property Image */}
-        <div 
+        <div
           className="h-48 bg-gray-200 rounded-t-lg bg-cover bg-center"
-          style={{ 
-            backgroundImage: property.backdrop ? `url(${property.backdrop})` : 'none' 
+          style={{
+            backgroundImage: property.backdrop
+              ? `url(${property.backdrop})`
+              : "none",
           }}
         >
           {!property.backdrop && (
             <div className="h-full flex items-center justify-center text-gray-400">
-              <MapPin className="h-12 w-12" />
+              <MapPinIcon className="h-12 w-12" />
             </div>
           )}
-          
+
           {/* Featured Badge */}
           {property.is_featured && (
             <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
-              <Star className="h-3 w-3 mr-1" />
+              <StarIcon className="h-3 w-3 mr-1" />
               Featured
             </Badge>
           )}
@@ -100,7 +102,7 @@ export function PropertyCard({
             className="absolute top-2 right-2 bg-white/80 hover:bg-white"
             onClick={handleToggleFavorite}
           >
-            <Heart className="h-4 w-4" />
+            <HeartIcon className="h-4 w-4" />
           </Button>
         </div>
 
@@ -108,25 +110,28 @@ export function PropertyCard({
           {/* Property Category */}
           <div className="flex justify-between items-start mb-2">
             <Badge variant="secondary" className="text-xs">
-              {property.category || property.type || 'Property'}
+              {property.category || property.type || "Property"}
             </Badge>
             <span className="text-xs text-gray-500">
-              {property.created_at && new Date(property.created_at).toLocaleDateString()}
+              {property.created_at &&
+                new Date(property.created_at).toLocaleDateString()}
             </span>
           </div>
 
           {/* Property Title */}
           <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-            {property.title || 'Untitled Property'}
+            {property.title || "Untitled Property"}
           </h3>
 
           {/* Location */}
           <div className="flex items-center gap-1 mb-3 text-gray-600">
-            <MapPin className="h-4 w-4 flex-shrink-0" />
+            <MapPinIcon className="h-4 w-4 flex-shrink-0" />
             <span className="text-sm truncate">
-              {property.location?.address || 
-               `${property.location?.city || ''} ${property.location?.state || ''}`.trim() || 
-               'Location not specified'}
+              {property.location?.address ||
+                `${property.location?.city || ""} ${
+                  property.location?.state || ""
+                }`.trim() ||
+                "Location not specified"}
             </span>
           </div>
 
@@ -137,16 +142,16 @@ export function PropertyCard({
             </span>
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <div className="flex items-center gap-1">
-                <Eye className="h-3 w-3" />
+                <EyeIcon className="h-3 w-3" />
                 {property.views || 0}
               </div>
               <div className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
+                <HeartIcon className="h-3 w-3" />
                 {property.likes || 0}
               </div>
               {property.ratings && property.ratings > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-current text-yellow-500" />
+                  <StarIcon className="h-3 w-3 fill-current text-yellow-500" />
                   {property.ratings.toFixed(1)}
                 </div>
               )}
@@ -154,13 +159,13 @@ export function PropertyCard({
           </div>
 
           {/* View Details Button */}
-          <Button 
+          <Button
             onClick={handleViewDetails}
             className="w-full"
             variant="outline"
           >
             View Details
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRightIcon className="ml-2 h-4 w-4" />
           </Button>
         </CardContent>
       </div>

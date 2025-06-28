@@ -1,25 +1,28 @@
+"use client";
 
-'use client';
-
-import { useAuth } from '@/lib/auth';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, FileText } from 'lucide-react';
+import { useAuth } from "@/lib/auth";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function WelcomeCard() {
   const { user } = useAuth();
   const { profile } = useUserProfile();
 
   // Get user's display name from profile or fallback to email
-  const displayName = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}`
-    : user?.email?.split('@')[0] || 'User';
+  const displayName = `${profile?.first_name} ${profile?.last_name}`;
 
-  const userRole = profile?.user_type || 'landowner';
+  const userRole = profile?.user_type || "landowner";
 
   return (
-    <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white w-full">
+    <Card
+      className={cn(
+        "bg-gradient-to-r from-blue-600 to-blue-700 text-white w-full",
+        user.role === "user" && "hidden"
+      )}
+    >
       <CardContent className="p-4 md:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -27,17 +30,24 @@ export function WelcomeCard() {
               Welcome back, {displayName}!
             </h1>
             <p className="text-blue-100 mb-4 text-sm md:text-base">
-              {userRole === 'landowner' 
+              {userRole === "landowner"
                 ? "Ready to manage your land portfolio and explore new opportunities?"
-                : "Ready to review land records and help secure property ownership?"
-              }
+                : "Ready to review land records and help secure property ownership?"}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
-              <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
-                {userRole === 'landowner' ? 'Add Property' : 'Start Review'}
+                {userRole === "landowner" ? "Add Property" : "Start Review"}
               </Button>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto text-blue-600 border-white hover:bg-white">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto text-blue-600 border-white hover:bg-white"
+              >
                 <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
                 View Guide
               </Button>

@@ -4,7 +4,6 @@ import { ReactNode, useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useAuth } from "@/lib/auth";
 import Intercom from "@intercom/messenger-js-sdk";
 import useIntercom from "@/hooks/useIntercom";
 
@@ -28,7 +27,7 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
         created_at: Date.parse(user?.created_at),
       });
     }
-  }, [intercomToken]);
+  }, [intercomToken, user]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">

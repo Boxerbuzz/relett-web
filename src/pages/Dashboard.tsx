@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { MarketOverview } from "@/components/dashboard/MarketOverview";
-import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { NotificationsList } from "@/components/notifications/NotificationsList";
 import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -42,10 +41,6 @@ const DashboardPage = () => {
 
         <TabsContent value="overview" className="space-y-6">
           <Dashboard />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <RecentTransactions />
-            <NotificationsList />
-          </div>
         </TabsContent>
 
         <TabsContent value="market" className="space-y-6">

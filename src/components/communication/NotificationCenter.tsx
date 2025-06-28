@@ -1,29 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   BellIcon,
   CheckIcon,
-  GearSixIcon,
   ChatCenteredTextIcon,
   CurrencyDollarSimpleIcon,
   TestTubeIcon,
 } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { NotificationDeliveryStatus } from "@/components/notifications/NotificationDeliveryStatus";
 import { NotificationTester } from "@/components/notifications/NotificationTester";
 import { LoadingSpinner } from "@/components/loading/LoadingSpinner";

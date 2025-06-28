@@ -217,7 +217,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
       currency: price.currency || "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price.amount);
+    }).format(price.amount / 100);
   };
 
   return (
@@ -284,7 +284,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
           <button
             type="button"
             className="px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-            onClick={() => navigate(`/property/${property.id}`)}
+            onClick={() => navigate(`/properties/${property.id}`)}
           >
             View Details
           </button>

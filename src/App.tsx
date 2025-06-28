@@ -159,9 +159,7 @@ function App() {
                 path="/properties/:propertyId"
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <PropertyDetails />
-                    </Layout>
+                    <PropertyDetails />
                   </ProtectedRoute>
                 }
               />
