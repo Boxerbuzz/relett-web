@@ -86,7 +86,7 @@ export function InvestNowDialog({ open, onOpenChange, tokenizedProperty }: Inves
 
       if (trackingError) throw trackingError;
 
-      // Create a token transaction record - using correct column name
+      // Create a token transaction record - using 'mint' as transaction type since this is creating new tokens for user
       const { error: transactionError } = await supabase
         .from('token_transactions')
         .insert({
@@ -95,7 +95,7 @@ export function InvestNowDialog({ open, onOpenChange, tokenizedProperty }: Inves
           token_amount: tokensToReceive.toString(),
           price_per_token: tokenizedProperty.token_price,
           total_value: investmentAmount,
-          transaction_type: 'purchase',
+          transaction_type: 'mint',
           status: 'confirmed'
         });
 

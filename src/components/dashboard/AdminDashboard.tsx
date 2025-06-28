@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -30,7 +29,6 @@ import {
   Envelope,
   ArrowRight,
   FileText,
-  Seal,
 } from "phosphor-react";
 
 interface DashboardStats {

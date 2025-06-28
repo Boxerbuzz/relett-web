@@ -8,8 +8,7 @@ import { VerifierCredentialReview } from './VerifierCredentialReview';
 import { 
   Users, 
   Shield, 
-  FileText, 
-  Seal
+  FileText
 } from '@phosphor-icons/react';
 
 export function AdminVerificationHub() {
@@ -33,7 +32,7 @@ export function AdminVerificationHub() {
             KYC Review
           </TabsTrigger>
           <TabsTrigger value="verifier-credentials" className="flex items-center gap-2">
-            <Seal className="h-4 w-4" />
+            <Shield className="h-4 w-4" />
             Verifier Credentials
           </TabsTrigger>
         </TabsList>
