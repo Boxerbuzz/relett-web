@@ -100,17 +100,17 @@ export function Messaging() {
   };
 
   return (
-    <div className="flex h-full mb-0">
+    <div className="flex h-[calc(100vh-4rem)]">
       {/* Messages List Panel */}
       <div
         className={cn(
-          "w-full lg:w-80 border-r border-border bg-background overflow-hidden transition-all duration-300",
+          "w-full lg:w-80 border-r border-border bg-background flex flex-col transition-all duration-300",
           // On mobile/tablet: show/hide based on viewMode
           "lg:block",
           viewMode === "list" ? "block" : "hidden lg:block"
         )}
       >
-        <div className="gap-3.5 border-b p-4">
+        <div className="gap-3.5 border-b p-4 flex-shrink-0">
           <div className="flex w-full items-center justify-between mb-4">
             <div className="text-foreground text-base font-medium">
               Messages
@@ -124,7 +124,7 @@ export function Messaging() {
             className="w-full"
           />
         </div>
-        <div className="overflow-y-auto h-[calc(100vh-200px)]">
+        <div className="flex-1 overflow-y-auto">
           <div className="px-0">
             <div>
               {loading ? (
@@ -175,13 +175,13 @@ export function Messaging() {
       {/* Main Content Area */}
       <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-300",
+          "flex-1 flex flex-col transition-all duration-300 min-w-0",
           // On mobile/tablet: show/hide based on viewMode
           "lg:flex",
           viewMode === "detail" ? "flex" : "hidden lg:flex"
         )}
       >
-        <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
+        <header className="bg-background flex shrink-0 items-center gap-2 border-b p-4">
           {/* Back button for mobile/tablet */}
           <Button
             variant="ghost"
@@ -215,7 +215,7 @@ export function Messaging() {
           )}
         </header>
 
-        <div className="flex flex-1 flex-col overflow-y-auto h-full items-center justify-center">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <ChatArea
             conversationId={selectedConversationId}
             conversationName={conversationName}

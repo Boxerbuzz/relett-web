@@ -236,7 +236,7 @@ function App() {
                 path="/messaging"
                 element={
                   <ProtectedRoute>
-                    <Layout>
+                    <Layout stripPadding={true}>
                       <Messaging />
                     </Layout>
                   </ProtectedRoute>

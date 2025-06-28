@@ -45,7 +45,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
   };
 
   return (
-    <div>
+    <div className="flex-1 flex flex-col overflow-hidden">
       {loading && (
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 h-full flex items-center justify-center">
           <div className="flex justify-center">
@@ -93,7 +93,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
       )}
 
       {/* Message Input */}
-      {!conversationId && loading && (
+      {conversationId && !loading && (
         <CardContent className="border-t bg-white p-4">
           <form onSubmit={handleSendMessage} className="flex space-x-2">
             <Input
