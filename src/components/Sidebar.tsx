@@ -81,7 +81,7 @@ const mainNavigation = [
   },
   {
     name: "My Bookings",
-    href: "/me",
+    href: "/bookings",
     icon: CalendarIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
   },
@@ -97,30 +97,12 @@ const mainNavigation = [
     icon: ChatIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
   },
-  {
-    name: "Notifications",
-    href: "/notifications",
-    icon: BellIcon,
-    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
-  },
-  {
-    name: "Settings",
-    href: "/settings",
-    icon: GearIcon,
-    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
-  },
-  {
-    name: "Profile",
-    href: "/profile",
-    icon: UserIcon,
-    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
-  },
 ];
 
 const propertyNavigation = [
   {
     name: "My Property",
-    href: "/my-land",
+    href: "/my-properties",
     icon: FileTextIcon,
     roles: ["landowner", "admin"],
   },
@@ -165,13 +147,33 @@ const agentNavigation = [
   },
 ];
 
+const userNavigation = [
+  {
+    name: "Notifications",
+    href: "/notifications",
+    icon: BellIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: GearIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Profile",
+    href: "/profile",
+    icon: UserIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+];
+
 export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
   const { user } = useAuth();
   const { hasRole } = useUserRoles();
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [agentToolsOpen, setAgentToolsOpen] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [treeDonationOpen, setTreeDonationOpen] = useState(false);
 
   const filterNavigation = (items: typeof mainNavigation) => {
@@ -184,6 +186,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   };
 
   const filteredMainNav = filterNavigation(mainNavigation);
+  const filteredUserNav = filterNavigation(userNavigation);
   const filteredPropertyNav = filterNavigation(propertyNavigation);
   const filteredAgentNav = filterNavigation(agentNavigation);
 
@@ -273,6 +276,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             </CollapsibleContent>
           </Collapsible>
         )}
+
+        {/* User Tools Section */}
+        <div className="space-y-2">{filteredUserNav.map(renderNavItem)}</div>
       </nav>
 
       {/* Plant a Tree CTA with proper margins */}

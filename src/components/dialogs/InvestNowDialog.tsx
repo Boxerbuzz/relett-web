@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -140,19 +142,19 @@ export function InvestNowDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent size="md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <CurrencyDollarIcon className="h-5 w-5 text-green-600" />
             Invest in {tokenizedProperty.token_name}
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Purchase tokens to become a fractional owner of this property
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 px-4 md:px-0">
           {/* Property Info */}
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <div className="flex justify-between">
@@ -224,36 +226,29 @@ export function InvestNowDialog({
               </div>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleInvest}
-              disabled={
-                loading ||
-                investmentAmount < tokenizedProperty.minimum_investment
-              }
-              className="flex-1 bg-green-600 hover:bg-green-700"
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 animate-spin" />
-                  Processing...
-                </div>
-              ) : (
-                `Invest $${investmentAmount}`
-              )}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button
+            onClick={handleInvest}
+            disabled={
+              loading ||
+              investmentAmount < tokenizedProperty.minimum_investment
+            }
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <ClockIcon className="h-4 w-4 animate-spin" />
+                Processing...
+              </div>
+            ) : (
+              `Invest $${investmentAmount}`
+            )}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

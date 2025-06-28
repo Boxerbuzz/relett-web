@@ -1,7 +1,13 @@
-
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,20 +36,20 @@ export function TransactionDetailsDialog({ open, onOpenChange, transaction }: Tr
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent size="md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             {transaction.type === 'buy' ? (
               <ArrowUpRight size={20} className="text-green-600" />
             ) : (
               <ArrowDownLeft size={20} className="text-red-600" />
             )}
             Transaction Details
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 px-4 md:px-0">
           {/* Transaction Status */}
           <div className="text-center">
             <Badge 
@@ -133,13 +139,14 @@ export function TransactionDetailsDialog({ open, onOpenChange, transaction }: Tr
               Email Receipt
             </Button>
           </div>
-
-          {/* Close Button */}
-          <Button onClick={() => onOpenChange(false)} className="w-full">
-            Close
-          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton className="flex-1">
+            Close
+          </ResponsiveDialogCloseButton>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -1,31 +1,35 @@
+"use client";
 
-'use client';
-
-import { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { PropertyMap } from '@/components/maps/PropertyMap';
-import { PropertyDocumentViewer } from '@/components/property/PropertyDocumentViewer';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  MapPin, 
-  TrendingUp, 
-  Heart, 
-  Share, 
-  Star, 
-  Calendar, 
-  Home, 
-  Ruler, 
-  Users, 
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PropertyMap } from "@/components/maps/PropertyMap";
+import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  MapPin,
+  TrendingUp,
+  Heart,
+  Share,
+  Star,
+  Calendar,
+  Home,
+  Ruler,
+  Users,
   Car,
-  Loader2
-} from 'lucide-react';
-import { getAmenityById } from '@/types/amenities';
+  Loader2,
+} from "lucide-react";
+import { getAmenityById } from "@/types/amenities";
 
 interface PropertyData {
   id: string;
@@ -71,7 +75,11 @@ interface PropertyDetailsDialogProps {
   propertyId: string;
 }
 
-export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: PropertyDetailsDialogProps) {
+export function PropertyDetailsDialog({
+  open,
+  onOpenChange,
+  propertyId,
+}: PropertyDetailsDialogProps) {
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -87,35 +95,39 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
   const fetchPropertyDetails = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           tokenized_properties:tokenized_properties_property_id_fkey(*),
           property_images (
             url,
             is_primary
           )
-        `)
-        .eq('id', propertyId)
+        `
+        )
+        .eq("id", propertyId)
         .maybeSingle();
 
-        ///https://wossuijahchhtjzphsgh.supabase.co/rest/v1/properties?select=*%2Ctokenized_properties%3Atokenized_properties_property_id_fkey%28*%29%2Cproperty_images%28url%2Cis_primary%29&id=eq.134994583
+      ///https://wossuijahchhtjzphsgh.supabase.co/rest/v1/properties?select=*%2Ctokenized_properties%3Atokenized_properties_property_id_fkey%28*%29%2Cproperty_images%28url%2Cis_primary%29&id=eq.134994583
 
       if (error) throw error;
       if (data) {
         setProperty({
           ...data,
-          property_images: Array.isArray(data.property_images) ? data.property_images : [],
+          property_images: Array.isArray(data.property_images)
+            ? data.property_images
+            : [],
         });
       }
     } catch (error) {
-      console.error('Error fetching property:', error);
+      console.error("Error fetching property:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch property details',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch property details",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -123,52 +135,94 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
   };
 
   const getPrimaryImage = () => {
-    if (!property?.property_images?.length) return property?.backdrop || '/placeholder.svg';
-    const primaryImage = property.property_images.find(img => img.is_primary);
-    return primaryImage?.url || property.property_images[0]?.url || '/placeholder.svg';
+    if (!property?.property_images?.length)
+      return property?.backdrop || "/placeholder.svg";
+    const primaryImage = property.property_images.find((img) => img.is_primary);
+    return (
+      primaryImage?.url ||
+      property.property_images[0]?.url ||
+      "/placeholder.svg"
+    );
   };
 
   const getLocationString = () => {
-    if (!property?.location) return 'Location not specified';
-    if (typeof property.location === 'string') return property.location;
-    
+    if (!property?.location) return "Location not specified";
+    if (typeof property.location === "string") return property.location;
+
     const { address, city, state, country } = property.location;
-    return [address, city, state, country].filter(Boolean).join(', ');
+    return [address, city, state, country].filter(Boolean).join(", ");
   };
 
   const getCoordinates = () => {
     if (!property?.location?.coordinates) return undefined;
     return {
       lat: property.location.coordinates.lat,
-      lng: property.location.coordinates.lng
+      lng: property.location.coordinates.lng,
     };
   };
 
   const formatPrice = (price: any) => {
-    if (!price) return 'Price not available';
-    if (typeof price === 'string') return price;
-    if (typeof price === 'number') return `₦${price.toLocaleString()}`;
+    if (!price) return "Price not available";
+    if (typeof price === "string") return price;
+    if (typeof price === "number") return `₦${price.toLocaleString()}`;
     if (price.amount) return `₦${price.amount.toLocaleString()}`;
-    return 'Price not available';
+    return "Price not available";
   };
 
-  const keySpecs = property ? [
-    { label: 'Property Type', value: property.category || property.type || 'N/A', icon: Home },
-    { label: 'Size', value: property.sqrft || 'N/A', icon: Ruler },
-    { label: 'Condition', value: property.condition || 'Good', icon: Star },
-    { label: 'Year Built', value: property.year_built || 'N/A', icon: Calendar },
-    { label: 'Max Guests', value: property.max_guest?.toString() || '0', icon: Users },
-    { label: 'Garages', value: property.garages?.toString() || '0', icon: Car }
-  ] : [];
+  const keySpecs = property
+    ? [
+        {
+          label: "Property Type",
+          value: property.category || property.type || "N/A",
+          icon: Home,
+        },
+        { label: "Size", value: property.sqrft || "N/A", icon: Ruler },
+        { label: "Condition", value: property.condition || "Good", icon: Star },
+        {
+          label: "Year Built",
+          value: property.year_built || "N/A",
+          icon: Calendar,
+        },
+        {
+          label: "Max Guests",
+          value: property.max_guest?.toString() || "0",
+          icon: Users,
+        },
+        {
+          label: "Garages",
+          value: property.garages?.toString() || "0",
+          icon: Car,
+        },
+      ]
+    : [];
 
-  const investmentSpecs = property ? [
-    { label: 'Total Value', value: formatPrice(property.price) },
-    { label: 'Token Price', value: property.tokenized_property ? `₦${property.tokenized_property.token_price}` : 'N/A' },
-    { label: 'Total Tokens', value: property.tokenized_property ? parseInt(property.tokenized_property.total_supply).toLocaleString() : 'N/A' },
-    { label: 'Expected ROI', value: property.tokenized_property ? `${property.tokenized_property.expected_roi}%` : 'N/A' },
-    { label: 'Views', value: property.views?.toLocaleString() || '0' },
-    { label: 'Likes', value: property.likes?.toLocaleString() || '0' }
-  ] : [];
+  const investmentSpecs = property
+    ? [
+        { label: "Total Value", value: formatPrice(property.price) },
+        {
+          label: "Token Price",
+          value: property.tokenized_property
+            ? `₦${property.tokenized_property.token_price}`
+            : "N/A",
+        },
+        {
+          label: "Total Tokens",
+          value: property.tokenized_property
+            ? parseInt(
+                property.tokenized_property.total_supply
+              ).toLocaleString()
+            : "N/A",
+        },
+        {
+          label: "Expected ROI",
+          value: property.tokenized_property
+            ? `${property.tokenized_property.expected_roi}%`
+            : "N/A",
+        },
+        { label: "Views", value: property.views?.toLocaleString() || "0" },
+        { label: "Likes", value: property.likes?.toLocaleString() || "0" },
+      ]
+    : [];
 
   if (loading) {
     return (
@@ -203,9 +257,15 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
             <DialogTitle className="flex items-center gap-2">
               {property.title}
               <div className="flex gap-1">
-                {property.is_featured && <Badge className="bg-orange-500">Featured</Badge>}
-                {property.is_verified && <Badge className="bg-green-500">Verified</Badge>}
-                {property.is_tokenized && <Badge className="bg-blue-500">Tokenized</Badge>}
+                {property.is_featured && (
+                  <Badge className="bg-orange-500">Featured</Badge>
+                )}
+                {property.is_verified && (
+                  <Badge className="bg-green-500">Verified</Badge>
+                )}
+                {property.is_tokenized && (
+                  <Badge className="bg-blue-500">Tokenized</Badge>
+                )}
               </div>
             </DialogTitle>
           </DialogHeader>
@@ -218,8 +278,8 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
             <div className="lg:col-span-1 space-y-4">
               {/* Property Image */}
               <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                <img 
-                  src={getPrimaryImage()} 
+                <img
+                  src={getPrimaryImage()}
                   alt={property.title}
                   className="w-full h-full object-cover"
                 />
@@ -231,12 +291,16 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                   <MapPin size={16} />
                   <span className="text-sm">{getLocationString()}</span>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <Star size={16} className="text-yellow-500" />
-                    <span className="text-sm font-medium">{(property.ratings || 0).toFixed(1)}</span>
-                    <span className="text-sm text-gray-500">({property.review_count || 0} reviews)</span>
+                    <span className="text-sm font-medium">
+                      {(property.ratings || 0).toFixed(1)}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      ({property.review_count || 0} reviews)
+                    </span>
                   </div>
                 </div>
 
@@ -272,7 +336,8 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                     <CardContent className="p-4">
                       <h3 className="font-semibold mb-3">Description</h3>
                       <p className="text-gray-700 text-sm leading-relaxed">
-                        {property.description || 'No description available for this property.'}
+                        {property.description ||
+                          "No description available for this property."}
                       </p>
                     </CardContent>
                   </Card>
@@ -280,14 +345,20 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                   {/* Property Specifications */}
                   <Card>
                     <CardContent className="p-4">
-                      <h3 className="font-semibold mb-4">Property Specifications</h3>
+                      <h3 className="font-semibold mb-4">
+                        Property Specifications
+                      </h3>
                       <div className="grid grid-cols-2 gap-4">
                         {keySpecs.map((spec, index) => (
                           <div key={index} className="flex items-center gap-3">
                             <spec.icon size={16} className="text-gray-500" />
                             <div>
-                              <p className="text-xs text-gray-600">{spec.label}</p>
-                              <p className="font-medium text-sm">{spec.value}</p>
+                              <p className="text-xs text-gray-600">
+                                {spec.label}
+                              </p>
+                              <p className="font-medium text-sm">
+                                {spec.value}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -296,21 +367,32 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                   </Card>
 
                   {/* Features & Amenities */}
-                  {(property.features?.length || property.amenities?.length) && (
+                  {(property.features?.length ||
+                    property.amenities?.length) && (
                     <Card>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold mb-3">Features & Amenities</h3>
+                        <h3 className="font-semibold mb-3">
+                          Features & Amenities
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                           {property.features?.map((feature, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm">
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                               <span>{feature}</span>
                             </div>
                           ))}
                           {property.amenities?.map((amenity, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm">
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span>{getAmenityById(amenity)?.name || amenity}</span>
+                              <span>
+                                {getAmenityById(amenity)?.name || amenity}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -327,7 +409,9 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                       <div className="grid grid-cols-2 gap-4">
                         {investmentSpecs.map((spec, index) => (
                           <div key={index} className="space-y-1">
-                            <p className="text-xs text-gray-600">{spec.label}</p>
+                            <p className="text-xs text-gray-600">
+                              {spec.label}
+                            </p>
                             <p className="font-medium text-sm">{spec.value}</p>
                           </div>
                         ))}
@@ -338,22 +422,38 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                   {property.is_tokenized && property.tokenized_property && (
                     <Card>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">Tokenization Details</h3>
+                        <h3 className="font-semibold mb-4">
+                          Tokenization Details
+                        </h3>
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <span className="text-sm">Token Price</span>
-                            <span className="font-semibold">₦{property.tokenized_property.token_price}</span>
+                            <span className="font-semibold">
+                              ₦{property.tokenized_property.token_price}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm">Total Supply</span>
-                            <span className="font-semibold">{parseInt(property.tokenized_property.total_supply).toLocaleString()}</span>
+                            <span className="font-semibold">
+                              {parseInt(
+                                property.tokenized_property.total_supply
+                              ).toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <TrendingUp size={16} className="text-green-600 mr-1" />
-                              <span className="text-green-600 font-medium text-sm">{property.tokenized_property.expected_roi}% Expected ROI</span>
+                              <TrendingUp
+                                size={16}
+                                className="text-green-600 mr-1"
+                              />
+                              <span className="text-green-600 font-medium text-sm">
+                                {property.tokenized_property.expected_roi}%
+                                Expected ROI
+                              </span>
                             </div>
-                            <span className="text-xs text-gray-600">Annual projected return</span>
+                            <span className="text-xs text-gray-600">
+                              Annual projected return
+                            </span>
                           </div>
                         </div>
                       </CardContent>
@@ -362,24 +462,28 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
                 </TabsContent>
 
                 <TabsContent value="documents" className="space-y-4">
-                  <PropertyDocumentViewer 
+                  <PropertyDocumentViewer
                     propertyId={property.id}
                     landTitleId={property.land_title_id}
                   />
                 </TabsContent>
 
                 <TabsContent value="location" className="space-y-4">
-                  <PropertyMap 
+                  <PropertyMap
                     coordinates={getCoordinates()}
                     address={getLocationString()}
                   />
-                  
+
                   <Card>
                     <CardContent className="p-4">
-                      <h3 className="font-semibold mb-4">Location Information</h3>
+                      <h3 className="font-semibold mb-4">
+                        Location Information
+                      </h3>
                       <div>
                         <p className="font-medium text-sm">Address</p>
-                        <p className="text-gray-600 text-sm">{getLocationString()}</p>
+                        <p className="text-gray-600 text-sm">
+                          {getLocationString()}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -392,13 +496,15 @@ export function PropertyDetailsDialog({ open, onOpenChange, propertyId }: Proper
         {/* Fixed Footer Action Buttons */}
         <div className="flex-shrink-0 pt-4 border-t">
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
               Close
             </Button>
             {property.is_tokenized && (
-              <Button className="flex-1">
-                Invest Now
-              </Button>
+              <Button className="flex-1">Invest Now</Button>
             )}
           </div>
         </div>

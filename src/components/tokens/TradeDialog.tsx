@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -139,21 +147,17 @@ export function TradeDialog({ isOpen, onClose, property, onTradeComplete }: Trad
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-        {/* Fixed Header */}
-        <div className="flex-shrink-0">
-          <DialogHeader>
-            <DialogTitle>Trade Tokens</DialogTitle>
-            <DialogDescription>
-              {property.title}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+    <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
+      <ResponsiveDialogContent size="full" className="max-h-[90vh]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Trade Tokens</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            {property.title}
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-1">
+        <div className="flex-1 overflow-y-auto px-4 md:px-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Trading Form */}
             <div className="space-y-6">
               <Tabs value={tradeType} onValueChange={(value) => setTradeType(value as 'buy' | 'sell')}>
@@ -266,27 +270,6 @@ export function TradeDialog({ isOpen, onClose, property, onTradeComplete }: Trad
                       </span>
                     </div>
                   )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={onClose} className="flex-1">
-                      Cancel
-                    </Button>
-                    <Button 
-                      onClick={handleTrade} 
-                      disabled={!tokenAmount || parseFloat(tokenAmount) <= 0 || isProcessing || !!validateTrade()}
-                      className="flex-1"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        `${tradeType === 'buy' ? 'Buy' : 'Sell'} Tokens`
-                      )}
-                    </Button>
-                  </div>
                 </div>
               </Tabs>
             </div>
@@ -340,7 +323,24 @@ export function TradeDialog({ isOpen, onClose, property, onTradeComplete }: Trad
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button 
+            onClick={handleTrade} 
+            disabled={!tokenAmount || parseFloat(tokenAmount) <= 0 || isProcessing || !!validateTrade()}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              `${tradeType === 'buy' ? 'Buy' : 'Sell'} Tokens`
+            )}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

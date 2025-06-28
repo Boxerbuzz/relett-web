@@ -24,7 +24,7 @@ import Services from "@/pages/Services";
 import PropertyDetails from "@/pages/PropertyDetails";
 import UserBookings from "@/pages/UserBookings";
 import Tokens from "@/pages/Tokens";
-import MyLand from "@/pages/MyLand";
+import MyLand from "@/pages/MyProperty";
 import AddProperty from "@/pages/AddProperty";
 import Verification from "@/pages/Verification";
 import { Messaging } from "@/pages/Messaging";
@@ -167,7 +167,7 @@ function App() {
               />
 
               <Route
-                path="/me"
+                path="/bookings"
                 element={
                   <ProtectedRoute>
                     <Layout>
@@ -189,7 +189,7 @@ function App() {
               />
 
               <Route
-                path="/my-land"
+                path="/my-properties"
                 element={
                   <ProtectedRoute>
                     <Layout>

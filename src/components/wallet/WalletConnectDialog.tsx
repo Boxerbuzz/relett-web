@@ -2,7 +2,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,17 +55,18 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={isOpen} onOpenChange={handleClose}>
+      <ResponsiveDialogContent size="md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <Wallet className="w-5 h-5" />
             Connect Hedera Wallet
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
-        {step === 'connect' && (
-          <div className="space-y-6">
+        <div className="px-4 md:px-0">
+          {step === 'connect' && (
+            <div className="space-y-6">
             <Card className="border-blue-200 bg-blue-50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -108,20 +116,8 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={handleClose} className="flex-1">
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleConnect}
-                disabled={!accountId || !privateKey || isConnecting}
-                className="flex-1"
-              >
-                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
         {step === 'verify' && (
           <div className="space-y-6 text-center">
@@ -146,7 +142,20 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+        </div>
+
+        {step === 'connect' && (
+          <ResponsiveDialogFooter>
+            <ResponsiveDialogCloseButton />
+            <Button 
+              onClick={handleConnect}
+              disabled={!accountId || !privateKey || isConnecting}
+            >
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </Button>
+          </ResponsiveDialogFooter>
+        )}
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

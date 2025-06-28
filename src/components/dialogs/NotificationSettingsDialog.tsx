@@ -390,6 +390,7 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                         {notificationTypes.map((type) => (
                           <div key={type.key} className="flex items-center space-x-2">
                             <input
+                              title={type.title}
                               type="checkbox"
                               id={`digest-${type.key}`}
                               checked={settings.digestTypes.includes(type.key)}

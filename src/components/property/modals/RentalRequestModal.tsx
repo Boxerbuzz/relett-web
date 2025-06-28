@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,12 +7,14 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { paystackService } from '@/lib/paystack';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import {
   Form,
   FormControl,
@@ -210,99 +211,94 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Request Rental</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent size="md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Request Rental</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Submit a rental request for {property?.title}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="payment_plan"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Payment Plan</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <div className="px-4 md:px-0">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="payment_plan"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Plan</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select payment plan" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                        <SelectItem value="annually">Annually</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="move_in_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preferred Move-in Date</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment plan" />
-                      </SelectTrigger>
+                      <Input type="date" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
-                      <SelectItem value="annually">Annually</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="move_in_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred Move-in Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Message (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any additional information or special requests..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Message (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Any additional information or special requests..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {form.watch('payment_plan') && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm font-medium">Payment Amount</div>
-                <div className="text-lg font-bold text-primary">
-                  ₦{calculateAmount().toLocaleString()}
+              {form.watch('payment_plan') && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm font-medium">Payment Amount</div>
+                  <div className="text-lg font-bold text-primary">
+                    ₦{calculateAmount().toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {form.watch('payment_plan')} payment
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600">
-                  {form.watch('payment_plan')} payment
-                </div>
-              </div>
-            )}
+              )}
+            </form>
+          </Form>
+        </div>
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Processing...' : 'Pay & Submit Request'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton disabled={loading} />
+          <Button type="submit" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
+            {loading ? 'Processing...' : 'Pay & Submit Request'}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

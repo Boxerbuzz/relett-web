@@ -11,7 +11,7 @@ import {
   BuildingsIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
-  UsersThreeIcon,
+  UserIcon,
   FileTextIcon,
   MapPinIcon,
   BellIcon,
@@ -23,7 +23,6 @@ import {
 } from "@phosphor-icons/react";
 
 const Welcome = () => {
-  const { user } = useAuth();
   const { roles } = useUserRoles();
   const navigate = useNavigate();
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
@@ -32,7 +31,7 @@ const Welcome = () => {
     working: [
       {
         name: "User Authentication & Profiles",
-        icon: UsersThreeIcon,
+        icon: UserIcon,
         path: "/profile",
       },
       {
@@ -65,7 +64,7 @@ const Welcome = () => {
       },
       {
         name: "Role Management",
-        icon: UsersThreeIcon,
+        icon: UserIcon,
         path: "/admin",
         roles: ["admin"],
       },
@@ -117,7 +116,7 @@ const Welcome = () => {
           description: "Add personal information and complete KYC verification",
           action: "Update Profile",
           path: "/profile",
-          icon: UsersThreeIcon,
+          icon: UserIcon,
         },
       ],
     },
@@ -180,7 +179,7 @@ const Welcome = () => {
           description: "Coordinate property reservations",
           action: "View Reservations",
           path: "/agent/reservations",
-          icon: UsersThreeIcon,
+          icon: UserIcon,
         },
         {
           title: "Agent Calendar",
@@ -214,7 +213,7 @@ const Welcome = () => {
           description: "Verify user identity documents and information",
           action: "KYC Dashboard",
           path: "/admin",
-          icon: UsersThreeIcon,
+          icon: UserIcon,
         },
       ],
     },
@@ -234,7 +233,7 @@ const Welcome = () => {
           description: "Manage user accounts, roles, and permissions",
           action: "Manage Users",
           path: "/admin",
-          icon: UsersThreeIcon,
+          icon: UserIcon,
         },
         {
           title: "KYC Review Center",
@@ -280,13 +279,6 @@ const Welcome = () => {
           Your comprehensive platform for land tokenization and real estate
           investment
         </p>
-        <div className="flex justify-center gap-2 mb-4">
-          {roles.map((role, index) => (
-            <Badge key={index} variant="secondary" className="capitalize">
-              {role.role}
-            </Badge>
-          ))}
-        </div>
       </div>
 
       <Tabs defaultValue="guide" className="space-y-6">

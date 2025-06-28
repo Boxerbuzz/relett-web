@@ -1,6 +1,12 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -103,131 +109,131 @@ export function RoleRequestDialog({ open, onOpenChange }: RoleRequestDialogProps
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent size="lg" className="max-h-[90vh]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
             Request Role Upgrade
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="role">Role Type *</Label>
-            <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select the role you want to request" />
-              </SelectTrigger>
-              <SelectContent>
-                {roleOptions.map((role) => (
-                  <SelectItem key={role.value} value={role.value}>
-                    <div className="flex items-center gap-2">
-                      <role.icon className="h-4 w-4" />
-                      <div>
-                        <div className="font-medium">{role.label}</div>
-                        <div className="text-xs text-gray-500">{role.description}</div>
+        <div className="flex-1 overflow-y-auto px-4 md:px-0">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="role">Role Type *</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select the role you want to request" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      <div className="flex items-center gap-2">
+                        <role.icon className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">{role.label}</div>
+                          <div className="text-xs text-gray-500">{role.description}</div>
+                        </div>
                       </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {selectedRole && (
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <selectedRole.icon className="h-5 w-5 text-blue-600" />
-                <h3 className="font-medium text-blue-900">{selectedRole.label}</h3>
+            {selectedRole && (
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <selectedRole.icon className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-medium text-blue-900">{selectedRole.label}</h3>
+                </div>
+                <p className="text-sm text-blue-700">{selectedRole.description}</p>
               </div>
-              <p className="text-sm text-blue-700">{selectedRole.description}</p>
-            </div>
-          )}
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="experience">Years of Experience</Label>
-              <Input
-                id="experience"
-                type="number"
-                min="0"
-                max="50"
-                value={formData.experience}
-                onChange={(e) => setFormData({...formData, experience: e.target.value})}
-                placeholder="e.g., 5"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact Phone</Label>
-              <Input
-                id="contactPhone"
-                type="tel"
-                value={formData.contactPhone}
-                onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
-                placeholder="Your phone number"
-              />
-            </div>
-          </div>
-
-          {(formData.role === 'verifier' || formData.role === 'surveyor') && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="licenseNumber">License Number</Label>
+                <Label htmlFor="experience">Years of Experience</Label>
                 <Input
-                  id="licenseNumber"
-                  value={formData.licenseNumber}
-                  onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
-                  placeholder="Professional license number"
+                  id="experience"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.experience}
+                  onChange={(e) => setFormData({...formData, experience: e.target.value})}
+                  placeholder="e.g., 5"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="issuingAuthority">Issuing Authority</Label>
+                <Label htmlFor="contactPhone">Contact Phone</Label>
                 <Input
-                  id="issuingAuthority"
-                  value={formData.issuingAuthority}
-                  onChange={(e) => setFormData({...formData, issuingAuthority: e.target.value})}
-                  placeholder="e.g., Nigerian Institute of Surveyors"
+                  id="contactPhone"
+                  type="tel"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
+                  placeholder="Your phone number"
                 />
               </div>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="credentials">Qualifications & Credentials</Label>
-            <Textarea
-              id="credentials"
-              rows={3}
-              value={formData.credentials}
-              onChange={(e) => setFormData({...formData, credentials: e.target.value})}
-              placeholder="List your relevant qualifications, certifications, or credentials"
-            />
-          </div>
+            {(formData.role === 'verifier' || formData.role === 'surveyor') && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="licenseNumber">License Number</Label>
+                  <Input
+                    id="licenseNumber"
+                    value={formData.licenseNumber}
+                    onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
+                    placeholder="Professional license number"
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="reason">Why do you want this role? *</Label>
-            <Textarea
-              id="reason"
-              rows={4}
-              value={formData.reason}
-              onChange={(e) => setFormData({...formData, reason: e.target.value})}
-              placeholder="Explain your motivation and how you plan to contribute to the platform"
-              required
-            />
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="issuingAuthority">Issuing Authority</Label>
+                  <Input
+                    id="issuingAuthority"
+                    value={formData.issuingAuthority}
+                    onChange={(e) => setFormData({...formData, issuingAuthority: e.target.value})}
+                    placeholder="e.g., Nigerian Institute of Surveyors"
+                  />
+                </div>
+              </div>
+            )}
 
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Request'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="credentials">Qualifications & Credentials</Label>
+              <Textarea
+                id="credentials"
+                rows={3}
+                value={formData.credentials}
+                onChange={(e) => setFormData({...formData, credentials: e.target.value})}
+                placeholder="List your relevant qualifications, certifications, or credentials"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reason">Why do you want this role? *</Label>
+              <Textarea
+                id="reason"
+                rows={4}
+                value={formData.reason}
+                onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                placeholder="Explain your motivation and how you plan to contribute to the platform"
+                required
+              />
+            </div>
+          </form>
+        </div>
+
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button type="submit" disabled={submitting} onClick={handleSubmit}>
+            {submitting ? 'Submitting...' : 'Submit Request'}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -1,8 +1,14 @@
-
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -34,16 +40,16 @@ export function ChangeCurrencyDialog({ open, onOpenChange, currentCurrency = 'US
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent size="md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex items-center gap-2">
             <DollarSign size={20} />
             Change Currency
-          </DialogTitle>
-        </DialogHeader>
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 px-4 md:px-0">
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-gray-600 mb-4">
@@ -82,22 +88,18 @@ export function ChangeCurrencyDialog({ open, onOpenChange, currentCurrency = 'US
               Your investments will still be processed in the original currency.
             </p>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSave}
-              className="flex-1"
-              disabled={selectedCurrency === currentCurrency}
-            >
-              Save Changes
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button 
+            onClick={handleSave}
+            disabled={selectedCurrency === currentCurrency}
+          >
+            Save Changes
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
