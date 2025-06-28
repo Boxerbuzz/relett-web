@@ -293,7 +293,7 @@ export function RentalRequestModal({ open, onOpenChange, property }: RentalReque
         </div>
 
         <ResponsiveDialogFooter>
-          <ResponsiveDialogCloseButton disabled={loading} />
+          <ResponsiveDialogCloseButton />
           <Button type="submit" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
             {loading ? 'Processing...' : 'Pay & Submit Request'}
           </Button>

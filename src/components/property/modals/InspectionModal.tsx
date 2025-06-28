@@ -176,7 +176,7 @@ export function InspectionModal({ open, onOpenChange, property }: InspectionModa
         </div>
 
         <ResponsiveDialogFooter>
-          <ResponsiveDialogCloseButton disabled={loading} />
+          <ResponsiveDialogCloseButton />
           <Button type="submit" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
             {loading ? 'Submitting...' : 'Request Inspection'}
           </Button>

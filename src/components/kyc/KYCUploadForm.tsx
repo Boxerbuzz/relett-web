@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,20 +13,31 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import {
-  FileTextIcon,
-  CloudArrowUpIcon,
-  WarningIcon,
-  CheckCircleIcon,
-} from "@phosphor-icons/react";
+import { useIdentityVerification } from "@/hooks/useIdentityVerification";
 import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
+import { KYCVerificationStatus } from "./KYCVerificationStatus";
+import { IdentityDataForm } from "./IdentityDataForm";
+import {
+  FileText,
+  CloudArrowUp,
+  Warning,
+  CheckCircle,
+  X,
+} from "@phosphor-icons/react";
 
 export function KYCUploadForm() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [selectedDocType, setSelectedDocType] = useState("");
   const { uploadFile } = useSupabaseStorage();
+  const {
+    verifications,
+    loading,
+    isVerified,
+    hasAnyVerification,
+  } = useIdentityVerification();
 
   const documentTypes = [
     { value: "passport", label: "International Passport" },
@@ -36,16 +48,52 @@ export function KYCUploadForm() {
     { value: "bank_statement", label: "Bank Statement" },
   ];
 
-  const handleFileUpload = async (file: File, documentType: string) => {
+  // Get the general verification status (not type-specific)
+  const verificationStatus = verifications.length > 0 
+    ? verifications[0].verification_status || "unverified"
+    : "unverified";
+  
+  const canUploadDocuments = hasAnyVerification() && verificationStatus !== "verified";
+  const showIdentityForm = !hasAnyVerification() && verificationStatus === "unverified";
+
+  useEffect(() => {
+    if (user) {
+      fetchDocuments();
+    }
+  }, [user]);
+
+  const fetchDocuments = async () => {
     if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("kyc_documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDocuments(data || []);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !selectedDocType) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a document type and file",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUploading(true);
     try {
-      // Create a simple hash for the file
       const fileHash = await createFileHash(file);
 
-      // For now, we'll simulate the upload by creating a URL
-      // In production, you'd upload to Supabase Storage
       const { url } = await uploadFile(file, {
         bucket: "kyc-documents",
         folder: user.id,
@@ -56,7 +104,7 @@ export function KYCUploadForm() {
 
       const { error } = await supabase.from("kyc_documents").insert({
         user_id: user.id,
-        document_type: documentType,
+        document_type: selectedDocType,
         file_url: url,
         file_hash: fileHash,
         file_size: file.size,
@@ -71,8 +119,13 @@ export function KYCUploadForm() {
         description: "Your KYC document has been uploaded for review",
       });
 
-      // Refresh documents list
       fetchDocuments();
+      setSelectedDocType("");
+      
+      // Reset file input
+      if (e.target) {
+        e.target.value = "";
+      }
     } catch (error) {
       console.error("Error uploading document:", error);
       toast({
@@ -92,36 +145,40 @@ export function KYCUploadForm() {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   };
 
-  const fetchDocuments = async () => {
-    if (!user) return;
-
+  const removeDocument = async (documentId: string) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("kyc_documents")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .delete()
+        .eq("id", documentId)
+        .eq("user_id", user?.id);
 
       if (error) throw error;
-      setDocuments(data || []);
+
+      toast({
+        title: "Document Removed",
+        description: "Document has been removed successfully",
+      });
+
+      fetchDocuments();
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      console.error("Error removing document:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove document",
+        variant: "destructive",
+      });
     }
   };
-
-  // Fetch documents on component mount
-  useState(() => {
-    fetchDocuments();
-  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "verified":
-        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
       case "rejected":
-        return <WarningIcon className="h-5 w-5 text-red-600" />;
+        return <Warning className="h-5 w-5 text-red-600" />;
       default:
-        return <FileTextIcon className="h-5 w-5 text-yellow-600" />;
+        return <FileText className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -136,70 +193,92 @@ export function KYCUploadForm() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Upload Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CloudArrowUpIcon className="h-5 w-5" />
-            Upload KYC Documents
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="document-type">Document Type</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {documentTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Verification Status */}
+      <KYCVerificationStatus
+        status={verificationStatus}
+        hasDocuments={documents.length > 0}
+        hasIdentityVerification={hasAnyVerification()}
+      />
+
+      {/* Identity Data Form - Show only if no verification exists */}
+      {showIdentityForm && (
+        <IdentityDataForm 
+          onSuccess={fetchDocuments}
+          disabled={verificationStatus === "verified"}
+        />
+      )}
+
+      {/* Document Upload Form - Show only if identity verification exists and not verified */}
+      {canUploadDocuments && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CloudArrowUp className="h-5 w-5" />
+              Upload Supporting Documents
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="document-type">Document Type</Label>
+                <Select value={selectedDocType} onValueChange={setSelectedDocType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select document type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {documentTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="document-file">Choose File</Label>
+                <Input
+                  id="document-file"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileUpload}
+                  disabled={uploading || !selectedDocType}
+                />
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="document-file">Choose File</Label>
-              <Input
-                id="document-file"
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  const documentType = "national_id"; // You'd get this from the select
-                  if (file) {
-                    handleFileUpload(file, documentType);
-                  }
-                }}
-              />
-            </div>
-          </div>
+            {uploading && (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-600">Uploading document...</p>
+              </div>
+            )}
 
-          <div className="text-sm text-gray-600">
-            <p>Accepted formats: PDF, JPG, JPEG, PNG</p>
-            <p>Maximum file size: 10MB</p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-sm text-gray-600">
+              <p>Accepted formats: PDF, JPG, JPEG, PNG</p>
+              <p>Maximum file size: 10MB</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Uploaded Documents */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Documents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {documents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <FileTextIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No documents uploaded yet</p>
-            </div>
-          ) : (
+      {documents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Documents</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               {documents.map((doc) => (
                 <div
@@ -225,13 +304,23 @@ export function KYCUploadForm() {
                     >
                       {doc.verification_status}
                     </span>
+                    {(doc.verification_status === "rejected" || verificationStatus !== "verified") && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeDocument(doc.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Information Card */}
       <Card className="border-blue-200 bg-blue-50">
@@ -240,20 +329,15 @@ export function KYCUploadForm() {
             KYC Verification Process
           </h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>
-              • Upload clear, readable copies of your identification documents
-            </li>
-            <li>
-              • Our verification team will review your documents within 24-48
-              hours
-            </li>
-            <li>
-              • You'll receive a notification once your documents are verified
-            </li>
-            <li>
-              • Verified users gain access to investment and tokenization
-              features
-            </li>
+            <li>• Provide your identity information and upload clear, readable documents</li>
+            <li>• Our verification team reviews submissions within 24-48 hours</li>
+            <li>• You'll receive notifications about your verification status</li>
+            <li>• Verified users gain access to investment and tokenization features</li>
+            {verificationStatus === "rejected" && (
+              <li className="text-red-700 font-medium">
+                • Your submission was rejected. Please review feedback and resubmit.
+              </li>
+            )}
           </ul>
         </CardContent>
       </Card>
