@@ -1,226 +1,110 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  createTypedSupabaseClient,
-  createSuccessResponse, 
-  createErrorResponse,
-  createResponse,
-  createCorsResponse 
-} from '../shared/supabase-client.ts';
+import { createTypedSupabaseClient, corsHeaders, createResponse, createCorsResponse } from '../shared/supabase-client.ts';
 
-interface InspectionNotificationRequest {
+interface InspectionNotificationPayload {
   inspection_id: string;
   status: string;
   previous_status?: string;
 }
 
-interface Inspection {
-  id: string;
-  property_id: string;
-  user_id: string;
-  agent_id: string;
-  property?: {
-    id: string;
-    title?: string;
-    user_id: string;
-  };
-  user?: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
-  agent?: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
-}
-
-interface NotificationContent {
-  title: string;
-  message: string;
-  action_url: string;
-  action_label: string;
-}
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return createCorsResponse();
   }
 
   try {
     const supabase = createTypedSupabaseClient();
-    const { inspection_id, status, previous_status }: InspectionNotificationRequest = await req.json();
+    const payload = await req.json() as InspectionNotificationPayload;
+    
+    console.log('Processing inspection notification:', payload);
 
-    if (!inspection_id || !status) {
-      return createResponse(createErrorResponse('Inspection ID and status are required'), 400);
-    }
-
-    // Get inspection details with related property and user data
+    // Get inspection details
     const { data: inspection, error: inspectionError } = await supabase
       .from('inspections')
       .select(`
         *,
-        property:properties(id, title, user_id),
-        user:users(id, email, first_name, last_name),
-        agent:users!inspections_agent_id_fkey(id, email, first_name, last_name)
+        properties!inner(title, user_id),
+        users!inspections_user_id_fkey(first_name, last_name, email),
+        agents:users!inspections_agent_id_fkey(first_name, last_name, email)
       `)
-      .eq('id', inspection_id)
+      .eq('id', payload.inspection_id)
       .single();
 
     if (inspectionError || !inspection) {
-      return createResponse(createErrorResponse('Inspection not found'), 404);
+      console.error('Error fetching inspection:', inspectionError);
+      return createResponse({ success: false, error: 'Inspection not found' }, 404);
     }
 
-    console.log('Processing inspection notification:', inspection_id, status);
+    const statusMessages = {
+      confirmed: 'Your inspection has been confirmed',
+      completed: 'Your inspection has been completed',
+      cancelled: 'Your inspection has been cancelled',
+      rescheduled: 'Your inspection has been rescheduled',
+      pending: 'Your inspection is pending confirmation'
+    };
 
-    const inspectionData = inspection as Inspection;
-    const notifications = [];
+    const message = statusMessages[payload.status as keyof typeof statusMessages] || 
+                   `Your inspection status has been updated to ${payload.status}`;
 
-    // Notification messages based on status
-    const getNotificationContent = (status: string, isForAgent: boolean): NotificationContent => {
-      const propertyTitle = inspectionData.property?.title || 'Property';
-      const userName = `${inspectionData.user?.first_name || ''} ${inspectionData.user?.last_name || ''}`.trim();
-      const agentName = `${inspectionData.agent?.first_name || ''} ${inspectionData.agent?.last_name || ''}`.trim();
+    // Notify the user who requested the inspection
+    if (inspection.user_id) {
+      const { error: userNotifError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: inspection.user_id,
+          type: 'inspection',
+          title: 'Inspection Update',
+          message: `${message} for ${inspection.properties.title}`,
+          metadata: {
+            inspection_id: payload.inspection_id,
+            property_id: inspection.property_id,
+            status: payload.status,
+            previous_status: payload.previous_status
+          },
+          action_url: `/bookings`,
+          action_label: 'View Details'
+        });
 
-      switch (status) {
-        case 'pending':
-          return isForAgent 
-            ? {
-                title: 'New Inspection Request',
-                message: `${userName} has requested an inspection for ${propertyTitle}`,
-                action_url: `/agent/inspections`,
-                action_label: 'View Request'
-              }
-            : {
-                title: 'Inspection Request Submitted',
-                message: `Your inspection request for ${propertyTitle} has been submitted and is pending approval`,
-                action_url: `/properties/${inspectionData.property_id}`,
-                action_label: 'View Property'
-              };
-
-        case 'confirmed':
-          return isForAgent
-            ? {
-                title: 'Inspection Confirmed',
-                message: `Inspection for ${propertyTitle} has been confirmed with ${userName}`,
-                action_url: `/agent/inspections`,
-                action_label: 'View Details'
-              }
-            : {
-                title: 'Inspection Confirmed',
-                message: `Your inspection request for ${propertyTitle} has been confirmed by ${agentName}`,
-                action_url: `/properties/${inspectionData.property_id}`,
-                action_label: 'View Details'
-              };
-
-        case 'completed':
-          return isForAgent
-            ? {
-                title: 'Inspection Completed',
-                message: `Inspection for ${propertyTitle} with ${userName} has been marked as completed`,
-                action_url: `/agent/inspections`,
-                action_label: 'View Details'
-              }
-            : {
-                title: 'Inspection Completed',
-                message: `Your inspection for ${propertyTitle} has been completed. Thank you for your interest!`,
-                action_url: `/properties/${inspectionData.property_id}`,
-                action_label: 'View Property'
-              };
-
-        case 'cancelled':
-          return isForAgent
-            ? {
-                title: 'Inspection Cancelled',
-                message: `Inspection for ${propertyTitle} with ${userName} has been cancelled`,
-                action_url: `/agent/inspections`,
-                action_label: 'View Details'
-              }
-            : {
-                title: 'Inspection Cancelled',
-                message: `Your inspection request for ${propertyTitle} has been cancelled`,
-                action_url: `/properties/${inspectionData.property_id}`,
-                action_label: 'View Property'
-              };
-
-        default:
-          return {
-            title: 'Inspection Update',
-            message: `Your inspection status has been updated to ${status}`,
-            action_url: `/properties/${inspectionData.property_id}`,
-            action_label: 'View Details'
-          };
+      if (userNotifError) {
+        console.error('Error creating user notification:', userNotifError);
       }
-    };
-
-    // Send notification to the user (inspection requester)
-    if (inspectionData.user_id) {
-      const userNotification = getNotificationContent(status, false);
-      notifications.push(
-        supabase.functions.invoke('process-notification', {
-          body: {
-            user_id: inspectionData.user_id,
-            type: 'property_inspection',
-            title: userNotification.title,
-            message: userNotification.message,
-            metadata: {
-              inspection_id,
-              property_id: inspectionData.property_id,
-              status,
-              previous_status
-            },
-            action_url: userNotification.action_url,
-            action_label: userNotification.action_label
-          }
-        })
-      );
     }
 
-    // Send notification to the agent (property owner/agent)
-    if (inspectionData.agent_id && inspectionData.agent_id !== inspectionData.user_id) {
-      const agentNotification = getNotificationContent(status, true);
-      notifications.push(
-        supabase.functions.invoke('process-notification', {
-          body: {
-            user_id: inspectionData.agent_id,
-            type: 'property_inspection',
-            title: agentNotification.title,
-            message: agentNotification.message,
-            metadata: {
-              inspection_id,
-              property_id: inspectionData.property_id,
-              status,
-              previous_status,
-              requester_name: `${inspectionData.user?.first_name || ''} ${inspectionData.user?.last_name || ''}`.trim()
-            },
-            action_url: agentNotification.action_url,
-            action_label: agentNotification.action_label
-          }
-        })
-      );
+    // Notify the agent
+    if (inspection.agent_id && inspection.agent_id !== inspection.user_id) {
+      const { error: agentNotifError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: inspection.agent_id,
+          type: 'inspection',
+          title: 'Inspection Update',
+          message: `Inspection status updated to ${payload.status} for ${inspection.properties.title}`,
+          metadata: {
+            inspection_id: payload.inspection_id,
+            property_id: inspection.property_id,
+            status: payload.status,
+            is_agent_notification: true
+          },
+          action_url: `/agent/inspections`,
+          action_label: 'View Details'
+        });
+
+      if (agentNotifError) {
+        console.error('Error creating agent notification:', agentNotifError);
+      }
     }
 
-    const results = await Promise.all(notifications);
-    const successCount = results.filter(result => result.error === null).length;
-
-    console.log(`Inspection notification processed: ${successCount}/${results.length} notifications sent`);
-
-    const response = {
+    return createResponse({
       success: true,
-      notifications_sent: successCount,
-      total_notifications: results.length,
-      inspection_id,
-      status
-    };
-
-    return createResponse(createSuccessResponse(response));
+      message: 'Inspection notifications sent successfully'
+    });
 
   } catch (error) {
-    console.error('Error in inspection notification:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return createResponse(createErrorResponse('Inspection notification failed', errorMessage), 500);
+    console.error('Error in send-inspection-notification:', error);
+    return createResponse({
+      success: false,
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, 500);
   }
 });
