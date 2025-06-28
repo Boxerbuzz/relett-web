@@ -155,15 +155,15 @@ const userNavigation = [
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
   },
   {
-    name: "Settings",
-    href: "/settings",
-    icon: GearIcon,
-    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
-  },
-  {
     name: "Profile",
     href: "/profile",
     icon: UserIcon,
+    roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: GearIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
   },
 ];

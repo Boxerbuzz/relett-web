@@ -1,17 +1,26 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProfileForm } from '@/components/profile/ProfileForm';
-import { EmailVerificationStatus } from '@/components/profile/EmailVerificationStatus';
-import { KYCUploadForm } from '@/components/kyc/KYCUploadForm';
-import { User, FileText, Bell, ShieldCheck, Gear } from '@phosphor-icons/react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProfileForm } from "@/components/profile/ProfileForm";
+import { EmailVerificationStatus } from "@/components/profile/EmailVerificationStatus";
+import { KYCUploadForm } from "@/components/kyc/KYCUploadForm";
+import {
+  UserIcon,
+  FileTextIcon,
+  BellIcon,
+  ShieldCheckIcon,
+  GearIcon,
+} from "@phosphor-icons/react";
 
 const Settings = () => {
   return (
     <div className="container mx-auto py-6 px-4 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings & Profile</h1>
-        <p className="text-gray-600">Manage your account information, preferences, and security settings</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Settings & Profile
+        </h1>
+        <p className="text-gray-600">
+          Manage your account information, preferences, and security settings
+        </p>
       </div>
 
       <EmailVerificationStatus />
@@ -19,23 +28,26 @@ const Settings = () => {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <UserIcon className="h-4 w-4" />
             Profile
           </TabsTrigger>
           <TabsTrigger value="kyc" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+            <FileTextIcon className="h-4 w-4" />
             KYC Verification
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheckIcon className="h-4 w-4" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-2"
+          >
+            <BellIcon className="h-4 w-4" />
             Notifications
           </TabsTrigger>
           <TabsTrigger value="preferences" className="flex items-center gap-2">
-            <Gear className="h-4 w-4" />
+            <GearIcon className="h-4 w-4" />
             Preferences
           </TabsTrigger>
         </TabsList>
@@ -65,7 +77,9 @@ const Settings = () => {
               <CardTitle>Notification Preferences</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Notification preferences coming soon...</p>
+              <p className="text-gray-600">
+                Notification preferences coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -76,7 +90,9 @@ const Settings = () => {
               <CardTitle>Application Preferences</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Application preferences coming soon...</p>
+              <p className="text-gray-600">
+                Application preferences coming soon...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,14 +1,18 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { CheckCircle, XCircle, Clock, Mail } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  EnvelopeSimpleIcon,
+} from "@phosphor-icons/react";
 
 export function EmailVerificationStatus() {
   const { user } = useAuth();
@@ -24,13 +28,13 @@ export function EmailVerificationStatus() {
     try {
       setResending(true);
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email: user.email,
         options: {
           emailRedirectTo: redirectUrl,
-        }
+        },
       });
 
       if (error) {
@@ -47,7 +51,7 @@ export function EmailVerificationStatus() {
         description: "Please check your email inbox for the verification link.",
       });
     } catch (error) {
-      console.error('Resend verification error:', error);
+      console.error("Resend verification error:", error);
       toast({
         title: "Error",
         description: "Failed to resend verification email",
@@ -63,10 +67,12 @@ export function EmailVerificationStatus() {
       <Card className="border-green-200 bg-green-50">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CheckCircleIcon className="h-5 w-5 text-green-600" />
             <div className="flex-1">
               <h3 className="font-medium text-green-900">Email Verified</h3>
-              <p className="text-sm text-green-700">Your email address has been verified</p>
+              <p className="text-sm text-green-700">
+                Your email address has been verified
+              </p>
             </div>
             <Badge className="bg-green-100 text-green-800" variant="outline">
               Verified
@@ -81,11 +87,14 @@ export function EmailVerificationStatus() {
     <Card className="border-yellow-200 bg-yellow-50">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <Clock className="h-5 w-5 text-yellow-600" />
+          <ClockIcon className="h-5 w-5 text-yellow-600" />
           <div className="flex-1">
-            <h3 className="font-medium text-yellow-900">Email Verification Pending</h3>
+            <h3 className="font-medium text-yellow-900">
+              Email Verification Pending
+            </h3>
             <p className="text-sm text-yellow-700">
-              Please check your email and click the verification link to activate your account
+              Please check your email and click the verification link to
+              activate your account
             </p>
           </div>
           <Badge className="bg-yellow-100 text-yellow-800" variant="outline">
@@ -102,12 +111,12 @@ export function EmailVerificationStatus() {
           >
             {resending ? (
               <>
-                <Clock className="mr-2 h-4 w-4 animate-spin" />
+                <ClockIcon className="mr-2 h-4 w-4 animate-spin" />
                 Sending...
               </>
             ) : (
               <>
-                <Mail className="mr-2 h-4 w-4" />
+                <EnvelopeSimpleIcon className="mr-2 h-4 w-4" />
                 Resend Verification
               </>
             )}

@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -35,6 +34,7 @@ import AgentRentals from "@/pages/AgentRentals";
 import AgentReservations from "@/pages/AgentReservations";
 import AgentCalendar from "@/pages/AgentCalendar";
 import MapView from "./pages/MapView";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,6 +106,17 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Settings />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Profile />
                     </Layout>
                   </ProtectedRoute>
                 }
