@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,7 +30,7 @@ import {
   Envelope,
   ArrowRight,
   FileText,
-  Certificate,
+  Seal,
 } from "phosphor-react";
 
 interface DashboardStats {

@@ -86,7 +86,7 @@ export function InvestNowDialog({ open, onOpenChange, tokenizedProperty }: Inves
 
       if (trackingError) throw trackingError;
 
-      // Create a token transaction record
+      // Create a token transaction record - using correct column name
       const { error: transactionError } = await supabase
         .from('token_transactions')
         .insert({
@@ -96,7 +96,7 @@ export function InvestNowDialog({ open, onOpenChange, tokenizedProperty }: Inves
           price_per_token: tokenizedProperty.token_price,
           total_value: investmentAmount,
           transaction_type: 'purchase',
-          status: 'completed'
+          status: 'confirmed'
         });
 
       if (transactionError) throw transactionError;
