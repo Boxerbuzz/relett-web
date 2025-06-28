@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -142,7 +143,7 @@ export function TransactionDetailsDialog({ open, onOpenChange, transaction }: Tr
         </div>
 
         <ResponsiveDialogFooter>
-          <ResponsiveDialogCloseButton className="flex-1">
+          <ResponsiveDialogCloseButton>
             Close
           </ResponsiveDialogCloseButton>
         </ResponsiveDialogFooter>

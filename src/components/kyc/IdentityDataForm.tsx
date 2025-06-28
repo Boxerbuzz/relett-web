@@ -14,7 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIdentityVerification } from "@/hooks/useIdentityVerification";
 import { IdentityType } from "@/types/database";
-import { IdentificationIcon, LoadingIcon } from "@phosphor-icons/react";
+import { IdentificationCard, Spinner } from "@phosphor-icons/react";
 
 interface IdentityDataFormProps {
   onSuccess: () => void;
@@ -85,7 +85,7 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <IdentificationIcon className="h-5 w-5" />
+          <IdentificationCard className="h-5 w-5" />
           Identity Information
         </CardTitle>
       </CardHeader>
@@ -161,7 +161,7 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
           >
             {submitting ? (
               <>
-                <LoadingIcon className="mr-2 h-4 w-4 animate-spin" />
+                <Spinner className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (

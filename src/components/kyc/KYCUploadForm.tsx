@@ -19,11 +19,11 @@ import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
 import { KYCVerificationStatus } from "./KYCVerificationStatus";
 import { IdentityDataForm } from "./IdentityDataForm";
 import {
-  FileTextIcon,
-  CloudArrowUpIcon,
-  WarningIcon,
-  CheckCircleIcon,
-  XIcon,
+  FileText,
+  CloudArrowUp,
+  Warning,
+  CheckCircle,
+  X,
 } from "@phosphor-icons/react";
 
 export function KYCUploadForm() {
@@ -51,8 +51,8 @@ export function KYCUploadForm() {
   ];
 
   const verificationStatus = getVerificationStatus();
-  const canUploadDocuments = hasAnyVerification() && verificationStatus !== "verified";
-  const showIdentityForm = !hasAnyVerification() && verificationStatus === "unverified";
+  const canUploadDocuments = hasAnyVerification && verificationStatus !== "verified";
+  const showIdentityForm = !hasAnyVerification && verificationStatus === "unverified";
 
   useEffect(() => {
     if (user) {
@@ -172,11 +172,11 @@ export function KYCUploadForm() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "verified":
-        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
       case "rejected":
-        return <WarningIcon className="h-5 w-5 text-red-600" />;
+        return <Warning className="h-5 w-5 text-red-600" />;
       default:
-        return <FileTextIcon className="h-5 w-5 text-yellow-600" />;
+        return <FileText className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -205,7 +205,7 @@ export function KYCUploadForm() {
       <KYCVerificationStatus
         status={verificationStatus}
         hasDocuments={documents.length > 0}
-        hasIdentityVerification={hasAnyVerification()}
+        hasIdentityVerification={hasAnyVerification}
       />
 
       {/* Identity Data Form - Show only if no verification exists */}
@@ -221,7 +221,7 @@ export function KYCUploadForm() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CloudArrowUpIcon className="h-5 w-5" />
+              <CloudArrowUp className="h-5 w-5" />
               Upload Supporting Documents
             </CardTitle>
           </CardHeader>
@@ -302,14 +302,14 @@ export function KYCUploadForm() {
                     >
                       {doc.verification_status}
                     </span>
-                    {(doc.verification_status === "rejected" || verificationStatus === "unverified") && (
+                    {(doc.verification_status === "rejected" || verificationStatus !== "verified") && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => removeDocument(doc.id)}
                         className="text-red-600 hover:text-red-700"
                       >
-                        <XIcon className="h-4 w-4" />
+                        <X className="h-4 w-4" />
                       </Button>
                     )}
                   </div>

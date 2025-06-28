@@ -216,7 +216,7 @@ export function OfferModal({ open, onOpenChange, property }: OfferModalProps) {
         </div>
 
         <ResponsiveDialogFooter>
-          <ResponsiveDialogCloseButton disabled={loading} />
+          <ResponsiveDialogCloseButton />
           <Button type="submit" disabled={loading} onClick={form.handleSubmit(onSubmit)}>
             {loading ? 'Submitting...' : 'Submit Offer'}
           </Button>
