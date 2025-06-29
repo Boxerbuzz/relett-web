@@ -155,6 +155,7 @@ function App() {
                 }
               />
 
+              {/* Updated property details route */}
               <Route
                 path="/properties/:propertyId"
                 element={
