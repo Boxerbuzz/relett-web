@@ -70,10 +70,19 @@ export function usePropertyDetails(propertyId: string) {
       setLoading(true);
       setError(null);
 
-      // First, increment the view count manually
+      // First, get current views count and increment it
+      const { data: currentProperty } = await supabase
+        .from('properties')
+        .select('views')
+        .eq('id', propertyId)
+        .single();
+
+      const currentViews = currentProperty?.views || 0;
+
+      // Update views count
       await supabase
         .from('properties')
-        .update({ views: supabase.raw('COALESCE(views, 0) + 1') })
+        .update({ views: currentViews + 1 })
         .eq('id', propertyId);
 
       // Fetch basic property data
