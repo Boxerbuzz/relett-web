@@ -15,7 +15,7 @@ import {
   ShareNetworkIcon,
   MapPinIcon,
   BedIcon,
-  HomeIcon,
+  HouseIcon,
   CarIcon,
   EyeIcon,
   CalendarIcon,
@@ -294,7 +294,7 @@ const EnhancedPropertyDetails = () => {
                     )}
                     {property.specification.bathrooms && (
                       <div className="flex items-center gap-2">
-                        <HomeIcon className="h-5 w-5 text-gray-600" />
+                        <HouseIcon className="h-5 w-5 text-gray-600" />
                         <div>
                           <p className="font-medium">{property.specification.bathrooms}</p>
                           <p className="text-sm text-gray-600">Bathrooms</p>
@@ -312,7 +312,7 @@ const EnhancedPropertyDetails = () => {
                     )}
                     {property.specification.area_sqm && (
                       <div className="flex items-center gap-2">
-                        <HomeIcon className="h-5 w-5 text-gray-600" />
+                        <HouseIcon className="h-5 w-5 text-gray-600" />
                         <div>
                           <p className="font-medium">{property.specification.area_sqm.toLocaleString()}</p>
                           <p className="text-sm text-gray-600">sqm</p>

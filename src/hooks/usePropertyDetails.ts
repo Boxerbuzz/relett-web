@@ -70,57 +70,12 @@ export function usePropertyDetails(propertyId: string) {
       setLoading(true);
       setError(null);
 
-      // First, increment the view count
-      await supabase.rpc('increment_property_views', { property_id: propertyId });
+      // First, increment the view count manually
+      await supabase
+        .from('properties')
+        .update({ views: supabase.raw('COALESCE(views, 0) + 1') })
+        .eq('id', propertyId);
 
-      // Use the database function to get property details with related data
-      const { data, error: functionError } = await supabase.rpc('get_property_details', {
-        property_id: propertyId
-      });
-
-      if (functionError) {
-        console.error('Function error:', functionError);
-        // Fallback to manual queries if function fails
-        await fetchPropertyDetailsFallback();
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        setError('Property not found');
-        return;
-      }
-
-      const result = data[0];
-      const propertyData = result.property_data;
-      const images = result.images || [];
-      const documents = result.documents || [];
-      const tokenizedInfo = result.tokenized_info;
-
-      // Combine all data into a single property object
-      const enrichedProperty: PropertyDetails = {
-        ...propertyData,
-        property_images: images,
-        property_documents: documents,
-        tokenized_property: Object.keys(tokenizedInfo).length > 0 ? tokenizedInfo : null,
-      };
-
-      setProperty(enrichedProperty);
-    } catch (err) {
-      console.error('Error fetching property details:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch property details';
-      setError(errorMessage);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPropertyDetailsFallback = async () => {
-    try {
       // Fetch basic property data
       const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
@@ -150,11 +105,11 @@ export function usePropertyDetails(propertyId: string) {
 
       // Fetch tokenized property info if applicable
       let tokenizedProperty = null;
-      if (propertyData.is_tokenized && propertyData.tokenized_property_id) {
+      if (propertyData.is_tokenized) {
         const { data: tokenData } = await supabase
           .from('tokenized_properties')
           .select('*')
-          .eq('id', propertyData.tokenized_property_id)
+          .eq('property_id', propertyId)
           .single();
         
         tokenizedProperty = tokenData;
@@ -169,9 +124,16 @@ export function usePropertyDetails(propertyId: string) {
 
       setProperty(enrichedProperty);
     } catch (err) {
-      console.error('Fallback fetch error:', err);
+      console.error('Error fetching property details:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch property details';
       setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 

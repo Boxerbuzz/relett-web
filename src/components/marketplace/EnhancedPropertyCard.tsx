@@ -11,7 +11,7 @@ import {
   ArrowRightIcon,
   BedIcon,
   CarIcon,
-  HomeIcon,
+  HouseIcon,
   CurrencyDollarIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
@@ -151,7 +151,7 @@ export function EnhancedPropertyCard({
               />
               {imageLoading && (
                 <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                  <HomeIcon className="h-12 w-12 text-gray-400" />
+                  <HouseIcon className="h-12 w-12 text-gray-400" />
                 </div>
               )}
               
@@ -187,7 +187,7 @@ export function EnhancedPropertyCard({
             </>
           ) : (
             <div className="h-full flex items-center justify-center text-gray-400">
-              <HomeIcon className="h-12 w-12" />
+              <HouseIcon className="h-12 w-12" />
             </div>
           )}
 
@@ -270,7 +270,7 @@ export function EnhancedPropertyCard({
               )}
               {property.specification.bathrooms && (
                 <div className="flex items-center gap-1">
-                  <HomeIcon className="h-4 w-4" />
+                  <HouseIcon className="h-4 w-4" />
                   <span>{property.specification.bathrooms}</span>
                 </div>
               )}
