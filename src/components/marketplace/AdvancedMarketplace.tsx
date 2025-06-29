@@ -10,12 +10,22 @@ import { TokenizedPropertyMarketplace } from "./TokenizedPropertyMarketplace";
 import { InvestmentGroupManager } from "../investment/InvestmentGroupManager";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import {
-  MagnifyingGlass,
-  GitDiff,
-  Coins,
-  Users,
-  TrendUp,
-} from "phosphor-react";
+  MagnifyingGlassIcon,
+  GitDiffIcon,
+  CoinsIcon,
+  UsersIcon,
+  TrendUpIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+  BedIcon,
+  ShowerIcon,
+  SquareIcon,
+  CarIcon,
+  EyeIcon,
+  HeartIcon,
+  ArrowRightIcon,
+  StarIcon,
+} from "@phosphor-icons/react";
 
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState([]);
@@ -96,34 +106,36 @@ export function AdvancedMarketplace() {
         onValueChange={setActiveTab}
         className="w-full relative"
       >
-        <TabsList className="w-full flex overflow-x-auto md:grid md:grid-cols-4 px-2 md:px-0">
+        <TabsList className="w-full flex  grid-cols-4 md:grid md:grid-cols-4 px-2 md:px-0">
           <TabsTrigger
             value="search"
-            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1 ml-1 md:ml-0"
+            className="items-center gap-2"
           >
-            <MagnifyingGlass className="w-4 h-4" />
-            Search & Browse
+            <MagnifyingGlassIcon className="w-4 h-4" />
+            <span className="hidden md:inline">Search & Browse</span>
           </TabsTrigger>
           <TabsTrigger
             value="tokenized"
             className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
           >
-            <Coins className="w-4 h-4" />
-            Tokenized Properties
+            <CoinsIcon className="w-4 h-4" />
+            <span className="hidden md:inline">Tokenized Properties</span>
           </TabsTrigger>
           <TabsTrigger
             value="groups"
             className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
           >
-            <Users className="w-4 h-4" />
-            Investment Groups
+            <UsersIcon className="w-4 h-4" />
+            <span className="hidden md:inline">Investment Groups</span>
           </TabsTrigger>
           <TabsTrigger
             value="compare"
             className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1 mr-1 md:mr-0"
           >
-            <GitDiff className="w-4 h-4" />
-            Compare ({compareProperties.length})
+            <GitDiffIcon className="w-4 h-4" />
+            <span className="hidden md:inline">
+              Compare ({compareProperties.length})
+            </span>
           </TabsTrigger>
         </TabsList>
 
@@ -143,13 +155,13 @@ export function AdvancedMarketplace() {
                     className="cursor-pointer hover:bg-blue-50"
                     onClick={() => setActiveTab("compare")}
                   >
-                    <GitDiff className="w-3 h-3 mr-1" />
+                    <GitDiffIcon className="w-3 h-3 mr-1" />
                     Compare {compareProperties.length} properties
                   </Badge>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {properties.map((property) => (
                   <PropertyCard
                     key={property.id}
@@ -220,6 +232,15 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
     }).format(price.amount / 100);
   };
 
+  const formatArea = (area: number) => {
+    return `${area?.toLocaleString()} sqm`;
+  };
+
+  const getTopAmenities = (amenities: string[]) => {
+    if (!amenities || amenities.length === 0) return [];
+    return amenities.slice(0, 3);
+  };
+
   return (
     <div
       className={`bg-white rounded-lg shadow-md overflow-hidden border-2 transition-all ${
@@ -239,35 +260,131 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
         )}
         {property.is_tokenized && (
           <Badge className="absolute top-2 right-2 bg-purple-100 text-purple-800">
-            <Coins className="w-3 h-3 mr-1" />
+            <CoinsIcon className="w-3 h-3 mr-1" />
             Tokenized
+          </Badge>
+        )}
+        {property.is_verified && (
+          <Badge className="absolute bottom-2 left-2 bg-green-100 text-green-800">
+            <CheckCircleIcon className="w-3 h-3 mr-1" />
+            Verified
           </Badge>
         )}
       </div>
 
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-lg line-clamp-1">
-            {property.title}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg line-clamp-1">
+              {property.title}
+            </h3>
+            {property.condition && (
+              <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
+                {property.condition}
+              </span>
+            )}
+          </div>
           <p className="text-gray-600 text-sm flex items-center">
-            <span>
-              {property.location?.city}, {property.location?.state}
-            </span>
+            <MapPinIcon className="w-3 h-3 mr-1" />
+            {property.location?.city}, {property.location?.state}
           </p>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <p className="text-2xl font-bold text-green-600">
-            {formatPrice(property.price)}
-          </p>
-          {property.ratings > 0 && (
-            <div className="flex items-center text-sm text-gray-600">
-              <TrendUp className="w-4 h-4 mr-1" />
-              {property.ratings.toFixed(1)}
-            </div>
+          {property.type && (
+            <p className="text-xs text-gray-500 mt-1">
+              {property.category} • {property.type}
+            </p>
           )}
         </div>
+
+        {/* Property Specifications */}
+        {property.specification && (
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            {property.specification.bedrooms && (
+              <div className="flex items-center">
+                <BedIcon className="w-4 h-4 mr-1" />
+                {property.specification.bedrooms}
+              </div>
+            )}
+            {property.specification.bathrooms && (
+              <div className="flex items-center">
+                <ShowerIcon className="w-4 h-4 mr-1" />
+                {property.specification.bathrooms}
+              </div>
+            )}
+            {property.specification.area_sqm && (
+              <div className="flex items-center">
+                <SquareIcon className="w-4 h-4 mr-1" />
+                {formatArea(property.specification.area_sqm)}
+              </div>
+            )}
+            {property.specification.parking_spaces > 0 && (
+              <div className="flex items-center">
+                <CarIcon className="w-4 h-4 mr-1" />
+                {property.specification.parking_spaces}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Top Amenities */}
+        {property.amenities && property.amenities.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {getTopAmenities(property.amenities).map((amenity, index) => (
+              <span
+                key={index}
+                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded"
+              >
+                {amenity}
+              </span>
+            ))}
+            {property.amenities.length > 3 && (
+              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                +{property.amenities.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-2xl font-bold text-green-600">
+              {formatPrice(property.price)}
+            </p>
+            {property.price?.period && (
+              <p className="text-xs text-gray-500">
+                per {property.price.period}
+              </p>
+            )}
+          </div>
+          <div className="text-right">
+            {property.ratings > 0 && (
+              <div className="flex items-center text-sm text-gray-600 mb-1">
+                <StarIcon className="w-4 h-4 mr-1 fill-yellow-400 text-yellow-400" />
+                {property.ratings.toFixed(1)}
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              {property.views > 0 && (
+                <span className="flex items-center">
+                  <EyeIcon className="w-3 h-3 mr-1" />
+                  {property.views}
+                </span>
+              )}
+              {property.likes > 0 && (
+                <span className="flex items-center">
+                  <HeartIcon className="w-3 h-3 mr-1" />
+                  {property.likes}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Year Built */}
+        {property.year_built && (
+          <div className="text-xs text-gray-500">
+            Built in {property.year_built}
+          </div>
+        )}
 
         <div className="flex gap-2">
           <button
@@ -283,10 +400,11 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
           </button>
           <button
             type="button"
-            className="px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+            className="px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center"
             onClick={() => navigate(`/properties/${property.id}`)}
           >
             View Details
+            <ArrowRightIcon className="w-3 h-3 ml-1" />
           </button>
         </div>
       </div>

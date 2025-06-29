@@ -11,14 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  Coins, 
-  Send, 
-  History, 
-  TrendingUp,
-  ChevronRight,
-  Copy,
-  ExternalLink
-} from 'lucide-react';
+  CoinsIcon, 
+  PaperPlaneRightIcon, 
+  ChartLineIcon, 
+  TrendUpIcon,
+  CopyIcon,
+  ArrowUpRightIcon,
+  ArrowRightIcon
+} from '@phosphor-icons/react';
 
 interface TokenizedProperty {
   id: string;
@@ -164,7 +164,7 @@ export function HederaTokenManager({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Coins className="w-8 h-8 text-blue-600" />
+              <CoinsIcon className="w-8 h-8 text-blue-600" />
               <div>
                 <CardTitle className="text-xl">
                   {tokenizedProperty.token_name} ({tokenizedProperty.token_symbol})
@@ -209,15 +209,17 @@ export function HederaTokenManager({
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={copyTokenId}>
-                  <Copy className="w-4 h-4" />
+                  <CopyIcon className="w-4 h-4" />
                 </Button>
                 <Button size="sm" variant="outline" asChild>
                   <a 
+                    className="flex items-center gap-2"
+                    title="View on Hashscan"
                     href={`https://hashscan.io/testnet/token/${tokenizedProperty.hedera_token_id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ArrowUpRightIcon className="w-4 h-4" />
                   </a>
                 </Button>
               </div>
@@ -238,14 +240,14 @@ export function HederaTokenManager({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
+                <TrendUpIcon className="w-5 h-5" />
                 Token Status
               </CardTitle>
             </CardHeader>
             <CardContent>
               {!tokenizedProperty.hedera_token_id ? (
                 <div className="text-center py-8">
-                  <Coins className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <CoinsIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Token Not Created</h3>
                   <p className="text-gray-600 mb-4">
                     This property token hasn't been created on Hedera yet.
@@ -273,7 +275,7 @@ export function HederaTokenManager({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Send className="w-5 h-5" />
+                <PaperPlaneRightIcon className="w-5 h-5" />
                 Transfer Tokens
               </CardTitle>
               <CardDescription>
@@ -311,7 +313,7 @@ export function HederaTokenManager({
                 disabled={isTransferring || !tokenizedProperty.hedera_token_id}
                 className="w-full"
               >
-                <Send className="w-4 h-4 mr-2" />
+                <PaperPlaneRightIcon className="w-4 h-4 mr-2" />
                 {isTransferring ? 'Transferring...' : 'Transfer Tokens'}
               </Button>
             </CardContent>
@@ -322,13 +324,13 @@ export function HederaTokenManager({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <History className="w-5 h-5" />
+                <ChartLineIcon className="w-5 h-5" />
                 Transaction History
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-gray-500">
-                <History className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <ChartLineIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p>No transactions yet</p>
                 <p className="text-sm">Token transfers will appear here</p>
               </div>

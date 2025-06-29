@@ -35,6 +35,10 @@ import AgentReservations from "@/pages/AgentReservations";
 import AgentCalendar from "@/pages/AgentCalendar";
 import MapView from "./pages/MapView";
 import Profile from "./pages/Profile";
+import Documentation from "./pages/Documentation";
+import NotFound from "./pages/NotFound";
+import DatabaseDocumentation from "./pages/DatabaseDocumentation";
+import DataFlow from "./pages/DataFlow";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -287,8 +291,14 @@ function App() {
                 }
               />
 
+              <Route path="/documentation" element={<Documentation />} />
+              <Route
+                path="/database"
+                element={<DatabaseDocumentation />}
+              />
+              <Route path="/dataflow" element={<DataFlow />} />
               {/* Redirect unknown routes */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </AuthProvider>

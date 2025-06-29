@@ -1,139 +1,171 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  FileText, 
-  Database, 
-  GitBranch, 
-  Zap, 
-  Shield, 
-  CreditCard,
-  MessageSquare,
-  Settings,
-  ExternalLink,
-  Book,
-  Code,
-  Activity
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DatabaseIcon,
+  ShieldIcon,
+  BookIcon,
+  ChartLineIcon,
+  LightningIcon,
+  ArrowRightIcon,
+  GearIcon,
+} from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 
 const Documentation = () => {
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState("overview");
 
   const documentationSections = [
     {
-      id: 'database',
-      title: 'Database Documentation',
-      description: 'Complete database schema, tables, and relationships',
-      icon: <Database className="w-5 h-5" />,
-      path: '/database-docs',
-      color: 'blue'
+      id: "database",
+      title: "Database Documentation",
+      description: "Complete database schema, tables, and relationships",
+      icon: <DatabaseIcon className="w-5 h-5" />,
+      path: "/database",
+      color: "blue",
     },
     {
-      id: 'data-flow',
-      title: 'Data Flow Diagrams',
-      description: 'Visual representation of system data flows',
-      icon: <Activity className="w-5 h-5" />,
-      path: '/data-flow',
-      color: 'green'
+      id: "data-flow",
+      title: "Data Flow Diagrams",
+      description: "Visual representation of system data flows",
+      icon: <ChartLineIcon className="w-5 h-5" />,
+      path: "/dataflow",
+      color: "green",
     },
     {
-      id: 'api',
-      title: 'API Documentation',
-      description: 'Edge functions, webhooks, and API endpoints',
-      icon: <Zap className="w-5 h-5" />,
-      path: '#api',
-      color: 'purple'
+      id: "api",
+      title: "API Documentation",
+      description: "Edge functions, webhooks, and API endpoints",
+      icon: <LightningIcon className="w-5 h-5" />,
+      path: "#api",
+      color: "purple",
     },
     {
-      id: 'auth',
-      title: 'Authentication & Security',
-      description: 'User management, roles, and security features',
-      icon: <Shield className="w-5 h-5" />,
-      path: '#auth',
-      color: 'red'
-    }
+      id: "auth",
+      title: "Authentication & Security",
+      description: "User management, roles, and security features",
+      icon: <ShieldIcon className="w-5 h-5" />,
+      path: "#auth",
+      color: "red",
+    },
   ];
 
   const edgeFunctions = [
     {
-      name: 'send-inspection-notification',
-      description: 'Handles inspection status change notifications',
-      method: 'POST',
-      trigger: 'Database trigger'
+      name: "send-inspection-notification",
+      description: "Handles inspection status change notifications",
+      method: "POST",
+      trigger: "Database trigger",
     },
     {
-      name: 'send-rental-notification',
-      description: 'Handles rental status change notifications', 
-      method: 'POST',
-      trigger: 'Database trigger'
+      name: "send-rental-notification",
+      description: "Handles rental status change notifications",
+      method: "POST",
+      trigger: "Database trigger",
     },
     {
-      name: 'send-booking-notification',
-      description: 'Handles reservation status change notifications',
-      method: 'POST', 
-      trigger: 'Database trigger'
+      name: "send-booking-notification",
+      description: "Handles reservation status change notifications",
+      method: "POST",
+      trigger: "Database trigger",
     },
     {
-      name: 'send-chat-notification',
-      description: 'Handles new chat message notifications',
-      method: 'POST',
-      trigger: 'Database trigger'
+      name: "send-chat-notification",
+      description: "Handles new chat message notifications",
+      method: "POST",
+      trigger: "Database trigger",
     },
     {
-      name: 'paystack-webhook',
-      description: 'Processes Paystack payment webhooks',
-      method: 'POST',
-      trigger: 'External webhook'
+      name: "paystack-webhook",
+      description: "Processes Paystack payment webhooks",
+      method: "POST",
+      trigger: "External webhook",
     },
     {
-      name: 'create-payment-intent',
-      description: 'Creates payment intents for transactions',
-      method: 'POST',
-      trigger: 'API call'
+      name: "create-payment-intent",
+      description: "Creates payment intents for transactions",
+      method: "POST",
+      trigger: "API call",
     },
     {
-      name: 'process-notification',
-      description: 'Multi-channel notification delivery',
-      method: 'POST',
-      trigger: 'Internal call'
-    }
+      name: "process-notification",
+      description: "Multi-channel notification delivery",
+      method: "POST",
+      trigger: "Internal call",
+    },
   ];
 
   const systemFeatures = [
     {
-      title: 'Property Management',
-      description: 'Complete property lifecycle management from listing to tokenization',
-      features: ['Property creation wizard', 'Document verification', 'AI valuations', 'Media management']
+      title: "Property Management",
+      description:
+        "Complete property lifecycle management from listing to tokenization",
+      features: [
+        "Property creation wizard",
+        "Document verification",
+        "AI valuations",
+        "Media management",
+      ],
     },
     {
-      title: 'User Authentication',
-      description: 'Secure user management with role-based access control',
-      features: ['Multi-role support', 'KYC verification', 'Identity checks', 'Session management']
+      title: "User Authentication",
+      description: "Secure user management with role-based access control",
+      features: [
+        "Multi-role support",
+        "KYC verification",
+        "Identity checks",
+        "Session management",
+      ],
     },
     {
-      title: 'Payment Processing',
-      description: 'Integrated payment system with escrow and revenue distribution',
-      features: ['Paystack integration', 'Escrow accounts', 'Commission splitting', 'Webhook handling']
+      title: "Payment Processing",
+      description:
+        "Integrated payment system with escrow and revenue distribution",
+      features: [
+        "Paystack integration",
+        "Escrow accounts",
+        "Commission splitting",
+        "Webhook handling",
+      ],
     },
     {
-      title: 'Real-time Communication',
-      description: 'Chat system with notifications and file sharing',
-      features: ['Multi-channel notifications', 'Real-time messaging', 'File attachments', 'Push notifications']
+      title: "Real-time Communication",
+      description: "Chat system with notifications and file sharing",
+      features: [
+        "Multi-channel notifications",
+        "Real-time messaging",
+        "File attachments",
+        "Push notifications",
+      ],
     },
     {
-      title: 'Investment Platform',
-      description: 'Property tokenization and investment management',
-      features: ['Token creation', 'Investment tracking', 'Revenue distribution', 'Portfolio analytics']
+      title: "Investment Platform",
+      description: "Property tokenization and investment management",
+      features: [
+        "Token creation",
+        "Investment tracking",
+        "Revenue distribution",
+        "Portfolio analytics",
+      ],
     },
     {
-      title: 'Analytics & AI',
-      description: 'Data insights and AI-powered features',
-      features: ['Property valuations', 'Market analytics', 'User behavior tracking', 'Performance metrics']
-    }
+      title: "Analytics & AI",
+      description: "Data insights and AI-powered features",
+      features: [
+        "Property valuations",
+        "Market analytics",
+        "User behavior tracking",
+        "Performance metrics",
+      ],
+    },
   ];
 
   return (
@@ -141,15 +173,20 @@ const Documentation = () => {
       <div className="container mx-auto p-6 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-            <Book className="w-8 h-8 text-blue-600" />
+            <BookIcon className="w-8 h-8 text-blue-600" />
             Platform Documentation
           </h1>
           <p className="text-xl text-gray-600">
-            Comprehensive documentation for the Relett property tokenization platform.
+            Comprehensive documentation for the Relett property tokenization
+            platform.
           </p>
         </div>
 
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
+        <Tabs
+          value={activeSection}
+          onValueChange={setActiveSection}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="database">Database</TabsTrigger>
@@ -160,10 +197,15 @@ const Documentation = () => {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               {documentationSections.map((section) => (
-                <Card key={section.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={section.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-${section.color}-100 text-${section.color}-600`}>
+                      <div
+                        className={`p-2 rounded-lg bg-${section.color}-100 text-${section.color}-600`}
+                      >
                         {section.icon}
                       </div>
                       {section.title}
@@ -174,7 +216,7 @@ const Documentation = () => {
                     <Link to={section.path}>
                       <Button className="w-full" variant="outline">
                         View Documentation
-                        <ExternalLink className="w-4 h-4 ml-2" />
+                        <ArrowRightIcon className="w-4 h-4 ml-2" />
                       </Button>
                     </Link>
                   </CardContent>
@@ -193,11 +235,18 @@ const Documentation = () => {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {systemFeatures.map((feature, index) => (
                     <div key={index} className="p-4 border rounded-lg">
-                      <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{feature.description}</p>
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {feature.description}
+                      </p>
                       <div className="space-y-1">
                         {feature.features.map((item, itemIndex) => (
-                          <div key={itemIndex} className="text-xs text-gray-500 flex items-center gap-2">
+                          <div
+                            key={itemIndex}
+                            className="text-xs text-gray-500 flex items-center gap-2"
+                          >
                             <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
                             {item}
                           </div>
@@ -214,7 +263,7 @@ const Documentation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Database className="w-5 h-5" />
+                  <DatabaseIcon className="w-5 h-5" />
                   Database Documentation
                 </CardTitle>
                 <CardDescription>
@@ -223,19 +272,20 @@ const Documentation = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-600">
-                  The database documentation provides a comprehensive overview of all tables, 
-                  relationships, and data structures used in the platform.
+                  The database documentation provides a comprehensive overview
+                  of all tables, relationships, and data structures used in the
+                  platform.
                 </p>
                 <div className="flex gap-4">
                   <Link to="/database-docs">
                     <Button>
-                      <Database className="w-4 h-4 mr-2" />
+                      <DatabaseIcon className="w-4 h-4 mr-2" />
                       View Database Docs
                     </Button>
                   </Link>
                   <Link to="/data-flow">
                     <Button variant="outline">
-                      <Activity className="w-4 h-4 mr-2" />
+                      <ChartLineIcon className="w-4 h-4 mr-2" />
                       View Data Flow
                     </Button>
                   </Link>
@@ -248,11 +298,12 @@ const Documentation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
+                  <LightningIcon className="w-5 h-5" />
                   Edge Functions & API Endpoints
                 </CardTitle>
                 <CardDescription>
-                  Serverless functions and API endpoints available in the platform
+                  Serverless functions and API endpoints available in the
+                  platform
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -272,7 +323,9 @@ const Documentation = () => {
                           {func.trigger}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600">{func.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {func.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -284,7 +337,7 @@ const Documentation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
+                  <GearIcon className="w-5 h-5" />
                   System Architecture
                 </CardTitle>
                 <CardDescription>
@@ -294,7 +347,9 @@ const Documentation = () => {
               <CardContent>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-gray-900">Frontend Technologies</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      Frontend Technologies
+                    </h3>
                     <ul className="text-sm space-y-2 text-gray-600">
                       <li>• React 18 with TypeScript</li>
                       <li>• Vite for build tooling</li>
@@ -305,7 +360,9 @@ const Documentation = () => {
                     </ul>
                   </div>
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-gray-900">Backend Infrastructure</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      Backend Infrastructure
+                    </h3>
                     <ul className="text-sm space-y-2 text-gray-600">
                       <li>• Supabase for backend services</li>
                       <li>• PostgreSQL database</li>

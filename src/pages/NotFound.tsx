@@ -1,13 +1,18 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Home, ArrowLeft, Search, MessageCircle } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  HouseIcon,
+  ArrowLeftIcon,
+  MagnifyingGlassIcon,
+  ChatCircleIcon,
+} from "@phosphor-icons/react";
 
 export default function NotFound() {
   const navigate = useNavigate();
 
   const handleGoHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handleGoBack = () => {
@@ -16,23 +21,23 @@ export default function NotFound() {
 
   const quickLinks = [
     {
-      title: 'Browse Properties',
-      description: 'Discover available properties and investments',
-      href: '/properties',
-      icon: Home
+      title: "Browse Properties",
+      description: "Discover available properties and investments",
+      href: "/properties",
+      icon: HouseIcon,
     },
     {
-      title: 'Dashboard',
-      description: 'View your investments and portfolio',
-      href: '/dashboard',
-      icon: Search
+      title: "Dashboard",
+      description: "View your investments and portfolio",
+      href: "/dashboard",
+      icon: MagnifyingGlassIcon,
     },
     {
-      title: 'Contact Support',
-      description: 'Get help from our support team',
-      href: '/support',
-      icon: MessageCircle
-    }
+      title: "Contact Support",
+      description: "Get help from our support team",
+      href: "/support",
+      icon: ChatCircleIcon,
+    },
   ];
 
   return (
@@ -47,26 +52,23 @@ export default function NotFound() {
             Page Not Found
           </h1>
           <p className="text-lg text-gray-600 max-w-md mx-auto">
-            Oops! The page you're looking for seems to have vanished into the digital ether. 
-            Don't worry, we'll help you find your way back home.
+            Oops! The page you're looking for seems to have vanished into the
+            digital ether. Don't worry, we'll help you find your way back home.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
+          <Button
             onClick={handleGoBack}
             variant="outline"
             className="flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeftIcon className="w-4 h-4" />
             Go Back
           </Button>
-          <Button 
-            onClick={handleGoHome}
-            className="flex items-center gap-2"
-          >
-            <Home className="w-4 h-4" />
+          <Button onClick={handleGoHome} className="flex items-center gap-2">
+            <HouseIcon className="w-4 h-4" />
             Go to Homepage
           </Button>
         </div>
@@ -80,7 +82,7 @@ export default function NotFound() {
             {quickLinks.map((link, index) => {
               const Icon = link.icon;
               return (
-                <Card 
+                <Card
                   key={index}
                   className="hover:shadow-lg transition-shadow cursor-pointer group"
                   onClick={() => navigate(link.href)}
@@ -92,9 +94,7 @@ export default function NotFound() {
                     <h3 className="font-semibold text-gray-900">
                       {link.title}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                      {link.description}
-                    </p>
+                    <p className="text-sm text-gray-600">{link.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -105,8 +105,12 @@ export default function NotFound() {
         {/* Help Text */}
         <div className="bg-white/60 backdrop-blur-sm rounded-lg p-6 border border-white/20">
           <p className="text-sm text-gray-600">
-            If you believe this is an error or you were expecting to find something here, 
-            please <span className="text-indigo-600 font-medium cursor-pointer hover:underline">contact our support team</span> for assistance.
+            If you believe this is an error or you were expecting to find
+            something here, please{" "}
+            <span className="text-indigo-600 font-medium cursor-pointer hover:underline">
+              contact our support team
+            </span>{" "}
+            for assistance.
           </p>
         </div>
       </div>
