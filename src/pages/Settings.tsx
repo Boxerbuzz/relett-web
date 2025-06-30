@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -6,12 +7,14 @@ import { NotificationSettings } from "@/components/settings/NotificationSettings
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { RoleRequestHistory } from "@/components/profile/RoleRequestHistory";
 import { RoleRequestDialog } from "@/components/dialogs/RoleRequestDialog";
+import { TrustedDevices } from "@/components/security/TrustedDevices";
 import {
   BellIcon,
   ShieldIcon,
   UserPlusIcon,
   GearIcon,
   CreditCardIcon,
+  DevicesIcon,
 } from "@phosphor-icons/react";
 import BillingSettings from "@/components/settings/BillingSettings";
 import PreferenceSettings from "@/components/settings/PreferenceSettings";
@@ -29,7 +32,7 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="notifications" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger
             value="notifications"
             className="flex items-center gap-2"
@@ -40,6 +43,10 @@ const Settings = () => {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <ShieldIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
+          </TabsTrigger>
+          <TabsTrigger value="devices" className="flex items-center gap-2">
+            <DevicesIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Devices</span>
           </TabsTrigger>
           <TabsTrigger value="billing" className="flex items-center gap-2">
             <CreditCardIcon className="h-4 w-4" />
@@ -65,11 +72,12 @@ const Settings = () => {
           <TabsContent value="security" className="space-y-6 w-full max-w-full">
             <SecuritySettings />
           </TabsContent>
-
+          <TabsContent value="devices" className="space-y-6 w-full max-w-full">
+            <TrustedDevices />
+          </TabsContent>
           <TabsContent value="billing" className="space-y-6 w-full max-w-full">
             <BillingSettings />
           </TabsContent>
-
           <TabsContent
             value="preferences"
             className="space-y-6 w-full max-w-full"
