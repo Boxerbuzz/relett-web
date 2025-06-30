@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/components/AuthProvider";
 import { WelcomeCard } from "./WelcomeCard";
 import { LandownerDashboard } from "./LandownerDashboard";
 import { VerifierDashboard } from "./VerifierDashboard";
@@ -25,7 +26,8 @@ export function Dashboard() {
   };
 
   const renderRoleSpecificDashboard = () => {
-    switch (user.role) {
+    const userRole = user.user_metadata?.role || 'user';
+    switch (userRole) {
       case "landowner":
         return <LandownerDashboard />;
       case "verifier":

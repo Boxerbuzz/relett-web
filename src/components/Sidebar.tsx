@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/components/AuthProvider";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -89,7 +89,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             </Button>
           ))}
         </div>
-        {user?.role === "admin" && (
+        {user?.user_metadata?.role === "admin" && (
           <>
             <Separator />
             <div className="space-y-1">
