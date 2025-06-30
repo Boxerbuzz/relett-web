@@ -14,29 +14,16 @@ export function useDeviceTracking() {
         const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
         localStorage.setItem('device_id', deviceId);
 
-        const deviceInfo = {
-          device_id: deviceId,
-          device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
-          device_name: navigator.platform,
-          user_agent: navigator.userAgent,
-          is_trusted: false
-        };
+        // Use correct parameter names for the database function
+        await supabase.rpc('register_user_device', {
+          p_device_id: deviceId,
+          p_device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          p_device_name: navigator.platform,
+          p_user_agent: navigator.userAgent,
+          p_is_trusted: false
+        });
 
-        await supabase.rpc('register_user_device', deviceInfo);
-
-        // Track user activity
-        await supabase
-          .from('user_activities')
-          .insert({
-            user_id: user.id,
-            activity_type: 'login',
-            activity_data: {
-              device_id: deviceId,
-              platform: navigator.platform,
-              timestamp: new Date().toISOString()
-            }
-          });
-
+        console.log('Device registered successfully');
       } catch (error) {
         console.error('Error registering device:', error);
       }

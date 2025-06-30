@@ -27,9 +27,9 @@ export function AIPropertyValuation({ property }: AIPropertyValuationProps) {
       propertyType: property.type,
       category: property.category,
       location: {
-        state: property.location?.state,
-        city: property.location?.city,
-        address: property.location?.address
+        state: typeof property.location === 'object' && property.location?.state ? property.location.state : '',
+        city: typeof property.location === 'object' && property.location?.city ? property.location.city : '',
+        address: typeof property.location === 'object' && property.location?.address ? property.location.address : ''
       }
     });
   };

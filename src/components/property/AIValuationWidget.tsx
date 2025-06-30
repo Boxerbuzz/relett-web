@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,11 +35,20 @@ export function AIValuationWidget({
   onValuationComplete 
 }: AIValuationWidgetProps) {
   const [valuation, setValuation] = useState<any>(null);
-  const { generateValuation, isLoading } = useAIPropertyValuation();
+  const { loading, getValuation } = useAIPropertyValuation();
 
   const handleGenerateValuation = async () => {
     try {
-      const result = await generateValuation(propertyData, propertyId);
+      const result = await getValuation({
+        id: propertyId,
+        propertyType: propertyData.type,
+        category: propertyData.type,
+        location: {
+          state: propertyData.location.state,
+          city: propertyData.location.city,
+          address: propertyData.location.address
+        }
+      });
       setValuation(result);
       onValuationComplete?.(result);
     } catch (error) {
@@ -77,7 +85,7 @@ export function AIValuationWidget({
       <CardContent className="space-y-4">
         {!valuation ? (
           <div className="text-center py-6">
-            {!isLoading ? (
+            {!loading ? (
               <>
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Brain className="h-8 w-8 text-purple-600" />
@@ -89,7 +97,7 @@ export function AIValuationWidget({
                 <Button 
                   onClick={handleGenerateValuation}
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={loading}
                 >
                   <Brain className="h-4 w-4 mr-2" />
                   Generate AI Valuation
@@ -203,7 +211,7 @@ export function AIValuationWidget({
               <Button 
                 variant="outline" 
                 onClick={handleGenerateValuation}
-                disabled={isLoading}
+                disabled={loading}
                 className="flex-1"
               >
                 Regenerate Valuation

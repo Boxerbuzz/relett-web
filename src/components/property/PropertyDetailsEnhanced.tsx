@@ -89,6 +89,22 @@ export function PropertyDetailsEnhanced() {
     );
   }
 
+  // Helper function to safely access location data
+  const getLocationAddress = () => {
+    if (typeof property.location === 'object' && property.location && 'address' in property.location) {
+      return property.location.address as string;
+    }
+    return 'Address not available';
+  };
+
+  // Helper function to safely access price data
+  const getPriceAmount = () => {
+    if (typeof property.price === 'object' && property.price && 'amount' in property.price) {
+      return (property.price.amount as number);
+    }
+    return 0;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Property Header */}
@@ -96,11 +112,11 @@ export function PropertyDetailsEnhanced() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold">{property.title}</h1>
-            <p className="text-gray-600 mt-2">{property.location?.address}</p>
+            <p className="text-gray-600 mt-2">{getLocationAddress()}</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-green-600">
-              ₦{property.price?.amount?.toLocaleString()}
+              ₦{getPriceAmount().toLocaleString()}
             </div>
             {property.is_featured && (
               <Badge className="mt-2">Featured</Badge>
