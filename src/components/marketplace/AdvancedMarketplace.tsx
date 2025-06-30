@@ -107,10 +107,7 @@ export function AdvancedMarketplace() {
         className="w-full relative"
       >
         <TabsList className="w-full flex  grid-cols-4 md:grid md:grid-cols-4 px-2 md:px-0">
-          <TabsTrigger
-            value="search"
-            className="items-center gap-2"
-          >
+          <TabsTrigger value="search" className="items-center gap-2">
             <MagnifyingGlassIcon className="w-4 h-4" />
             <span className="hidden md:inline">Search & Browse</span>
           </TabsTrigger>
