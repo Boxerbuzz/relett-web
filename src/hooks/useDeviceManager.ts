@@ -59,29 +59,40 @@ export function useDeviceManager() {
   const fetchUserDevices = async () => {
     try {
       setLoading(true);
+      console.log('Fetching user devices...');
+      
       const { data, error } = await supabase
         .from('user_devices')
         .select('*')
         .order('last_used', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error fetching devices:', error);
+        throw error;
+      }
+      
+      console.log('Raw device data from database:', data);
       
       // Map the database fields to our interface
-      const mappedDevices: UserDevice[] = (data || []).map(device => ({
-        id: device.id,
-        user_id: device.user_id,
-        device_id: device.device_fingerprint, // Map device_fingerprint to device_id
-        device_type: device.device_type,
-        device_name: device.device_name,
-        user_agent: device.browser || '', // Map browser to user_agent with fallback
-        is_trusted: device.is_trusted,
-        last_used_at: device.last_used, // Map last_used to last_used_at
-        created_at: device.created_at,
-        updated_at: device.created_at, // Use created_at as fallback for updated_at
-        ip_address: device.ip_address,
-        location: device.location,
-      }));
+      const mappedDevices: UserDevice[] = (data || []).map(device => {
+        console.log('Processing device:', device);
+        return {
+          id: device.id,
+          user_id: device.user_id,
+          device_id: device.device_fingerprint || device.device_id || '', // Try both field names
+          device_type: device.device_type || 'unknown',
+          device_name: device.device_name || 'Unknown Device',
+          user_agent: device.browser || device.user_agent || '', // Try both field names
+          is_trusted: device.is_trusted || false,
+          last_used_at: device.last_used || device.last_used_at || device.created_at, // Try multiple field names
+          created_at: device.created_at,
+          updated_at: device.updated_at || device.created_at, // Use updated_at or fallback to created_at
+          ip_address: device.ip_address,
+          location: device.location,
+        };
+      });
       
+      console.log('Mapped devices:', mappedDevices);
       setDevices(mappedDevices);
     } catch (err) {
       console.error('Error fetching devices:', err);
