@@ -213,6 +213,8 @@ export function DocumentViewer({
                   <div>
                     <label className="text-sm font-medium">Type</label>
                     <select 
+                      aria-label="Annotation Type"
+                      aria-required="true"
                       value={annotationType} 
                       onChange={(e) => setAnnotationType(e.target.value as any)}
                       className="w-full mt-1 p-2 border rounded"

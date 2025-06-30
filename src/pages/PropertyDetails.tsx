@@ -31,13 +31,14 @@ import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { capitalize } from "@/lib/utils";
 import { EnhancedPropertyPricing } from "@/types/property";
 import RentalSheet from "@/components/property/sheets/RentalSheet";
+import { LocationAnalysis } from "@/components/property/LocationAnalysis";
+import { AIValuationWidget } from "@/components/property/AIValuationWidget";
+import { AIPropertyValuation } from "@/components/property/AIPropertyValuation";
 
 const PropertyDetails = () => {
-  const { propertyId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { property, loading, error, agent } = usePropertyDetails(
-    propertyId || ""
-  );
+  const { property, loading, error, agent } = usePropertyDetails(id || "");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showInvestDialog, setShowInvestDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -487,6 +488,10 @@ const PropertyDetails = () => {
                   </CardContent>
                 </Card>
               )}
+
+              <LocationAnalysis propertyId={property.id} />
+
+              <AIValuationWidget propertyData={property} />
             </div>
           </div>
         </div>

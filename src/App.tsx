@@ -40,8 +40,6 @@ import NotFound from "./pages/NotFound";
 import DatabaseDocumentation from "./pages/DatabaseDocumentation";
 import DataFlow from "./pages/DataFlow";
 
-import { PropertyDetailsEnhanced } from "@/components/property/PropertyDetailsEnhanced";
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -166,9 +164,7 @@ function App() {
                 path="/properties/:id"
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <PropertyDetailsEnhanced />
-                    </Layout>
+                    <PropertyDetails />
                   </ProtectedRoute>
                 }
               />
@@ -296,10 +292,7 @@ function App() {
               />
 
               <Route path="/documentation" element={<Documentation />} />
-              <Route
-                path="/database"
-                element={<DatabaseDocumentation />}
-              />
+              <Route path="/database" element={<DatabaseDocumentation />} />
               <Route path="/dataflow" element={<DataFlow />} />
               {/* Redirect unknown routes */}
               <Route path="*" element={<NotFound />} />
