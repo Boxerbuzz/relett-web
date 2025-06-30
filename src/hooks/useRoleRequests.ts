@@ -52,7 +52,7 @@ export function useRoleRequests() {
         requested_at: item.created_at,
         reviewed_at: item.reviewed_at,
         reviewed_by: item.reviewed_by,
-        admin_notes: item.notes || '' // Use 'notes' field from the actual table
+        admin_notes: item.admin_notes || '' // Use 'admin_notes' field from the actual table
       })) || [];
       
       setRequests(transformedData);
@@ -90,7 +90,7 @@ export function useRoleRequests() {
         requested_at: data.created_at,
         reviewed_at: data.reviewed_at,
         reviewed_by: data.reviewed_by,
-        admin_notes: data.notes || '' // Use 'notes' field from the actual table
+        admin_notes: data.admin_notes || '' // Use 'admin_notes' field from the actual table
       };
       
       setRequests(prev => [transformedData, ...prev]);

@@ -91,7 +91,10 @@ export function NotificationSettings() {
         .from('notification_preferences')
         .upsert({
           user_id: user.id,
-          ...preferences
+          email_notifications: preferences.email_notifications,
+          push_notifications: preferences.push_notifications,
+          sms_notifications: preferences.sms_notifications,
+          notification_types: preferences.notification_types as any
         });
 
       if (error) throw error;
