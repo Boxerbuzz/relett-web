@@ -18,9 +18,10 @@ export function ProfileSettings() {
   const [formData, setFormData] = useState({
     first_name: profile?.first_name || '',
     last_name: profile?.last_name || '',
-    phone_number: profile?.phone_number || '',
+    phone: profile?.phone || '',
     bio: profile?.bio || '',
-    location: profile?.location || ''
+    // Use address field for location if available
+    location: profile?.address ? (typeof profile.address === 'object' ? profile.address.city || '' : '') : ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +32,18 @@ export function ProfileSettings() {
     try {
       const { error } = await supabase
         .from('users')
-        .update(formData)
+        .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          bio: formData.bio,
+          // Store location in address field
+          address: profile?.address ? 
+            (typeof profile.address === 'object' ? 
+              { ...profile.address, city: formData.location } : 
+              { city: formData.location }) : 
+            { city: formData.location }
+        })
         .eq('id', user.id);
 
       if (error) throw error;
@@ -86,11 +98,11 @@ export function ProfileSettings() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="phone_number">Phone Number</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <Input
-              id="phone_number"
-              value={formData.phone_number}
-              onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
               placeholder="Enter your phone number"
             />
           </div>

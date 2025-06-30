@@ -8,17 +8,19 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+interface NotificationTypes {
+  property_updates: boolean;
+  investment_opportunities: boolean;
+  dividend_alerts: boolean;
+  verification_updates: boolean;
+  system_announcements: boolean;
+}
+
 interface NotificationPreferences {
   email_notifications: boolean;
   push_notifications: boolean;
   sms_notifications: boolean;
-  notification_types: {
-    property_updates: boolean;
-    investment_opportunities: boolean;
-    dividend_alerts: boolean;
-    verification_updates: boolean;
-    system_announcements: boolean;
-  };
+  notification_types: NotificationTypes;
 }
 
 export function NotificationSettings() {
@@ -55,11 +57,24 @@ export function NotificationSettings() {
       if (error && error.code !== 'PGRST116') throw error;
       
       if (data) {
+        // Safely parse notification_types from JSON
+        let notificationTypes = preferences.notification_types;
+        if (data.notification_types) {
+          try {
+            const parsedTypes = typeof data.notification_types === 'string' 
+              ? JSON.parse(data.notification_types) 
+              : data.notification_types;
+            notificationTypes = { ...preferences.notification_types, ...parsedTypes };
+          } catch (e) {
+            console.error('Error parsing notification types:', e);
+          }
+        }
+
         setPreferences({
           email_notifications: data.email_notifications,
           push_notifications: data.push_notifications,
           sms_notifications: data.sms_notifications,
-          notification_types: data.notification_types
+          notification_types: notificationTypes
         });
       }
     } catch (error) {
@@ -188,6 +203,38 @@ export function NotificationSettings() {
                     notification_types: {
                       ...preferences.notification_types,
                       dividend_alerts: checked
+                    }
+                  })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="verification">Verification Updates</Label>
+              <Switch
+                id="verification"
+                checked={preferences.notification_types.verification_updates}
+                onCheckedChange={(checked) => 
+                  setPreferences({
+                    ...preferences, 
+                    notification_types: {
+                      ...preferences.notification_types,
+                      verification_updates: checked
+                    }
+                  })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="system">System Announcements</Label>
+              <Switch
+                id="system"
+                checked={preferences.notification_types.system_announcements}
+                onCheckedChange={(checked) => 
+                  setPreferences({
+                    ...preferences, 
+                    notification_types: {
+                      ...preferences.notification_types,
+                      system_announcements: checked
                     }
                   })
                 }

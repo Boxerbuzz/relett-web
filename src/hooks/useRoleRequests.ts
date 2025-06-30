@@ -46,13 +46,13 @@ export function useRoleRequests() {
         id: item.id,
         user_id: item.user_id,
         requested_role: item.requested_role,
-        current_role: item.current_role || 'user',
+        current_role: 'user', // Default since this field doesn't exist in the actual table
         reason: item.reason,
-        status: item.status,
+        status: item.status as 'pending' | 'approved' | 'rejected',
         requested_at: item.created_at,
         reviewed_at: item.reviewed_at,
         reviewed_by: item.reviewed_by,
-        admin_notes: item.admin_notes
+        admin_notes: item.notes || '' // Use 'notes' field from the actual table
       })) || [];
       
       setRequests(transformedData);
@@ -71,7 +71,6 @@ export function useRoleRequests() {
         .insert({
           user_id: user?.id,
           requested_role: requestedRole,
-          current_role: user?.user_type || 'user',
           reason: reason,
           status: 'pending'
         })
@@ -81,17 +80,17 @@ export function useRoleRequests() {
       if (error) throw error;
       
       // Transform and add to requests
-      const transformedData = {
+      const transformedData: RoleRequest = {
         id: data.id,
         user_id: data.user_id,
         requested_role: data.requested_role,
-        current_role: data.current_role || 'user',
+        current_role: 'user', // Default since this field doesn't exist in the actual table
         reason: data.reason,
-        status: data.status,
+        status: data.status as 'pending' | 'approved' | 'rejected',
         requested_at: data.created_at,
         reviewed_at: data.reviewed_at,
         reviewed_by: data.reviewed_by,
-        admin_notes: data.admin_notes
+        admin_notes: data.notes || '' // Use 'notes' field from the actual table
       };
       
       setRequests(prev => [transformedData, ...prev]);
