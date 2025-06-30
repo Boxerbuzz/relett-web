@@ -8,7 +8,7 @@ import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { RoleRequestHistory } from "@/components/profile/RoleRequestHistory";
-import { RoleRequestDialog } from "@/components/RoleRequestDialog";
+import { RoleRequestDialog } from "@/components/dialogs/RoleRequestDialog";
 import {
   UserIcon,
   BellIcon,

@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/lib/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { RoleRequestDialog } from "@/components/RoleRequestDialog";
+import { RoleRequestDialog } from "@/components/dialogs/RoleRequestDialog";
 import { RoleRequestStatus } from "./RoleRequestStatus";
 import { useState } from "react";
 
