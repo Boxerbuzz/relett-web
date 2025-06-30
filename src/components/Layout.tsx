@@ -1,59 +1,68 @@
+"use client";
 
-import { Outlet } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
-import { Toaster } from "@/components/ui/toaster";
-import { SystemNotificationBanner } from "@/components/notifications/SystemNotificationBanner";
-import { useState, ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import Intercom from "@intercom/messenger-js-sdk";
+import useIntercom from "@/hooks/useIntercom";
 
 interface LayoutProps {
-  children?: ReactNode;
+  children: ReactNode;
   stripPadding?: boolean;
 }
 
 export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { intercomToken, user } = useIntercom();
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  useEffect(() => {
+    if (intercomToken && user) {
+      Intercom({
+        intercom_user_jwt: intercomToken,
+        app_id: "msg20icm",
+        user_id: user?.id,
+        name: `${user?.first_name} ${user?.last_name}`,
+        email: user?.email,
+        created_at: Date.parse(user?.created_at),
+      });
+    }
+  }, [intercomToken, user]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
+      {/* Desktop Sidebar - Fixed positioning */}
+      <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-40">
+        <div className="flex flex-col w-64">
+          <Sidebar />
+        </div>
       </div>
 
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Mobile Sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <Sidebar onNavigate={() => setSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col md:ml-0">
-        {/* Navigation */}
-        <Navbar onToggleSidebar={toggleSidebar} />
-        
-        {/* System Notifications */}
-        <SystemNotificationBanner />
-        
-        {/* Page content */}
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className={stripPadding ? "" : "py-6"}>
-            {children || <Outlet />}
+      {/* Main Content Area with proper spacing for fixed sidebar */}
+      <div className="flex-1 flex flex-col min-h-screen md:ml-64 min-w-0">
+        {/* Header - Fixed positioning at top */}
+        <div className="fixed top-0 left-0 md:left-64 right-0 z-30 bg-white border-b border-gray-200 h-16">
+          <Navbar onToggleSidebar={() => setSidebarOpen(true)} />
+        </div>
+
+        {/* Page Content - Properly spaced below fixed header */}
+        <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto">
+          <div
+            className={`max-w-full min-w-0 w-full ${
+              stripPadding ? "p-0" : "p-4 md:p-6"
+            }`}
+          >
+            {children}
           </div>
         </main>
       </div>
-
-      <Toaster />
     </div>
   );
 }

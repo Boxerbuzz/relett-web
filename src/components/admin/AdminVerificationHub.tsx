@@ -1,15 +1,12 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleRequestManagement } from "./RoleRequestManagement";
 import { KYCReviewDashboard } from "./KYCReviewDashboard";
 import { VerifierCredentialReview } from "./VerifierCredentialReview";
-import { SystemNotificationCreator } from "./SystemNotificationCreator";
 import {
   UsersIcon,
   ShieldIcon,
   FileTextIcon,
   GavelIcon,
-  SpeakerHigh,
 } from "@phosphor-icons/react";
 import {
   Card,
@@ -25,16 +22,16 @@ export function AdminVerificationHub() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <GavelIcon className="h-5 w-5" />
-          Admin Management Hub
+          Verification Management Hub
         </CardTitle>
         <CardDescription>
-          Manage role requests, KYC documents, verifier credentials, and system notifications from a
+          Manage role requests, KYC documents, and verifier credentials from a
           centralized dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="role-requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger
               value="role-requests"
               className="flex items-center gap-2"
@@ -53,13 +50,6 @@ export function AdminVerificationHub() {
               <ShieldIcon className="h-4 w-4" />
               Verifier Credentials
             </TabsTrigger>
-            <TabsTrigger
-              value="system-notifications"
-              className="flex items-center gap-2"
-            >
-              <SpeakerHigh className="h-4 w-4" />
-              System Notifications
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="role-requests">
@@ -72,10 +62,6 @@ export function AdminVerificationHub() {
 
           <TabsContent value="verifier-credentials">
             <VerifierCredentialReview />
-          </TabsContent>
-
-          <TabsContent value="system-notifications">
-            <SystemNotificationCreator />
           </TabsContent>
         </Tabs>
       </CardContent>

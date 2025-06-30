@@ -1,8 +1,7 @@
-
 "use client";
 
 import { ReactNode } from "react";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/lib/auth";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
@@ -43,7 +42,7 @@ export function ProtectedRoute({
     const allowedRoles = Array.isArray(requiredRole)
       ? requiredRole
       : [requiredRole];
-    if (!allowedRoles.map(role => role.toLowerCase()).includes(user.role?.toLowerCase() || '')) {
+    if (!allowedRoles.map(role => role.toLowerCase()).includes(user.role.toLowerCase())) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">

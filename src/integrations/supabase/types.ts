@@ -3739,9 +3739,7 @@ export type Database = {
           created_by: string
           display_from: string
           display_until: string | null
-          expires_at: string | null
           id: string
-          is_active: boolean | null
           is_dismissible: boolean
           message: string
           notification_type: string
@@ -3759,9 +3757,7 @@ export type Database = {
           created_by: string
           display_from?: string
           display_until?: string | null
-          expires_at?: string | null
           id?: string
-          is_active?: boolean | null
           is_dismissible?: boolean
           message: string
           notification_type: string
@@ -3779,9 +3775,7 @@ export type Database = {
           created_by?: string
           display_from?: string
           display_until?: string | null
-          expires_at?: string | null
           id?: string
-          is_active?: boolean | null
           is_dismissible?: boolean
           message?: string
           notification_type?: string
@@ -4893,10 +4887,6 @@ export type Database = {
         Args: { _property_id: string; _user_id?: string }
         Returns: boolean
       }
-      cleanup_expired_system_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       cleanup_typing_indicators: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5034,16 +5024,6 @@ export type Database = {
       is_user_verified: {
         Args: { _user_id?: string }
         Returns: boolean
-      }
-      register_user_device: {
-        Args: {
-          p_device_id: string
-          p_device_type: string
-          p_device_name?: string
-          p_user_agent?: string
-          p_is_trusted?: boolean
-        }
-        Returns: string
       }
       remove_conversation_participant: {
         Args: { conversation_id: string; user_id: string }
