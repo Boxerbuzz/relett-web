@@ -45,7 +45,7 @@ export interface PropertyPricing {
 
 // Optional: More specific types for better type safety
 export type CurrencyCode = "NGN" | "USD" | "EUR" | "GBP";
-export type PricingTerm = "night" | "week" | "month" | "year" | "total";
+export type PricingTerm = "night" | "week" | "month" | "year";
 export type AreaUnit = "sqm" | "sqft" | "acres" | "hectares";
 
 // Enhanced versions with more specific types

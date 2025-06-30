@@ -27,6 +27,8 @@ import {
   StarIcon,
 } from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
+import { EnhancedPropertyPricing } from "@/types/property";
+import { capitalize } from "@/lib/utils";
 
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState([]);
@@ -221,7 +223,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
     );
   };
 
-  const formatPrice = (price: any) => {
+  const formatPrice = (price: EnhancedPropertyPricing) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: price.currency || "NGN",
@@ -280,7 +282,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
             </h3>
             {property.condition && (
               <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full">
-                {property.condition}
+                {capitalize(property.condition)}
               </span>
             )}
           </div>
@@ -290,7 +292,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
           </p>
           {property.type && (
             <p className="text-xs text-gray-500 mt-1">
-              {property.category} • {property.type}
+              {capitalize(property.category)} • {capitalize(property.type)}
             </p>
           )}
         </div>
@@ -345,13 +347,13 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
         )}
 
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-1">
             <p className="text-2xl font-bold text-green-600">
               {formatPrice(property.price)}
             </p>
-            {property.price?.period && (
-              <p className="text-xs text-gray-500">
-                per {property.price.period}
+            {property.price?.term && (
+              <p className="text-xs text-gray-500 font-semibold mt-1">
+                /{capitalize(property.price.term)}
               </p>
             )}
           </div>

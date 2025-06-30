@@ -1,17 +1,22 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Search, Filter, X, MapPin, Home, Building2, Coins } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Search, Filter, X, Coins } from "lucide-react";
 
 interface SearchFilters {
   query: string;
@@ -31,63 +36,81 @@ interface AdvancedPropertySearchProps {
 }
 
 const PROPERTY_TYPES = [
-  { value: 'all', label: 'All Types' },
-  { value: 'residential', label: 'Residential' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'land', label: 'Land' },
-  { value: 'mixed_use', label: 'Mixed Use' }
+  { value: "all", label: "All Types" },
+  { value: "residential", label: "Residential" },
+  { value: "commercial", label: "Commercial" },
+  { value: "land", label: "Land" },
+  { value: "mixed_use", label: "Mixed Use" },
 ];
 
 const AMENITIES = [
-  'Swimming Pool', 'Gym', 'Parking', 'Security', 'Generator',
-  'Wi-Fi', 'Air Conditioning', 'Balcony', 'Garden', 'Elevator'
+  "Swimming Pool",
+  "Gym",
+  "Parking",
+  "Security",
+  "Generator",
+  "Wi-Fi",
+  "Air Conditioning",
+  "Balcony",
+  "Garden",
+  "Elevator",
 ];
 
 const FEATURES = [
-  'Furnished', 'Pet Friendly', 'Newly Built', 'Renovated',
-  'Gated Community', 'Close to Schools', 'Close to Hospital',
-  'Public Transport', 'Shopping Center', 'Beach Front'
+  "Furnished",
+  "Pet Friendly",
+  "Newly Built",
+  "Renovated",
+  "Gated Community",
+  "Close to Schools",
+  "Close to Hospital",
+  "Public Transport",
+  "Shopping Center",
+  "Beach Front",
 ];
 
-export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPropertySearchProps) {
+export function AdvancedPropertySearch({
+  onSearch,
+  loading = false,
+}: AdvancedPropertySearchProps) {
   const [filters, setFilters] = useState<SearchFilters>({
-    query: '',
-    propertyType: 'all',
-    location: '',
+    query: "",
+    propertyType: "all",
+    location: "",
     priceRange: [0, 1000000000],
     tokenPriceRange: [0, 10000],
     isTokenized: null,
     minROI: 0,
     amenities: [],
-    features: []
+    features: [],
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleArrayToggle = (key: 'amenities' | 'features', value: string) => {
-    setFilters(prev => ({
+  const handleArrayToggle = (key: "amenities" | "features", value: string) => {
+    setFilters((prev) => ({
       ...prev,
       [key]: prev[key].includes(value)
-        ? prev[key].filter(item => item !== value)
-        : [...prev[key], value]
+        ? prev[key].filter((item) => item !== value)
+        : [...prev[key], value],
     }));
   };
 
   const clearFilters = () => {
     setFilters({
-      query: '',
-      propertyType: 'all',
-      location: '',
+      query: "",
+      propertyType: "all",
+      location: "",
       priceRange: [0, 1000000000],
       tokenPriceRange: [0, 10000],
       isTokenized: null,
       minROI: 0,
       amenities: [],
-      features: []
+      features: [],
     });
   };
 
@@ -96,9 +119,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -121,19 +144,26 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
               id="search-query"
               placeholder="Search by title, description..."
               value={filters.query}
-              onChange={(e) => handleFilterChange('query', e.target.value)}
+              onChange={(e) => handleFilterChange("query", e.target.value)}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="property-type">Property Type</Label>
-            <Select value={filters.propertyType} onValueChange={(value) => handleFilterChange('propertyType', value)}>
+            <Select
+              value={filters.propertyType}
+              onValueChange={(value) =>
+                handleFilterChange("propertyType", value)
+              }
+            >
               <SelectTrigger id="property-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PROPERTY_TYPES.map(type => (
-                  <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                {PROPERTY_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -145,7 +175,7 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
               id="location"
               placeholder="City, State, or Address"
               value={filters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
+              onChange={(e) => handleFilterChange("location", e.target.value)}
             />
           </div>
         </div>
@@ -161,13 +191,13 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
             Advanced Filters
             {showAdvanced ? <X className="w-4 h-4" /> : null}
           </Button>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={clearFilters}>
               Clear All
             </Button>
             <Button onClick={handleSearch} disabled={loading}>
-              {loading ? 'Searching...' : 'Search Properties'}
+              {loading ? "Searching..." : "Search Properties"}
             </Button>
           </div>
         </div>
@@ -181,7 +211,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
               <div className="px-4">
                 <Slider
                   value={filters.priceRange}
-                  onValueChange={(value) => handleFilterChange('priceRange', value)}
+                  onValueChange={(value) =>
+                    handleFilterChange("priceRange", value)
+                  }
                   max={1000000000}
                   min={0}
                   step={1000000}
@@ -202,7 +234,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
                   <Checkbox
                     id="all-properties"
                     checked={filters.isTokenized === null}
-                    onCheckedChange={() => handleFilterChange('isTokenized', null)}
+                    onCheckedChange={() =>
+                      handleFilterChange("isTokenized", null)
+                    }
                   />
                   <Label htmlFor="all-properties">All Properties</Label>
                 </div>
@@ -210,9 +244,14 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
                   <Checkbox
                     id="tokenized"
                     checked={filters.isTokenized === true}
-                    onCheckedChange={() => handleFilterChange('isTokenized', true)}
+                    onCheckedChange={() =>
+                      handleFilterChange("isTokenized", true)
+                    }
                   />
-                  <Label htmlFor="tokenized" className="flex items-center gap-1">
+                  <Label
+                    htmlFor="tokenized"
+                    className="flex items-center gap-1"
+                  >
                     <Coins className="w-4 h-4" />
                     Tokenized Only
                   </Label>
@@ -221,7 +260,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
                   <Checkbox
                     id="traditional"
                     checked={filters.isTokenized === false}
-                    onCheckedChange={() => handleFilterChange('isTokenized', false)}
+                    onCheckedChange={() =>
+                      handleFilterChange("isTokenized", false)
+                    }
                   />
                   <Label htmlFor="traditional">Traditional Only</Label>
                 </div>
@@ -235,7 +276,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
                 <div className="px-4">
                   <Slider
                     value={filters.tokenPriceRange}
-                    onValueChange={(value) => handleFilterChange('tokenPriceRange', value)}
+                    onValueChange={(value) =>
+                      handleFilterChange("tokenPriceRange", value)
+                    }
                     max={10000}
                     min={0}
                     step={10}
@@ -256,7 +299,9 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
                 <div className="px-4">
                   <Slider
                     value={[filters.minROI]}
-                    onValueChange={(value) => handleFilterChange('minROI', value[0])}
+                    onValueChange={(value) =>
+                      handleFilterChange("minROI", value[0])
+                    }
                     max={50}
                     min={0}
                     step={1}
@@ -275,12 +320,14 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
             <div className="space-y-3">
               <Label>Amenities</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-                {AMENITIES.map(amenity => (
+                {AMENITIES.map((amenity) => (
                   <div key={amenity} className="flex items-center space-x-2">
                     <Checkbox
                       id={`amenity-${amenity}`}
                       checked={filters.amenities.includes(amenity)}
-                      onCheckedChange={() => handleArrayToggle('amenities', amenity)}
+                      onCheckedChange={() =>
+                        handleArrayToggle("amenities", amenity)
+                      }
                     />
                     <Label htmlFor={`amenity-${amenity}`} className="text-sm">
                       {amenity}
@@ -290,12 +337,16 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
               </div>
               {filters.amenities.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {filters.amenities.map(amenity => (
-                    <Badge key={amenity} variant="secondary" className="text-xs">
+                  {filters.amenities.map((amenity) => (
+                    <Badge
+                      key={amenity}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {amenity}
                       <X
                         className="w-3 h-3 ml-1 cursor-pointer"
-                        onClick={() => handleArrayToggle('amenities', amenity)}
+                        onClick={() => handleArrayToggle("amenities", amenity)}
                       />
                     </Badge>
                   ))}
@@ -307,12 +358,14 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
             <div className="space-y-3">
               <Label>Features</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-                {FEATURES.map(feature => (
+                {FEATURES.map((feature) => (
                   <div key={feature} className="flex items-center space-x-2">
                     <Checkbox
                       id={`feature-${feature}`}
                       checked={filters.features.includes(feature)}
-                      onCheckedChange={() => handleArrayToggle('features', feature)}
+                      onCheckedChange={() =>
+                        handleArrayToggle("features", feature)
+                      }
                     />
                     <Label htmlFor={`feature-${feature}`} className="text-sm">
                       {feature}
@@ -322,12 +375,16 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
               </div>
               {filters.features.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {filters.features.map(feature => (
-                    <Badge key={feature} variant="secondary" className="text-xs">
+                  {filters.features.map((feature) => (
+                    <Badge
+                      key={feature}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {feature}
                       <X
                         className="w-3 h-3 ml-1 cursor-pointer"
-                        onClick={() => handleArrayToggle('features', feature)}
+                        onClick={() => handleArrayToggle("features", feature)}
                       />
                     </Badge>
                   ))}
@@ -340,3 +397,6 @@ export function AdvancedPropertySearch({ onSearch, loading = false }: AdvancedPr
     </Card>
   );
 }
+
+
+//So we have agent_interactions, agent_performance_metrics, learning_patterns, property_views, saved_searches, smart_contracts, user_devices, user_behaviour_profiles

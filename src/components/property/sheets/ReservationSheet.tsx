@@ -1,21 +1,20 @@
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { format } from 'date-fns';
-import { DateRange } from 'react-day-picker';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
-import { paystackService } from '@/lib/paystack';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { paystackService } from "@/lib/paystack";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from "@/components/ui/sheet";
 import {
   Form,
   FormControl,
@@ -23,27 +22,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
-  dateRange: z.object({
-    from: z.date(),
-    to: z.date(),
-  }).refine((data) => data.from < data.to, {
-    message: "Check-out date must be after check-in date",
-  }),
-  adults: z.number().min(1, 'At least 1 adult required'),
+  dateRange: z
+    .object({
+      from: z.date(),
+      to: z.date(),
+    })
+    .refine((data) => data.from < data.to, {
+      message: "Check-out date must be after check-in date",
+    }),
+  adults: z.number().min(1, "At least 1 adult required"),
   children: z.number().min(0).optional(),
   infants: z.number().min(0).optional(),
   note: z.string().optional(),
@@ -55,7 +56,11 @@ interface ReservationSheetProps {
   property: any;
 }
 
-export function ReservationSheet({ open, onOpenChange, property }: ReservationSheetProps) {
+export function ReservationSheet({
+  open,
+  onOpenChange,
+  property,
+}: ReservationSheetProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -67,13 +72,15 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
       adults: 1,
       children: 0,
       infants: 0,
-      note: '',
+      note: "",
     },
   });
 
   const calculateNights = () => {
     if (!dateRange?.from || !dateRange?.to) return 0;
-    const diffTime = Math.abs(dateRange.to.getTime() - dateRange.from.getTime());
+    const diffTime = Math.abs(
+      dateRange.to.getTime() - dateRange.from.getTime()
+    );
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
@@ -86,18 +93,18 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
       toast({
-        title: 'Authentication Required',
-        description: 'Please log in to make a reservation',
-        variant: 'destructive'
+        title: "Authentication Required",
+        description: "Please log in to make a reservation",
+        variant: "destructive",
       });
       return;
     }
 
     if (!dateRange?.from || !dateRange?.to) {
       toast({
-        title: 'Date Required',
-        description: 'Please select check-in and check-out dates',
-        variant: 'destructive'
+        title: "Date Required",
+        description: "Please select check-in and check-out dates",
+        variant: "destructive",
       });
       return;
     }
@@ -113,13 +120,13 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
 
       // Create reservation record first
       const { data: reservation, error: reservationError } = await supabase
-        .from('reservations')
+        .from("reservations")
         .insert({
           user_id: user.id,
           property_id: property.id,
           agent_id: property.user_id,
-          from_date: format(dateRange.from, 'yyyy-MM-dd'),
-          to_date: format(dateRange.to, 'yyyy-MM-dd'),
+          from_date: format(dateRange.from, "yyyy-MM-dd"),
+          to_date: format(dateRange.to, "yyyy-MM-dd"),
           nights,
           adults: values.adults,
           children: values.children || 0,
@@ -127,7 +134,7 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
           total: finalTotal,
           fee: serviceFee,
           note: values.note,
-          status: 'pending'
+          status: "pending",
         })
         .select()
         .single();
@@ -138,42 +145,40 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
       const paymentReference = `reservation_${reservation.id}_${Date.now()}`;
 
       // Create payment record
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert({
-          user_id: user.id,
-          amount: Math.round(finalTotal * 100),
-          currency: 'NGN',
-          type: 'reservation',
-          property_id: property.id,
-          related_id: reservation.id,
-          related_type: 'reservations',
-          status: 'pending',
-          method: 'card',
-          provider: 'paystack',
-          reference: paymentReference,
-          metadata: {
-            reservation_id: reservation.id,
-            property_title: property.title,
-            check_in: format(dateRange.from, 'yyyy-MM-dd'),
-            check_out: format(dateRange.to, 'yyyy-MM-dd'),
-            nights,
-            guests: {
-              adults: values.adults,
-              children: values.children || 0,
-              infants: values.infants || 0
-            }
-          }
-        });
+      const { error: paymentError } = await supabase.from("payments").insert({
+        user_id: user.id,
+        amount: Math.round(finalTotal * 100),
+        currency: "NGN",
+        type: "reservation",
+        property_id: property.id,
+        related_id: reservation.id,
+        related_type: "reservations",
+        status: "pending",
+        method: "card",
+        provider: "paystack",
+        reference: paymentReference,
+        metadata: {
+          reservation_id: reservation.id,
+          property_title: property.title,
+          check_in: format(dateRange.from, "yyyy-MM-dd"),
+          check_out: format(dateRange.to, "yyyy-MM-dd"),
+          nights,
+          guests: {
+            adults: values.adults,
+            children: values.children || 0,
+            infants: values.infants || 0,
+          },
+        },
+      });
 
       if (paymentError) throw paymentError;
 
       // Initialize Paystack payment
       if (!paystackService.isConfigured()) {
         toast({
-          title: 'Payment Configuration Error',
-          description: 'Payment system is not properly configured',
-          variant: 'destructive'
+          title: "Payment Configuration Error",
+          description: "Payment system is not properly configured",
+          variant: "destructive",
         });
         return;
       }
@@ -186,12 +191,12 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
           user_id: user.id,
           reservation_id: reservation.id,
           property_id: property.id,
-          type: 'reservation'
+          type: "reservation",
         },
         onSuccess: () => {
           toast({
-            title: 'Payment Successful',
-            description: 'Your reservation has been confirmed!'
+            title: "Payment Successful",
+            description: "Your reservation has been confirmed!",
           });
           form.reset();
           setDateRange(undefined);
@@ -199,27 +204,26 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
         },
         onCancel: () => {
           toast({
-            title: 'Payment Cancelled',
-            description: 'Your reservation payment was cancelled',
-            variant: 'destructive'
+            title: "Payment Cancelled",
+            description: "Your reservation payment was cancelled",
+            variant: "destructive",
           });
         },
         onError: (error) => {
           toast({
-            title: 'Payment Error',
-            description: 'There was an error processing your payment',
-            variant: 'destructive'
+            title: "Payment Error",
+            description: "There was an error processing your payment",
+            variant: "destructive",
           });
-          console.error('Payment error:', error);
-        }
+          console.error("Payment error:", error);
+        },
       });
-
     } catch (error) {
-      console.error('Error submitting reservation:', error);
+      console.error("Error submitting reservation:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to submit reservation',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to submit reservation",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -242,7 +246,10 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 mt-6"
+          >
             <div className="space-y-4">
               <FormLabel>Select Dates</FormLabel>
               <Popover>
@@ -286,7 +293,7 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
 
             {nights > 0 && (
               <div className="text-sm text-gray-600">
-                {nights} night{nights !== 1 ? 's' : ''}
+                {nights} night{nights !== 1 ? "s" : ""}
               </div>
             )}
 
@@ -302,7 +309,9 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
                         type="number"
                         min="1"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -321,7 +330,9 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
                         type="number"
                         min="0"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || 0)
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -340,7 +351,9 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
                         type="number"
                         min="0"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || 0)
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -369,7 +382,10 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
             {nights > 0 && (
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>₦{property?.price?.amount?.toLocaleString()} × {nights} nights</span>
+                  <span>
+                    ₦{property?.price?.amount?.toLocaleString()} × {nights}{" "}
+                    nights
+                  </span>
                   <span>₦{total.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -395,7 +411,7 @@ export function ReservationSheet({ open, onOpenChange, property }: ReservationSh
                 Cancel
               </Button>
               <Button type="submit" disabled={loading || nights === 0}>
-                {loading ? 'Processing...' : 'Pay & Reserve'}
+                {loading ? "Processing..." : "Pay & Reserve"}
               </Button>
             </div>
           </form>

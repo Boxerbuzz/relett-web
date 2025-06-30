@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -95,7 +94,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link
-                to="/settings"
+                to="/profile"
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <User size={16} />

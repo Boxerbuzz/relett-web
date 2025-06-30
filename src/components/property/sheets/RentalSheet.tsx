@@ -7,15 +7,6 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { paystackService } from "@/lib/paystack";
 import {
-  ResponsiveDialog,
-  ResponsiveDialogContent,
-  ResponsiveDialogDescription,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-  ResponsiveDialogFooter,
-  ResponsiveDialogCloseButton,
-} from "@/components/ui/responsive-dialog";
-import {
   Form,
   FormControl,
   FormField,
@@ -33,6 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const formSchema = z.object({
   payment_plan: z.string().min(1, "Payment plan is required"),
@@ -46,11 +45,11 @@ interface RentalRequestModalProps {
   property: any;
 }
 
-export function RentalRequestModal({
+const RentalSheet = ({
   open,
   onOpenChange,
   property,
-}: RentalRequestModalProps) {
+}: RentalRequestModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -210,17 +209,15 @@ export function RentalRequestModal({
         return basePrice;
     }
   };
-
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent size="md">
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>Request Rental</ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="max-w-md">
+        <SheetHeader className="flex flex-col mb-6">
+          <SheetTitle>Request Rental</SheetTitle>
+          <SheetDescription>
             Submit a rental request for {property?.title}
-          </ResponsiveDialogDescription>
-        </ResponsiveDialogHeader>
-
+          </SheetDescription>
+        </SheetHeader>
         <div className="px-4 md:px-0">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -296,8 +293,7 @@ export function RentalRequestModal({
           </Form>
         </div>
 
-        <ResponsiveDialogFooter>
-          <ResponsiveDialogCloseButton />
+        <SheetFooter>
           <Button
             type="submit"
             disabled={loading}
@@ -305,8 +301,10 @@ export function RentalRequestModal({
           >
             {loading ? "Processing..." : "Pay & Submit Request"}
           </Button>
-        </ResponsiveDialogFooter>
-      </ResponsiveDialogContent>
-    </ResponsiveDialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
-}
+};
+
+export default RentalSheet;
