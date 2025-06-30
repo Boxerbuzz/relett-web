@@ -62,7 +62,7 @@ export function useDeviceManager() {
       const { data, error } = await supabase
         .from('user_devices')
         .select('*')
-        .order('last_used_at', { ascending: false });
+        .order('last_used', { ascending: false });
 
       if (error) throw error;
       
@@ -70,14 +70,14 @@ export function useDeviceManager() {
       const mappedDevices: UserDevice[] = (data || []).map(device => ({
         id: device.id,
         user_id: device.user_id,
-        device_id: device.device_id,
+        device_id: device.device_fingerprint, // Map device_fingerprint to device_id
         device_type: device.device_type,
         device_name: device.device_name,
-        user_agent: device.user_agent,
+        user_agent: device.browser || '', // Map browser to user_agent with fallback
         is_trusted: device.is_trusted,
-        last_used_at: device.last_used_at,
+        last_used_at: device.last_used, // Map last_used to last_used_at
         created_at: device.created_at,
-        updated_at: device.updated_at,
+        updated_at: device.created_at, // Use created_at as fallback for updated_at
         ip_address: device.ip_address,
         location: device.location,
       }));
