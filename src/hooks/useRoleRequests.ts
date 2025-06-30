@@ -1,24 +1,19 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface RoleRequest {
   id: string;
   user_id: string;
   requested_role: string;
-  status: string;
-  experience_years?: number;
-  credentials?: string;
+  current_role: string;
   reason: string;
-  license_number?: string;
-  issuing_authority?: string;
-  contact_phone?: string;
-  reviewed_by?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requested_at: string;
   reviewed_at?: string;
-  review_notes?: string;
-  created_at: string;
-  updated_at: string;
+  reviewed_by?: string;
+  admin_notes?: string;
 }
 
 export function useRoleRequests() {
@@ -29,18 +24,20 @@ export function useRoleRequests() {
 
   useEffect(() => {
     if (user) {
-      fetchRoleRequests();
+      fetchUserRoleRequests();
+    } else {
+      setRequests([]);
+      setLoading(false);
     }
   }, [user]);
 
-  const fetchRoleRequests = async () => {
+  const fetchUserRoleRequests = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
-        .from('user_role_requests')
+        .from('role_requests')
         .select('*')
         .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        .order('requested_at', { ascending: false });
 
       if (error) throw error;
       setRequests(data || []);
@@ -52,26 +49,45 @@ export function useRoleRequests() {
     }
   };
 
-  const submitRoleRequest = async (requestData: Omit<RoleRequest, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+  const submitRoleRequest = async (requestedRole: string, reason: string) => {
     try {
       const { data, error } = await supabase
-        .from('user_role_requests')
+        .from('role_requests')
         .insert({
           user_id: user?.id,
-          status: 'pending',
-          ...requestData
+          requested_role: requestedRole,
+          current_role: user?.user_type || 'user',
+          reason: reason,
+          status: 'pending'
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      await fetchRoleRequests(); // Refresh the list
-      return data;
+      setRequests(prev => [data, ...prev]);
+      return { data, error: null };
     } catch (err) {
       console.error('Error submitting role request:', err);
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit role request';
+      setError(errorMessage);
+      return { data: null, error: errorMessage };
     }
+  };
+
+  const getPendingRequest = (role?: string) => {
+    if (!role) {
+      return requests.find(req => req.status === 'pending');
+    }
+    return requests.find(req => req.requested_role === role && req.status === 'pending');
+  };
+
+  const hasActivePendingRequest = () => {
+    return requests.some(req => req.status === 'pending');
+  };
+
+  const getLatestRequest = () => {
+    return requests[0] || null;
   };
 
   return {
@@ -79,6 +95,9 @@ export function useRoleRequests() {
     loading,
     error,
     submitRoleRequest,
-    refetch: fetchRoleRequests
+    getPendingRequest,
+    hasActivePendingRequest,
+    getLatestRequest,
+    refetch: fetchUserRoleRequests
   };
 }
