@@ -1,24 +1,19 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface RoleRequest {
   id: string;
   user_id: string;
   requested_role: string;
-  status: string;
-  experience_years?: number;
-  credentials?: string;
+  current_role: string;
   reason: string;
-  license_number?: string;
-  issuing_authority?: string;
-  contact_phone?: string;
-  reviewed_by?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requested_at: string;
   reviewed_at?: string;
-  review_notes?: string;
-  created_at: string;
-  updated_at: string;
+  reviewed_by?: string;
+  admin_notes?: string;
 }
 
 export function useRoleRequests() {
@@ -29,13 +24,15 @@ export function useRoleRequests() {
 
   useEffect(() => {
     if (user) {
-      fetchRoleRequests();
+      fetchUserRoleRequests();
+    } else {
+      setRequests([]);
+      setLoading(false);
     }
   }, [user]);
 
-  const fetchRoleRequests = async () => {
+  const fetchUserRoleRequests = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('user_role_requests')
         .select('*')
@@ -43,7 +40,22 @@ export function useRoleRequests() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        requested_role: item.requested_role,
+        current_role: 'user', // Default since this field doesn't exist in the actual table
+        reason: item.reason,
+        status: item.status as 'pending' | 'approved' | 'rejected',
+        requested_at: item.created_at,
+        reviewed_at: item.reviewed_at,
+        reviewed_by: item.reviewed_by,
+        admin_notes: '' // No admin notes field exists in the table, so use empty string
+      })) || [];
+      
+      setRequests(transformedData);
     } catch (err) {
       console.error('Error fetching role requests:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch role requests');
@@ -52,26 +64,58 @@ export function useRoleRequests() {
     }
   };
 
-  const submitRoleRequest = async (requestData: Omit<RoleRequest, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+  const submitRoleRequest = async (requestedRole: string, reason: string) => {
     try {
       const { data, error } = await supabase
         .from('user_role_requests')
         .insert({
           user_id: user?.id,
-          status: 'pending',
-          ...requestData
+          requested_role: requestedRole,
+          reason: reason,
+          status: 'pending'
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      await fetchRoleRequests(); // Refresh the list
-      return data;
+      // Transform and add to requests
+      const transformedData: RoleRequest = {
+        id: data.id,
+        user_id: data.user_id,
+        requested_role: data.requested_role,
+        current_role: 'user', // Default since this field doesn't exist in the actual table
+        reason: data.reason,
+        status: data.status as 'pending' | 'approved' | 'rejected',
+        requested_at: data.created_at,
+        reviewed_at: data.reviewed_at,
+        reviewed_by: data.reviewed_by,
+        admin_notes: '' // No admin notes field exists in the table, so use empty string
+      };
+      
+      setRequests(prev => [transformedData, ...prev]);
+      return { data: transformedData, error: null };
     } catch (err) {
       console.error('Error submitting role request:', err);
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit role request';
+      setError(errorMessage);
+      return { data: null, error: errorMessage };
     }
+  };
+
+  const getPendingRequest = (role?: string) => {
+    if (!role) {
+      return requests.find(req => req.status === 'pending');
+    }
+    return requests.find(req => req.requested_role === role && req.status === 'pending');
+  };
+
+  const hasActivePendingRequest = () => {
+    return requests.some(req => req.status === 'pending');
+  };
+
+  const getLatestRequest = () => {
+    return requests[0] || null;
   };
 
   return {
@@ -79,6 +123,9 @@ export function useRoleRequests() {
     loading,
     error,
     submitRoleRequest,
-    refetch: fetchRoleRequests
+    getPendingRequest,
+    hasActivePendingRequest,
+    getLatestRequest,
+    refetch: fetchUserRoleRequests
   };
 }
