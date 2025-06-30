@@ -52,7 +52,7 @@ export function useRoleRequests() {
         requested_at: item.created_at,
         reviewed_at: item.reviewed_at,
         reviewed_by: item.reviewed_by,
-        admin_notes: item.rejection_reason || '' // Use 'rejection_reason' field which exists in the table
+        admin_notes: '' // No admin notes field exists in the table, so use empty string
       })) || [];
       
       setRequests(transformedData);
@@ -90,7 +90,7 @@ export function useRoleRequests() {
         requested_at: data.created_at,
         reviewed_at: data.reviewed_at,
         reviewed_by: data.reviewed_by,
-        admin_notes: data.rejection_reason || '' // Use 'rejection_reason' field which exists in the table
+        admin_notes: '' // No admin notes field exists in the table, so use empty string
       };
       
       setRequests(prev => [transformedData, ...prev]);
