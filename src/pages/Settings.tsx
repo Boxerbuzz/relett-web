@@ -2,19 +2,11 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { RoleRequestHistory } from "@/components/profile/RoleRequestHistory";
 import { RoleRequestDialog } from "@/components/dialogs/RoleRequestDialog";
 import {
-  UserIcon,
   BellIcon,
   ShieldIcon,
   UserPlusIcon,
@@ -64,7 +56,10 @@ const Settings = () => {
         </TabsList>
 
         <div className="w-full max-w-full overflow-hidden">
-          <TabsContent value="notifications" className="space-y-6 w-full max-w-full">
+          <TabsContent
+            value="notifications"
+            className="space-y-6 w-full max-w-full"
+          >
             <NotificationSettings />
           </TabsContent>
           <TabsContent value="security" className="space-y-6 w-full max-w-full">
