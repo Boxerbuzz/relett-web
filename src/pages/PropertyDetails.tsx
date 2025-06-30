@@ -22,6 +22,7 @@ import {
   StarIcon,
   ImagesIcon,
 } from "@phosphor-icons/react";
+import { getAmenityById } from "@/types/amenities";
 
 const PropertyDetails = () => {
   const { propertyId } = useParams();
@@ -352,7 +353,7 @@ const PropertyDetails = () => {
                   {property.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm">{amenity}</span>
+                      <span className="text-sm">{getAmenityById(amenity)?.name}</span>
                     </div>
                   ))}
                 </div>

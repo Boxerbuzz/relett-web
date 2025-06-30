@@ -26,6 +26,7 @@ import {
   ArrowRightIcon,
   StarIcon,
 } from "@phosphor-icons/react";
+import { getAmenityById } from "@/types/amenities";
 
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState([]);
@@ -235,7 +236,9 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
 
   const getTopAmenities = (amenities: string[]) => {
     if (!amenities || amenities.length === 0) return [];
-    return amenities.slice(0, 3);
+    return amenities
+      .slice(0, 3)
+      .map((amenity) => getAmenityById(amenity)?.name);
   };
 
   return (
