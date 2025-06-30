@@ -9,7 +9,7 @@ import {
   ShieldIcon,
   FileTextIcon,
   GavelIcon,
-  SpeakerIcon,
+  SpeakerHigh,
 } from "@phosphor-icons/react";
 import {
   Card,
@@ -57,7 +57,7 @@ export function AdminVerificationHub() {
               value="system-notifications"
               className="flex items-center gap-2"
             >
-              <SpeakerIcon className="h-4 w-4" />
+              <SpeakerHigh className="h-4 w-4" />
               System Notifications
             </TabsTrigger>
           </TabsList>

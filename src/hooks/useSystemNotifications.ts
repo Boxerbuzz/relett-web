@@ -64,6 +64,7 @@ export function useSystemNotifications() {
         notification_type: notification.notification_type as 'info' | 'warning' | 'error' | 'success',
         severity: notification.severity as 'low' | 'medium' | 'high' | 'critical',
         target_audience: notification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+        auto_dismiss_after: notification.auto_dismiss_after as number | null,
       }));
 
       setNotifications(filteredNotifications);
@@ -91,6 +92,7 @@ export function useSystemNotifications() {
               notification_type: newNotification.notification_type as 'info' | 'warning' | 'error' | 'success',
               severity: newNotification.severity as 'low' | 'medium' | 'high' | 'critical',
               target_audience: newNotification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+              auto_dismiss_after: newNotification.auto_dismiss_after as number | null,
             };
             
             setNotifications(prev => [typedNotification, ...prev]);
@@ -118,6 +120,7 @@ export function useSystemNotifications() {
             notification_type: updatedNotification.notification_type as 'info' | 'warning' | 'error' | 'success',
             severity: updatedNotification.severity as 'low' | 'medium' | 'high' | 'critical',
             target_audience: updatedNotification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+            auto_dismiss_after: updatedNotification.auto_dismiss_after as number | null,
           };
           
           setNotifications(prev => 

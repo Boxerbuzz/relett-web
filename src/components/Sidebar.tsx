@@ -1,22 +1,23 @@
+
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import {
-  HomeIcon,
-  BuildingOfficeIcon,
-  MapIcon,
-  CogIcon,
-  UserIcon,
-  BellIcon,
-  ChatBubbleLeftIcon,
-  CalendarIcon,
-  DocumentTextIcon,
-  ShieldCheckIcon,
-  CurrencyDollarIcon,
-  HeartIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+  Home,
+  Building2,
+  Map,
+  Settings,
+  User,
+  Bell,
+  MessageSquare,
+  Calendar,
+  FileText,
+  ShieldCheck,
+  DollarSign,
+  Heart,
+  Search,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
@@ -33,19 +34,19 @@ export function Sidebar({ onClose }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
-    { name: "Marketplace", href: "/marketplace", icon: BuildingOfficeIcon },
-    { name: "Map View", href: "/map", icon: MapIcon },
-    { name: "My Properties", href: "/my-properties", icon: HeartIcon },
-    { name: "Services", href: "/services", icon: MagnifyingGlassIcon },
-    { name: "Bookings", href: "/bookings", icon: CalendarIcon },
-    { name: "Notifications", href: "/notifications", icon: BellIcon },
-    { name: "Messaging", href: "/messaging", icon: ChatBubbleLeftIcon },
-    { name: "Verification", href: "/verification", icon: ShieldCheckIcon },
-    { name: "Tokens", href: "/tokens", icon: CurrencyDollarIcon },
-    { name: "Documentation", href: "/documentation", icon: DocumentTextIcon },
-    { name: "Settings", href: "/settings", icon: CogIcon },
-    { name: "Profile", href: "/profile", icon: UserIcon },
+    { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Marketplace", href: "/marketplace", icon: Building2 },
+    { name: "Map View", href: "/map", icon: Map },
+    { name: "My Properties", href: "/my-properties", icon: Heart },
+    { name: "Services", href: "/services", icon: Search },
+    { name: "Bookings", href: "/bookings", icon: Calendar },
+    { name: "Notifications", href: "/notifications", icon: Bell },
+    { name: "Messaging", href: "/messaging", icon: MessageSquare },
+    { name: "Verification", href: "/verification", icon: ShieldCheck },
+    { name: "Tokens", href: "/tokens", icon: DollarSign },
+    { name: "Documentation", href: "/documentation", icon: FileText },
+    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Profile", href: "/profile", icon: User },
   ];
 
   const active = (href: string) => {
@@ -66,7 +67,7 @@ export function Sidebar({ onClose }: SidebarProps) {
     <div className="flex flex-col h-full">
       <div className="px-4 py-6">
         <Link to="/" className="flex items-center space-x-2">
-          <BuildingOfficeIcon className="h-6 w-6 text-blue-500" />
+          <Building2 className="h-6 w-6 text-blue-500" />
           <span className="text-lg font-bold">Real Estate</span>
         </Link>
       </div>
@@ -98,7 +99,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                 className="justify-start pl-6 hover:bg-gray-100 w-full text-gray-500"
                 onClick={() => handleNavigation("/admin")}
               >
-                <ShieldCheckIcon className="mr-2 h-4 w-4" />
+                <ShieldCheck className="mr-2 h-4 w-4" />
                 <span>Admin Panel</span>
               </Button>
             </div>

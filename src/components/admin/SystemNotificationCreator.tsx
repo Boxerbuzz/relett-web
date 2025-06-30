@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SpeakerIcon } from '@phosphor-icons/react';
+import { SpeakerHigh } from '@phosphor-icons/react';
 
 export function SystemNotificationCreator() {
   const { user } = useAuth();
@@ -104,7 +104,7 @@ export function SystemNotificationCreator() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <SpeakerIcon className="h-5 w-5" />
+          <SpeakerHigh className="h-5 w-5" />
           Create System Notification
         </CardTitle>
         <CardDescription>
