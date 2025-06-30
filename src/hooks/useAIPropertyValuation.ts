@@ -2,148 +2,86 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Json } from '@/integrations/supabase/types';
 
-interface PropertyData {
-  title: string;
-  description: string;
-  type: string;
-  location: {
-    address: string;
-    city: string;
-    state: string;
-    coordinates?: { lat: number; lng: number };
-  };
-  specification: {
-    bedrooms?: number;
-    bathrooms?: number;
-    sqft?: number;
-    yearBuilt?: number;
-    propertyCondition?: string;
+interface PropertyValuationRequest {
+  propertyData: {
+    id?: string;
+    propertyType: string;
+    category: string;
+    location?: {
+      state?: string;
+      city?: string;
+      address?: string;
+    };
   };
 }
 
-interface AIValuationResult {
-  id: string;
+interface PropertyValuationResponse {
   estimatedValue: number;
+  currency: string;
+  valuationMethod: string;
+  marketAnalysis: string;
   confidenceScore: number;
-  valuationFactors: Record<string, any>;
-  marketComparisons: any[];
-}
-
-// This interface matches the database structure
-interface AIPropertyValuation {
-  id: string;
-  property_id?: string;
-  user_id: string;
-  ai_estimated_value: number;
-  confidence_score: number;
-  valuation_factors: Json;
-  market_comparisons: Json;
-  ai_model?: string;
-  created_at: string;
-  updated_at: string;
+  comparableCount: number;
+  keyFactors: string[];
+  marketTrends: string;
+  metadata: {
+    aiModel: string;
+    analysisTimestamp: string;
+    dataPoints: {
+      comparables: number;
+      marketMetrics: number;
+    };
+  };
 }
 
 export function useAIPropertyValuation() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [valuation, setValuation] = useState<PropertyValuationResponse | null>(null);
   const { toast } = useToast();
 
-  const generateValuation = async (propertyData: PropertyData, propertyId?: string): Promise<AIValuationResult> => {
-    setIsLoading(true);
+  const getValuation = async (propertyData: PropertyValuationRequest['propertyData']) => {
+    setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Call AI valuation edge function
-      const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
-        'ai-property-valuation',
-        {
-          body: {
-            propertyData,
-            propertyId
-          }
-        }
-      );
-
-      if (aiError) throw aiError;
-
-      // Store valuation in database if property ID provided
-      if (propertyId) {
-        const { data: valuation, error: dbError } = await supabase
-          .from('ai_property_valuations')
-          .insert({
-            property_id: propertyId,
-            user_id: user.id,
-            ai_estimated_value: aiResponse.estimatedValue,
-            confidence_score: aiResponse.confidenceScore,
-            valuation_factors: aiResponse.valuationFactors,
-            market_comparisons: aiResponse.marketComparisons
-          })
-          .select('*')
-          .single();
-
-        if (dbError) {
-          console.error('Database error:', dbError);
-          // Continue without storing in DB for now
-        }
-
-        toast({
-          title: 'AI Valuation Generated',
-          description: `Property valued at $${aiResponse.estimatedValue.toLocaleString()} with ${Math.round(aiResponse.confidenceScore * 100)}% confidence`,
-        });
-
-        return {
-          id: valuation?.id || crypto.randomUUID(),
-          estimatedValue: aiResponse.estimatedValue,
-          confidenceScore: aiResponse.confidenceScore,
-          valuationFactors: aiResponse.valuationFactors,
-          marketComparisons: aiResponse.marketComparisons
-        };
-      }
-
-      return {
-        id: crypto.randomUUID(),
-        estimatedValue: aiResponse.estimatedValue,
-        confidenceScore: aiResponse.confidenceScore,
-        valuationFactors: aiResponse.valuationFactors,
-        marketComparisons: aiResponse.marketComparisons
-      };
-
-    } catch (error) {
-      console.error('AI valuation error:', error);
-      toast({
-        title: 'Valuation Failed',
-        description: error instanceof Error ? error.message : 'Failed to generate AI valuation',
-        variant: 'destructive'
+      const { data, error } = await supabase.functions.invoke('ai-property-valuation', {
+        body: { propertyData }
       });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getPropertyValuation = async (propertyId: string): Promise<AIPropertyValuation | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('ai_property_valuations')
-        .select('*')
-        .eq('property_id', propertyId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
       if (error) throw error;
+
+      setValuation(data);
+
+      // Store valuation in database
+      if (propertyData.id) {
+        await supabase
+          .from('ai_property_valuations')
+          .insert({
+            property_id: propertyData.id,
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            ai_estimated_value: data.estimatedValue,
+            confidence_score: data.confidenceScore,
+            valuation_factors: data.keyFactors,
+            market_comparisons: data.metadata
+          });
+      }
+
       return data;
     } catch (error) {
-      console.error('Get valuation error:', error);
+      console.error('Error getting AI valuation:', error);
+      toast({
+        title: 'Valuation Error',
+        description: 'Failed to get AI property valuation',
+        variant: 'destructive'
+      });
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
-    generateValuation,
-    getPropertyValuation,
-    isLoading
+    loading,
+    valuation,
+    getValuation
   };
 }

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
+import { usePropertyInteractions } from '@/hooks/usePropertyInteractions';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Heart,
@@ -30,6 +31,7 @@ interface PropertyActionButtonsProps {
 export function PropertyActionButtons({ property, onInvestClick }: PropertyActionButtonsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { trackLike, trackFavorite } = usePropertyInteractions();
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleRequestInspection = async () => {
@@ -49,7 +51,7 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
         .insert({
           property_id: property.id,
           user_id: user.id,
-          agent_id: property.user_id, // Property owner as default agent
+          agent_id: property.user_id,
           status: 'pending',
           mode: 'physical',
           notes: 'Inspection requested from property details'
@@ -171,26 +173,25 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
 
     setLoading('favorite');
     try {
-      const { error } = await supabase
-        .from('property_favorites')
-        .insert({
-          property_id: property.id,
-          user_id: user.id
-        });
+      await trackFavorite(property.id);
+    } finally {
+      setLoading(null);
+    }
+  };
 
-      if (error) throw error;
-
+  const handleLike = async () => {
+    if (!user) {
       toast({
-        title: 'Property Saved',
-        description: 'Property added to your favorites'
-      });
-    } catch (error) {
-      console.error('Error saving property:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save property. It may already be in your favorites.',
+        title: 'Authentication Required',
+        description: 'Please log in to like properties',
         variant: 'destructive'
       });
+      return;
+    }
+
+    setLoading('like');
+    try {
+      await trackLike(property.id);
     } finally {
       setLoading(null);
     }
@@ -208,7 +209,6 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
         console.log('Error sharing:', error);
       }
     } else {
-      // Fallback to copying URL
       navigator.clipboard.writeText(window.location.href);
       toast({
         title: 'Link Copied',
@@ -275,6 +275,17 @@ export function PropertyActionButtons({ property, onInvestClick }: PropertyActio
 
         {/* Secondary Actions */}
         <div className="flex gap-2 pt-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLike}
+            disabled={loading === 'like'}
+            className="flex-1"
+          >
+            <Heart className="h-4 w-4 mr-2" />
+            {loading === 'like' ? 'Liking...' : 'Like'}
+          </Button>
+
           <Button
             variant="outline"
             size="sm"

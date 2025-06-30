@@ -40,6 +40,8 @@ import NotFound from "./pages/NotFound";
 import DatabaseDocumentation from "./pages/DatabaseDocumentation";
 import DataFlow from "./pages/DataFlow";
 
+import { PropertyDetailsEnhanced } from "@/components/property/PropertyDetailsEnhanced";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -159,12 +161,14 @@ function App() {
                 }
               />
 
-              {/* Updated property details route */}
+              {/* Enhanced Property Details Route */}
               <Route
-                path="/properties/:propertyId"
+                path="/properties/:id"
                 element={
                   <ProtectedRoute>
-                    <PropertyDetails />
+                    <Layout>
+                      <PropertyDetailsEnhanced />
+                    </Layout>
                   </ProtectedRoute>
                 }
               />
