@@ -56,11 +56,15 @@ export class DeviceRegistrationService {
 
   async checkDeviceTrust(deviceId: string): Promise<boolean> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return false;
+      
       const { data, error } = await supabase
         .from('user_devices')
         .select('is_trusted')
-        .eq('device_id', deviceId)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('device_fingerprint', deviceId)
+        .eq('user_id', user.id)
         .single();
 
       if (error) {

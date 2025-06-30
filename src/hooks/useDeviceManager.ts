@@ -8,14 +8,15 @@ import { generateDeviceFingerprint, type DeviceFingerprint } from '@/lib/deviceF
 export interface UserDevice {
   id: string;
   user_id: string;
-  device_id: string;
+  device_fingerprint: string;
   device_type: string;
   device_name: string;
-  user_agent: string;
+  browser: string;
   is_trusted: boolean;
-  last_used_at: string;
+  last_used: string;
   created_at: string;
-  updated_at: string;
+  ip_address: unknown;
+  location: any;
 }
 
 export function useDeviceManager() {
@@ -37,7 +38,7 @@ export function useDeviceManager() {
       const fingerprint = generateDeviceFingerprint();
       setCurrentDevice(fingerprint);
       
-      // Register this device
+      // Register this device using the RPC function
       const { data, error } = await supabase.rpc('register_user_device', {
         p_device_id: fingerprint.deviceId,
         p_device_type: fingerprint.deviceType,
@@ -60,7 +61,7 @@ export function useDeviceManager() {
       const { data, error } = await supabase
         .from('user_devices')
         .select('*')
-        .order('last_used_at', { ascending: false });
+        .order('last_used', { ascending: false });
 
       if (error) throw error;
       setDevices(data || []);

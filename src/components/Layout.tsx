@@ -4,10 +4,15 @@ import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { SystemNotificationBanner } from "@/components/notifications/SystemNotificationBanner";
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export function Layout() {
+interface LayoutProps {
+  children?: ReactNode;
+  stripPadding?: boolean;
+}
+
+export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -42,8 +47,8 @@ export function Layout() {
         
         {/* Page content */}
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className="py-6">
-            <Outlet />
+          <div className={stripPadding ? "" : "py-6"}>
+            {children || <Outlet />}
           </div>
         </main>
       </div>

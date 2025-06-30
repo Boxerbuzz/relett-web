@@ -9,8 +9,8 @@ import {
   DevicesIcon, 
   ShieldCheckIcon, 
   TrashIcon,
-  ComputerDesktopIcon,
-  DevicePhoneMobileIcon,
+  DesktopIcon,
+  DeviceMobileIcon,
   DeviceTabletIcon 
 } from '@phosphor-icons/react';
 import {
@@ -33,11 +33,11 @@ export function TrustedDevices() {
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType) {
       case 'mobile':
-        return <DevicePhoneMobileIcon className="h-5 w-5" />;
+        return <DeviceMobileIcon className="h-5 w-5" />;
       case 'tablet':
         return <DeviceTabletIcon className="h-5 w-5" />;
       default:
-        return <ComputerDesktopIcon className="h-5 w-5" />;
+        return <DesktopIcon className="h-5 w-5" />;
     }
   };
 

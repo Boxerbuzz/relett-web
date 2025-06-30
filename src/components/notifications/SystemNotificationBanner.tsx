@@ -4,13 +4,13 @@ import { useSystemNotifications } from '@/hooks/useSystemNotifications';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  XMarkIcon, 
-  InformationCircleIcon,
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronRightIcon
-} from '@phosphor-icons/react';
+  X, 
+  Info,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
+  ChevronRight
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function SystemNotificationBanner() {
@@ -22,13 +22,13 @@ export function SystemNotificationBanner() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'warning':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />;
+        return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
       case 'error':
-        return <ExclamationCircleIcon className="h-5 w-5 text-red-600" />;
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
       default:
-        return <InformationCircleIcon className="h-5 w-5 text-blue-600" />;
+        return <Info className="h-5 w-5 text-blue-600" />;
     }
   };
 
@@ -99,7 +99,7 @@ export function SystemNotificationBanner() {
                     onClick={() => window.open(notification.action_url!, '_blank')}
                   >
                     {notification.action_label}
-                    <ChevronRightIcon className="h-4 w-4 ml-1" />
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 )}
               </div>
@@ -111,7 +111,7 @@ export function SystemNotificationBanner() {
                 className="h-auto p-1 text-inherit hover:bg-transparent hover:text-gray-600"
                 onClick={() => dismissNotification(notification.id)}
               >
-                <XMarkIcon className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -126,12 +126,12 @@ export function SystemNotificationBanner() {
             onClick={() => setCollapsed(!collapsed)}
           >
             <div className="flex items-center gap-2">
-              <InformationCircleIcon className="h-5 w-5 text-blue-600" />
+              <Info className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-medium">
                 {regularNotifications.length} System Notification{regularNotifications.length > 1 ? 's' : ''}
               </span>
             </div>
-            <ChevronRightIcon 
+            <ChevronRight 
               className={cn(
                 "h-4 w-4 transition-transform",
                 collapsed ? "rotate-90" : "rotate-0"
@@ -159,7 +159,7 @@ export function SystemNotificationBanner() {
                           onClick={() => window.open(notification.action_url!, '_blank')}
                         >
                           {notification.action_label}
-                          <ChevronRightIcon className="h-4 w-4 ml-1" />
+                          <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                       )}
                     </div>
@@ -171,7 +171,7 @@ export function SystemNotificationBanner() {
                       className="h-auto p-1"
                       onClick={() => dismissNotification(notification.id)}
                     >
-                      <XMarkIcon className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </Button>
                   )}
                 </div>

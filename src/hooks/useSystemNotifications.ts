@@ -51,7 +51,7 @@ export function useSystemNotifications() {
 
       if (error) throw error;
       
-      // Filter notifications based on target audience
+      // Filter notifications based on target audience and properly type them
       const filteredNotifications = (data || []).filter(notification => {
         if (notification.target_audience === 'all') return true;
         if (notification.target_audience === 'custom' && notification.target_users) {
@@ -59,7 +59,12 @@ export function useSystemNotifications() {
         }
         // Add more audience filtering logic here based on user roles
         return true;
-      });
+      }).map(notification => ({
+        ...notification,
+        notification_type: notification.notification_type as 'info' | 'warning' | 'error' | 'success',
+        severity: notification.severity as 'low' | 'medium' | 'high' | 'critical',
+        target_audience: notification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+      }));
 
       setNotifications(filteredNotifications);
     } catch (err) {
@@ -79,16 +84,23 @@ export function useSystemNotifications() {
           table: 'system_notifications' 
         }, 
         (payload) => {
-          const newNotification = payload.new as SystemNotification;
+          const newNotification = payload.new as any;
           if (newNotification.is_active) {
-            setNotifications(prev => [newNotification, ...prev]);
+            const typedNotification: SystemNotification = {
+              ...newNotification,
+              notification_type: newNotification.notification_type as 'info' | 'warning' | 'error' | 'success',
+              severity: newNotification.severity as 'low' | 'medium' | 'high' | 'critical',
+              target_audience: newNotification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+            };
+            
+            setNotifications(prev => [typedNotification, ...prev]);
             
             // Show toast for high/critical notifications
-            if (newNotification.severity === 'high' || newNotification.severity === 'critical') {
+            if (typedNotification.severity === 'high' || typedNotification.severity === 'critical') {
               toast({
-                title: newNotification.title,
-                description: newNotification.message,
-                variant: newNotification.notification_type === 'error' ? 'destructive' : 'default',
+                title: typedNotification.title,
+                description: typedNotification.message,
+                variant: typedNotification.notification_type === 'error' ? 'destructive' : 'default',
               });
             }
           }
@@ -100,9 +112,16 @@ export function useSystemNotifications() {
           table: 'system_notifications' 
         }, 
         (payload) => {
-          const updatedNotification = payload.new as SystemNotification;
+          const updatedNotification = payload.new as any;
+          const typedNotification: SystemNotification = {
+            ...updatedNotification,
+            notification_type: updatedNotification.notification_type as 'info' | 'warning' | 'error' | 'success',
+            severity: updatedNotification.severity as 'low' | 'medium' | 'high' | 'critical',
+            target_audience: updatedNotification.target_audience as 'all' | 'verified' | 'admin' | 'custom',
+          };
+          
           setNotifications(prev => 
-            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+            prev.map(n => n.id === typedNotification.id ? typedNotification : n)
           );
         })
       .subscribe();
