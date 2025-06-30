@@ -117,7 +117,15 @@ export function RoleRequestManagement() {
           is_active: true,
         });
 
+        const { error: userError } = await supabase
+          .from("users")
+          .update({
+            user_type: request.requested_role as any,
+          })
+          .eq("id", request.user_id);
+
         if (roleError) throw roleError;
+        if (userError) throw userError;
       }
 
       await fetchRoleRequests();

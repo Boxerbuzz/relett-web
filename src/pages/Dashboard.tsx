@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 const DashboardPage = () => {
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -24,8 +23,6 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
-      <DashboardHeader />
-
       <Dashboard />
     </div>
   );

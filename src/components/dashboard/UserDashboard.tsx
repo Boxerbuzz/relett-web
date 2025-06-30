@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useProperties } from "@/hooks/useProperties";
@@ -32,7 +31,6 @@ const UserDashboard = () => {
   const favoriteProperties =
     properties?.filter((p) => p.favorites && p.favorites > 0)?.slice(0, 3) ||
     [];
-  const recentProperties = properties?.slice(0, 4) || [];
 
   // Mock user activity data - in real app this would come from database
   const userStats = [
