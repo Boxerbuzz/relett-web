@@ -73,20 +73,20 @@ export function useDeviceManager() {
       
       console.log('Raw device data from database:', data);
       
-      // Map the database fields to our interface
+      // Map the database fields to our interface based on actual schema
       const mappedDevices: UserDevice[] = (data || []).map(device => {
         console.log('Processing device:', device);
         return {
           id: device.id,
           user_id: device.user_id,
-          device_id: device.device_fingerprint || device.device_id || '', // Try both field names
+          device_id: device.device_fingerprint, // Map device_fingerprint to device_id
           device_type: device.device_type || 'unknown',
           device_name: device.device_name || 'Unknown Device',
-          user_agent: device.browser || device.user_agent || '', // Try both field names
+          user_agent: device.browser || '', // Map browser to user_agent
           is_trusted: device.is_trusted || false,
-          last_used_at: device.last_used || device.last_used_at || device.created_at, // Try multiple field names
+          last_used_at: device.last_used, // Map last_used to last_used_at
           created_at: device.created_at,
-          updated_at: device.updated_at || device.created_at, // Use updated_at or fallback to created_at
+          updated_at: device.created_at, // Use created_at as fallback since updated_at doesn't exist
           ip_address: device.ip_address,
           location: device.location,
         };
