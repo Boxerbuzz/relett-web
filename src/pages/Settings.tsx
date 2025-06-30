@@ -64,6 +64,9 @@ const Settings = () => {
         </TabsList>
 
         <div className="w-full max-w-full overflow-hidden">
+          <TabsContent value="notifications" className="space-y-6 w-full max-w-full">
+            <NotificationSettings />
+          </TabsContent>
           <TabsContent value="security" className="space-y-6 w-full max-w-full">
             <SecuritySettings />
           </TabsContent>

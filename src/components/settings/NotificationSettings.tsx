@@ -1,12 +1,17 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NotificationTypes {
   property_updates: boolean;
@@ -37,7 +42,7 @@ export function NotificationSettings() {
       dividend_alerts: true,
       verification_updates: true,
       system_announcements: true,
-    }
+    },
   });
 
   useEffect(() => {
@@ -49,24 +54,28 @@ export function NotificationSettings() {
   const fetchPreferences = async () => {
     try {
       const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user?.id)
+        .from("notification_preferences")
+        .select("*")
+        .eq("user_id", user?.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
+      if (error && error.code !== "PGRST116") throw error;
+
       if (data) {
         // Safely parse notification_types from JSON
         let notificationTypes = preferences.notification_types;
         if (data.notification_types) {
           try {
-            const parsedTypes = typeof data.notification_types === 'string' 
-              ? JSON.parse(data.notification_types) 
-              : data.notification_types;
-            notificationTypes = { ...preferences.notification_types, ...parsedTypes };
+            const parsedTypes =
+              typeof data.notification_types === "string"
+                ? JSON.parse(data.notification_types)
+                : data.notification_types;
+            notificationTypes = {
+              ...preferences.notification_types,
+              ...parsedTypes,
+            };
           } catch (e) {
-            console.error('Error parsing notification types:', e);
+            console.error("Error parsing notification types:", e);
           }
         }
 
@@ -74,11 +83,11 @@ export function NotificationSettings() {
           email_notifications: data.email_notifications,
           push_notifications: data.push_notifications,
           sms_notifications: data.sms_notifications,
-          notification_types: notificationTypes
+          notification_types: notificationTypes,
         });
       }
     } catch (error) {
-      console.error('Error fetching preferences:', error);
+      console.error("Error fetching preferences:", error);
     }
   };
 
@@ -87,28 +96,26 @@ export function NotificationSettings() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: user.id,
-          email_notifications: preferences.email_notifications,
-          push_notifications: preferences.push_notifications,
-          sms_notifications: preferences.sms_notifications,
-          notification_types: preferences.notification_types as any
-        });
+      const { error } = await supabase.from("notification_preferences").upsert({
+        user_id: user.id,
+        email_notifications: preferences.email_notifications,
+        push_notifications: preferences.push_notifications,
+        sms_notifications: preferences.sms_notifications,
+        notification_types: preferences.notification_types as any,
+      });
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Notification preferences updated successfully'
+        title: "Success",
+        description: "Notification preferences updated successfully",
       });
     } catch (error) {
-      console.error('Error updating preferences:', error);
+      console.error("Error updating preferences:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update notification preferences',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to update notification preferences",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -132,8 +139,11 @@ export function NotificationSettings() {
               <Switch
                 id="email"
                 checked={preferences.email_notifications}
-                onCheckedChange={(checked) => 
-                  setPreferences({...preferences, email_notifications: checked})
+                onCheckedChange={(checked) =>
+                  setPreferences({
+                    ...preferences,
+                    email_notifications: checked,
+                  })
                 }
               />
             </div>
@@ -142,8 +152,11 @@ export function NotificationSettings() {
               <Switch
                 id="push"
                 checked={preferences.push_notifications}
-                onCheckedChange={(checked) => 
-                  setPreferences({...preferences, push_notifications: checked})
+                onCheckedChange={(checked) =>
+                  setPreferences({
+                    ...preferences,
+                    push_notifications: checked,
+                  })
                 }
               />
             </div>
@@ -152,8 +165,8 @@ export function NotificationSettings() {
               <Switch
                 id="sms"
                 checked={preferences.sms_notifications}
-                onCheckedChange={(checked) => 
-                  setPreferences({...preferences, sms_notifications: checked})
+                onCheckedChange={(checked) =>
+                  setPreferences({ ...preferences, sms_notifications: checked })
                 }
               />
             </div>
@@ -168,13 +181,13 @@ export function NotificationSettings() {
               <Switch
                 id="property"
                 checked={preferences.notification_types.property_updates}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setPreferences({
-                    ...preferences, 
+                    ...preferences,
                     notification_types: {
                       ...preferences.notification_types,
-                      property_updates: checked
-                    }
+                      property_updates: checked,
+                    },
                   })
                 }
               />
@@ -183,14 +196,16 @@ export function NotificationSettings() {
               <Label htmlFor="investment">Investment Opportunities</Label>
               <Switch
                 id="investment"
-                checked={preferences.notification_types.investment_opportunities}
-                onCheckedChange={(checked) => 
+                checked={
+                  preferences.notification_types.investment_opportunities
+                }
+                onCheckedChange={(checked) =>
                   setPreferences({
-                    ...preferences, 
+                    ...preferences,
                     notification_types: {
                       ...preferences.notification_types,
-                      investment_opportunities: checked
-                    }
+                      investment_opportunities: checked,
+                    },
                   })
                 }
               />
@@ -200,13 +215,13 @@ export function NotificationSettings() {
               <Switch
                 id="dividends"
                 checked={preferences.notification_types.dividend_alerts}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setPreferences({
-                    ...preferences, 
+                    ...preferences,
                     notification_types: {
                       ...preferences.notification_types,
-                      dividend_alerts: checked
-                    }
+                      dividend_alerts: checked,
+                    },
                   })
                 }
               />
@@ -216,13 +231,13 @@ export function NotificationSettings() {
               <Switch
                 id="verification"
                 checked={preferences.notification_types.verification_updates}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setPreferences({
-                    ...preferences, 
+                    ...preferences,
                     notification_types: {
                       ...preferences.notification_types,
-                      verification_updates: checked
-                    }
+                      verification_updates: checked,
+                    },
                   })
                 }
               />
@@ -232,13 +247,13 @@ export function NotificationSettings() {
               <Switch
                 id="system"
                 checked={preferences.notification_types.system_announcements}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setPreferences({
-                    ...preferences, 
+                    ...preferences,
                     notification_types: {
                       ...preferences.notification_types,
-                      system_announcements: checked
-                    }
+                      system_announcements: checked,
+                    },
                   })
                 }
               />
@@ -246,8 +261,128 @@ export function NotificationSettings() {
           </div>
         </div>
 
+        {/* Delivery Methods */}
+        <div>
+          <h4 className="font-medium mb-4">Delivery Methods</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email" className="text-sm">
+                Email notifications
+              </Label>
+              <Switch
+                id="email"
+                checked={preferences.email_notifications}
+                onCheckedChange={(checked) =>
+                  updatePreferences({ email_notifications: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="push" className="text-sm">
+                Push notifications
+              </Label>
+              <Switch
+                id="push"
+                checked={preferences.push_notifications}
+                onCheckedChange={(checked) =>
+                  updatePreferences({ push_notifications: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sms" className="text-sm">
+                SMS notifications
+              </Label>
+              <Switch
+                id="sms"
+                checked={preferences.sms_notifications}
+                onCheckedChange={(checked) =>
+                  updatePreferences({ sms_notifications: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="dnd" className="text-sm">
+                Do not disturb
+              </Label>
+              <Switch
+                id="dnd"
+                checked={preferences.do_not_disturb}
+                onCheckedChange={(checked) =>
+                  updatePreferences({ do_not_disturb: checked })
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quiet Hours */}
+        <div>
+          <h4 className="font-medium mb-4">Quiet Hours</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="quiet-start" className="text-sm">
+                Start time
+              </Label>
+              <Input
+                id="quiet-start"
+                type="time"
+                value={preferences.quiet_hours_start || "22:00"}
+                onChange={(e) =>
+                  updatePreferences({ quiet_hours_start: e.target.value })
+                }
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="quiet-end" className="text-sm">
+                End time
+              </Label>
+              <Input
+                id="quiet-end"
+                type="time"
+                value={preferences.quiet_hours_end || "07:00"}
+                onChange={(e) =>
+                  updatePreferences({ quiet_hours_end: e.target.value })
+                }
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Notification Types */}
+        <div>
+          <h4 className="font-medium mb-4">Notification Types</h4>
+          <div className="space-y-4">
+            {Object.entries(preferences.notification_types).map(
+              ([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <Label htmlFor={key} className="text-sm">
+                    {key
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </Label>
+                  <Switch
+                    id={key}
+                    checked={value}
+                    onCheckedChange={(checked) =>
+                      updatePreferences({
+                        notification_types: {
+                          ...preferences.notification_types,
+                          [key]: checked,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
         <Button onClick={handleSave} disabled={loading}>
-          {loading ? 'Saving...' : 'Save Preferences'}
+          {loading ? "Saving..." : "Save Preferences"}
         </Button>
       </CardContent>
     </Card>
