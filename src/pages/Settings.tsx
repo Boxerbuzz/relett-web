@@ -1,10 +1,14 @@
-
 "use client";
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProfileSettings } from "@/components/settings/ProfileSettings";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { RoleRequestHistory } from "@/components/profile/RoleRequestHistory";
@@ -14,7 +18,11 @@ import {
   BellIcon,
   ShieldIcon,
   UserPlusIcon,
+  GearIcon,
+  CreditCardIcon,
 } from "@phosphor-icons/react";
+import BillingSettings from "@/components/settings/BillingSettings";
+import PreferenceSettings from "@/components/settings/PreferenceSettings";
 
 const Settings = () => {
   const [showRoleRequestDialog, setShowRoleRequestDialog] = useState(false);
@@ -28,13 +36,12 @@ const Settings = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <UserIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+      <Tabs defaultValue="notifications" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-2"
+          >
             <BellIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
@@ -42,32 +49,44 @@ const Settings = () => {
             <ShieldIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
+          <TabsTrigger value="billing" className="flex items-center gap-2">
+            <CreditCardIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Billing</span>
+          </TabsTrigger>
+          <TabsTrigger value="preferences" className="flex items-center gap-2">
+            <GearIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Preferences</span>
+          </TabsTrigger>
           <TabsTrigger value="roles" className="flex items-center gap-2">
             <UserPlusIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Roles</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="space-y-6">
-          <ProfileSettings />
-        </TabsContent>
+        <div className="w-full max-w-full overflow-hidden">
+          <TabsContent value="security" className="space-y-6 w-full max-w-full">
+            <SecuritySettings />
+          </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-6">
-          <NotificationSettings />
-        </TabsContent>
+          <TabsContent value="billing" className="space-y-6 w-full max-w-full">
+            <BillingSettings />
+          </TabsContent>
 
-        <TabsContent value="security" className="space-y-6">
-          <SecuritySettings />
-        </TabsContent>
-
-        <TabsContent value="roles" className="space-y-6">
-          <RoleRequestHistory 
-            onSubmitNewRequest={() => setShowRoleRequestDialog(true)}
-          />
-        </TabsContent>
+          <TabsContent
+            value="preferences"
+            className="space-y-6 w-full max-w-full"
+          >
+            <PreferenceSettings />
+          </TabsContent>
+          <TabsContent value="roles" className="space-y-6">
+            <RoleRequestHistory
+              onSubmitNewRequest={() => setShowRoleRequestDialog(true)}
+            />
+          </TabsContent>
+        </div>
       </Tabs>
 
-      <RoleRequestDialog 
+      <RoleRequestDialog
         open={showRoleRequestDialog}
         onOpenChange={setShowRoleRequestDialog}
       />
