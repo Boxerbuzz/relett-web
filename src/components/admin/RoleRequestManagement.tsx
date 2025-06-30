@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -13,8 +12,9 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   UserIcon,
-  BriefcaseIcon
-} from '@phosphor-icons/react';
+  BriefcaseIcon,
+} from "@phosphor-icons/react";
+import { Tables } from "@/integrations/supabase/types";
 
 interface RoleRequest {
   id: string;
@@ -30,7 +30,7 @@ interface RoleRequest {
   created_at: string;
   reviewed_at?: string;
   reviewed_by?: string;
-  reviewer_notes?: string;
+  review_notes?: string;
   user?: {
     first_name: string;
     last_name: string;
@@ -42,7 +42,7 @@ export function RoleRequestManagement() {
   const [requests, setRequests] = useState<RoleRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
-  const [reviewNotes, setReviewNotes] = useState('');
+  const [reviewNotes, setReviewNotes] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,83 +52,88 @@ export function RoleRequestManagement() {
   const fetchRoleRequests = async () => {
     try {
       const { data, error } = await supabase
-        .from('user_role_requests')
-        .select(`
+        .from("user_role_requests")
+        .select(
+          `
           *,
           user: users!user_role_requests_user_id_fkey (
             first_name,
             last_name,
             phone
           )
-        `)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests((data || []).map(item => ({
-        ...item,
-        verification_status: item.status || 'pending', // Use 'status' field from database
-        user: item.user && !('error' in item.user) ? item.user : null
-      })) as RoleRequest[]);
+      setRequests(
+        (data || []).map((item) => ({
+          ...item,
+          verification_status: item.status || "pending", // Use 'status' field from database
+          user: item.user && !("error" in item.user) ? item.user : null,
+        })) as RoleRequest[]
+      );
     } catch (error) {
-      console.error('Error fetching role requests:', error);
+      console.error("Error fetching role requests:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load role requests',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to load role requests",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReview = async (requestId: string, decision: 'approved' | 'rejected') => {
+  const handleReview = async (
+    requestId: string,
+    decision: "approved" | "rejected"
+  ) => {
     try {
       setReviewingId(requestId);
-      const request = requests.find(r => r.id === requestId);
+      const request = requests.find((r) => r.id === requestId);
       if (!request) return;
 
       // Update role request status
       const { error: updateError } = await supabase
-        .from('user_role_requests')
-        .update({
+        .from("user_role_requests")
+        .update<Partial<Tables<"user_role_requests">>>({
           status: decision,
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewer_notes: reviewNotes
+          review_notes: reviewNotes,
         })
-        .eq('id', requestId);
+        .eq("id", requestId);
 
       if (updateError) throw updateError;
 
       // If approved, grant the role
-      if (decision === 'approved') {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: request.user_id,
-            role: request.requested_role as any,
-            assigned_by: (await supabase.auth.getUser()).data.user?.id,
-            assigned_at: new Date().toISOString(),
-            is_active: true
-          });
+      if (decision === "approved") {
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: request.user_id,
+          role: request.requested_role as any,
+          assigned_by: (await supabase.auth.getUser()).data.user?.id,
+          assigned_at: new Date().toISOString(),
+          is_active: true,
+        });
 
         if (roleError) throw roleError;
       }
 
       await fetchRoleRequests();
-      setReviewNotes('');
+      setReviewNotes("");
       setReviewingId(null);
 
       toast({
-        title: 'Success',
-        description: `Role request ${decision} successfully`
+        title: "Success",
+        description: `Role request ${decision} successfully`,
       });
     } catch (error) {
-      console.error('Error reviewing role request:', error);
+      console.error("Error reviewing role request:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to review role request',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to review role request",
+        variant: "destructive",
       });
     } finally {
       setReviewingId(null);
@@ -137,18 +142,25 @@ export function RoleRequestManagement() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return CheckCircleIcon;
-      case 'rejected': return XCircleIcon;
-      default: return ClockIcon;
+      case "approved":
+        return CheckCircleIcon;
+      case "rejected":
+        return XCircleIcon;
+      default:
+        return ClockIcon;
     }
   };
 
@@ -186,13 +198,17 @@ export function RoleRequestManagement() {
             requests.map((request) => {
               const StatusIcon = getStatusIcon(request.verification_status);
               return (
-                <div key={request.id} className="border rounded-lg p-4 space-y-4">
+                <div
+                  key={request.id}
+                  className="border rounded-lg p-4 space-y-4"
+                >
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <UserIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">
-                          {request.user?.first_name || 'Unknown'} {request.user?.last_name || 'User'}
+                          {request.user?.first_name || "Unknown"}{" "}
+                          {request.user?.last_name || "User"}
                         </span>
                         <Badge variant="outline" className="capitalize">
                           {request.requested_role}
@@ -200,17 +216,21 @@ export function RoleRequestManagement() {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <EnvelopeIcon className="h-3 w-3" />
+                          <PhoneIcon className="h-3 w-3" />
                           <span>{request.contact_phone}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <BriefcaseIcon className="h-3 w-3" />
-                          <span>{request.experience_years} years experience</span>
+                          <span>
+                            {request.experience_years} years experience
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(request.verification_status)}>
+                      <Badge
+                        className={getStatusColor(request.verification_status)}
+                      >
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {request.verification_status}
                       </Badge>
@@ -219,24 +239,34 @@ export function RoleRequestManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <label className="font-medium text-gray-700">Reason</label>
+                      <label className="font-medium text-gray-700">
+                        Reason
+                      </label>
                       <p className="text-gray-600">{request.reason}</p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">Credentials</label>
+                      <label className="font-medium text-gray-700">
+                        Credentials
+                      </label>
                       <p className="text-gray-600">{request.credentials}</p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">License Number</label>
+                      <label className="font-medium text-gray-700">
+                        License Number
+                      </label>
                       <p className="text-gray-600">{request.license_number}</p>
                     </div>
                     <div>
-                      <label className="font-medium text-gray-700">Issuing Authority</label>
-                      <p className="text-gray-600">{request.issuing_authority}</p>
+                      <label className="font-medium text-gray-700">
+                        Issuing Authority
+                      </label>
+                      <p className="text-gray-600">
+                        {request.issuing_authority}
+                      </p>
                     </div>
                   </div>
 
-                  {request.verification_status === 'pending' && (
+                  {request.verification_status === "pending" && (
                     <div className="border-t pt-4 space-y-3">
                       <Textarea
                         placeholder="Add review notes..."
@@ -245,7 +275,7 @@ export function RoleRequestManagement() {
                       />
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleReview(request.id, 'approved')}
+                          onClick={() => handleReview(request.id, "approved")}
                           disabled={reviewingId === request.id}
                           className="bg-green-600 hover:bg-green-700"
                         >
@@ -253,7 +283,7 @@ export function RoleRequestManagement() {
                           Approve
                         </Button>
                         <Button
-                          onClick={() => handleReview(request.id, 'rejected')}
+                          onClick={() => handleReview(request.id, "rejected")}
                           disabled={reviewingId === request.id}
                           variant="destructive"
                         >
@@ -264,12 +294,17 @@ export function RoleRequestManagement() {
                     </div>
                   )}
 
-                  {request.reviewer_notes && (
+                  {request.review_notes && (
                     <div className="border-t pt-4">
-                      <label className="font-medium text-gray-700">Review Notes</label>
-                      <p className="text-gray-600 text-sm">{request.reviewer_notes}</p>
+                      <label className="font-medium text-gray-700">
+                        Review Notes
+                      </label>
+                      <p className="text-gray-600 text-sm">
+                        {request.review_notes}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Reviewed on {new Date(request.reviewed_at!).toLocaleDateString()}
+                        Reviewed on{" "}
+                        {new Date(request.reviewed_at!).toLocaleDateString()}
                       </p>
                     </div>
                   )}
