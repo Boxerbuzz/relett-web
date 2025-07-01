@@ -102,7 +102,7 @@ contract RevenueDistributor is Ownable, ReentrancyGuard, Pausable {
         return (distribution.totalAmount * holderBalance) / distribution.totalSupplyAtDistribution;
     }
 
-    function claimRevenue(uint256 _distributionId) external nonReentrant whenNotPaused {
+    function claimRevenue(uint256 _distributionId) public nonReentrant whenNotPaused {
         Distribution storage distribution = distributions[_distributionId];
         require(distribution.totalAmount > 0, "Distribution not found");
         

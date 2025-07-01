@@ -13,16 +13,19 @@ This directory contains Solidity smart contracts for property tokenization on th
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Copy environment template:
+
    ```bash
    cp .env.example .env
    ```
 
 3. Configure your Hedera credentials in `.env`:
+
    ```
    HEDERA_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
    HEDERA_PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE
@@ -32,16 +35,19 @@ This directory contains Solidity smart contracts for property tokenization on th
 ## Usage
 
 ### Compile Contracts
+
 ```bash
 npm run compile
 ```
 
 ### Deploy to Testnet
+
 ```bash
 npm run deploy
 ```
 
 ### Deploy to Mainnet
+
 ```bash
 npm run deploy:mainnet
 ```
