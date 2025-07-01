@@ -1,6 +1,6 @@
 
 require("@nomicfoundation/hardhat-toolbox");
-require('dotenv').config();
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -9,20 +9,23 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
   networks: {
-    hedera_testnet: {
+    hardhat: {
+      // Local development network
+    },
+    testnet: {
       url: "https://testnet.hashio.io/api",
       accounts: process.env.HEDERA_PRIVATE_KEY ? [process.env.HEDERA_PRIVATE_KEY] : [],
-      chainId: 296
+      chainId: 296,
     },
-    hedera_mainnet: {
-      url: "https://mainnet.hashio.io/api",
-      accounts: process.env.HEDERA_MAINNET_PRIVATE_KEY ? [process.env.HEDERA_MAINNET_PRIVATE_KEY] : [],
-      chainId: 295
+    mainnet: {
+      url: "https://mainnet.hashio.io/api", 
+      accounts: process.env.HEDERA_PRIVATE_KEY ? [process.env.HEDERA_PRIVATE_KEY] : [],
+      chainId: 295,
     }
   },
   paths: {
