@@ -18,7 +18,7 @@ async function deployContracts() {
   const client = Client.forTestnet();
   
   const operatorId = AccountId.fromString(process.env.HEDERA_ACCOUNT_ID);
-  const operatorKey = PrivateKey.fromString(process.env.HEDERA_PRIVATE_KEY);
+  const operatorKey = PrivateKey.fromStringECDSA(process.env.HEDERA_PRIVATE_KEY);
   
   client.setOperator(operatorId, operatorKey);
 
