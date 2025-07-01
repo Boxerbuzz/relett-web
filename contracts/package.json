@@ -7,12 +7,14 @@
   "scripts": {
     "compile": "hardhat compile",
     "deploy": "node deploy.js",
-    "deploy:testnet": "node deploy.js --network testnet",
-    "deploy:mainnet": "node deploy.js --network mainnet",
+    "deploy:testnet": "HEDERA_NETWORK=testnet node deploy.js",
+    "deploy:mainnet": "HEDERA_NETWORK=mainnet node deploy.js",
     "test": "hardhat test",
     "test-connection": "node test-connection.js",
+    "check-balance": "node test-connection.js",
     "verify": "hardhat verify",
-    "clean": "hardhat clean"
+    "clean": "hardhat clean",
+    "setup": "npm install && npm run compile && npm run test-connection"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.65.1",
@@ -25,5 +27,14 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "keywords": [
+    "hedera",
+    "smart-contracts",
+    "property-tokenization",
+    "real-estate",
+    "defi"
+  ],
+  "author": "Property Tokenization Team",
+  "license": "MIT"
 }
