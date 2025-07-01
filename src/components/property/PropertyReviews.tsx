@@ -16,6 +16,7 @@ interface Review {
   comment: string;
   created_at: string;
   user_id: string;
+  user_name: string;
   users: {
     first_name: string;
     last_name: string;
@@ -53,7 +54,8 @@ export function PropertyReviews({ propertyId }: PropertyReviewsProps) {
           comment,
           created_at,
           user_id,
-          users!property_reviews_user_id_fkey (
+          user_name,
+          users:user_id (
             first_name,
             last_name,
             avatar
@@ -90,6 +92,15 @@ export function PropertyReviews({ propertyId }: PropertyReviewsProps) {
       return;
     }
 
+    // Get user's name for the review
+    const { data: userData } = await supabase
+      .from('users')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single();
+
+    const userName = userData ? `${userData.first_name || ''} ${userData.last_name || ''}`.trim() : 'Anonymous';
+
     setSubmitting(true);
     try {
       const { error } = await supabase
@@ -97,6 +108,7 @@ export function PropertyReviews({ propertyId }: PropertyReviewsProps) {
         .insert({
           property_id: propertyId,
           user_id: user.id,
+          user_name: userName,
           rating: newReview.rating,
           comment: newReview.comment.trim()
         });
@@ -250,7 +262,10 @@ export function PropertyReviews({ propertyId }: PropertyReviewsProps) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-sm">
-                        {review.users?.first_name} {review.users?.last_name}
+                        {review.users?.first_name && review.users?.last_name 
+                          ? `${review.users.first_name} ${review.users.last_name}`
+                          : review.user_name || 'Anonymous'
+                        }
                       </span>
                       {renderStars(review.rating)}
                       <span className="text-xs text-gray-500">
