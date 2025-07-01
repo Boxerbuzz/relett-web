@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,6 +19,7 @@ import { SpecificationStep } from './steps/SpecificationStep';
 import { DocumentsStep } from './steps/DocumentsStep';
 import { MediaStep } from './steps/MediaStep';
 import { ReviewStep } from './steps/ReviewStep';
+import { PropertyBlockchainRegistration } from '@/components/hedera/PropertyBlockchainRegistration';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const propertySchema = z.object({
@@ -118,7 +120,8 @@ const steps = [
   { title: 'Specifications', description: 'Size and features' },
   { title: 'Documents', description: 'Legal documents' },
   { title: 'Media', description: 'Photos and videos' },
-  { title: 'Review', description: 'Confirm details' }
+  { title: 'Review', description: 'Confirm details' },
+  { title: 'Blockchain', description: 'Register on blockchain' }
 ];
 
 interface AddPropertyFormProps {
@@ -127,6 +130,8 @@ interface AddPropertyFormProps {
 
 export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [createdProperty, setCreatedProperty] = useState<any>(null);
+  const [blockchainTransactionId, setBlockchainTransactionId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createProperty, isLoading } = usePropertyCreation();
@@ -337,14 +342,11 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         }
       }
 
-      toast({
-        title: 'Success!',
-        description: 'Property has been created successfully.',
-      });
-
-      navigate('/land');
+      setCreatedProperty(property);
       
-      if (onClose) onClose();
+      // Move to blockchain registration step
+      setCurrentStep(steps.length - 1);
+      
     } catch (error) {
       console.error('Error submitting property:', error);
       toast({
@@ -353,6 +355,30 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleBlockchainRegistrationComplete = (transactionId: string) => {
+    setBlockchainTransactionId(transactionId);
+    toast({
+      title: 'Success!',
+      description: 'Property created and registered on blockchain successfully.',
+    });
+    
+    // Navigate after a short delay to show success message
+    setTimeout(() => {
+      navigate('/my-property');
+      if (onClose) onClose();
+    }, 2000);
+  };
+
+  const handleBlockchainRegistrationSkip = () => {
+    toast({
+      title: 'Success!',
+      description: 'Property created successfully. You can register on blockchain later.',
+    });
+    
+    navigate('/my-property');
+    if (onClose) onClose();
   };
 
   const renderStep = () => {
@@ -369,6 +395,14 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         return <MediaStep form={form} />;
       case 5:
         return <ReviewStep form={form} />;
+      case 6:
+        return createdProperty ? (
+          <PropertyBlockchainRegistration
+            propertyData={createdProperty}
+            onRegistrationComplete={handleBlockchainRegistrationComplete}
+            onRegistrationSkip={handleBlockchainRegistrationSkip}
+          />
+        ) : null;
       default:
         return null;
     }
@@ -437,14 +471,14 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
             type="button"
             variant="outline"
             onClick={prevStep}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 || currentStep === steps.length - 1}
             className="min-w-24"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
           
-          {currentStep === steps.length - 1 ? (
+          {currentStep === steps.length - 2 ? (
             <Button 
               onClick={form.handleSubmit(onSubmit)} 
               disabled={isLoading}
@@ -452,6 +486,8 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
             >
               {isLoading ? 'Creating Property...' : 'Create Property'}
             </Button>
+          ) : currentStep === steps.length - 1 ? (
+            <div className="min-w-24" />
           ) : (
             <Button type="button" onClick={nextStep} className="min-w-24">
               Next
