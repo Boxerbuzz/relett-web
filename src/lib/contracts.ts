@@ -1,5 +1,6 @@
 
 import { HederaClient } from './hedera';
+import { config } from './config';
 import { 
   ContractCallQuery, 
   ContractExecuteTransaction, 
@@ -20,25 +21,21 @@ export interface PropertyTokenData {
   lockupPeriod: number;
 }
 
-export interface ContractAddresses {
-  propertyRegistry: string;
-  propertyMarketplace: string;
-  revenueDistributor: string;
-}
-
 export class PropertyContracts {
   private hederaClient: HederaClient;
-  private contractAddresses: ContractAddresses;
 
-  constructor(contractAddresses: ContractAddresses) {
+  constructor() {
     this.hederaClient = new HederaClient();
-    this.contractAddresses = contractAddresses;
+    
+    if (!config.hedera.isConfigured()) {
+      console.warn('Hedera contracts not fully configured. Some functionality may not work.');
+    }
   }
 
   // Register a new property in the registry
   async registerProperty(propertyData: PropertyTokenData) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -70,7 +67,7 @@ export class PropertyContracts {
   // Verify a property (only authorized verifiers)
   async verifyProperty(propertyId: string) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -96,7 +93,7 @@ export class PropertyContracts {
   // Get property information
   async getProperty(propertyId: string) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.propertyRegistry);
+      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
       
       const query = new ContractCallQuery()
         .setContractId(contractId)
@@ -118,7 +115,7 @@ export class PropertyContracts {
   // Create a marketplace listing
   async createListing(propertyId: string, price: number, tokenAmount: number) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.propertyMarketplace);
+      const contractId = ContractId.fromString(config.hedera.contracts.propertyMarketplace);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -147,7 +144,7 @@ export class PropertyContracts {
   // Purchase tokens from marketplace
   async purchaseTokens(listingId: string, amount: number) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.propertyMarketplace);
+      const contractId = ContractId.fromString(config.hedera.contracts.propertyMarketplace);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -174,7 +171,7 @@ export class PropertyContracts {
   // Distribute revenue to token holders
   async distributeRevenue(propertyId: string, amount: number, source: string) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.revenueDistributor);
+      const contractId = ContractId.fromString(config.hedera.contracts.revenueDistributor);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -203,7 +200,7 @@ export class PropertyContracts {
   // Claim revenue distribution
   async claimRevenue(distributionId: string) {
     try {
-      const contractId = ContractId.fromString(this.contractAddresses.revenueDistributor);
+      const contractId = ContractId.fromString(config.hedera.contracts.revenueDistributor);
       
       const transaction = new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -224,6 +221,16 @@ export class PropertyContracts {
       console.error('Error claiming revenue:', error);
       throw error;
     }
+  }
+
+  // Check if contracts are properly configured
+  isConfigured(): boolean {
+    return config.hedera.isConfigured();
+  }
+
+  // Get contract addresses for display
+  getContractAddresses() {
+    return config.hedera.contracts;
   }
 
   // Close the Hedera client connection

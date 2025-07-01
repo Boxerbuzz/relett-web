@@ -1,334 +1,185 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HederaTokenManager } from '@/components/hedera/HederaTokenManager';
-import { TokenTransactionTracker } from '@/components/hedera/TokenTransactionTracker';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { HederaWalletManager } from '@/components/hedera/HederaWalletManager';
+import { TokenPurchaseManager } from '@/components/hedera/TokenPurchaseManager';
+import { ContractStatusIndicator } from '@/components/hedera/ContractStatusIndicator';
 import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useHederaWallet } from '@/hooks/useHederaWallet';
+import { Badge } from '@/components/ui/badge';
 import { 
   Coins, 
-  Plus, 
+  Wallet, 
   TrendingUp, 
-  Wallet,
-  ArrowLeft
+  Settings,
+  BarChart3
 } from 'lucide-react';
 
-interface TokenizedProperty {
-  id: string;
-  token_name: string;
-  token_symbol: string;
-  token_price: number;
-  total_supply: string;
-  hedera_token_id: string | null;
-  status: string;
-  total_value_usd: number;
-  property_id: string | null;
-  properties?: {
-    title: string;
-    type: string;
-  };
-}
-
-interface TokenHolding {
-  id: string;
-  tokens_owned: string;
-  total_investment: number;
-  tokenized_property_id: string;
-}
-
 const HederaTokens = () => {
-  const [tokenizedProperties, setTokenizedProperties] = useState<TokenizedProperty[]>([]);
-  const [tokenHoldings, setTokenHoldings] = useState<TokenHolding[]>([]);
-  const [selectedProperty, setSelectedProperty] = useState<TokenizedProperty | null>(null);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { wallet, isLoading } = useHederaWallet();
+  const [selectedTab, setSelectedTab] = useState('overview');
 
-  useEffect(() => {
-    if (user) {
-      fetchTokenizedProperties();
-      fetchTokenHoldings();
-    }
-  }, [user]);
-
-  const fetchTokenizedProperties = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tokenized_properties')
-        .select(`
-          *,
-          properties(
-            title,
-            type
-          )
-        `)
-        .eq('status', 'minted')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTokenizedProperties(data as TokenizedProperty[] || []);
-    } catch (error) {
-      console.error('Error fetching tokenized properties:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch tokenized properties',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const fetchTokenHoldings = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('token_holdings')
-        .select('*')
-        .eq('holder_id', user.id);
-
-      if (error) throw error;
-      setTokenHoldings(data || []);
-    } catch (error) {
-      console.error('Error fetching token holdings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getUserTokens = (propertyId: string) => {
-    const holding = tokenHoldings.find(h => h.tokenized_property_id === propertyId);
-    return holding ? parseFloat(holding.tokens_owned) : 0;
-  };
-
-  const getTotalPortfolioValue = () => {
-    return tokenHoldings.reduce((total, holding) => total + holding.total_investment, 0);
-  };
-
-  const getActiveTokensCount = () => {
-    return tokenHoldings.filter(h => parseFloat(h.tokens_owned) > 0).length;
-  };
-
-  if (loading) {
+  if (!user) {
     return (
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+          <p>Please sign in to access Hedera token management.</p>
         </div>
-      </div>
-    );
-  }
-
-  if (selectedProperty) {
-    return (
-      <div className="container mx-auto py-6 px-4 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => setSelectedProperty(null)}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Portfolio
-          </Button>
-          <h1 className="text-2xl font-bold">Token Management</h1>
-        </div>
-
-        <HederaTokenManager
-          tokenizedProperty={selectedProperty}
-          userTokens={getUserTokens(selectedProperty.id)}
-          onTokenTransfer={() => {
-            fetchTokenHoldings();
-            toast({
-              title: 'Portfolio Updated',
-              description: 'Your token balance has been refreshed',
-            });
-          }}
-        />
-
-        <TokenTransactionTracker
-          tokenizedPropertyId={selectedProperty.id}
-          userId={user?.id}
-        />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 space-y-6">
-      {/* Header */}
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Hedera Token Portfolio</h1>
-          <p className="text-gray-600">Manage your tokenized property investments on Hedera</p>
+          <h1 className="text-3xl font-bold">Hedera Token Management</h1>
+          <p className="text-gray-600">Manage your property tokens on Hedera network</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Tokenize Property
-        </Button>
+        <Badge className="bg-blue-100 text-blue-800">
+          <Coins className="w-4 h-4 mr-1" />
+          Hedera Network
+        </Badge>
       </div>
 
-      {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Portfolio Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Wallet className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">${getTotalPortfolioValue().toFixed(2)}</p>
-                <p className="text-sm text-gray-500">USD</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Active Tokens</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Coins className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{getActiveTokensCount()}</p>
-                <p className="text-sm text-gray-500">Properties</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Available Tokens</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="text-2xl font-bold">{tokenizedProperties.length}</p>
-                <p className="text-sm text-gray-500">To Invest</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Token Portfolio */}
-      <Tabs defaultValue="portfolio" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="portfolio">My Portfolio</TabsTrigger>
-          <TabsTrigger value="marketplace">Token Marketplace</TabsTrigger>
-          <TabsTrigger value="transactions">All Transactions</TabsTrigger>
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="wallet" className="flex items-center gap-2">
+            <Wallet className="w-4 h-4" />
+            Wallet
+          </TabsTrigger>
+          <TabsTrigger value="tokens" className="flex items-center gap-2">
+            <Coins className="w-4 h-4" />
+            Tokens
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Settings
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="portfolio" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Token Holdings</CardTitle>
-              <CardDescription>
-                Manage your tokenized property investments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tokenHoldings.length === 0 ? (
-                <div className="text-center py-8">
-                  <Coins className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Token Holdings</h3>
-                  <p className="text-gray-600 mb-4">
-                    You haven't invested in any tokenized properties yet.
-                  </p>
-                  <Button>Explore Marketplace</Button>
-                </div>
-              ) : (
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ContractStatusIndicator />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Portfolio Summary
+                </CardTitle>
+                <CardDescription>
+                  Your Hedera token portfolio overview
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  {tokenHoldings.map((holding) => {
-                    const property = tokenizedProperties.find(p => p.id === holding.tokenized_property_id);
-                    if (!property) return null;
-
-                    return (
-                      <div key={holding.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                           onClick={() => setSelectedProperty(property)}>
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Coins className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">{property.token_name}</h3>
-                            <p className="text-sm text-gray-600">
-                              {parseFloat(holding.tokens_owned)} {property.token_symbol} tokens
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="font-semibold">${holding.total_investment.toFixed(2)}</p>
-                            <p className="text-sm text-gray-500">Investment Value</p>
-                          </div>
-                          <Badge className="bg-green-100 text-green-800">Active</Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="text-center py-8 text-gray-500">
+                    <Coins className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No tokens found</p>
+                    <p className="text-sm">Purchase tokens to see your portfolio</p>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="marketplace" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Tokens</CardTitle>
-              <CardDescription>
-                Invest in tokenized real estate properties
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tokenizedProperties.length === 0 ? (
-                <div className="text-center py-8">
-                  <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Available Tokens</h3>
-                  <p className="text-gray-600">
-                    No tokenized properties are currently available for investment.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {tokenizedProperties.map((property) => (
-                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                         onClick={() => setSelectedProperty(property)}>
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Coins className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{property.token_name}</h3>
-                          <p className="text-sm text-gray-600">
-                            {property.properties?.title || 'Property Investment Token'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-semibold">${property.token_price}</p>
-                          <p className="text-sm text-gray-500">per token</p>
-                        </div>
-                        <Badge variant="outline">{property.token_symbol}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="wallet" className="space-y-6">
+          <HederaWalletManager 
+            userId={user.id}
+            onWalletConfigured={(accountId) => {
+              console.log('Wallet configured:', accountId);
+            }}
+          />
         </TabsContent>
 
-        <TabsContent value="transactions">
-          <TokenTransactionTracker userId={user?.id} />
+        <TabsContent value="tokens" className="space-y-6">
+          {wallet ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Tokens</CardTitle>
+                  <CardDescription>
+                    Property tokens available for purchase
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-gray-500">
+                    <Coins className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No tokenized properties available</p>
+                    <p className="text-sm">Check back later for new opportunities</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Holdings</CardTitle>
+                  <CardDescription>
+                    Property tokens you own
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-gray-500">
+                    <Coins className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No tokens owned</p>
+                    <p className="text-sm">Purchase tokens to build your portfolio</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8 text-gray-500">
+                  <Wallet className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Wallet not configured</p>
+                  <p className="text-sm">Please set up your Hedera wallet first</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ContractStatusIndicator />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Network Configuration</CardTitle>
+                <CardDescription>
+                  Hedera network and contract settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Environment:</span>
+                    <Badge variant="outline">Testnet</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Gas Limit:</span>
+                    <span className="font-mono">1,000,000</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Max Fee:</span>
+                    <span className="font-mono">20 HBAR</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
