@@ -1,18 +1,18 @@
-
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./components/AuthProvider";
-import { PropertyContractProvider } from '@/contexts/PropertyContractContext';
-import { Layout } from './components/Layout';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { PropertyContractProvider } from "@/contexts/PropertyContractContext";
+import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Page imports
-import Index from "./pages/Index";
+// import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
@@ -61,55 +61,308 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <PropertyContractProvider>
-          <Router>
+      <Router>
+        <AuthProvider>
+          <PropertyContractProvider>
             <div className="min-h-screen bg-background">
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route
+                  path="/"
+                  element={<Navigate to="https://www.relett.com" replace />}
+                />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/terms" element={<TermsAndConditions />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
-                
-                <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
-                <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
-                <Route path="/add-property" element={<Layout><ProtectedRoute><AddProperty /></ProtectedRoute></Layout>} />
-                <Route path="/my-property" element={<Layout><ProtectedRoute><MyProperty /></ProtectedRoute></Layout>} />
-                <Route path="/properties/:id" element={<Layout><PropertyDetails /></Layout>} />
-                <Route path="/property-lookup" element={<Layout><PropertyLookup /></Layout>} />
-                <Route path="/marketplace" element={<Layout><Marketplace /></Layout>} />
-                <Route path="/map" element={<Layout><MapView /></Layout>} />
-                <Route path="/tokens" element={<Layout><ProtectedRoute><Tokens /></ProtectedRoute></Layout>} />
-                <Route path="/hedera-tokens" element={<Layout><ProtectedRoute><HederaTokens /></ProtectedRoute></Layout>} />
-                <Route path="/investment" element={<Layout><ProtectedRoute><Investment /></ProtectedRoute></Layout>} />
-                <Route path="/verification" element={<Layout><ProtectedRoute><Verification /></ProtectedRoute></Layout>} />
-                <Route path="/admin" element={<Layout><ProtectedRoute><Admin /></ProtectedRoute></Layout>} />
-                <Route path="/admin/contacts" element={<Layout><ProtectedRoute><AdminContacts /></ProtectedRoute></Layout>} />
-                <Route path="/admin/waitlist" element={<Layout><ProtectedRoute><AdminWaitlist /></ProtectedRoute></Layout>} />
-                <Route path="/bookings" element={<Layout><ProtectedRoute><UserBookings /></ProtectedRoute></Layout>} />
-                <Route path="/agent/calendar" element={<Layout><ProtectedRoute><AgentCalendar /></ProtectedRoute></Layout>} />
-                <Route path="/agent/inspections" element={<Layout><ProtectedRoute><AgentInspections /></ProtectedRoute></Layout>} />
-                <Route path="/agent/rentals" element={<Layout><ProtectedRoute><AgentRentals /></ProtectedRoute></Layout>} />
-                <Route path="/agent/reservations" element={<Layout><ProtectedRoute><AgentReservations /></ProtectedRoute></Layout>} />
-                <Route path="/messages" element={<Layout><ProtectedRoute><Messaging /></ProtectedRoute></Layout>} />
-                <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>} />
-                <Route path="/settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
-                <Route path="/services" element={<Layout><Services /></Layout>} />
-                <Route path="/services/:category" element={<Layout><ServiceCategory /></Layout>} />
-                <Route path="/favorites" element={<Layout><ProtectedRoute><FavoritesPage /></ProtectedRoute></Layout>} />
-                <Route path="/data-flow" element={<Layout><DataFlow /></Layout>} />
-                <Route path="/database-schema" element={<Layout><DatabaseSchema /></Layout>} />
-                <Route path="/database-docs" element={<Layout><DatabaseDocumentation /></Layout>} />
-                <Route path="/documentation" element={<Layout><Documentation /></Layout>} />
-                
+
+                <Route
+                  path="/dashboard"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/add-property"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AddProperty />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/my-property"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <MyProperty />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/properties/:id"
+                  element={
+                    <Layout>
+                      <PropertyDetails />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/property-lookup"
+                  element={
+                    <Layout>
+                      <PropertyLookup />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/marketplace"
+                  element={
+                    <Layout>
+                      <Marketplace />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/map"
+                  element={
+                    <Layout>
+                      <MapView />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/tokens"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Tokens />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/hedera-tokens"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <HederaTokens />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/investment"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Investment />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/verification"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Verification />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Admin />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/admin/contacts"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AdminContacts />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/admin/waitlist"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AdminWaitlist />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/bookings"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <UserBookings />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/agent/calendar"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AgentCalendar />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/agent/inspections"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AgentInspections />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/agent/rentals"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AgentRentals />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/agent/reservations"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <AgentReservations />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/messages"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Messaging />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Notifications />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/services"
+                  element={
+                    <Layout>
+                      <Services />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/services/:category"
+                  element={
+                    <Layout>
+                      <ServiceCategory />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/favorites"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <FavoritesPage />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/data-flow"
+                  element={
+                    <Layout>
+                      <DataFlow />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/database-schema"
+                  element={
+                    <Layout>
+                      <DatabaseSchema />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/database-docs"
+                  element={
+                    <Layout>
+                      <DatabaseDocumentation />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/documentation"
+                  element={
+                    <Layout>
+                      <Documentation />
+                    </Layout>
+                  }
+                />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
-          </Router>
-          <Toaster />
-        </PropertyContractProvider>
-      </AuthProvider>
+            <Toaster />
+          </PropertyContractProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
 }
