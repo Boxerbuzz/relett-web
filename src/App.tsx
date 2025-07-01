@@ -1,14 +1,17 @@
+
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoutePrefetcher } from "@/components/navigation/RoutePrefetcher";
+import { queryClient } from "@/lib/queryClient";
 
 // Page imports
 import Index from "@/pages/Index";
@@ -40,20 +43,12 @@ import NotFound from "./pages/NotFound";
 import DatabaseDocumentation from "./pages/DatabaseDocumentation";
 import DataFlow from "./pages/DataFlow";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
+          <RoutePrefetcher />
           <div className="min-h-screen bg-gray-50">
             <Routes>
               {/* Public routes */}
