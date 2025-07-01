@@ -1,10 +1,8 @@
 
-
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Outlet,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -60,14 +58,6 @@ const queryClient = new QueryClient({
   },
 });
 
-function LayoutWrapper() {
-  return (
-    <Layout>
-      <Outlet />
-    </Layout>
-  );
-}
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -82,38 +72,36 @@ function App() {
                 <Route path="/terms" element={<TermsAndConditions />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 
-                <Route path="/" element={<LayoutWrapper />}>
-                  <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
-                  <Route path="my-property" element={<ProtectedRoute><MyProperty /></ProtectedRoute>} />
-                  <Route path="properties/:id" element={<PropertyDetails />} />
-                  <Route path="property-lookup" element={<PropertyLookup />} />
-                  <Route path="marketplace" element={<Marketplace />} />
-                  <Route path="map" element={<MapView />} />
-                  <Route path="tokens" element={<ProtectedRoute><Tokens /></ProtectedRoute>} />
-                  <Route path="hedera-tokens" element={<ProtectedRoute><HederaTokens /></ProtectedRoute>} />
-                  <Route path="investment" element={<ProtectedRoute><Investment /></ProtectedRoute>} />
-                  <Route path="verification" element={<ProtectedRoute><Verification /></ProtectedRoute>} />
-                  <Route path="admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                  <Route path="admin/contacts" element={<ProtectedRoute><AdminContacts /></ProtectedRoute>} />
-                  <Route path="admin/waitlist" element={<ProtectedRoute><AdminWaitlist /></ProtectedRoute>} />
-                  <Route path="bookings" element={<ProtectedRoute><UserBookings /></ProtectedRoute>} />
-                  <Route path="agent/calendar" element={<ProtectedRoute><AgentCalendar /></ProtectedRoute>} />
-                  <Route path="agent/inspections" element={<ProtectedRoute><AgentInspections /></ProtectedRoute>} />
-                  <Route path="agent/rentals" element={<ProtectedRoute><AgentRentals /></ProtectedRoute>} />
-                  <Route path="agent/reservations" element={<ProtectedRoute><AgentReservations /></ProtectedRoute>} />
-                  <Route path="messages" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
-                  <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                  <Route path="settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="services" element={<Services />} />
-                  <Route path="services/:category" element={<ServiceCategory />} />
-                  <Route path="favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
-                  <Route path="data-flow" element={<DataFlow />} />
-                  <Route path="database-schema" element={<DatabaseSchema />} />
-                  <Route path="database-docs" element={<DatabaseDocumentation />} />
-                  <Route path="documentation" element={<Documentation />} />
-                </Route>
+                <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+                <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
+                <Route path="/add-property" element={<Layout><ProtectedRoute><AddProperty /></ProtectedRoute></Layout>} />
+                <Route path="/my-property" element={<Layout><ProtectedRoute><MyProperty /></ProtectedRoute></Layout>} />
+                <Route path="/properties/:id" element={<Layout><PropertyDetails /></Layout>} />
+                <Route path="/property-lookup" element={<Layout><PropertyLookup /></Layout>} />
+                <Route path="/marketplace" element={<Layout><Marketplace /></Layout>} />
+                <Route path="/map" element={<Layout><MapView /></Layout>} />
+                <Route path="/tokens" element={<Layout><ProtectedRoute><Tokens /></ProtectedRoute></Layout>} />
+                <Route path="/hedera-tokens" element={<Layout><ProtectedRoute><HederaTokens /></ProtectedRoute></Layout>} />
+                <Route path="/investment" element={<Layout><ProtectedRoute><Investment /></ProtectedRoute></Layout>} />
+                <Route path="/verification" element={<Layout><ProtectedRoute><Verification /></ProtectedRoute></Layout>} />
+                <Route path="/admin" element={<Layout><ProtectedRoute><Admin /></ProtectedRoute></Layout>} />
+                <Route path="/admin/contacts" element={<Layout><ProtectedRoute><AdminContacts /></ProtectedRoute></Layout>} />
+                <Route path="/admin/waitlist" element={<Layout><ProtectedRoute><AdminWaitlist /></ProtectedRoute></Layout>} />
+                <Route path="/bookings" element={<Layout><ProtectedRoute><UserBookings /></ProtectedRoute></Layout>} />
+                <Route path="/agent/calendar" element={<Layout><ProtectedRoute><AgentCalendar /></ProtectedRoute></Layout>} />
+                <Route path="/agent/inspections" element={<Layout><ProtectedRoute><AgentInspections /></ProtectedRoute></Layout>} />
+                <Route path="/agent/rentals" element={<Layout><ProtectedRoute><AgentRentals /></ProtectedRoute></Layout>} />
+                <Route path="/agent/reservations" element={<Layout><ProtectedRoute><AgentReservations /></ProtectedRoute></Layout>} />
+                <Route path="/messages" element={<Layout><ProtectedRoute><Messaging /></ProtectedRoute></Layout>} />
+                <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>} />
+                <Route path="/settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
+                <Route path="/services" element={<Layout><Services /></Layout>} />
+                <Route path="/services/:category" element={<Layout><ServiceCategory /></Layout>} />
+                <Route path="/favorites" element={<Layout><ProtectedRoute><FavoritesPage /></ProtectedRoute></Layout>} />
+                <Route path="/data-flow" element={<Layout><DataFlow /></Layout>} />
+                <Route path="/database-schema" element={<Layout><DatabaseSchema /></Layout>} />
+                <Route path="/database-docs" element={<Layout><DatabaseDocumentation /></Layout>} />
+                <Route path="/documentation" element={<Layout><Documentation /></Layout>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -127,4 +115,3 @@ function App() {
 }
 
 export default App;
-
