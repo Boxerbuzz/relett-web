@@ -44,7 +44,7 @@ export function RecentTransactions() {
             )
           )
         `)
-        .eq('recipient_id', user?.id)
+        .eq('recipient_id', user?.id || '')
         .order('paid_at', { ascending: false })
         .limit(5);
 
@@ -61,7 +61,7 @@ export function RecentTransactions() {
             token_name
           )
         `)
-        .eq('holder_id', user?.id)
+        .eq('holder_id', user?.id || '')
         .order('acquisition_date', { ascending: false })
         .limit(3);
 
@@ -75,7 +75,7 @@ export function RecentTransactions() {
           amount: payment.amount,
           currency: payment.currency,
           propertyName: payment.token_holdings.tokenized_properties.token_name,
-          date: payment.paid_at,
+          date: payment.paid_at || '',
           status: payment.status === 'paid' ? 'completed' as const : 'pending' as const
         })),
         ...(tokenData || []).map(holding => ({

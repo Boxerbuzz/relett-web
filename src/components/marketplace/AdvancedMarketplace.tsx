@@ -8,7 +8,7 @@ import { AdvancedPropertySearch } from "./AdvancedPropertySearch";
 import { PropertyComparison } from "./PropertyComparison";
 import { TokenizedPropertyMarketplace } from "./TokenizedPropertyMarketplace";
 import { InvestmentGroupManager } from "../investment/InvestmentGroupManager";
-import { usePropertySearch } from "@/hooks/usePropertySearch";
+import { Property, usePropertySearch } from "@/hooks/usePropertySearch";
 import {
   MagnifyingGlassIcon,
   GitDiffIcon,
@@ -31,7 +31,7 @@ import { EnhancedPropertyPricing } from "@/types/property";
 import { capitalize } from "@/lib/utils";
 
 export function AdvancedMarketplace() {
-  const [compareProperties, setCompareProperties] = useState([]);
+  const [compareProperties, setCompareProperties] = useState<Property[]>([]);
   const [activeTab, setActiveTab] = useState("search");
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const {
@@ -66,7 +66,7 @@ export function AdvancedMarketplace() {
     });
   };
 
-  const handleCompareProperty = (property: any) => {
+  const handleCompareProperty = (property: Property) => {
     setCompareProperties((prev) => {
       const exists = prev.find((p) => p.id === property.id);
       if (exists) {

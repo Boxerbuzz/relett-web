@@ -70,7 +70,7 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
       const { data, error } = await query;
 
       if (error) throw error;
-      setDocuments(data || []);
+      setDocuments(data as PropertyDocument[] || []);
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast({

@@ -19,7 +19,7 @@ export class TransactionRecordingService {
           tokenized_property_id: request.tokenizedPropertyId,
           transaction_type: transactionType,
           from_holder: fromHolder,
-          to_holder: toHolder,
+          to_holder: toHolder || "",
           token_amount: request.tokenAmount.toString(),
           price_per_token: request.pricePerToken,
           total_value: request.tokenAmount * request.pricePerToken,

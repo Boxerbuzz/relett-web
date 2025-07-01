@@ -42,7 +42,7 @@ export function useUserRoles() {
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("user_type")
-        .eq("id", user?.id)
+        .eq("id", user?.id || "")
         .single();
 
       if (userError) throw userError;
@@ -51,7 +51,7 @@ export function useUserRoles() {
       const { data: additionalRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select("*")
-        .eq("user_id", user?.id)
+        .eq("user_id", user?.id || "")
         .eq("is_active", true);
 
       if (rolesError) throw rolesError;
@@ -77,10 +77,10 @@ export function useUserRoles() {
           id: role.id,
           user_id: role.user_id,
           role: role.role as AppRole,
-          is_active: role.is_active,
-          expires_at: role.expires_at,
+          is_active: role.is_active || false,
+          expires_at: role.expires_at || undefined,
           assigned_at: role.assigned_at,
-          assigned_by: role.assigned_by,
+          assigned_by: role.assigned_by || undefined,
           metadata:
             typeof role.metadata === "string"
               ? JSON.parse(role.metadata)

@@ -30,11 +30,11 @@ export function usePropertyFavorites() {
       const { data, error } = await supabase
         .from('property_favorites')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || "")
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFavorites(data || []);
+      setFavorites(data as PropertyFavorite[] || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
@@ -64,7 +64,7 @@ export function usePropertyFavorites() {
 
       if (error) throw error;
 
-      setFavorites(prev => [data, ...prev]);
+      setFavorites(prev => [data as PropertyFavorite, ...prev]);
       toast({
         title: 'Added to Favorites',
         description: 'Property has been added to your favorites'

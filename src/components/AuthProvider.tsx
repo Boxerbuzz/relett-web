@@ -195,7 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           role: createdUser.user_type as AppUser["role"],
           created_at: createdUser.created_at,
           email_confirmed_at: authUser.email_confirmed_at,
-          phone: createdUser.phone,
+          phone: createdUser.phone || undefined,
         };
 
         setUser(appUser);
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           role: userData.user_type as AppUser["role"],
           created_at: userData.created_at,
           email_confirmed_at: authUser.email_confirmed_at,
-          phone: userData.phone,
+          phone: userData.phone || undefined,
         };
 
         setUser(appUser);
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         role: "landowner",
         created_at: new Date().toISOString(),
         email_confirmed_at: authUser.email_confirmed_at,
-        phone: null,
+        phone: undefined,
       };
 
       setUser(fallbackUser);

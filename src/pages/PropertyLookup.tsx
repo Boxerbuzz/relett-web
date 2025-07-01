@@ -311,7 +311,7 @@ const PropertyLookup = () => {
           .single();
 
         if (tokenData) {
-          query = query.eq("id", tokenData.property_id);
+          query = query.eq("id", tokenData.property_id || '');
         }
       }
 
@@ -394,7 +394,7 @@ const PropertyLookup = () => {
             return;
           }
 
-          setPropertyData(locationData);
+          setPropertyData(locationData as PropertyData);
         } else {
           toast({
             title: "Property Not Found",
@@ -406,12 +406,12 @@ const PropertyLookup = () => {
           return;
         }
       } else {
-        setPropertyData(data);
+        setPropertyData(data as PropertyData);
       }
 
       // Validate with Hedera if property is tokenized
       if (data?.is_tokenized && data?.tokenized_properties) {
-        const hederaResult = await validateWithHedera(data);
+        const hederaResult = await validateWithHedera(data as PropertyData);
         setHederaValidation(hederaResult);
       }
 
@@ -1003,6 +1003,7 @@ const PropertyLookup = () => {
                         </Badge>
                         <Button size="sm" variant="outline" asChild>
                           <a
+                            title="View Document"
                             href={doc.file_url}
                             target="_blank"
                             rel="noopener noreferrer"

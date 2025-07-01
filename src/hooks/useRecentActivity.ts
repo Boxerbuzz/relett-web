@@ -36,7 +36,7 @@ export function useRecentActivity() {
         .limit(20);
 
       if (error) throw error;
-      return data || [];
+      return data as ActivityItem[] || [];
     },
     enabled: !!user?.id,
     ...cacheConfig.standard,

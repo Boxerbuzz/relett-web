@@ -72,7 +72,7 @@ const HederaTokens = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTokenizedProperties(data || []);
+      setTokenizedProperties(data as TokenizedProperty[] || []);
     } catch (error) {
       console.error('Error fetching tokenized properties:', error);
       toast({

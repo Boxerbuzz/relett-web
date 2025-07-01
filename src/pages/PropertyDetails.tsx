@@ -467,7 +467,7 @@ const PropertyDetails = () => {
               <Card>
                 <CardContent className="p-4 space-y-4">
                   {/* Investment Section */}
-                  {property.is_tokenized && property.tokenized_property.id && (
+                  {property.is_tokenized && property.tokenized_property?.id && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <CardTitle>Quick Actions</CardTitle>

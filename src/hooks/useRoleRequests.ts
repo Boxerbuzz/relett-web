@@ -36,7 +36,7 @@ export function useRoleRequests() {
       const { data, error } = await supabase
         .from('user_role_requests')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || "")
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -55,7 +55,7 @@ export function useRoleRequests() {
         admin_notes: '' // No admin notes field exists in the table, so use empty string
       })) || [];
       
-      setRequests(transformedData);
+      setRequests(transformedData as RoleRequest[]);
     } catch (err) {
       console.error('Error fetching role requests:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch role requests');
@@ -69,7 +69,7 @@ export function useRoleRequests() {
       const { data, error } = await supabase
         .from('user_role_requests')
         .insert({
-          user_id: user?.id,
+          user_id: user?.id || "",
           requested_role: requestedRole,
           reason: reason,
           status: 'pending'
@@ -88,8 +88,8 @@ export function useRoleRequests() {
         reason: data.reason,
         status: data.status as 'pending' | 'approved' | 'rejected',
         requested_at: data.created_at,
-        reviewed_at: data.reviewed_at,
-        reviewed_by: data.reviewed_by,
+        reviewed_at: data.reviewed_at || undefined,
+        reviewed_by: data.reviewed_by || undefined,
         admin_notes: '' // No admin notes field exists in the table, so use empty string
       };
       

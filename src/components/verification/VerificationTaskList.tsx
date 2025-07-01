@@ -41,8 +41,18 @@ interface VerificationTask {
     id: string;
     title: string | null;
     type: string;
-    location: any;
+    location: {
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      postal_code: string;
+    };
     user_id: string;
+    price?: {
+      amount: number;
+      currency: string;
+    };
     users?: {
       first_name: string;
       last_name: string;
@@ -92,7 +102,7 @@ export function VerificationTaskList({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks(data || []);
+      setTasks(data as VerificationTask[] || []);
     } catch (error) {
       console.error('Error fetching verification tasks:', error);
       toast({

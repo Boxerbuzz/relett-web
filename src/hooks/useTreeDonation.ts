@@ -54,7 +54,7 @@ export function useTreeDonation() {
         .order('price_ngn', { ascending: true });
 
       if (error) throw error;
-      setTrees(data || []);
+      setTrees(data as Tree[] || []);
     } catch (error) {
       console.error('Error fetching trees:', error);
       toast({

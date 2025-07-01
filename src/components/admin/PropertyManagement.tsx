@@ -65,7 +65,7 @@ export function PropertyManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      setProperties(data as Property[] || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({

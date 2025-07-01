@@ -1,14 +1,19 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VerificationTaskList } from './VerificationTaskList';
-import { VerificationTaskDetail } from './VerificationTaskDetail';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { Badge } from '@/components/ui/badge';
-import { FileCheck, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { VerificationTaskList } from "./VerificationTaskList";
+import { VerificationTaskDetail } from "./VerificationTaskDetail";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { Badge } from "@/components/ui/badge";
+import { FileCheck, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface VerificationTask {
   id: string;
@@ -30,20 +35,32 @@ interface VerificationTask {
     id: string;
     title: string | null;
     type: string;
-    location: any;
+    location: {
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      postal_code: string;
+    };
     user_id: string;
-    price: any;
+    price?: {
+      amount: number;
+      currency: string;
+    };
     users?: {
       first_name: string;
       last_name: string;
       email: string;
+      phone?: string;
     };
   };
 }
 
 export function VerificationTaskManager() {
-  const [selectedTask, setSelectedTask] = useState<VerificationTask | null>(null);
-  const [activeTab, setActiveTab] = useState('available');
+  const [selectedTask, setSelectedTask] = useState<VerificationTask | null>(
+    null
+  );
+  const [activeTab, setActiveTab] = useState("available");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { hasRole } = useUserRoles();
 
@@ -56,20 +73,23 @@ export function VerificationTaskManager() {
   };
 
   const handleTaskUpdated = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     setSelectedTask(null);
   };
 
-  const isVerifier = hasRole('verifier') || hasRole('admin');
+  const isVerifier = hasRole("verifier") || hasRole("admin");
 
   if (!isVerifier) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
           <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Verifier Access Required</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Verifier Access Required
+          </h3>
           <p className="text-gray-600">
-            You need verifier permissions to access the verification task manager.
+            You need verifier permissions to access the verification task
+            manager.
           </p>
         </CardContent>
       </Card>
@@ -79,7 +99,7 @@ export function VerificationTaskManager() {
   if (selectedTask) {
     return (
       <VerificationTaskDetail
-        task={selectedTask}
+        task={selectedTask as VerificationTask}
         onBack={handleBack}
         onTaskUpdated={handleTaskUpdated}
       />
@@ -92,7 +112,9 @@ export function VerificationTaskManager() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Verification Task Manager</h1>
-          <p className="text-muted-foreground">Manage property verification tasks and reviews</p>
+          <p className="text-muted-foreground">
+            Manage property verification tasks and reviews
+          </p>
         </div>
         <Badge variant="outline" className="flex items-center gap-2">
           <FileCheck className="w-4 h-4" />
@@ -101,7 +123,11 @@ export function VerificationTaskManager() {
       </div>
 
       {/* Task Management Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="available" className="flex items-center gap-2">
             <Clock className="w-4 h-4" />

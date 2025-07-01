@@ -89,7 +89,7 @@ export function PropertyVerificationActions({
           .eq('is_active', true);
 
         if (additionalUsersError) throw additionalUsersError;
-        additionalVerifierUsers = additionalUsers || [];
+        additionalVerifierUsers = additionalUsers as Verifier[] || [];
       }
 
       // Combine both lists and remove duplicates
@@ -102,7 +102,7 @@ export function PropertyVerificationActions({
         }
       });
 
-      setVerifiers(allVerifiers);
+      setVerifiers(allVerifiers as Verifier[]);
     } catch (error) {
       console.error('Error fetching verifiers:', error);
       toast({
@@ -134,7 +134,7 @@ export function PropertyVerificationActions({
         p_verifier_id: selectedVerifier,
         p_task_type: 'property_verification',
         p_priority: priority,
-        p_deadline: deadlineDate
+        p_deadline: deadlineDate || undefined
       });
 
       if (error) throw error;
@@ -279,6 +279,7 @@ export function PropertyVerificationActions({
         <div className="space-y-2">
           <label className="text-sm font-medium">Deadline (Optional)</label>
           <input
+            title="Deadline"
             type="date"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}

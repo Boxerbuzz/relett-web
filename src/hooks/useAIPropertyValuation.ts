@@ -57,7 +57,7 @@ export function useAIPropertyValuation() {
           .from('ai_property_valuations')
           .insert({
             property_id: propertyData.id,
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: (await supabase.auth.getUser()).data.user?.id as string,
             ai_estimated_value: data.estimatedValue,
             confidence_score: data.confidenceScore,
             valuation_factors: data.keyFactors,

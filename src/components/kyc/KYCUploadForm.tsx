@@ -151,7 +151,7 @@ export function KYCUploadForm() {
         .from("kyc_documents")
         .delete()
         .eq("id", documentId)
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id || "");
 
       if (error) throw error;
 

@@ -136,7 +136,7 @@ export function VerificationReviewDashboard() {
         requester: Array.isArray(item.users) ? item.users[0] : item.users
       }));
 
-      setRequests(processedData);
+      setRequests(processedData as VerificationRequest[] || []);
     } catch (error) {
       console.error('Error fetching verification requests:', error);
       toast({

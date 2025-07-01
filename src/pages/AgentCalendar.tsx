@@ -1,17 +1,17 @@
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, Eye, Home, Users } from 'lucide-react';
-import { useAgentInspections } from '@/hooks/useAgentInspections';
-import { useAgentRentals } from '@/hooks/useAgentRentals';
-import { useAgentReservations } from '@/hooks/useAgentReservations';
-import { ActivityCalendar } from '@/components/agent/ActivityCalendar';
-import { LoadingSpinner } from '@/components/loading/LoadingSpinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarDays, Eye, Home, Users } from "lucide-react";
+import { useAgentInspections } from "@/hooks/useAgentInspections";
+import { useAgentRentals } from "@/hooks/useAgentRentals";
+import { useAgentReservations } from "@/hooks/useAgentReservations";
+import { ActivityCalendar } from "@/components/agent/ActivityCalendar";
+import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
 
 const AgentCalendar = () => {
   const { inspections, isLoading: inspectionsLoading } = useAgentInspections();
   const { rentals, isLoading: rentalsLoading } = useAgentRentals();
-  const { reservations, isLoading: reservationsLoading } = useAgentReservations();
+  const { reservations, isLoading: reservationsLoading } =
+    useAgentReservations();
 
   const isLoading = inspectionsLoading || rentalsLoading || reservationsLoading;
 
@@ -20,9 +20,11 @@ const AgentCalendar = () => {
   }
 
   const getTotalActivities = () => {
-    const inspectionCount = inspections.filter(i => i.when).length;
-    const rentalCount = rentals.filter(r => r.move_in_date).length;
-    const reservationCount = reservations.filter(r => r.from_date || r.to_date).length;
+    const inspectionCount = inspections.filter((i) => i.when).length;
+    const rentalCount = rentals.filter((r) => r.move_in_date).length;
+    const reservationCount = reservations.filter(
+      (r) => r.from_date || r.to_date
+    ).length;
     return inspectionCount + rentalCount + reservationCount;
   };
 
@@ -33,7 +35,9 @@ const AgentCalendar = () => {
           <CalendarDays className="w-8 h-8 text-blue-600" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Agent Calendar</h1>
-            <p className="text-muted-foreground">Manage all your activities in one place</p>
+            <p className="text-muted-foreground">
+              Manage all your activities in one place
+            </p>
           </div>
         </div>
       </div>
@@ -45,7 +49,9 @@ const AgentCalendar = () => {
             <div className="flex items-center gap-2">
               <CalendarDays className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Activities</p>
+                <p className="text-sm text-muted-foreground">
+                  Total Activities
+                </p>
                 <p className="text-2xl font-bold">{getTotalActivities()}</p>
               </div>
             </div>
@@ -57,7 +63,9 @@ const AgentCalendar = () => {
               <Eye className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Inspections</p>
-                <p className="text-2xl font-bold">{inspections.filter(i => i.when).length}</p>
+                <p className="text-2xl font-bold">
+                  {inspections.filter((i) => i.when).length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -68,7 +76,9 @@ const AgentCalendar = () => {
               <Home className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Rentals</p>
-                <p className="text-2xl font-bold">{rentals.filter(r => r.move_in_date).length}</p>
+                <p className="text-2xl font-bold">
+                  {rentals.filter((r) => r.move_in_date).length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -79,7 +89,9 @@ const AgentCalendar = () => {
               <Users className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Reservations</p>
-                <p className="text-2xl font-bold">{reservations.filter(r => r.from_date || r.to_date).length}</p>
+                <p className="text-2xl font-bold">
+                  {reservations.filter((r) => r.from_date || r.to_date).length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -111,17 +123,34 @@ const AgentCalendar = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {inspections.filter(i => i.when && new Date(i.when) > new Date()).slice(0, 5).map(inspection => (
-                  <div key={inspection.id} className="mb-3 p-3 border rounded-lg">
-                    <h4 className="font-medium text-sm">{inspection.property?.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(inspection.when).toLocaleDateString()} at {new Date(inspection.when).toLocaleTimeString()}
-                    </p>
-                    <p className="text-xs">{inspection.user?.first_name} {inspection.user?.last_name}</p>
-                  </div>
-                ))}
-                {inspections.filter(i => i.when && new Date(i.when) > new Date()).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No upcoming inspections</p>
+                {inspections
+                  .filter((i) => i.when && new Date(i.when) > new Date())
+                  .slice(0, 5)
+                  .map((inspection) => (
+                    <div
+                      key={inspection.id}
+                      className="mb-3 p-3 border rounded-lg"
+                    >
+                      <h4 className="font-medium text-sm">
+                        {inspection.property?.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(inspection.when || "").toLocaleDateString()}{" "}
+                        at{" "}
+                        {new Date(inspection.when || "").toLocaleTimeString()}
+                      </p>
+                      <p className="text-xs">
+                        {inspection.user?.first_name}{" "}
+                        {inspection.user?.last_name}
+                      </p>
+                    </div>
+                  ))}
+                {inspections.filter(
+                  (i) => i.when && new Date(i.when) > new Date()
+                ).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No upcoming inspections
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -134,17 +163,34 @@ const AgentCalendar = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {rentals.filter(r => r.move_in_date && new Date(r.move_in_date) > new Date()).slice(0, 5).map(rental => (
-                  <div key={rental.id} className="mb-3 p-3 border rounded-lg">
-                    <h4 className="font-medium text-sm">{rental.property?.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Move-in: {new Date(rental.move_in_date).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs">{rental.user?.first_name} {rental.user?.last_name}</p>
-                  </div>
-                ))}
-                {rentals.filter(r => r.move_in_date && new Date(r.move_in_date) > new Date()).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No upcoming move-ins</p>
+                {rentals
+                  .filter(
+                    (r) =>
+                      r.move_in_date && new Date(r.move_in_date) > new Date()
+                  )
+                  .slice(0, 5)
+                  .map((rental) => (
+                    <div key={rental.id} className="mb-3 p-3 border rounded-lg">
+                      <h4 className="font-medium text-sm">
+                        {rental.property?.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Move-in:{" "}
+                        {new Date(
+                          rental.move_in_date || ""
+                        ).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs">
+                        {rental.user?.first_name} {rental.user?.last_name}
+                      </p>
+                    </div>
+                  ))}
+                {rentals.filter(
+                  (r) => r.move_in_date && new Date(r.move_in_date) > new Date()
+                ).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No upcoming move-ins
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -157,17 +203,37 @@ const AgentCalendar = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {reservations.filter(r => r.from_date && new Date(r.from_date) > new Date()).slice(0, 5).map(reservation => (
-                  <div key={reservation.id} className="mb-3 p-3 border rounded-lg">
-                    <h4 className="font-medium text-sm">{reservation.property?.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Check-in: {new Date(reservation.from_date).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs">{reservation.user?.first_name} {reservation.user?.last_name}</p>
-                  </div>
-                ))}
-                {reservations.filter(r => r.from_date && new Date(r.from_date) > new Date()).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No upcoming check-ins</p>
+                {reservations
+                  .filter(
+                    (r) => r.from_date && new Date(r.from_date) > new Date()
+                  )
+                  .slice(0, 5)
+                  .map((reservation) => (
+                    <div
+                      key={reservation.id}
+                      className="mb-3 p-3 border rounded-lg"
+                    >
+                      <h4 className="font-medium text-sm">
+                        {reservation.property?.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Check-in:{" "}
+                        {new Date(
+                          reservation.from_date || ""
+                        ).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs">
+                        {reservation.user?.first_name}{" "}
+                        {reservation.user?.last_name}
+                      </p>
+                    </div>
+                  ))}
+                {reservations.filter(
+                  (r) => r.from_date && new Date(r.from_date) > new Date()
+                ).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No upcoming check-ins
+                  </p>
                 )}
               </CardContent>
             </Card>

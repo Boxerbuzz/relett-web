@@ -61,7 +61,7 @@ export function UserManagement() {
         .limit(50);
 
       if (error) throw error;
-      setUsers(data || []);
+      setUsers(data as User[] || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({

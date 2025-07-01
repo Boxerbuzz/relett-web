@@ -82,7 +82,7 @@ export function useMessages(conversationId: string | null) {
         const { data: sendersData } = await supabase
           .from('users')
           .select('id, first_name, last_name, email, avatar')
-          .in('id', senderIds);
+          .in('id', senderIds as string[]);
 
         sendersData?.forEach(sender => {
           sendersMap.set(sender.id, sender);
@@ -101,7 +101,7 @@ export function useMessages(conversationId: string | null) {
         }
       })) || [];
 
-      setMessages(messagesWithSenders);
+      setMessages(messagesWithSenders as MessageWithSender[]);
     } catch (err) {
       console.error('Error fetching messages:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch messages');

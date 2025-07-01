@@ -55,7 +55,12 @@ export function VerifierOnboarding() {
   };
 
   const uploadDocuments = async () => {
-    const uploadedUrls = [];
+    const uploadedUrls: {
+      name: string;
+      url: string;
+      type: string;
+      size: number;
+    }[] = [];
 
     for (const file of formData.documents) {
       const fileName = `${user?.id}/${Date.now()}_${file.name}`;

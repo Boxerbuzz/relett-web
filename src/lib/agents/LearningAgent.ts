@@ -1,7 +1,11 @@
-
-import { BaseAgent, AgentConfig, AgentContext, AgentResponse } from './BaseAgent';
-import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
+import {
+  BaseAgent,
+  AgentConfig,
+  AgentContext,
+  AgentResponse,
+} from "./BaseAgent";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 
 export interface LearningContext extends AgentContext {
   userBehaviorProfile?: UserBehaviorProfile;
@@ -16,8 +20,8 @@ export interface UserBehaviorProfile {
   confidence_score: number;
   characteristics: Record<string, any>;
   preferences: Record<string, any>;
-  interaction_style: 'formal' | 'casual' | 'brief' | 'detailed';
-  optimal_response_length: 'short' | 'medium' | 'long';
+  interaction_style: "formal" | "casual" | "brief" | "detailed";
+  optimal_response_length: "short" | "medium" | "long";
   preferred_communication_time: string[];
 }
 
@@ -49,33 +53,43 @@ export interface AgentInteraction {
 
 export abstract class LearningAgent extends BaseAgent {
   protected learningContext: LearningContext = {
-    userId: '',
-    metadata: {}
+    userId: "",
+    metadata: {},
   };
 
   async processMessage(
-    message: string, 
+    message: string,
     context: AgentContext
   ): Promise<AgentResponse> {
     const startTime = Date.now();
-    
+
     // Load user behavior profile and learning patterns
     await this.loadLearningContext(context);
-    
+
     // Analyze user intent and current context
     const intent = await this.analyzeUserIntent(message, context);
-    
+
     // Generate personalized response using learned patterns
-    const response = await this.generatePersonalizedResponse(message, context, intent);
-    
+    const response = await this.generatePersonalizedResponse(
+      message,
+      context,
+      intent
+    );
+
     const responseTime = Date.now() - startTime;
-    
+
     // Track this interaction for learning
-    await this.trackInteraction(message, response, context, responseTime, intent);
-    
+    await this.trackInteraction(
+      message,
+      response,
+      context,
+      responseTime,
+      intent
+    );
+
     // Update conversation context
     await this.updateConversationContext(context, intent);
-    
+
     return response;
   }
 
@@ -85,52 +99,55 @@ export abstract class LearningAgent extends BaseAgent {
     try {
       // Load user behavior profile
       const { data: profileData } = await supabase
-        .from('user_behavior_profiles')
-        .select('*')
-        .eq('user_id', context.userId)
+        .from("user_behavior_profiles")
+        .select("*")
+        .eq("user_id", context.userId)
         .maybeSingle();
 
       // Load recent learning patterns
       const { data: patternsData } = await supabase
-        .from('learning_patterns')
-        .select('*')
-        .eq('user_id', context.userId)
-        .order('confidence_score', { ascending: false })
+        .from("learning_patterns")
+        .select("*")
+        .eq("user_id", context.userId)
+        .order("confidence_score", { ascending: false })
         .limit(10);
 
       // Load recent conversation history
       const { data: historyData } = await supabase
-        .from('agent_interactions')
-        .select('*')
-        .eq('user_id', context.userId)
-        .eq('agent_id', this.config.id)
-        .order('created_at', { ascending: false })
+        .from("agent_interactions")
+        .select("*")
+        .eq("user_id", context.userId)
+        .eq("agent_id", this.config.id)
+        .order("created_at", { ascending: false })
         .limit(5);
 
       // Transform database types to our interface types
-      const profile: UserBehaviorProfile | undefined = profileData ? {
-        id: profileData.id,
-        user_id: profileData.user_id,
-        profile_type: profileData.profile_type,
-        confidence_score: profileData.confidence_score,
-        characteristics: this.parseJsonField(profileData.characteristics),
-        preferences: this.parseJsonField(profileData.preferences),
-        interaction_style: profileData.interaction_style as any,
-        optimal_response_length: profileData.optimal_response_length as any,
-        preferred_communication_time: profileData.preferred_communication_time || []
-      } : undefined;
+      const profile: UserBehaviorProfile | undefined = profileData
+        ? {
+            id: profileData.id,
+            user_id: profileData.user_id,
+            profile_type: profileData.profile_type,
+            confidence_score: profileData.confidence_score || 0,
+            characteristics: this.parseJsonField(profileData.characteristics),
+            preferences: this.parseJsonField(profileData.preferences),
+            interaction_style: profileData.interaction_style as any,
+            optimal_response_length: profileData.optimal_response_length as any,
+            preferred_communication_time:
+              profileData.preferred_communication_time || [],
+          }
+        : undefined;
 
-      const patterns: LearningPattern[] = (patternsData || []).map(p => ({
+      const patterns: LearningPattern[] = (patternsData || []).map((p) => ({
         id: p.id,
-        user_id: p.user_id || '',
+        user_id: p.user_id || "",
         pattern_type: p.pattern_type,
         pattern_data: this.parseJsonField(p.pattern_data),
         confidence_score: p.confidence_score || 0,
         usage_count: p.usage_count || 0,
-        success_rate: p.success_rate || 0
+        success_rate: p.success_rate || 0,
       }));
 
-      const history: AgentInteraction[] = (historyData || []).map(h => ({
+      const history: AgentInteraction[] = (historyData || []).map((h) => ({
         id: h.id,
         user_id: h.user_id,
         agent_id: h.agent_id,
@@ -143,25 +160,25 @@ export abstract class LearningAgent extends BaseAgent {
         user_satisfaction_score: h.user_satisfaction_score || undefined,
         outcome: h.outcome || undefined,
         context_data: this.parseJsonField(h.context_data),
-        created_at: h.created_at
+        created_at: h.created_at,
       }));
 
       this.learningContext = {
         ...context,
         userBehaviorProfile: profile,
         learningPatterns: patterns,
-        conversationHistory: history
+        conversationHistory: history,
       };
     } catch (error) {
-      console.error('Error loading learning context:', error);
+      console.error("Error loading learning context:", error);
     }
   }
 
   private parseJsonField(field: any): Record<string, any> {
-    if (typeof field === 'object' && field !== null) {
+    if (typeof field === "object" && field !== null) {
       return field as Record<string, any>;
     }
-    if (typeof field === 'string') {
+    if (typeof field === "string") {
       try {
         return JSON.parse(field);
       } catch {
@@ -171,74 +188,98 @@ export abstract class LearningAgent extends BaseAgent {
     return {};
   }
 
-  protected async analyzeUserIntent(message: string, context: AgentContext): Promise<string> {
+  protected async analyzeUserIntent(
+    message: string,
+    context: AgentContext
+  ): Promise<string> {
     const lowerMessage = message.toLowerCase();
-    
+
     // Use learning patterns to improve intent detection
     const patterns = this.learningContext.learningPatterns || [];
-    const intentPatterns = patterns.filter(p => p.pattern_type === 'intent');
-    
+    const intentPatterns = patterns.filter((p) => p.pattern_type === "intent");
+
     // Basic intent detection with learning enhancement
-    if (lowerMessage.includes('book') || lowerMessage.includes('reserve')) {
-      return 'booking_intent';
-    } else if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
-      return 'pricing_inquiry';
-    } else if (lowerMessage.includes('location') || lowerMessage.includes('where')) {
-      return 'location_inquiry';
-    } else if (lowerMessage.includes('available') || lowerMessage.includes('availability')) {
-      return 'availability_check';
+    if (lowerMessage.includes("book") || lowerMessage.includes("reserve")) {
+      return "booking_intent";
+    } else if (
+      lowerMessage.includes("price") ||
+      lowerMessage.includes("cost")
+    ) {
+      return "pricing_inquiry";
+    } else if (
+      lowerMessage.includes("location") ||
+      lowerMessage.includes("where")
+    ) {
+      return "location_inquiry";
+    } else if (
+      lowerMessage.includes("available") ||
+      lowerMessage.includes("availability")
+    ) {
+      return "availability_check";
     } else {
       // Use learned patterns to detect intent
       for (const pattern of intentPatterns) {
         const keywords = pattern.pattern_data.keywords || [];
-        if (keywords.some((keyword: string) => lowerMessage.includes(keyword.toLowerCase()))) {
-          return pattern.pattern_data.intent || 'general_inquiry';
+        if (
+          keywords.some((keyword: string) =>
+            lowerMessage.includes(keyword.toLowerCase())
+          )
+        ) {
+          return pattern.pattern_data.intent || "general_inquiry";
         }
       }
-      return 'general_inquiry';
+      return "general_inquiry";
     }
   }
 
   protected async generatePersonalizedResponse(
-    message: string, 
-    context: AgentContext, 
+    message: string,
+    context: AgentContext,
     intent: string
   ): Promise<AgentResponse> {
     const profile = this.learningContext.userBehaviorProfile;
     const patterns = this.learningContext.learningPatterns || [];
-    
+
     // Get response style preferences
-    const responseStyle = profile?.interaction_style || 'casual';
-    const responseLength = profile?.optimal_response_length || 'medium';
-    
+    const responseStyle = profile?.interaction_style || "casual";
+    const responseLength = profile?.optimal_response_length || "medium";
+
     // Find successful response patterns for this intent
-    const responsePatterns = patterns.filter(p => 
-      p.pattern_type === 'response_style' && 
-      p.pattern_data.intent === intent &&
-      p.success_rate > 0.7
+    const responsePatterns = patterns.filter(
+      (p) =>
+        p.pattern_type === "response_style" &&
+        p.pattern_data.intent === intent &&
+        p.success_rate > 0.7
     );
 
     // Generate base response using parent class
-    const baseResponse = await this.generateBaseResponse(message, context, intent);
-    
+    const baseResponse = await this.generateBaseResponse(
+      message,
+      context,
+      intent
+    );
+
     // Personalize the response based on learned preferences
     let personalizedMessage = baseResponse.message;
-    
-    if (responseStyle === 'formal') {
+
+    if (responseStyle === "formal") {
       personalizedMessage = this.makeFormal(personalizedMessage);
-    } else if (responseStyle === 'brief') {
+    } else if (responseStyle === "brief") {
       personalizedMessage = this.makeBrief(personalizedMessage);
     }
-    
-    if (responseLength === 'short') {
+
+    if (responseLength === "short") {
       personalizedMessage = this.shortenResponse(personalizedMessage);
-    } else if (responseLength === 'long') {
+    } else if (responseLength === "long") {
       personalizedMessage = this.expandResponse(personalizedMessage, intent);
     }
 
     // Add personalized recommendations based on patterns
-    const recommendations = await this.getPersonalizedRecommendations(context, intent);
-    
+    const recommendations = await this.getPersonalizedRecommendations(
+      context,
+      intent
+    );
+
     return {
       message: personalizedMessage,
       actions: [...(baseResponse.actions || []), ...recommendations],
@@ -247,74 +288,87 @@ export abstract class LearningAgent extends BaseAgent {
         personalization_applied: true,
         user_profile_type: profile?.profile_type,
         response_style: responseStyle,
-        intent_detected: intent
-      }
+        intent_detected: intent,
+      },
     };
   }
 
   protected abstract generateBaseResponse(
-    message: string, 
-    context: AgentContext, 
+    message: string,
+    context: AgentContext,
     intent: string
   ): Promise<AgentResponse>;
 
   protected async getPersonalizedRecommendations(
-    context: AgentContext, 
+    context: AgentContext,
     intent: string
   ): Promise<any[]> {
-    const recommendations = [];
+    const recommendations: {
+      type: string;
+      payload: { suggestion: any; confidence: number; based_on: any };
+    }[] = [];
     const patterns = this.learningContext.learningPatterns || [];
-    
+
     // Find preference patterns
-    const preferencePatterns = patterns.filter(p => p.pattern_type === 'preference');
-    
+    const preferencePatterns = patterns.filter(
+      (p) => p.pattern_type === "preference"
+    );
+
     for (const pattern of preferencePatterns) {
       if (pattern.confidence_score > 0.6) {
         const recommendation = {
-          type: 'personalized_suggestion',
+          type: "personalized_suggestion",
           payload: {
             suggestion: pattern.pattern_data.suggestion,
             confidence: pattern.confidence_score,
-            based_on: pattern.pattern_data.based_on
-          }
+            based_on: pattern.pattern_data.based_on,
+          },
         };
         recommendations.push(recommendation);
       }
     }
-    
+
     return recommendations;
   }
 
   protected makeFormal(message: string): string {
     return message
-      .replace(/hey/gi, 'Hello')
-      .replace(/hi/gi, 'Good day')
-      .replace(/yeah/gi, 'Yes')
-      .replace(/okay/gi, 'Certainly')
-      .replace(/sure/gi, 'Of course');
+      .replace(/hey/gi, "Hello")
+      .replace(/hi/gi, "Good day")
+      .replace(/yeah/gi, "Yes")
+      .replace(/okay/gi, "Certainly")
+      .replace(/sure/gi, "Of course");
   }
 
   protected makeBrief(message: string): string {
     // Remove filler words and shorten sentences
     return message
-      .replace(/I'd be happy to help you/gi, 'Sure')
-      .replace(/Please let me know if you have any questions/gi, 'Questions?')
-      .replace(/Is there anything else I can help you with/gi, 'Anything else?');
+      .replace(/I'd be happy to help you/gi, "Sure")
+      .replace(/Please let me know if you have any questions/gi, "Questions?")
+      .replace(
+        /Is there anything else I can help you with/gi,
+        "Anything else?"
+      );
   }
 
   protected shortenResponse(message: string): string {
-    const sentences = message.split('. ');
-    return sentences.slice(0, Math.max(1, Math.floor(sentences.length / 2))).join('. ');
+    const sentences = message.split(". ");
+    return sentences
+      .slice(0, Math.max(1, Math.floor(sentences.length / 2)))
+      .join(". ");
   }
 
   protected expandResponse(message: string, intent: string): string {
     const expansions = {
-      booking_intent: ' I can also help you with scheduling inspections, checking availability for specific dates, and providing detailed information about the property amenities.',
-      pricing_inquiry: ' Additionally, I can provide information about financing options, market comparisons, and potential return on investment.',
-      location_inquiry: ' I can also share details about nearby amenities, transportation links, schools, and neighborhood characteristics.'
+      booking_intent:
+        " I can also help you with scheduling inspections, checking availability for specific dates, and providing detailed information about the property amenities.",
+      pricing_inquiry:
+        " Additionally, I can provide information about financing options, market comparisons, and potential return on investment.",
+      location_inquiry:
+        " I can also share details about nearby amenities, transportation links, schools, and neighborhood characteristics.",
     };
-    
-    return message + (expansions[intent as keyof typeof expansions] || '');
+
+    return message + (expansions[intent as keyof typeof expansions] || "");
   }
 
   protected async trackInteraction(
@@ -327,28 +381,29 @@ export abstract class LearningAgent extends BaseAgent {
     if (!context.userId) return;
 
     try {
-      await supabase.rpc('track_agent_interaction', {
+      await supabase.rpc("track_agent_interaction", {
         p_user_id: context.userId,
         p_agent_id: this.config.id,
-        p_conversation_id: context.conversationId || null,
-        p_property_id: context.propertyId || null,
+        p_conversation_id: context.conversationId || "",
+        p_property_id: context.propertyId || "",
         p_interaction_type: intent,
         p_user_message: userMessage,
         p_agent_response: agentResponse.message,
         p_response_time_ms: responseTime,
         p_context_data: {
           metadata: agentResponse.metadata,
-          personalization_applied: agentResponse.metadata?.personalization_applied || false,
-          actions_count: agentResponse.actions?.length || 0
-        }
+          personalization_applied:
+            agentResponse.metadata?.personalization_applied || false,
+          actions_count: agentResponse.actions?.length || 0,
+        },
       });
     } catch (error) {
-      console.error('Error tracking agent interaction:', error);
+      console.error("Error tracking agent interaction:", error);
     }
   }
 
   protected async updateConversationContext(
-    context: AgentContext, 
+    context: AgentContext,
     intent: string
   ): Promise<void> {
     if (!context.userId || !context.conversationId) return;
@@ -357,38 +412,38 @@ export abstract class LearningAgent extends BaseAgent {
       const contextData = {
         current_intent: intent,
         last_interaction_time: new Date().toISOString(),
-        session_data: context.metadata || {}
+        session_data: context.metadata || {},
       };
 
-      await supabase.rpc('update_conversation_context', {
+      await supabase.rpc("update_conversation_context", {
         p_user_id: context.userId,
         p_agent_id: this.config.id,
         p_conversation_id: context.conversationId,
         p_context_data: contextData,
-        p_current_intent: intent
+        p_current_intent: intent,
       });
     } catch (error) {
-      console.error('Error updating conversation context:', error);
+      console.error("Error updating conversation context:", error);
     }
   }
 
   // Method to provide feedback for learning
   async provideFeedback(
-    interactionId: string, 
-    satisfactionScore: number, 
+    interactionId: string,
+    satisfactionScore: number,
     outcome: string
   ): Promise<void> {
     try {
       await supabase
-        .from('agent_interactions')
+        .from("agent_interactions")
         .update({
           user_satisfaction_score: satisfactionScore,
           outcome: outcome,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', interactionId);
+        .eq("id", interactionId);
     } catch (error) {
-      console.error('Error providing feedback:', error);
+      console.error("Error providing feedback:", error);
     }
   }
 }

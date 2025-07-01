@@ -1,24 +1,30 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/lib/auth';
-import { 
-  Calculator, 
-  Users, 
-  Download,
-  Send,
-  AlertCircle
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { Calculator, Users, Download, Send, AlertCircle } from "lucide-react";
 
 interface TokenHolder {
   id: string;
@@ -39,19 +45,30 @@ interface DistributionCalculation {
   net_amount: number;
 }
 
+interface TokenizedProperty {
+  id: string;
+  token_name: string;
+  token_symbol: string;
+  total_supply: string;
+}
+
 export function RevenueDistributionCalculator() {
-  const [tokenizedProperties, setTokenizedProperties] = useState([]);
-  const [selectedProperty, setSelectedProperty] = useState('');
+  const [tokenizedProperties, setTokenizedProperties] = useState<
+    TokenizedProperty[]
+  >([]);
+  const [selectedProperty, setSelectedProperty] = useState("");
   const [tokenHolders, setTokenHolders] = useState<TokenHolder[]>([]);
-  const [distributions, setDistributions] = useState<DistributionCalculation[]>([]);
+  const [distributions, setDistributions] = useState<DistributionCalculation[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
-  
+
   const [distributionData, setDistributionData] = useState({
-    total_revenue: '',
-    distribution_type: 'rental_income',
-    source_description: '',
-    tax_rate: '10', // Default 10% tax withholding
+    total_revenue: "",
+    distribution_type: "rental_income",
+    source_description: "",
+    tax_rate: "10", // Default 10% tax withholding
   });
 
   const { user } = useAuth();
@@ -70,18 +87,18 @@ export function RevenueDistributionCalculator() {
   const fetchTokenizedProperties = async () => {
     try {
       const { data, error } = await supabase
-        .from('tokenized_properties')
-        .select('id, token_name, token_symbol, total_supply')
-        .eq('status', 'minted');
+        .from("tokenized_properties")
+        .select("id, token_name, token_symbol, total_supply")
+        .eq("status", "minted");
 
       if (error) throw error;
       setTokenizedProperties(data || []);
     } catch (error) {
-      console.error('Error fetching tokenized properties:', error);
+      console.error("Error fetching tokenized properties:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch tokenized properties',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch tokenized properties",
+        variant: "destructive",
       });
     }
   };
@@ -91,9 +108,9 @@ export function RevenueDistributionCalculator() {
     try {
       // First get token holdings
       const { data: holdings, error: holdingsError } = await supabase
-        .from('token_holdings')
-        .select('*')
-        .eq('tokenized_property_id', propertyId);
+        .from("token_holdings")
+        .select("*")
+        .eq("tokenized_property_id", propertyId);
 
       if (holdingsError) throw holdingsError;
 
@@ -104,31 +121,33 @@ export function RevenueDistributionCalculator() {
       }
 
       // Then get user details for each holder
-      const holderIds = holdings.map(h => h.holder_id);
+      const holderIds = holdings.map((h) => h.holder_id);
       const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, email')
-        .in('id', holderIds);
+        .from("users")
+        .select("id, first_name, last_name, email")
+        .in("id", holderIds);
 
       if (usersError) throw usersError;
 
       // Combine holdings with user details
-      const holdersWithDetails = holdings.map(holding => {
-        const user = users?.find(u => u.id === holding.holder_id);
+      const holdersWithDetails = holdings.map((holding) => {
+        const user = users?.find((u) => u.id === holding.holder_id);
         return {
           ...holding,
-          holder_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Unknown',
-          holder_email: user?.email || ''
+          holder_name: user
+            ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
+            : "Unknown",
+          holder_email: user?.email || "",
         };
       });
 
       setTokenHolders(holdersWithDetails);
     } catch (error) {
-      console.error('Error fetching token holders:', error);
+      console.error("Error fetching token holders:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch token holders',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch token holders",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -139,19 +158,21 @@ export function RevenueDistributionCalculator() {
     if (!distributionData.total_revenue || !selectedProperty) return;
 
     setCalculating(true);
-    
+
     const totalRevenue = parseFloat(distributionData.total_revenue);
     const taxRate = parseFloat(distributionData.tax_rate) / 100;
-    
+
     // Get total tokens in circulation
-    const totalTokens = tokenHolders.reduce((sum, holder) => 
-      sum + parseInt(holder.tokens_owned), 0);
-    
+    const totalTokens = tokenHolders.reduce(
+      (sum, holder) => sum + parseInt(holder.tokens_owned),
+      0
+    );
+
     if (totalTokens === 0) {
       toast({
-        title: 'Error',
-        description: 'No tokens in circulation',
-        variant: 'destructive'
+        title: "Error",
+        description: "No tokens in circulation",
+        variant: "destructive",
       });
       setCalculating(false);
       return;
@@ -161,23 +182,25 @@ export function RevenueDistributionCalculator() {
     const revenuePerToken = totalRevenue / totalTokens;
 
     // Calculate distribution for each holder
-    const calculations: DistributionCalculation[] = tokenHolders.map(holder => {
-      const tokensOwned = parseInt(holder.tokens_owned);
-      const ownershipPercentage = (tokensOwned / totalTokens) * 100;
-      const revenueShare = tokensOwned * revenuePerToken;
-      const taxWithholding = revenueShare * taxRate;
-      const netAmount = revenueShare - taxWithholding;
+    const calculations: DistributionCalculation[] = tokenHolders.map(
+      (holder) => {
+        const tokensOwned = parseInt(holder.tokens_owned);
+        const ownershipPercentage = (tokensOwned / totalTokens) * 100;
+        const revenueShare = tokensOwned * revenuePerToken;
+        const taxWithholding = revenueShare * taxRate;
+        const netAmount = revenueShare - taxWithholding;
 
-      return {
-        holder_id: holder.holder_id,
-        holder_name: holder.holder_name || 'Unknown',
-        tokens_owned: tokensOwned,
-        ownership_percentage: ownershipPercentage,
-        revenue_share: revenueShare,
-        tax_withholding: taxWithholding,
-        net_amount: netAmount
-      };
-    });
+        return {
+          holder_id: holder.holder_id,
+          holder_name: holder.holder_name || "Unknown",
+          tokens_owned: tokensOwned,
+          ownership_percentage: ownershipPercentage,
+          revenue_share: revenueShare,
+          tax_withholding: taxWithholding,
+          net_amount: netAmount,
+        };
+      }
+    );
 
     setDistributions(calculations);
     setCalculating(false);
@@ -188,66 +211,71 @@ export function RevenueDistributionCalculator() {
 
     try {
       // First, create the revenue distribution record
-      const { data: revenueDistribution, error: distributionError } = await supabase
-        .from('revenue_distributions')
-        .insert({
-          tokenized_property_id: selectedProperty,
-          distribution_date: new Date().toISOString(),
-          total_revenue: parseFloat(distributionData.total_revenue),
-          revenue_per_token: parseFloat(distributionData.total_revenue) / 
-            tokenHolders.reduce((sum, holder) => sum + parseInt(holder.tokens_owned), 0),
-          distribution_type: distributionData.distribution_type,
-          source_description: distributionData.source_description,
-          metadata: {
-            tax_rate: parseFloat(distributionData.tax_rate) / 100,
-            processed_by: user?.id,
-            holder_count: distributions.length
-          }
-        })
-        .select()
-        .single();
+      const { data: revenueDistribution, error: distributionError } =
+        await supabase
+          .from("revenue_distributions")
+          .insert({
+            tokenized_property_id: selectedProperty,
+            distribution_date: new Date().toISOString(),
+            total_revenue: parseFloat(distributionData.total_revenue),
+            revenue_per_token:
+              parseFloat(distributionData.total_revenue) /
+              tokenHolders.reduce(
+                (sum, holder) => sum + parseInt(holder.tokens_owned),
+                0
+              ),
+            distribution_type: distributionData.distribution_type,
+            source_description: distributionData.source_description,
+            metadata: {
+              tax_rate: parseFloat(distributionData.tax_rate) / 100,
+              processed_by: user?.id,
+              holder_count: distributions.length,
+            },
+          })
+          .select()
+          .single();
 
       if (distributionError) throw distributionError;
 
       // Create individual dividend payment records
-      const dividendPayments = distributions.map(dist => ({
+      const dividendPayments = distributions.map((dist) => ({
         revenue_distribution_id: revenueDistribution.id,
         recipient_id: dist.holder_id,
-        token_holding_id: tokenHolders.find(h => h.holder_id === dist.holder_id)?.id,
+        token_holding_id:
+          tokenHolders.find((h) => h.holder_id === dist.holder_id)?.id || "",
         amount: dist.revenue_share,
         net_amount: dist.net_amount,
         tax_withholding: dist.tax_withholding,
-        currency: 'USD',
-        status: 'pending',
-        payment_method: 'bank_transfer'
+        currency: "USD",
+        status: "pending",
+        payment_method: "bank_transfer",
       }));
 
       const { error: paymentsError } = await supabase
-        .from('dividend_payments')
+        .from("dividend_payments")
         .insert(dividendPayments);
 
       if (paymentsError) throw paymentsError;
 
       toast({
-        title: 'Success',
+        title: "Success",
         description: `Revenue distribution processed for ${distributions.length} investors`,
       });
 
       // Reset form
       setDistributionData({
-        total_revenue: '',
-        distribution_type: 'rental_income',
-        source_description: '',
-        tax_rate: '10',
+        total_revenue: "",
+        distribution_type: "rental_income",
+        source_description: "",
+        tax_rate: "10",
       });
       setDistributions([]);
-
     } catch (error) {
-      console.error('Error processing distribution:', error);
+      console.error("Error processing distribution:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to process revenue distribution',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to process revenue distribution",
+        variant: "destructive",
       });
     }
   };
@@ -256,35 +284,57 @@ export function RevenueDistributionCalculator() {
     if (distributions.length === 0) return;
 
     const csvContent = [
-      ['Holder Name', 'Tokens Owned', 'Ownership %', 'Revenue Share', 'Tax Withholding', 'Net Amount'],
-      ...distributions.map(dist => [
+      [
+        "Holder Name",
+        "Tokens Owned",
+        "Ownership %",
+        "Revenue Share",
+        "Tax Withholding",
+        "Net Amount",
+      ],
+      ...distributions.map((dist) => [
         dist.holder_name,
         dist.tokens_owned,
-        dist.ownership_percentage.toFixed(2) + '%',
-        '$' + dist.revenue_share.toFixed(2),
-        '$' + dist.tax_withholding.toFixed(2),
-        '$' + dist.net_amount.toFixed(2)
-      ])
-    ].map(row => row.join(',')).join('\n');
+        dist.ownership_percentage.toFixed(2) + "%",
+        "$" + dist.revenue_share.toFixed(2),
+        "$" + dist.tax_withholding.toFixed(2),
+        "$" + dist.net_amount.toFixed(2),
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `revenue_distribution_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `revenue_distribution_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const totalDistribution = distributions.reduce((sum, dist) => sum + dist.revenue_share, 0);
-  const totalTax = distributions.reduce((sum, dist) => sum + dist.tax_withholding, 0);
-  const totalNet = distributions.reduce((sum, dist) => sum + dist.net_amount, 0);
+  const totalDistribution = distributions.reduce(
+    (sum, dist) => sum + dist.revenue_share,
+    0
+  );
+  const totalTax = distributions.reduce(
+    (sum, dist) => sum + dist.tax_withholding,
+    0
+  );
+  const totalNet = distributions.reduce(
+    (sum, dist) => sum + dist.net_amount,
+    0
+  );
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Revenue Distribution Calculator</h2>
-        <p className="text-gray-600">Calculate and distribute revenue to token holders</p>
+        <p className="text-gray-600">
+          Calculate and distribute revenue to token holders
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -299,7 +349,10 @@ export function RevenueDistributionCalculator() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="property-select">Tokenized Property</Label>
-              <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+              <Select
+                value={selectedProperty}
+                onValueChange={setSelectedProperty}
+              >
                 <SelectTrigger id="property-select">
                   <SelectValue placeholder="Select property" />
                 </SelectTrigger>
@@ -320,21 +373,25 @@ export function RevenueDistributionCalculator() {
                 type="number"
                 placeholder="10000"
                 value={distributionData.total_revenue}
-                onChange={(e) => setDistributionData(prev => ({ 
-                  ...prev, 
-                  total_revenue: e.target.value 
-                }))}
+                onChange={(e) =>
+                  setDistributionData((prev) => ({
+                    ...prev,
+                    total_revenue: e.target.value,
+                  }))
+                }
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="distribution-type">Distribution Type</Label>
-              <Select 
-                value={distributionData.distribution_type} 
-                onValueChange={(value) => setDistributionData(prev => ({ 
-                  ...prev, 
-                  distribution_type: value 
-                }))}
+              <Select
+                value={distributionData.distribution_type}
+                onValueChange={(value) =>
+                  setDistributionData((prev) => ({
+                    ...prev,
+                    distribution_type: value,
+                  }))
+                }
               >
                 <SelectTrigger id="distribution-type">
                   <SelectValue />
@@ -342,7 +399,9 @@ export function RevenueDistributionCalculator() {
                 <SelectContent>
                   <SelectItem value="rental_income">Rental Income</SelectItem>
                   <SelectItem value="property_sale">Property Sale</SelectItem>
-                  <SelectItem value="property_appreciation">Property Appreciation</SelectItem>
+                  <SelectItem value="property_appreciation">
+                    Property Appreciation
+                  </SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -354,10 +413,12 @@ export function RevenueDistributionCalculator() {
                 id="source-description"
                 placeholder="Monthly rental income for Q1 2024"
                 value={distributionData.source_description}
-                onChange={(e) => setDistributionData(prev => ({ 
-                  ...prev, 
-                  source_description: e.target.value 
-                }))}
+                onChange={(e) =>
+                  setDistributionData((prev) => ({
+                    ...prev,
+                    source_description: e.target.value,
+                  }))
+                }
               />
             </div>
 
@@ -368,19 +429,25 @@ export function RevenueDistributionCalculator() {
                 type="number"
                 placeholder="10"
                 value={distributionData.tax_rate}
-                onChange={(e) => setDistributionData(prev => ({ 
-                  ...prev, 
-                  tax_rate: e.target.value 
-                }))}
+                onChange={(e) =>
+                  setDistributionData((prev) => ({
+                    ...prev,
+                    tax_rate: e.target.value,
+                  }))
+                }
               />
             </div>
 
-            <Button 
+            <Button
               onClick={calculateDistribution}
-              disabled={!selectedProperty || !distributionData.total_revenue || calculating}
+              disabled={
+                !selectedProperty ||
+                !distributionData.total_revenue ||
+                calculating
+              }
               className="w-full"
             >
-              {calculating ? 'Calculating...' : 'Calculate Distribution'}
+              {calculating ? "Calculating..." : "Calculate Distribution"}
             </Button>
           </CardContent>
         </Card>
@@ -414,9 +481,7 @@ export function RevenueDistributionCalculator() {
                     <p className="text-sm text-gray-600">Net Distribution</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold">
-                      {distributions.length}
-                    </p>
+                    <p className="text-2xl font-bold">{distributions.length}</p>
                     <p className="text-sm text-gray-600">Token Holders</p>
                   </div>
                 </div>
@@ -459,7 +524,9 @@ export function RevenueDistributionCalculator() {
                         <TableHead>Holder</TableHead>
                         <TableHead className="text-right">Tokens</TableHead>
                         <TableHead className="text-right">Ownership</TableHead>
-                        <TableHead className="text-right">Revenue Share</TableHead>
+                        <TableHead className="text-right">
+                          Revenue Share
+                        </TableHead>
                         <TableHead className="text-right">Tax</TableHead>
                         <TableHead className="text-right">Net Amount</TableHead>
                       </TableRow>
@@ -496,15 +563,19 @@ export function RevenueDistributionCalculator() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Holder</TableHead>
-                        <TableHead className="text-right">Tokens Owned</TableHead>
-                        <TableHead className="text-right">Total Investment</TableHead>
+                        <TableHead className="text-right">
+                          Tokens Owned
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Total Investment
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {tokenHolders.map((holder) => (
                         <TableRow key={holder.id}>
                           <TableCell className="font-medium">
-                            {holder.holder_name || 'Unknown'}
+                            {holder.holder_name || "Unknown"}
                           </TableCell>
                           <TableCell className="text-right">
                             {parseInt(holder.tokens_owned).toLocaleString()}
@@ -521,7 +592,9 @@ export function RevenueDistributionCalculator() {
                 <div className="text-center py-8 text-gray-500">
                   <AlertCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <p>No token holders found</p>
-                  <p className="text-sm">This property has no token holders yet</p>
+                  <p className="text-sm">
+                    This property has no token holders yet
+                  </p>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">

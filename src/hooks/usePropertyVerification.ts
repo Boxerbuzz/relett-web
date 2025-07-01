@@ -80,7 +80,7 @@ export function usePropertyVerification() {
       const { data: userRoles } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || '')
         .eq('is_active', true);
 
       const hasVerifierAccess = userRoles?.some(role => 
@@ -109,7 +109,7 @@ export function usePropertyVerification() {
             land_title_id
           )
         `)
-        .eq('verifier_id', user?.id)
+        .eq('verifier_id', user?.id || '')
         .in('status', ['assigned', 'in_progress'])
         .order('priority', { ascending: true })
         .order('created_at', { ascending: true });
@@ -127,21 +127,21 @@ export function usePropertyVerification() {
       const { data: ownersData } = await supabase
         .from('users')
         .select('id, first_name, last_name, email')
-        .in('id', ownerIds);
+        .in('id', ownerIds as string[]);
 
       // Get land titles info
       const landTitleIds = tasksData.map(task => task.properties?.land_title_id).filter(Boolean);
       const { data: landTitlesData } = await supabase
         .from('land_titles')
         .select('id, title_number, area_sqm, land_use')
-        .in('id', landTitleIds);
+        .in('id', landTitleIds as string[]);
 
       // Get property images
       const propertyIds = tasksData.map(task => task.property_id);
       const { data: imagesData } = await supabase
         .from('property_images')
         .select('property_id, url')
-        .in('property_id', propertyIds)
+        .in('property_id', propertyIds as string[])
         .eq('is_primary', true);
 
       // Get document counts
@@ -183,7 +183,7 @@ export function usePropertyVerification() {
       const { data: complianceData } = await supabase
         .from('compliance_records')
         .select('*')
-        .in('land_title_id', landTitleIds);
+        .in('land_title_id', landTitleIds as string[]);
 
       // Create lookup maps
       const ownersByProperty = ownersData?.reduce((acc, owner) => {
@@ -202,13 +202,13 @@ export function usePropertyVerification() {
       }, {} as Record<string, string>) || {};
 
       const documentCountsByProperty = documentCounts?.reduce((acc, doc) => {
-        acc[doc.property_id] = (acc[doc.property_id] || 0) + 1;
+        acc[doc.property_id || ''] = (acc[doc.property_id || ''] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) || {};
 
       const documentsByProperty = documentsData?.reduce((acc, doc) => {
-        if (!acc[doc.property_id]) acc[doc.property_id] = [];
-        acc[doc.property_id].push({
+        if (!acc[doc.property_id || '']) acc[doc.property_id || ''] = [];
+        acc[doc.property_id || ''].push({
           ...doc,
           verification_notes: doc.document_verification_requests?.[0]?.notes,
         });
@@ -216,8 +216,8 @@ export function usePropertyVerification() {
       }, {} as Record<string, any[]>) || {};
 
       const historyByTask = historyData?.reduce((acc, history) => {
-        if (!acc[history.verification_task_id]) acc[history.verification_task_id] = [];
-        acc[history.verification_task_id].push({
+        if (!acc[history.verification_task_id || '']) acc[history.verification_task_id || ''] = [];
+        acc[history.verification_task_id || ''].push({
           ...history,
           verifier_name: `${history.users?.first_name} ${history.users?.last_name}`,
         });
@@ -248,26 +248,33 @@ export function usePropertyVerification() {
       // Combine all data
       const enrichedTasks: VerificationTaskData[] = tasksData.map(task => {
         const property = task.properties;
-        const owner = ownersByProperty[property?.user_id];
-        const landTitle = landTitlesByProperty[property?.land_title_id];
+        const owner = ownersByProperty[property?.user_id || ''];
+        const landTitle = landTitlesByProperty[property?.land_title_id || ''];
 
         return {
           ...task,
           property_title: property?.title || 'Unknown Property',
+          verifier_id: task.verifier_id || '',
+          assigned_at: task.assigned_at || '',
+          deadline: task.deadline || '',
+          verification_checklist: task.verification_checklist || [],
+          priority: task.priority || '',
+          status: task.status || '',
+          property_id: task.property_id || '',
           property_location: property?.location,
           property_price: property?.price,
-          property_category: property?.category,
-          property_type: property?.type,
+          property_category: property?.category || '',
+          property_type: property?.type || '',
           property_owner: owner ? `${owner.first_name} ${owner.last_name}` : 'Unknown Owner',
           owner_email: owner?.email,
           title_number: landTitle?.title_number,
           area_sqm: landTitle?.area_sqm,
           land_use: landTitle?.land_use,
-          total_documents: documentCountsByProperty[task.property_id] || 0,
-          property_image: imagesByProperty[task.property_id],
-          documents: documentsByProperty[task.property_id] || [],
-          verification_history: historyByTask[task.id] || [],
-          compliance_records: complianceByLandTitle[property?.land_title_id] || []
+          total_documents: documentCountsByProperty[task.property_id || ''] || 0,
+          property_image: imagesByProperty[task.property_id || ''],
+          documents: documentsByProperty[task.property_id || ''] || [],
+          verification_history: historyByTask[task.id || ''] || [],
+          compliance_records: complianceByLandTitle[property?.land_title_id || ''] || [],
         };
       });
 

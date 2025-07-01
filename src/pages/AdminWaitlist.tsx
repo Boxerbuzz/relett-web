@@ -120,7 +120,7 @@ export default function AdminWaitlist() {
         );
 
       if (error) throw error;
-      setWaitlistEntries(data || []);
+      setWaitlistEntries(data as WaitlistEntry[] || []);
     } catch (error) {
       console.error("Error fetching waitlist entries:", error);
       toast({

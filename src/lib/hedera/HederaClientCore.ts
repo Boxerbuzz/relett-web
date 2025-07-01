@@ -1,26 +1,30 @@
-
-import {
-  Client,
-  AccountId,
-  PrivateKey,
-} from "@hashgraph/sdk";
+import { Client, AccountId, PrivateKey } from "@hashgraph/sdk";
 
 export class HederaClientCore {
-  public client: Client;
-  private operatorId: AccountId;
+  public client: Client = Client.forTestnet();
+  private operatorId: AccountId = AccountId.fromString("0.0.2");
   private operatorKey: PrivateKey | null = null;
 
   constructor() {
     const accountId =
-      import.meta.env.VITE_HEDERA_ACCOUNT_ID || import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
+      import.meta.env.VITE_HEDERA_ACCOUNT_ID ||
+      import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
     const privateKey =
-      import.meta.env.VITE_HEDERA_PRIVATE_KEY || import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
+      import.meta.env.VITE_HEDERA_PRIVATE_KEY ||
+      import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
     const network = import.meta.env.VITE_HEDERA_NETWORK || "testnet";
 
-    if (!accountId || !privateKey || 
-        typeof accountId !== 'string' || typeof privateKey !== 'string' ||
-        accountId.includes('dummy') || privateKey.includes('dummy')) {
-      console.warn('Hedera credentials not properly configured or using dummy values. Using mock mode.');
+    if (
+      !accountId ||
+      !privateKey ||
+      typeof accountId !== "string" ||
+      typeof privateKey !== "string" ||
+      accountId.includes("dummy") ||
+      privateKey.includes("dummy")
+    ) {
+      console.warn(
+        "Hedera credentials not properly configured or using dummy values. Using mock mode."
+      );
       this.initializeMockClient();
       return;
     }
@@ -37,8 +41,11 @@ export class HederaClientCore {
 
       this.client.setOperator(this.operatorId, this.operatorKey);
     } catch (error) {
-      console.error('Failed to initialize Hedera client with provided credentials:', error);
-      console.warn('Falling back to mock mode.');
+      console.error(
+        "Failed to initialize Hedera client with provided credentials:",
+        error
+      );
+      console.warn("Falling back to mock mode.");
       this.initializeMockClient();
     }
   }
@@ -49,11 +56,11 @@ export class HederaClientCore {
   }
 
   public isMockMode(): boolean {
-    return !this.operatorKey || this.operatorId.toString() === "0.0.2";
+    return !this.operatorKey || this.operatorId?.toString() === "0.0.2";
   }
 
   public getOperatorId(): AccountId {
-    return this.operatorId;
+    return this.operatorId || AccountId.fromString("0.0.2");
   }
 
   public getOperatorKey(): PrivateKey | null {

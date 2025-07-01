@@ -157,8 +157,8 @@ export function useAdvancedSearch() {
 
     const results: SearchResult[] = (data || []).map(property => ({
       id: property.id,
-      title: property.title,
-      description: property.description,
+      title: property.title as string,
+      description: property.description as string,
       type: property.type,
       price: property.price,
       location: property.location,

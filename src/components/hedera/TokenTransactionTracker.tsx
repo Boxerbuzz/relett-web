@@ -106,7 +106,7 @@ export function TokenTransactionTracker({
       const { data, error } = await query;
 
       if (error) throw error;
-      setTransactions(data || []);
+      setTransactions(data as TokenTransaction[] || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast({
@@ -237,6 +237,7 @@ export function TokenTransactionTracker({
                       {transaction.hedera_transaction_id && (
                         <Button size="sm" variant="outline" asChild>
                           <a 
+                            title="View on Hashscan"
                             href={`https://hashscan.io/testnet/transaction/${transaction.hedera_transaction_id}`}
                             target="_blank"
                             rel="noopener noreferrer"

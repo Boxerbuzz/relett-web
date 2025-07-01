@@ -25,7 +25,7 @@ interface SearchFilters {
   offset?: number;
 }
 
-interface Property {
+export interface Property {
   id: string;
   title: string;
   description: string;
@@ -156,8 +156,8 @@ export function usePropertySearch() {
 
       setProperties(
         filters.offset === 0
-          ? processedData
-          : (prev) => [...prev, ...processedData]
+          ? (processedData as Property[])
+          : (prev: Property[]) => [...prev, ...(processedData as Property[])]
       );
       setTotalCount(count || 0);
       setHasMore((data?.length || 0) === limit);
@@ -201,7 +201,7 @@ export function usePropertySearch() {
           : [],
       }));
 
-      setProperties(processedData);
+      setProperties(processedData as Property[]);
       setTotalCount(count || 0);
       setHasMore(false);
     } catch (error) {

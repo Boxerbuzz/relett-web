@@ -111,7 +111,7 @@ export function useRealtimeChat(conversationId: string) {
         sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender
       }));
       
-      setMessages(processedMessages);
+      setMessages(processedMessages as ChatMessage[]);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -150,7 +150,7 @@ export function useRealtimeChat(conversationId: string) {
         };
       });
       
-      setTypingUsers(typing);
+      setTypingUsers(typing as TypingUser[]);
     } catch (error) {
       console.error('Error fetching typing users:', error);
     }

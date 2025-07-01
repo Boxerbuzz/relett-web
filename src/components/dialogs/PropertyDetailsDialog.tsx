@@ -90,8 +90,6 @@ export function PropertyDetailsDialog({
     }
   }, [open, propertyId]);
 
-  console.log(propertyId);
-
   const fetchPropertyDetails = async () => {
     try {
       setLoading(true);
@@ -115,12 +113,7 @@ export function PropertyDetailsDialog({
 
       if (error) throw error;
       if (data) {
-        setProperty({
-          ...data,
-          property_images: Array.isArray(data.property_images)
-            ? data.property_images
-            : [],
-        });
+        setProperty(data as PropertyData);
       }
     } catch (error) {
       console.error("Error fetching property:", error);

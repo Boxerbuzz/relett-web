@@ -76,7 +76,7 @@ export function PropertyMap({ coordinates, address, className }: PropertyMapProp
                   map: map,
                   title: place.name,
                   icon: {
-                    url: place.icon,
+                    url: place.icon || "",
                     scaledSize: new google.maps.Size(20, 20)
                   }
                 });

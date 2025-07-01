@@ -97,7 +97,8 @@ export function TokenizedPropertyMarketplace() {
               .select("url, is_primary")
               .eq("property_id", property.property.id);
 
-            propertyImages = images || [];
+            propertyImages =
+              (images as Array<{ url: string; is_primary: boolean }>) || [];
           }
 
           const totalSold =
@@ -126,7 +127,7 @@ export function TokenizedPropertyMarketplace() {
         })
       );
 
-      setProperties(propertiesWithMetrics);
+      setProperties(propertiesWithMetrics as TokenizedProperty[]);
     } catch (error) {
       console.error("Error fetching tokenized properties:", error);
       toast({
@@ -363,7 +364,7 @@ export function TokenizedPropertyMarketplace() {
             token_name: selectedProperty.token_name,
             token_symbol: selectedProperty.token_symbol,
             token_price: selectedProperty.token_price,
-            hedera_token_id: selectedProperty.id || '',
+            hedera_token_id: selectedProperty.id || "",
             minimum_investment: selectedProperty.minimum_investment,
             available_tokens: selectedProperty.available_tokens,
           }}

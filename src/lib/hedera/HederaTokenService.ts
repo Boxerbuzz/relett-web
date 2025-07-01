@@ -1,4 +1,3 @@
-
 import {
   TokenCreateTransaction,
   TokenType,
@@ -13,9 +12,9 @@ import {
   KeyList,
   PublicKey,
   AccountId,
-  PrivateKey
+  PrivateKey,
 } from "@hashgraph/sdk";
-import { HederaClientCore } from './HederaClientCore';
+import { HederaClientCore } from "./HederaClientCore";
 
 export class HederaTokenService extends HederaClientCore {
   async createPropertyToken(
@@ -25,10 +24,10 @@ export class HederaTokenService extends HederaClientCore {
     adminKeys?: string[]
   ): Promise<{ tokenId: string; transactionId: string }> {
     if (this.isMockMode()) {
-      console.log('Mock mode: Token creation simulated');
+      console.log("Mock mode: Token creation simulated");
       return {
         tokenId: `0.0.${Math.floor(Math.random() * 1000000)}`,
-        transactionId: `mock_tx_${Date.now()}`
+        transactionId: `mock_tx_${Date.now()}`,
       };
     }
 
@@ -56,18 +55,18 @@ export class HederaTokenService extends HederaClientCore {
       const tokenCreateSign = await tokenCreateTx.sign(this.getOperatorKey()!);
       const tokenCreateSubmit = await tokenCreateSign.execute(this.client);
       const tokenCreateRx = await tokenCreateSubmit.getReceipt(this.client);
-      
+
       const tokenId = tokenCreateRx.tokenId;
       if (!tokenId) {
-        throw new Error('Token creation failed - no token ID returned');
+        throw new Error("Token creation failed - no token ID returned");
       }
 
       return {
         tokenId: tokenId.toString(),
-        transactionId: tokenCreateSubmit.transactionId.toString()
+        transactionId: tokenCreateSubmit.transactionId.toString(),
       };
     } catch (error) {
-      console.error('Error creating property token:', error);
+      console.error("Error creating property token:", error);
       throw error;
     }
   }
@@ -79,11 +78,11 @@ export class HederaTokenService extends HederaClientCore {
     maxSupply?: number;
   }) {
     if (this.isMockMode()) {
-      console.log('Mock mode: NFT creation simulated');
+      console.log("Mock mode: NFT creation simulated");
       return {
         tokenId: `0.0.${Math.floor(Math.random() * 1000000)}`,
         transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
+        status: "SUCCESS",
       };
     }
 
@@ -126,10 +125,10 @@ export class HederaTokenService extends HederaClientCore {
     accountPrivateKey: string
   ) {
     if (this.isMockMode()) {
-      console.log('Mock mode: Token association simulated');
+      console.log("Mock mode: Token association simulated");
       return {
         transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
+        status: "SUCCESS",
       };
     }
 
@@ -163,10 +162,10 @@ export class HederaTokenService extends HederaClientCore {
     receiverAccountId?: string
   ) {
     if (this.isMockMode()) {
-      console.log('Mock mode: Token minting simulated');
+      console.log("Mock mode: Token minting simulated");
       return {
         transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
+        status: "SUCCESS",
         serialNumbers: [],
       };
     }
@@ -200,10 +199,10 @@ export class HederaTokenService extends HederaClientCore {
     fromPrivateKey: string;
   }) {
     if (this.isMockMode()) {
-      console.log('Mock mode: Token transfer simulated');
+      console.log("Mock mode: Token transfer simulated");
       return {
         transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
+        status: "SUCCESS",
       };
     }
 
@@ -234,18 +233,18 @@ export class HederaTokenService extends HederaClientCore {
 
   async getTokenInfo(tokenId: string) {
     if (this.isMockMode()) {
-      console.log('Mock mode: Token info retrieval simulated');
+      console.log("Mock mode: Token info retrieval simulated");
       return {
         tokenId: tokenId,
-        name: 'Mock Token',
-        symbol: 'MOCK',
+        name: "Mock Token",
+        symbol: "MOCK",
         decimals: 2,
-        totalSupply: '1000000',
-        treasury: '0.0.2',
+        totalSupply: "1000000",
+        treasury: "0.0.2",
         adminKey: undefined,
         supplyKey: undefined,
         isDeleted: false,
-        tokenType: 'FUNGIBLE_COMMON',
+        tokenType: "FUNGIBLE_COMMON",
       };
     }
 
@@ -260,11 +259,11 @@ export class HederaTokenService extends HederaClientCore {
         symbol: tokenInfo.symbol,
         decimals: tokenInfo.decimals,
         totalSupply: tokenInfo.totalSupply.toString(),
-        treasury: tokenInfo.treasuryAccountId.toString(),
+        treasury: tokenInfo.treasuryAccountId?.toString() || "",
         adminKey: tokenInfo.adminKey?.toString(),
         supplyKey: tokenInfo.supplyKey?.toString(),
         isDeleted: tokenInfo.isDeleted,
-        tokenType: tokenInfo.tokenType.toString(),
+        tokenType: tokenInfo.tokenType?.toString(),
       };
     } catch (error) {
       console.error("Error getting token info:", error);
@@ -274,9 +273,9 @@ export class HederaTokenService extends HederaClientCore {
 
   async getAccountBalance(accountId: string) {
     if (this.isMockMode()) {
-      console.log('Mock mode: Account balance retrieval simulated');
+      console.log("Mock mode: Account balance retrieval simulated");
       return {
-        hbarBalance: '100.0',
+        hbarBalance: "100.0",
         tokens: [],
       };
     }

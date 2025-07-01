@@ -101,7 +101,7 @@ export default function AdminContacts() {
         );
 
       if (error) throw error;
-      setContacts(data || []);
+      setContacts(data as Contact[] || []);
     } catch (error) {
       console.error("Error fetching contacts:", error);
       toast({

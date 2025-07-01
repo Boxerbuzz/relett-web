@@ -149,7 +149,7 @@ export function useProperties() {
             : 0,
           review_count: reviewsByProperty[property.id]?.count || 0,
           tokenized_property: property.tokenized_properties || null
-        })) || [];
+        })) as PropertyData[] || [];
 
         return enrichedProperties;
       } catch (err) {

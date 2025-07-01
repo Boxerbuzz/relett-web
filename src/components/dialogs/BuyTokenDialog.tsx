@@ -47,7 +47,7 @@ export function BuyTokenDialog({ open, onOpenChange, tokenizedProperty }: BuyTok
       const { data, error } = await supabase
         .from('wallets')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || '')
         .eq('wallet_type', 'hedera')
         .eq('is_primary', true)
         .maybeSingle();

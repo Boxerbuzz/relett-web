@@ -83,7 +83,7 @@ export default function UserBookings() {
           )
         `
         )
-        .eq("user_id", user?.id)
+        .eq("user_id", user?.id || '')
         .order("created_at", { ascending: false });
 
       if (inspectionsError) throw inspectionsError;
@@ -101,7 +101,7 @@ export default function UserBookings() {
           )
         `
         )
-        .eq("user_id", user?.id)
+        .eq("user_id", user?.id || '')
         .order("created_at", { ascending: false });
 
       if (rentalsError) throw rentalsError;
@@ -120,14 +120,14 @@ export default function UserBookings() {
           )
         `
           )
-          .eq("user_id", user?.id)
+          .eq("user_id", user?.id || '')
           .order("created_at", { ascending: false });
 
       if (reservationsError) throw reservationsError;
 
-      setInspections(inspectionsData || []);
-      setRentals(rentalsData || []);
-      setReservations(reservationsData || []);
+      setInspections(inspectionsData as Inspection[] || []);
+      setRentals(rentalsData as Rental[] || []);
+      setReservations(reservationsData as Reservation[] || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast({

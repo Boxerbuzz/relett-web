@@ -20,7 +20,7 @@ export function WelcomeCard() {
     <Card
       className={cn(
         "bg-gradient-to-r from-blue-600 to-blue-700 text-white w-full",
-        user.role === "user" && "hidden"
+        user?.role === "user" && "hidden"
       )}
     >
       <CardContent className="p-4 md:p-6">

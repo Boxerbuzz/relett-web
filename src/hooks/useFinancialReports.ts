@@ -37,7 +37,7 @@ export function useFinancialReports() {
       const { data, error } = await supabase
         .from('financial_reports')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id as string)
         .order('generated_at', { ascending: false });
 
       if (error) throw error;
@@ -62,7 +62,7 @@ export function useFinancialReports() {
       const { data, error } = await supabase
         .from('financial_reports')
         .insert({
-          user_id: user?.id,
+          user_id: user?.id as string,
           report_type: reportType,
           period_start: periodStart,
           period_end: periodEnd,

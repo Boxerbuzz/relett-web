@@ -83,7 +83,7 @@ export function useTokenizedProperties() {
             )
           )
         `)
-        .eq('holder_id', user?.id);
+        .eq('holder_id', user?.id || "");
 
       if (holdingsError) throw holdingsError;
 
@@ -92,7 +92,7 @@ export function useTokenizedProperties() {
       const { data: investmentTrackingData } = await supabase
         .from('investment_tracking')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || "")
         .in('tokenized_property_id', tokenizedPropertyIds);
 
       // Get property images - properly extract property IDs
@@ -141,7 +141,7 @@ export function useTokenizedProperties() {
           )
         `)
         .in('tokenized_property_id', tokenizedPropertyIds)
-        .eq('dividend_payments.recipient_id', user?.id)
+        .eq('dividend_payments.recipient_id', user?.id || "")
         .order('distribution_date', { ascending: false })
         .limit(50);
 
@@ -187,9 +187,9 @@ export function useTokenizedProperties() {
 
         return {
           ...tokenizedProperty,
-          property_title: property?.title,
+          property_title: property?.title || "",
           property_location: property?.location,
-          property_backdrop: property?.backdrop,
+          property_backdrop: property?.backdrop || "",
           tokens_owned: holding.tokens_owned,
           purchase_price_per_token: holding.purchase_price_per_token,
           total_investment: holding.total_investment,
@@ -202,7 +202,8 @@ export function useTokenizedProperties() {
           investor_count: investorCountsByProperty[holding.tokenized_property_id]?.size || 0,
           has_group_chat: groupChatsByProperty.has(holding.tokenized_property_id),
           property_images: propertyId ? (imagesByProperty[propertyId] || []) : [],
-          recent_dividends: revenueByProperty[holding.tokenized_property_id] || []
+          recent_dividends: revenueByProperty[holding.tokenized_property_id] || [],
+          status: tokenizedProperty?.status || ""
         };
       }) || [];
 

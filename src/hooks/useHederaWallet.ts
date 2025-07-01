@@ -31,13 +31,13 @@ export function useHederaWallet() {
       const { data, error } = await supabase
         .from('wallets')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id || "")
         .eq('wallet_type', 'hedera')
         .eq('is_primary', true)
         .maybeSingle();
 
       if (error) throw error;
-      setWallet(data);
+      setWallet(data as HederaWallet);
     } catch (error) {
       console.error('Error fetching wallet:', error);
     } finally {
@@ -59,7 +59,7 @@ export function useHederaWallet() {
       const { data: walletData, error: walletError } = await supabase
         .from('wallets')
         .insert({
-          user_id: user?.id,
+          user_id: user?.id || "",
           address: accountId,
           encrypted_private_key: privateKey,
           wallet_type: 'hedera',
@@ -72,7 +72,7 @@ export function useHederaWallet() {
 
       if (walletError) throw walletError;
 
-      setWallet(walletData);
+      setWallet(walletData as HederaWallet);
       toast({
         title: 'Wallet Connected',
         description: 'Your Hedera wallet has been successfully connected.',

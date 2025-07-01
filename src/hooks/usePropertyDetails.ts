@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,17 +31,17 @@ interface PropertyDetails {
   property_images: Array<{
     id: string;
     url: string;
-    is_primary: boolean;
-    category: string;
-    sort_order: number;
+    is_primary: boolean | null;
+    category: string | null;
+    sort_order: number | null;
   }>;
   property_documents: Array<{
     id: string;
     document_name: string;
     document_type: string;
     file_url: string;
-    status: string;
-    verified_at: string;
+    status: string | null;
+    verified_at: string | null;
   }>;
   tokenized_property: {
     id: string;
@@ -101,8 +100,8 @@ export function usePropertyDetails(propertyId: string) {
           .eq("id", propertyId)
           .then(() => {
             // Invalidate cache after successful update
-            queryClient.invalidateQueries({ 
-              queryKey: queryKeys.properties.detail(propertyId) 
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.properties.detail(propertyId),
             });
           });
 
@@ -135,7 +134,15 @@ export function usePropertyDetails(propertyId: string) {
           .eq("property_id", propertyId);
 
         // Fetch tokenized property info if applicable
-        let tokenizedProperty = null;
+        let tokenizedProperty: {
+          id: string;
+          token_symbol: string;
+          token_name: string;
+          token_price: number;
+          total_supply: string;
+          expected_roi: number;
+          minimum_investment: number;
+        } | null = null;
         if (propertyData.is_tokenized) {
           const { data: tokenData } = await supabase
             .from("tokenized_properties")
@@ -151,20 +158,45 @@ export function usePropertyDetails(propertyId: string) {
           property_images: images || [],
           property_documents: documents || [],
           tokenized_property: tokenizedProperty,
+          title: propertyData.title || "",
+          description: propertyData.description || "",
+          location: propertyData.location || {},
+          price: propertyData.price || {},
+          category: propertyData.category || "",
+          type: propertyData.type || "",
+          sub_type: propertyData.sub_type || "",
+          status: propertyData.status || "",
+          is_verified: propertyData.is_verified || false,
+          is_tokenized: propertyData.is_tokenized || false,
+          is_featured: propertyData.is_featured || false,
+          specification: propertyData.specification || {},
+          amenities: propertyData.amenities || [],
+          features: propertyData.features || [],
+          condition: propertyData.condition || "",
+          views: propertyData.views || 0,
+          likes: propertyData.likes || 0,
+          ratings: propertyData.ratings || 0,
+          backdrop: propertyData.backdrop || "",
+          created_at: propertyData.created_at || "",
+          updated_at: propertyData.updated_at || "",
+          user_id: propertyData.user_id || "",
+          agent: (propertyData.agent as AgentData) || null,
         };
 
         return enrichedProperty;
       } catch (err) {
         console.error("Error fetching property details:", err);
         const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch property details";
-        
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch property details";
+
         toast({
           title: "Error",
           description: errorMessage,
           variant: "destructive",
         });
-        
+
         throw err;
       }
     },

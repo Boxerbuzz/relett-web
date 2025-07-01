@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export interface InvestmentPoll {
   id: string;
   investment_group_id: string;
   title: string;
   description?: string;
-  poll_type: 'simple' | 'multiple_choice' | 'ranked' | 'weighted';
+  poll_type: "simple" | "multiple_choice" | "ranked" | "weighted";
   created_by: string;
-  status: 'draft' | 'active' | 'closed' | 'cancelled';
+  status: "draft" | "active" | "closed" | "cancelled";
   starts_at: string;
   ends_at: string;
   min_participation_percentage: number;
@@ -18,7 +18,7 @@ export interface InvestmentPoll {
   consensus_threshold: number;
   allow_vote_changes: boolean;
   is_anonymous: boolean;
-  voting_power_basis: 'tokens' | 'equal' | 'investment_amount';
+  voting_power_basis: "tokens" | "equal" | "investment_amount";
   hedera_topic_id?: string;
   hedera_consensus_timestamp?: string;
   metadata: any;
@@ -68,8 +68,12 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [polls, setPolls] = useState<InvestmentPoll[]>([]);
-  const [pollOptions, setPollOptions] = useState<Record<string, PollOption[]>>({});
-  const [pollResults, setPollResults] = useState<Record<string, PollResult[]>>({});
+  const [pollOptions, setPollOptions] = useState<Record<string, PollOption[]>>(
+    {}
+  );
+  const [pollResults, setPollResults] = useState<Record<string, PollResult[]>>(
+    {}
+  );
   const [userVotes, setUserVotes] = useState<Record<string, PollVote>>({});
   const [loading, setLoading] = useState(true);
 
@@ -82,39 +86,46 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
   const fetchPolls = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch polls
       let pollsQuery = supabase
-        .from('investment_polls')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("investment_polls")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (investmentGroupId) {
-        pollsQuery = pollsQuery.eq('investment_group_id', investmentGroupId);
+        pollsQuery = pollsQuery.eq("investment_group_id", investmentGroupId);
       }
 
       const { data: pollsData, error: pollsError } = await pollsQuery;
       if (pollsError) throw pollsError;
 
       // Type cast the data to ensure proper typing
-      const typedPolls = (pollsData || []).map(poll => ({
+      const typedPolls = (pollsData || []).map((poll) => ({
         ...poll,
-        poll_type: poll.poll_type as 'simple' | 'multiple_choice' | 'ranked' | 'weighted',
-        status: poll.status as 'draft' | 'active' | 'closed' | 'cancelled',
-        voting_power_basis: poll.voting_power_basis as 'tokens' | 'equal' | 'investment_amount'
+        poll_type: poll.poll_type as
+          | "simple"
+          | "multiple_choice"
+          | "ranked"
+          | "weighted",
+        status: poll.status as "draft" | "active" | "closed" | "cancelled",
+        voting_power_basis: poll.voting_power_basis as
+          | "tokens"
+          | "equal"
+          | "investment_amount",
       }));
 
-      setPolls(typedPolls);
+      setPolls(typedPolls as InvestmentPoll[]);
 
       // Fetch options for all polls
       if (pollsData && pollsData.length > 0) {
-        const pollIds = pollsData.map(poll => poll.id);
-        
+        const pollIds = pollsData.map((poll) => poll.id);
+
         const { data: optionsData, error: optionsError } = await supabase
-          .from('poll_options')
-          .select('*')
-          .in('poll_id', pollIds)
-          .order('option_order');
+          .from("poll_options")
+          .select("*")
+          .in("poll_id", pollIds)
+          .order("option_order");
 
         if (optionsError) throw optionsError;
 
@@ -129,16 +140,16 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
 
         // Fetch results
         const { data: resultsData, error: resultsError } = await supabase
-          .from('poll_results')
-          .select('*')
-          .in('poll_id', pollIds);
+          .from("poll_results")
+          .select("*")
+          .in("poll_id", pollIds);
 
         if (resultsError) throw resultsError;
 
         // Group results by poll_id
         const resultsByPoll = (resultsData || []).reduce((acc, result) => {
-          if (!acc[result.poll_id]) acc[result.poll_id] = [];
-          acc[result.poll_id].push(result);
+          if (result.poll_id && !acc[result.poll_id]) acc[result.poll_id] = [];
+          if (result.poll_id) acc[result.poll_id].push(result as PollResult);
           return acc;
         }, {} as Record<string, PollResult[]>);
 
@@ -146,10 +157,10 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
 
         // Fetch user votes
         const { data: votesData, error: votesError } = await supabase
-          .from('poll_votes')
-          .select('*')
-          .in('poll_id', pollIds)
-          .eq('voter_id', user?.id);
+          .from("poll_votes")
+          .select("*")
+          .in("poll_id", pollIds)
+          .eq("voter_id", user?.id || "");
 
         if (votesError) throw votesError;
 
@@ -157,9 +168,17 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
         const votesByPoll = (votesData || []).reduce((acc, vote) => {
           const typedVote: PollVote = {
             ...vote,
-            ranked_choices: Array.isArray(vote.ranked_choices) 
-              ? vote.ranked_choices.map(choice => String(choice))
-              : undefined
+            ranked_choices: Array.isArray(vote.ranked_choices)
+              ? vote.ranked_choices.map((choice) => String(choice))
+              : undefined,
+            poll_option_id: vote.poll_option_id || undefined,
+            hedera_consensus_timestamp: vote.hedera_consensus_timestamp || "",
+            hedera_transaction_id: vote.hedera_transaction_id || "",
+            voted_at: vote.voted_at || "",
+            updated_at: vote.updated_at || "",
+            vote_data: vote.vote_data || {},
+            voting_power: vote.voting_power || 0,
+            vote_weight: vote.vote_weight || 0,
           };
           acc[vote.poll_id] = typedVote;
           return acc;
@@ -168,11 +187,11 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
         setUserVotes(votesByPoll);
       }
     } catch (error) {
-      console.error('Error fetching polls:', error);
+      console.error("Error fetching polls:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch polls',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch polls",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -195,7 +214,7 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
     try {
       // Create poll
       const { data: poll, error: pollError } = await supabase
-        .from('investment_polls')
+        .from("investment_polls")
         .insert({
           investment_group_id: investmentGroupId,
           title: pollData.title,
@@ -203,10 +222,11 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
           poll_type: pollData.poll_type,
           created_by: user.id,
           ends_at: pollData.ends_at,
-          min_participation_percentage: pollData.min_participation_percentage || 50,
+          min_participation_percentage:
+            pollData.min_participation_percentage || 50,
           requires_consensus: pollData.requires_consensus || false,
           consensus_threshold: pollData.consensus_threshold || 66.7,
-          voting_power_basis: pollData.voting_power_basis || 'tokens'
+          voting_power_basis: pollData.voting_power_basis || "tokens",
         })
         .select()
         .single();
@@ -217,43 +237,49 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
       const options = pollData.options.map((option, index) => ({
         poll_id: poll.id,
         option_text: option,
-        option_order: index
+        option_order: index,
       }));
 
       const { error: optionsError } = await supabase
-        .from('poll_options')
+        .from("poll_options")
         .insert(options);
 
       if (optionsError) throw optionsError;
 
       toast({
-        title: 'Success',
-        description: 'Poll created successfully'
+        title: "Success",
+        description: "Poll created successfully",
       });
 
       fetchPolls();
       return poll;
     } catch (error) {
-      console.error('Error creating poll:', error);
+      console.error("Error creating poll:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to create poll',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to create poll",
+        variant: "destructive",
       });
       return null;
     }
   };
 
-  const castVote = async (pollId: string, optionId: string, rankedChoices?: string[]) => {
+  const castVote = async (
+    pollId: string,
+    optionId: string,
+    rankedChoices?: string[]
+  ) => {
     if (!user) return false;
 
     try {
       // Calculate voting power
-      const { data: votingPowerData, error: vpError } = await supabase
-        .rpc('calculate_voting_power', {
+      const { data: votingPowerData, error: vpError } = await supabase.rpc(
+        "calculate_voting_power",
+        {
           p_poll_id: pollId,
-          p_voter_id: user.id
-        });
+          p_voter_id: user.id,
+        }
+      );
 
       if (vpError) throw vpError;
 
@@ -267,30 +293,28 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
         voting_power: votingPower,
         vote_weight: 1.0,
         ranked_choices: rankedChoices || null,
-        vote_data: {}
+        vote_data: {},
       };
 
-      const { error } = await supabase
-        .from('poll_votes')
-        .upsert(voteData, {
-          onConflict: 'poll_id,voter_id'
-        });
+      const { error } = await supabase.from("poll_votes").upsert(voteData, {
+        onConflict: "poll_id,voter_id",
+      });
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Vote cast successfully'
+        title: "Success",
+        description: "Vote cast successfully",
       });
 
       fetchPolls();
       return true;
     } catch (error) {
-      console.error('Error casting vote:', error);
+      console.error("Error casting vote:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to cast vote',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to cast vote",
+        variant: "destructive",
       });
       return false;
     }
@@ -299,29 +323,29 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
   const closePoll = async (pollId: string) => {
     try {
       const { error } = await supabase
-        .from('investment_polls')
-        .update({ 
-          status: 'closed',
-          updated_at: new Date().toISOString()
+        .from("investment_polls")
+        .update({
+          status: "closed",
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', pollId)
-        .eq('created_by', user?.id);
+        .eq("id", pollId)
+        .eq("created_by", user?.id || "");
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Poll closed successfully'
+        title: "Success",
+        description: "Poll closed successfully",
       });
 
       fetchPolls();
       return true;
     } catch (error) {
-      console.error('Error closing poll:', error);
+      console.error("Error closing poll:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to close poll',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to close poll",
+        variant: "destructive",
       });
       return false;
     }
@@ -336,6 +360,6 @@ export const useInvestmentPolls = (investmentGroupId?: string) => {
     createPoll,
     castVote,
     closePoll,
-    refetch: fetchPolls
+    refetch: fetchPolls,
   };
 };

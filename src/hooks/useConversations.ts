@@ -77,7 +77,7 @@ export function useConversations() {
         })
       );
 
-      return conversationsWithDetails;
+      return conversationsWithDetails as ConversationWithDetails[];
     },
     enabled: !!user?.id,
     ...cacheConfig.realtime, // Use realtime config for conversations
