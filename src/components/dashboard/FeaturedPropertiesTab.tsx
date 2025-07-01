@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -17,6 +18,8 @@ interface PropertyWithTokenization {
   views: number;
   is_verified: boolean;
   is_tokenized: boolean;
+  type: string;
+  category?: string;
   backdrop?: string;
   tokenized_properties?: {
     token_price: number;
@@ -63,6 +66,30 @@ export function FeaturedPropertiesTab({
     );
   };
 
+  const getLocationString = (location: any) => {
+    if (typeof location === "object" && location !== null) {
+      return (
+        `${location.city || ""}, ${location.state || ""}`
+          .trim()
+          .replace(/^,|,$/, "") || "Location not specified"
+      );
+    }
+    return location || "Location not specified";
+  };
+
+  const getPriceString = (price: any) => {
+    if (typeof price === "object" && price !== null) {
+      const amount = price.amount || 0;
+      const convertedAmount = convertKoboToNaira(amount);
+      return new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: price.currency || "NGN",
+        minimumFractionDigits: 0,
+      }).format(convertedAmount);
+    }
+    return "₦0";
+  };
+
   const getTokenizationData = (property: PropertyWithTokenization) => {
     if (!property.is_tokenized || !property.tokenized_properties) {
       return null;
@@ -107,29 +134,23 @@ export function FeaturedPropertiesTab({
               const propertyForCard = {
                 id: property.id,
                 title: property.title,
-                location: property.location,
-                price: {
-                  ...property.price,
-                  amount: convertKoboToNaira(property.price?.amount || 0),
-                },
-                is_verified: property.is_verified,
-                is_tokenized: property.is_tokenized,
-                backdrop: getPropertyImage(property),
+                location: getLocationString(property.location),
+                price: getPriceString(property.price),
+                image: getPropertyImage(property),
+                type: property.type || 'residential',
+                category: property.category || property.type || 'property',
+                isVerified: property.is_verified,
+                isTokenized: property.is_tokenized,
                 views: property.views || 0,
-                tokenized_property: tokenData
-                  ? {
-                      token_price: tokenData.tokenPrice,
-                      expected_roi: tokenData.expectedROI,
-                    }
-                  : undefined,
-                property_images: property.property_images || [],
+                expectedROI: tokenData?.expectedROI,
+                likes: 0,
               };
 
               return (
                 <PropertyCard
                   key={property.id}
                   property={propertyForCard}
-                  onViewDetails={() => handleViewDetails(property.id)}
+                  onView={() => handleViewDetails(property.id)}
                 />
               );
             })}

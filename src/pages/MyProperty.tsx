@@ -41,6 +41,7 @@ interface Property {
   is_verified: boolean;
   type: string;
   backdrop?: string;
+  blockchain_transaction_id?: string;
   property_images?: Array<{
     url: string;
     is_primary: boolean;
@@ -134,7 +135,8 @@ const MyProperty = () => {
           is_tokenized,
           is_verified,
           type,
-          backdrop
+          backdrop,
+          blockchain_transaction_id
         `
         )
         .eq("user_id", user?.id || "")
