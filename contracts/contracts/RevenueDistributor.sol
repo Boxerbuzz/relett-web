@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
@@ -102,32 +103,44 @@ contract RevenueDistributor is Ownable, ReentrancyGuard, Pausable {
         return (distribution.totalAmount * holderBalance) / distribution.totalSupplyAtDistribution;
     }
 
-    function claimRevenue(uint256 _distributionId) external nonReentrant whenNotPaused {
+    function _processClaimRevenue(uint256 _distributionId, address _claimant) 
+        internal 
+        returns (uint256) 
+    {
         Distribution storage distribution = distributions[_distributionId];
         require(distribution.totalAmount > 0, "Distribution not found");
         
-        Claim storage claim = claims[_distributionId][msg.sender];
+        Claim storage claim = claims[_distributionId][_claimant];
         require(!claim.isClaimed, "Already claimed");
         
-        uint256 claimAmount = calculateClaimAmount(_distributionId, msg.sender);
+        uint256 claimAmount = calculateClaimAmount(_distributionId, _claimant);
         require(claimAmount > 0, "No revenue to claim");
         
         claim.distributionId = _distributionId;
-        claim.holder = msg.sender;
+        claim.holder = _claimant;
         claim.amount = claimAmount;
         claim.isClaimed = true;
         
-        holderDistributions[msg.sender].push(_distributionId);
+        holderDistributions[_claimant].push(_distributionId);
         
-        payable(msg.sender).transfer(claimAmount);
+        payable(_claimant).transfer(claimAmount);
         
-        emit RevenueClaimed(_distributionId, msg.sender, claimAmount);
+        emit RevenueClaimed(_distributionId, _claimant, claimAmount);
+        
+        return claimAmount;
     }
 
-    function claimMultipleDistributions(uint256[] memory _distributionIds) external {
+    function claimRevenue(uint256 _distributionId) external nonReentrant whenNotPaused {
+        _processClaimRevenue(_distributionId, msg.sender);
+    }
+
+    function claimMultipleDistributions(uint256[] memory _distributionIds) external nonReentrant whenNotPaused {
         for (uint256 i = 0; i < _distributionIds.length; i++) {
             if (!claims[_distributionIds[i]][msg.sender].isClaimed) {
-                claimRevenue(_distributionIds[i]);
+                uint256 claimAmount = calculateClaimAmount(_distributionIds[i], msg.sender);
+                if (claimAmount > 0) {
+                    _processClaimRevenue(_distributionIds[i], msg.sender);
+                }
             }
         }
     }
