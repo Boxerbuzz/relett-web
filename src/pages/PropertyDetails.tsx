@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { usePropertyDetails } from "@/hooks/usePropertyDetails";
+import { usePropertyLikes } from "@/hooks/usePropertyLikes";
 import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
+import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { InvestNowDialog } from "@/components/dialogs/InvestNowDialog";
 import {
   ArrowLeftIcon,
@@ -18,6 +20,7 @@ import {
   ImagesIcon,
   CurrencyDollarIcon,
 } from "@phosphor-icons/react";
+import { Heart, Share } from "lucide-react";
 import { getAmenityById } from "@/types/amenities";
 import { Bed, Shower, Square, Phone, Envelope, User } from "phosphor-react";
 import {
@@ -34,14 +37,49 @@ import RentalSheet from "@/components/property/sheets/RentalSheet";
 import { LocationAnalysis } from "@/components/property/LocationAnalysis";
 import { AIValuationWidget } from "@/components/property/AIValuationWidget";
 import { AIPropertyValuation } from "@/components/property/AIPropertyValuation";
+import { useToast } from "@/hooks/use-toast";
 
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { property, loading, error, agent } = usePropertyDetails(id || "");
+  const { isLiked, likeCount, loading: likesLoading, toggleLike } = usePropertyLikes(id || "");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showInvestDialog, setShowInvestDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (navigator.share && property) {
+      try {
+        await navigator.share({
+          title: property.title,
+          text: `Check out this property: ${property.title}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        // Fallback to clipboard
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      toast({
+        title: 'Link Copied',
+        description: 'Property link copied to clipboard'
+      });
+    }).catch(() => {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link',
+        variant: 'destructive'
+      });
+    });
+  };
 
   if (loading) {
     return <PropertyDetailSkeleton />;
@@ -135,12 +173,21 @@ const PropertyDetails = () => {
             Back
           </Button>
           <div className="flex items-center space-x-4">
-            <Button variant="outline">
-              <HeartIcon className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline" 
+              onClick={toggleLike}
+              disabled={likesLoading}
+              className="flex items-center gap-2"
+            >
+              <Heart 
+                size={16} 
+                className={isLiked ? 'fill-red-500 text-red-500' : ''} 
+              />
+              {likeCount > 0 && <span className="text-sm">{likeCount}</span>}
               Save
             </Button>
-            <Button variant="outline">
-              <ShareNetworkIcon className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={handleShare}>
+              <Share size={16} className="mr-2" />
               Share
             </Button>
           </div>
@@ -322,6 +369,10 @@ const PropertyDetails = () => {
                 </CardContent>
               </Card>
 
+              {/* Add Reviews Section */}
+              <PropertyReviews propertyId={property.id} />
+
+              {/* Property Amenities & Features */}
               <Card>
                 <CardHeader>
                   <CardTitle>Property Amenities & Features</CardTitle>

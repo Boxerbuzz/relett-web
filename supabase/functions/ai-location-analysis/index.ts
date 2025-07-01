@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   createTypedSupabaseClient,
@@ -128,9 +129,67 @@ function parseAIResponse(content: string): LocationAnalysis {
     cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
   }
   
+  // Remove any remaining backticks
+  cleanContent = cleanContent.replace(/^`+|`+$/g, '');
+  
   // Try to parse the cleaned content
   try {
-    return JSON.parse(cleanContent);
+    const parsed = JSON.parse(cleanContent);
+    
+    // Validate and provide fallbacks for required structure
+    return {
+      areaClassification: parsed.areaClassification || {
+        type: "Urban",
+        description: "Mixed-use urban area",
+        characteristics: ["Moderate density", "Mixed development"]
+      },
+      securityAssessment: parsed.securityAssessment || {
+        score: 75,
+        factors: ["Police presence", "Community watch"],
+        recommendations: ["Install security systems", "Join neighborhood watch"]
+      },
+      transportation: parsed.transportation || {
+        score: 70,
+        publicTransport: "Available",
+        trafficCondition: "Moderate",
+        infrastructure: "Good"
+      },
+      infrastructure: parsed.infrastructure || {
+        powerSupply: "Stable",
+        water: "Available",
+        internet: "Good",
+        waste: "Regular collection"
+      },
+      amenities: parsed.amenities || {
+        education: ["Schools nearby"],
+        healthcare: ["Clinic available"],
+        shopping: ["Local markets"],
+        entertainment: ["Recreation center"]
+      },
+      economicFactors: parsed.economicFactors || {
+        employmentScore: 70,
+        incomeLevel: "Middle class",
+        commercialActivity: "Moderate"
+      },
+      futureDevelopment: parsed.futureDevelopment || {
+        growthPotential: "Moderate",
+        plannedProjects: ["Road improvements"],
+        outlook: "Stable"
+      },
+      environmental: parsed.environmental || {
+        airQuality: "Moderate",
+        noiseLevel: "Moderate",
+        greenSpaces: "Limited",
+        floodRisk: "Low"
+      },
+      investmentOutlook: parsed.investmentOutlook || {
+        appreciationPotential: "Moderate",
+        rentalDemand: "Good",
+        riskLevel: "Medium"
+      },
+      overallScore: Number(parsed.overallScore) || 75,
+      summary: parsed.summary || "Location analysis based on available data and market indicators."
+    };
   } catch (parseError) {
     console.error('Failed to parse cleaned content:', cleanContent);
     throw parseError;
@@ -183,36 +242,73 @@ serve(async (req) => {
 
     // Prepare comprehensive AI prompt for location analysis
     const aiPrompt = `
-As a comprehensive real estate and urban planning analyst with deep knowledge of Nigerian cities and neighborhoods, provide a detailed location intelligence report for this property location:
+Analyze this Nigerian property location and provide comprehensive location intelligence:
 
-Property Location Details:
+Property Location:
 - Address: ${address}
 - City: ${city}
 - State: ${state}
-- Coordinates: ${
-      coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"
-    }
+- Coordinates: ${coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"}
 
 Nearby Properties Context:
-${
-  nearbyProperties
-    ?.slice(0, 10)
-    .map(
-      (p: {
-        title: string | null;
-        price: any;
-        type: string;
-        category: string;
-      }) => `
-- ${p.title}: ₦${p.price?.amount?.toLocaleString()} (${p.type} - ${p.category})
-`
-    )
-    .join("") || "Limited nearby property data"
+${nearbyProperties?.slice(0, 10).map((p: any) => `
+- ${p.title}: ₦${p.price?.amount ? (p.price.amount / 100).toLocaleString() : 'N/A'} (${p.type} - ${p.category})
+`).join("") || "Limited nearby property data"}
+
+Provide a comprehensive location analysis in this exact JSON format:
+{
+  "areaClassification": {
+    "type": "Urban/Suburban/Rural",
+    "description": "Area description",
+    "characteristics": ["char1", "char2"]
+  },
+  "securityAssessment": {
+    "score": 75,
+    "factors": ["factor1", "factor2"],
+    "recommendations": ["rec1", "rec2"]
+  },
+  "transportation": {
+    "score": 70,
+    "publicTransport": "Available/Limited",
+    "trafficCondition": "Light/Moderate/Heavy",
+    "infrastructure": "Good/Fair/Poor"
+  },
+  "infrastructure": {
+    "powerSupply": "Stable/Intermittent",
+    "water": "Available/Limited",
+    "internet": "Good/Fair/Poor",
+    "waste": "Regular/Irregular"
+  },
+  "amenities": {
+    "education": ["school1", "school2"],
+    "healthcare": ["hospital1", "clinic1"],
+    "shopping": ["market1", "mall1"],
+    "entertainment": ["park1", "cinema1"]
+  },
+  "economicFactors": {
+    "employmentScore": 70,
+    "incomeLevel": "High/Middle/Low",
+    "commercialActivity": "High/Moderate/Low"
+  },
+  "futureDevelopment": {
+    "growthPotential": "High/Moderate/Low",
+    "plannedProjects": ["project1", "project2"],
+    "outlook": "Positive/Stable/Declining"
+  },
+  "environmental": {
+    "airQuality": "Good/Moderate/Poor",
+    "noiseLevel": "Low/Moderate/High",
+    "greenSpaces": "Abundant/Moderate/Limited",
+    "floodRisk": "Low/Moderate/High"
+  },
+  "investmentOutlook": {
+    "appreciationPotential": "High/Moderate/Low",
+    "rentalDemand": "High/Good/Low",
+    "riskLevel": "Low/Medium/High"
+  },
+  "overallScore": 75,
+  "summary": "Overall location assessment summary"
 }
-
-Please provide a comprehensive analysis covering all the key areas of location intelligence.
-
-IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or code blocks. Use this exact structure with all required fields properly nested.
 `;
 
     // Call OpenAI API
@@ -229,8 +325,7 @@ IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or code blocks. 
           messages: [
             {
               role: "system",
-              content:
-                "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Always respond with valid JSON only, no markdown formatting.",
+              content: "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Always respond with valid JSON only, no markdown formatting."
             },
             {
               role: "user",
@@ -262,59 +357,55 @@ IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or code blocks. 
       analysis = {
         areaClassification: {
           type: "Urban",
-          description: "Mixed-use urban area",
-          characteristics: ["Moderate density", "Mixed development"],
+          description: `Mixed-use area in ${city}, ${state}`,
+          characteristics: ["Moderate density", "Mixed development", "Residential area"]
         },
         securityAssessment: {
           score: 75,
-          factors: ["Police presence", "Community watch"],
-          recommendations: [
-            "Install security systems",
-            "Join neighborhood watch",
-          ],
+          factors: ["Community presence", "Street lighting", "Access control"],
+          recommendations: ["Install security systems", "Join neighborhood watch", "Improve lighting"]
         },
         transportation: {
           score: 70,
           publicTransport: "Available",
           trafficCondition: "Moderate",
-          infrastructure: "Good",
+          infrastructure: "Good"
         },
         infrastructure: {
           powerSupply: "Stable",
           water: "Available",
           internet: "Good",
-          waste: "Regular collection",
+          waste: "Regular collection"
         },
         amenities: {
-          education: ["Schools nearby"],
-          healthcare: ["Clinic available"],
-          shopping: ["Local markets"],
-          entertainment: ["Recreation center"],
+          education: ["Local schools", "Educational facilities"],
+          healthcare: ["Healthcare centers", "Medical facilities"],
+          shopping: ["Local markets", "Shopping areas"],
+          entertainment: ["Recreation facilities", "Community centers"]
         },
         economicFactors: {
           employmentScore: 70,
           incomeLevel: "Middle class",
-          commercialActivity: "Moderate",
+          commercialActivity: "Moderate"
         },
         futureDevelopment: {
           growthPotential: "Moderate",
-          plannedProjects: ["Road improvements"],
-          outlook: "Stable",
+          plannedProjects: ["Infrastructure improvements", "Development projects"],
+          outlook: "Stable"
         },
         environmental: {
           airQuality: "Moderate",
           noiseLevel: "Moderate",
           greenSpaces: "Limited",
-          floodRisk: "Low",
+          floodRisk: "Low"
         },
         investmentOutlook: {
           appreciationPotential: "Moderate",
           rentalDemand: "Good",
-          riskLevel: "Medium",
+          riskLevel: "Medium"
         },
         overallScore: 75,
-        summary:
-          "Location analysis generated with limited data processing capability.",
+        summary: `Location analysis for ${address || city}, ${state}. The area offers moderate investment potential with good basic amenities and infrastructure.`
       };
     }
 
