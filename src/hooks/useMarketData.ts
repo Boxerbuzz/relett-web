@@ -36,10 +36,10 @@ export function useMarketData() {
   } = useQuery({
     queryKey: queryKeys.market.analytics(),
     queryFn: async (): Promise<MarketData> => {
-      // Get all properties with basic info
+      // Get all properties with basic info - use 'type' instead of 'property_type'
       const { data: properties, error: propertiesError } = await supabase
         .from('properties')
-        .select('id, title, price, location, property_type, status, created_at')
+        .select('id, title, price, location, type, status, created_at')
         .eq('status', 'active');
 
       if (propertiesError) throw propertiesError;
@@ -76,9 +76,9 @@ export function useMarketData() {
         count: data.count,
       }));
 
-      // Group by property type
+      // Group by property type - use 'type' instead of 'property_type'
       const typeGroups = (properties || []).reduce((acc, property) => {
-        const type = property.property_type || 'Unknown';
+        const type = property.type || 'Unknown';
         if (!acc[type]) {
           acc[type] = { prices: [], count: 0 };
         }

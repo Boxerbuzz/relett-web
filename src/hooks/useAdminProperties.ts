@@ -29,7 +29,7 @@ export function useAdminProperties() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.properties.all.concat(['admin']),
+    queryKey: [...queryKeys.admin.properties()],
     queryFn: async (): Promise<AdminProperty[]> => {
       const { data, error } = await supabase
         .from('properties')

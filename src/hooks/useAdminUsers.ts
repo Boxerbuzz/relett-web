@@ -24,7 +24,7 @@ export function useAdminUsers() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.user.all.concat(['admin']),
+    queryKey: [...queryKeys.admin.users()],
     queryFn: async (): Promise<AdminUser[]> => {
       const { data, error } = await supabase
         .from('users')

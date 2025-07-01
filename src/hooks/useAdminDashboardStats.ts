@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys, cacheConfig } from '@/lib/queryClient';
@@ -20,7 +21,7 @@ export function useAdminDashboardStats() {
     error,
     refetch
   } = useQuery({
-    queryKey: queryKeys.verification.stats().concat(['admin-dashboard']),
+    queryKey: [...queryKeys.admin.analytics(), 'dashboard'],
     queryFn: async (): Promise<DashboardStats> => {
       // Current month calculation
       const currentMonth = new Date();
@@ -119,4 +120,4 @@ export function useAdminDashboardStats() {
     error: error?.message || null,
     refetch
   };
-} 
+}

@@ -28,7 +28,7 @@ export function useKYCData() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.verification.requests().concat(['kyc']),
+    queryKey: [...queryKeys.admin.kyc()],
     queryFn: async (): Promise<KYCVerification[]> => {
       const { data, error } = await supabase
         .from('identity_verifications')

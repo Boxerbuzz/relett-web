@@ -29,7 +29,7 @@ export function useRoleRequests() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.user.all.concat(['role-requests', user?.id || '']),
+    queryKey: [...queryKeys.admin.roleRequests(), user?.id || ''],
     queryFn: async (): Promise<RoleRequest[]> => {
       if (!user?.id) return [];
 
@@ -49,8 +49,8 @@ export function useRoleRequests() {
         reason: item.reason,
         status: item.status as 'pending' | 'approved' | 'rejected',
         requested_at: item.created_at,
-        reviewed_at: item.reviewed_at,
-        reviewed_by: item.reviewed_by,
+        reviewed_at: item.reviewed_at || undefined,
+        reviewed_by: item.reviewed_by || undefined,
         admin_notes: '' // No admin notes field exists in the table
       }));
     },
@@ -78,7 +78,7 @@ export function useRoleRequests() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all.concat(['role-requests']) });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.admin.roleRequests()] });
       toast({
         title: 'Success',
         description: 'Role request submitted successfully',

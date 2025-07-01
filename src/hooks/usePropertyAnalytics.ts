@@ -31,8 +31,8 @@ export function usePropertyAnalytics(propertyId?: string) {
     refetch
   } = useQuery({
     queryKey: propertyId 
-      ? queryKeys.properties.detail(propertyId).concat(['analytics'])
-      : queryKeys.properties.all.concat(['analytics']),
+      ? [...queryKeys.properties.detail(propertyId), 'analytics']
+      : [...queryKeys.properties.all, 'analytics'],
     queryFn: async (): Promise<PropertyAnalytics> => {
       // Get property stats
       let propertiesQuery = supabase
@@ -55,13 +55,13 @@ export function usePropertyAnalytics(propertyId?: string) {
         ? properties.reduce((sum, p) => sum + (p.ratings || 0), 0) / properties.length 
         : 0;
 
-      // Top performing properties (by views)
+      // Top performing properties (by views) - handle null titles
       const topPerformingProperties = (properties || [])
         .sort((a, b) => (b.views || 0) - (a.views || 0))
         .slice(0, 5)
         .map(p => ({
           id: p.id,
-          title: p.title,
+          title: p.title || 'Untitled Property',
           views: p.views || 0,
           likes: p.likes || 0,
           favorites: p.favorites || 0,
