@@ -10,6 +10,7 @@
     "deploy:testnet": "node deploy.js --network testnet",
     "deploy:mainnet": "node deploy.js --network mainnet",
     "test": "hardhat test",
+    "test-connection": "node test-connection.js",
     "verify": "hardhat verify",
     "clean": "hardhat clean"
   },
