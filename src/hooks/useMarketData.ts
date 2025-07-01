@@ -46,7 +46,7 @@ export function useMarketData() {
 
       const totalProperties = properties?.length || 0;
       const averagePrice = properties?.length 
-        ? properties.reduce((sum, p) => sum + (p.price || 0), 0) / properties.length 
+        ? properties.reduce((sum, p) => sum + (typeof p.price === 'number' ? p.price : 0), 0) / properties.length 
         : 0;
 
       // Calculate price change (mock data - in reality you'd compare with historical data)
@@ -59,14 +59,22 @@ export function useMarketData() {
         volume: Math.floor(Math.random() * 20) + 5,
       }));
 
-      // Group by location
+      // Group by location - safely handle location object
       const locationGroups = (properties || []).reduce((acc, property) => {
-        const location = property.location?.state || 'Unknown';
-        if (!acc[location]) {
-          acc[location] = { prices: [], count: 0 };
+        let locationName = 'Unknown';
+        if (property.location && typeof property.location === 'object' && !Array.isArray(property.location)) {
+          const locationObj = property.location as Record<string, any>;
+          locationName = locationObj.state || locationObj.city || locationObj.address || 'Unknown';
+        } else if (typeof property.location === 'string') {
+          locationName = property.location;
         }
-        acc[location].prices.push(property.price || 0);
-        acc[location].count++;
+        
+        if (!acc[locationName]) {
+          acc[locationName] = { prices: [], count: 0 };
+        }
+        const price = typeof property.price === 'number' ? property.price : 0;
+        acc[locationName].prices.push(price);
+        acc[locationName].count++;
         return acc;
       }, {} as Record<string, { prices: number[], count: number }>);
 
@@ -76,13 +84,14 @@ export function useMarketData() {
         count: data.count,
       }));
 
-      // Group by property type - use 'type' instead of 'property_type'
+      // Group by property type - use 'type' instead of 'property_type' and handle type casting
       const typeGroups = (properties || []).reduce((acc, property) => {
-        const type = property.type || 'Unknown';
+        const type = typeof property.type === 'string' ? property.type : 'Unknown';
         if (!acc[type]) {
           acc[type] = { prices: [], count: 0 };
         }
-        acc[type].prices.push(property.price || 0);
+        const price = typeof property.price === 'number' ? property.price : 0;
+        acc[type].prices.push(price);
         acc[type].count++;
         return acc;
       }, {} as Record<string, { prices: number[], count: number }>);
