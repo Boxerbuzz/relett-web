@@ -2614,6 +2614,7 @@ export type Database = {
         Row: {
           amenities: string[] | null
           backdrop: string | null
+          blockchain_transaction_id: string | null
           category: string
           condition: string | null
           created_at: string
@@ -2652,6 +2653,7 @@ export type Database = {
         Insert: {
           amenities?: string[] | null
           backdrop?: string | null
+          blockchain_transaction_id?: string | null
           category: string
           condition?: string | null
           created_at?: string
@@ -2690,6 +2692,7 @@ export type Database = {
         Update: {
           amenities?: string[] | null
           backdrop?: string | null
+          blockchain_transaction_id?: string | null
           category?: string
           condition?: string | null
           created_at?: string
@@ -4987,6 +4990,7 @@ export type Database = {
         Returns: {
           amenities: string[] | null
           backdrop: string | null
+          blockchain_transaction_id: string | null
           category: string
           condition: string | null
           created_at: string

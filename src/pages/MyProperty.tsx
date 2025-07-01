@@ -24,6 +24,8 @@ import { Link } from "react-router-dom";
 import { PropertyDetailsDialog } from "@/components/dialogs/PropertyDetailsDialog";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
+import { BlockchainStatusBadge } from "@/components/property/BlockchainStatusBadge";
+import { PropertyBlockchainRegistration } from "@/components/hedera/PropertyBlockchainRegistration";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +41,7 @@ interface Property {
   is_verified: boolean;
   type: string;
   backdrop?: string;
+  blockchain_transaction_id?: string;
   property_images?: Array<{
     url: string;
     is_primary: boolean;
@@ -95,10 +98,13 @@ const MyProperty = () => {
   const { toast } = useToast();
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
+  const [blockchainRegistrationOpen, setBlockchainRegistrationOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] =
     useState<PropertyForDialog | null>(null);
   const [selectedPropertyForTokenize, setSelectedPropertyForTokenize] =
     useState<TokenizePropertyForDialog | null>(null);
+  const [selectedPropertyForBlockchain, setSelectedPropertyForBlockchain] =
+    useState<Property | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -129,7 +135,8 @@ const MyProperty = () => {
           is_tokenized,
           is_verified,
           type,
-          backdrop
+          backdrop,
+          blockchain_transaction_id
         `
         )
         .eq("user_id", user?.id || "")
@@ -162,6 +169,9 @@ const MyProperty = () => {
         const enrichedProperties: Property[] =
           propertiesData?.map((property) => ({
             ...property,
+            title: property.title || '',
+            is_tokenized: property.is_tokenized || false,
+            is_verified: property.is_verified || false,
             property_images: imagesByProperty[property.id] || [],
           })) as Property[] || [];
 
@@ -219,6 +229,37 @@ const MyProperty = () => {
 
     setSelectedPropertyForTokenize(propertyForTokenize);
     setTokenizeDialogOpen(true);
+  };
+
+  const handleRegisterOnBlockchain = (property: Property) => {
+    setSelectedPropertyForBlockchain(property);
+    setBlockchainRegistrationOpen(true);
+  };
+
+  const handleBlockchainRegistrationComplete = (transactionId: string) => {
+    // Update the property's blockchain status in state
+    if (selectedPropertyForBlockchain) {
+      setProperties(prevProperties =>
+        prevProperties.map(prop =>
+          prop.id === selectedPropertyForBlockchain.id
+            ? { ...prop, blockchain_transaction_id: transactionId }
+            : prop
+        )
+      );
+    }
+    
+    setBlockchainRegistrationOpen(false);
+    setSelectedPropertyForBlockchain(null);
+    
+    toast({
+      title: "Success!",
+      description: "Property registered on blockchain successfully.",
+    });
+  };
+
+  const handleBlockchainRegistrationSkip = () => {
+    setBlockchainRegistrationOpen(false);
+    setSelectedPropertyForBlockchain(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -311,6 +352,7 @@ const MyProperty = () => {
       (statusFilter === "verified" && property.is_verified) ||
       (statusFilter === "pending" && property.status === "pending") ||
       (statusFilter === "tokenized" && property.is_tokenized) ||
+      (statusFilter === "blockchain" && property.blockchain_transaction_id) ||
       property.status === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -378,6 +420,13 @@ const MyProperty = () => {
                 onClick={() => setStatusFilter("tokenized")}
               >
                 Tokenized
+              </Button>
+              <Button
+                variant={statusFilter === "blockchain" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("blockchain")}
+              >
+                Blockchain
               </Button>
             </div>
           </div>
@@ -485,6 +534,15 @@ const MyProperty = () => {
                   )}
                 </div>
 
+                {/* Blockchain Status Badge */}
+                <BlockchainStatusBadge
+                  isRegistered={!!property.blockchain_transaction_id}
+                  transactionId={property.blockchain_transaction_id}
+                  size="sm"
+                  showRegisterButton={!property.blockchain_transaction_id && property.is_verified}
+                  onRegister={() => handleRegisterOnBlockchain(property)}
+                />
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-lg font-bold text-gray-900">
@@ -530,6 +588,14 @@ const MyProperty = () => {
           open={tokenizeDialogOpen}
           onOpenChange={setTokenizeDialogOpen}
           property={selectedPropertyForTokenize}
+        />
+      )}
+      {selectedPropertyForBlockchain && (
+        <PropertyBlockchainRegistration
+          propertyData={selectedPropertyForBlockchain}
+          onRegistrationComplete={handleBlockchainRegistrationComplete}
+          onRegistrationSkip={handleBlockchainRegistrationSkip}
+          autoRegister={false}
         />
       )}
     </div>

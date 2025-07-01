@@ -10,6 +10,7 @@ interface PropertyWithTokenization {
   views: number;
   is_verified: boolean;
   is_tokenized: boolean;
+  type: string;
   backdrop?: string;
   tokenized_property_id?: string;
   tokenized_properties?: {
@@ -49,6 +50,7 @@ export function useFeaturedProperties() {
             views,
             is_verified,
             is_tokenized,
+            type,
             backdrop,
             tokenized_property_id
           `
