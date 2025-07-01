@@ -7,8 +7,8 @@ export const queryClient = new QueryClient({
       // Cache data for 5 minutes before considering it stale
       staleTime: 5 * 60 * 1000, // 5 minutes
       
-      // Keep unused data in cache for 10 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      // Keep unused data in cache for 10 minutes (renamed from cacheTime)
+      gcTime: 10 * 60 * 1000, // 10 minutes
       
       // Only retry once to avoid excessive network requests
       retry: 1,
@@ -71,24 +71,24 @@ export const cacheConfig = {
   // Frequently changing data
   realtime: {
     staleTime: 30 * 1000, // 30 seconds
-    cacheTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 2 * 60 * 1000, // 2 minutes (renamed from cacheTime)
   },
   
   // Standard data
   standard: {
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
   },
   
   // Static/semi-static data
   static: {
     staleTime: 60 * 60 * 1000, // 1 hour
-    cacheTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours (renamed from cacheTime)
   },
   
   // Long-lived data
   persistent: {
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    cacheTime: 7 * 24 * 60 * 60 * 1000, // 7 days
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days (renamed from cacheTime)
   },
 };
