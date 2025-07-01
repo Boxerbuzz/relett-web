@@ -1,41 +1,40 @@
 
-// Enhanced script to test Hedera network connectivity and account setup
-const { Client, AccountId, PrivateKey } = require("@hashgraph/sdk");
+// Fixed script to test Hedera network connectivity with correct SDK v2.x methods
+const { Client, AccountId, PrivateKey, AccountBalanceQuery } = require("@hashgraph/sdk");
 require('dotenv').config();
 
 async function detectPrivateKeyType(privateKeyString) {
   const cleanKey = privateKeyString.trim();
   
-  if (/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
+  // Remove 0x prefix if present
+  const hexKey = cleanKey.startsWith('0x') ? cleanKey.slice(2) : cleanKey;
+  
+  if (/^[0-9a-fA-F]{64}$/.test(hexKey)) {
     try {
-      return { key: PrivateKey.fromStringECDSA(cleanKey), type: 'ECDSA' };
+      return { key: PrivateKey.fromStringECDSA(hexKey), type: 'ECDSA' };
     } catch (ecdsaError) {
       try {
-        return { key: PrivateKey.fromStringED25519(cleanKey), type: 'ED25519' };
+        return { key: PrivateKey.fromStringED25519(hexKey), type: 'ED25519' };
       } catch (ed25519Error) {
         throw new Error(`Unable to parse private key: ${ecdsaError.message}`);
       }
     }
   }
   
-  if (/^[0-9a-fA-F]{96,}$/.test(cleanKey)) {
+  if (/^[0-9a-fA-F]{96,}$/.test(hexKey)) {
     try {
-      return { key: PrivateKey.fromStringDer(cleanKey), type: 'DER' };
+      return { key: PrivateKey.fromStringDer(hexKey), type: 'DER' };
     } catch (derError) {
       throw new Error(`Unable to parse DER-encoded private key: ${derError.message}`);
     }
   }
   
-  try {
-    return { key: PrivateKey.fromString(cleanKey), type: 'Generic' };
-  } catch (genericError) {
-    throw new Error(`Unable to parse private key with any method: ${genericError.message}`);
-  }
+  throw new Error(`Invalid private key format. Expected 64-character hex string, got ${hexKey.length} characters`);
 }
 
 async function testConnection() {
-  console.log("🔍 Enhanced Hedera Network Connection Test");
-  console.log("==========================================");
+  console.log("🔍 Hedera Network Connection Test");
+  console.log("==================================");
 
   // Check environment variables
   if (!process.env.HEDERA_ACCOUNT_ID || !process.env.HEDERA_PRIVATE_KEY) {
@@ -43,17 +42,12 @@ async function testConnection() {
     console.error("   HEDERA_ACCOUNT_ID:", process.env.HEDERA_ACCOUNT_ID ? "✅ Set" : "❌ Missing");
     console.error("   HEDERA_PRIVATE_KEY:", process.env.HEDERA_PRIVATE_KEY ? "✅ Set (hidden)" : "❌ Missing");
     console.log("\n📝 Please check your .env file in the contracts directory");
-    console.log("💡 Example .env format:");
-    console.log("   HEDERA_ACCOUNT_ID=0.0.12345");
-    console.log("   HEDERA_PRIVATE_KEY=your_64_character_hex_private_key");
-    console.log("   HEDERA_NETWORK=testnet");
     return false;
   }
 
   console.log("✅ Environment variables found");
   console.log(`   Account ID: ${process.env.HEDERA_ACCOUNT_ID}`);
   console.log(`   Network: ${process.env.HEDERA_NETWORK || 'testnet'}`);
-  console.log(`   Private Key: ${process.env.HEDERA_PRIVATE_KEY.substring(0, 8)}... (${process.env.HEDERA_PRIVATE_KEY.length} chars)`);
 
   let client;
   try {
@@ -61,7 +55,7 @@ async function testConnection() {
     const keyInfo = await detectPrivateKeyType(process.env.HEDERA_PRIVATE_KEY);
     console.log(`✅ Private key format: ${keyInfo.type}`);
     
-    // Initialize client
+    // Initialize client with correct SDK v2.x methods
     const network = process.env.HEDERA_NETWORK || 'testnet';
     client = network === 'mainnet' ? Client.forMainnet() : Client.forTestnet();
     
@@ -69,13 +63,15 @@ async function testConnection() {
     const operatorKey = keyInfo.key;
     
     client.setOperator(operatorId, operatorKey);
-    client.setRequestTimeout(30000); // 30 seconds timeout
     
     console.log(`\n🔗 Connecting to Hedera ${network}...`);
     
-    // Test connection by getting account balance
+    // Test connection using AccountBalanceQuery (correct SDK v2.x method)
     const startTime = Date.now();
-    const balance = await client.getAccountBalance(operatorId);
+    const balanceQuery = new AccountBalanceQuery()
+      .setAccountId(operatorId);
+    
+    const balance = await balanceQuery.execute(client);
     const responseTime = Date.now() - startTime;
     
     console.log("✅ Connection successful!");
@@ -85,10 +81,9 @@ async function testConnection() {
     // Convert to numeric value for analysis
     const hbarBalance = balance.hbars.toTinybars().toNumber() / 100000000;
     
-    // Balance analysis
     console.log("\n💰 Balance Analysis:");
     if (hbarBalance >= 50) {
-      console.log("🟢 Excellent balance - Ready for extensive contract deployment");
+      console.log("🟢 Excellent balance - Ready for contract deployment");
     } else if (hbarBalance >= 10) {
       console.log("🟡 Good balance - Sufficient for contract deployment");
     } else if (hbarBalance >= 1) {
@@ -104,7 +99,8 @@ async function testConnection() {
     for (let i = 0; i < 3; i++) {
       try {
         const testStart = Date.now();
-        await client.getAccountBalance(operatorId);
+        const testQuery = new AccountBalanceQuery().setAccountId(operatorId);
+        await testQuery.execute(client);
         const testTime = Date.now() - testStart;
         perfTests.push(testTime);
         console.log(`   Test ${i + 1}: ${testTime}ms`);
@@ -130,32 +126,19 @@ async function testConnection() {
     
   } catch (error) {
     console.error("❌ Connection failed:", error.message);
-    console.log("\n🔧 Detailed Troubleshooting:");
+    console.log("\n🔧 Troubleshooting:");
     
     if (error.message.includes('INVALID_ACCOUNT_ID')) {
-      console.log("• Account ID format issue:");
-      console.log("  - Should be in format: 0.0.12345");
-      console.log("  - Verify your account exists on the network");
+      console.log("• Account ID format issue - should be: 0.0.12345");
     }
     
     if (error.message.includes('private key') || error.message.includes('key')) {
-      console.log("• Private Key issues:");
-      console.log("  - Should be 64-character hex string for ECDSA/ED25519");
-      console.log("  - Should not include '0x' prefix");
-      console.log("  - Check for extra spaces or characters");
+      console.log("• Private Key issues - should be 64-character hex (no 0x prefix)");
     }
     
     if (error.message.includes('network') || error.message.includes('connection')) {
-      console.log("• Network connectivity issues:");
-      console.log("  - Check your internet connection");
-      console.log("  - Try switching networks (wifi/cellular)");
-      console.log("  - Check if Hedera network is operational");
+      console.log("• Network connectivity issues - check internet connection");
     }
-    
-    console.log("\n🔗 Helpful Links:");
-    console.log("• Create testnet account: https://portal.hedera.com/");
-    console.log("• Network status: https://status.hedera.com/");
-    console.log("• Documentation: https://docs.hedera.com/");
     
     return false;
     
@@ -171,17 +154,13 @@ testConnection()
   .then(success => {
     if (success) {
       console.log("\n🎉 Ready for contract deployment!");
-      console.log("   Next steps:");
-      console.log("   1. Run: npm run compile");
-      console.log("   2. Run: npm run deploy");
-      console.log("\n✨ All systems go! 🚀");
+      console.log("   Next: npm run compile && npm run deploy");
     } else {
       console.log("\n❌ Please fix the issues above before deploying");
-      console.log("💡 Need help? Check the troubleshooting guide above");
     }
     process.exit(success ? 0 : 1);
   })
   .catch(error => {
-    console.error("❌ Test failed with unexpected error:", error);
+    console.error("❌ Test failed:", error.message);
     process.exit(1);
   });
