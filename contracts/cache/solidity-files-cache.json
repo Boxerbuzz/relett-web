@@ -377,8 +377,8 @@
       ]
     },
     "/Users/tim/Documents/Relett/relett-web/contracts/contracts/RevenueDistributor.sol": {
-      "lastModificationDate": 1751368135918,
-      "contentHash": "d158aa61179f1bb2e94a70b11693cb15",
+      "lastModificationDate": 1751368815526,
+      "contentHash": "db6fb8c0c09542377dbe743b766c8915",
       "sourceName": "contracts/RevenueDistributor.sol",
       "solcConfig": {
         "version": "0.8.19",

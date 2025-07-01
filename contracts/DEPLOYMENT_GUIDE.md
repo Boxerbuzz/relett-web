@@ -4,17 +4,20 @@
 ## Quick Start
 
 1. **Setup Environment**
+
    ```bash
    cp .env.example .env
    # Edit .env with your Hedera credentials
    ```
 
 2. **Install and Test**
+
    ```bash
    npm run setup
    ```
 
 3. **Deploy Contracts**
+
    ```bash
    npm run deploy
    ```
@@ -32,6 +35,7 @@ HEDERA_NETWORK=testnet
 ```
 
 **Important Notes:**
+
 - Private key should be a 64-character hex string (no '0x' prefix)
 - Account ID should be in format: 0.0.12345
 - Use testnet for development, mainnet for production
@@ -51,6 +55,7 @@ npm run test-connection
 ```
 
 This will check:
+
 - ✅ Environment variables are set
 - ✅ Private key format is correct
 - ✅ Network connectivity is working
@@ -70,11 +75,13 @@ This creates the necessary artifacts in the `artifacts/` directory.
 ### 5. Contract Deployment
 
 Deploy to testnet:
+
 ```bash
 npm run deploy
 ```
 
 Deploy to mainnet:
+
 ```bash
 npm run deploy:mainnet
 ```
@@ -101,20 +108,24 @@ The deployment includes three main contracts:
 ### Common Issues
 
 **"2 UNKNOWN" Error**
+
 - Usually indicates network connectivity issues
 - Try running `npm run test-connection` first
 - Check your internet connection and Hedera network status
 
 **"Insufficient Balance" Error**
+
 - Your account needs more HBAR
-- Fund your account at https://portal.hedera.com/
+- Fund your account at <https://portal.hedera.com/>
 
 **"Invalid Private Key" Error**
+
 - Verify your private key is 64 characters (hex)
 - Remove any '0x' prefix
 - Try both ECDSA and ED25519 formats
 
 **Compilation Errors**
+
 - Run `npm run clean` then `npm run compile`
 - Check for syntax errors in Solidity files
 - Ensure OpenZeppelin contracts are installed
@@ -129,15 +140,17 @@ The deployment includes three main contracts:
 ## Network Information
 
 ### Testnet
-- **Endpoint**: https://testnet.hashio.io/api
+
+- **Endpoint**: <https://testnet.hashio.io/api>
 - **Chain ID**: 296
-- **Explorer**: https://hashscan.io/testnet
-- **Faucet**: https://portal.hedera.com/
+- **Explorer**: <https://hashscan.io/testnet>
+- **Faucet**: <https://portal.hedera.com/>
 
 ### Mainnet
-- **Endpoint**: https://mainnet.hashio.io/api  
+
+- **Endpoint**: <https://mainnet.hashio.io/api>  
 - **Chain ID**: 295
-- **Explorer**: https://hashscan.io/mainnet
+- **Explorer**: <https://hashscan.io/mainnet>
 
 ## Security Considerations
 
@@ -150,12 +163,14 @@ The deployment includes three main contracts:
 ## Development Workflow
 
 1. **Local Development**
+
    ```bash
    npm run compile
    npm run test
    ```
 
 2. **Testnet Deployment**
+
    ```bash
    npm run test-connection
    npm run deploy:testnet
@@ -167,6 +182,7 @@ The deployment includes three main contracts:
    - Check revenue distribution
 
 4. **Mainnet Deployment**
+
    ```bash
    HEDERA_NETWORK=mainnet npm run deploy
    ```
