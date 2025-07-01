@@ -1,8 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { queryKeys, cacheConfig } from '@/lib/queryClient';
 
 interface PropertyData {
   id: string;
@@ -45,21 +46,17 @@ interface PropertyData {
 
 export function useProperties() {
   const { user } = useAuth();
-  const [properties, setProperties] = useState<PropertyData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      fetchProperties();
-    }
-  }, [user]);
-
-  const fetchProperties = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const {
+    data: properties = [],
+    isLoading: loading,
+    error: queryError,
+    refetch
+  } = useQuery({
+    queryKey: queryKeys.properties.list({ userId: user?.id }),
+    queryFn: async () => {
+      if (!user?.id) return [];
 
       // Fetch properties with images, land title info, and tokenization status
       const { data: propertiesData, error: propertiesError } = await supabase
@@ -79,7 +76,7 @@ export function useProperties() {
             total_supply
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -153,25 +150,27 @@ export function useProperties() {
         tokenized_property: property.tokenized_properties || null
       })) || [];
 
-      setProperties(enrichedProperties);
-    } catch (err) {
+      return enrichedProperties;
+    },
+    enabled: !!user?.id,
+    ...cacheConfig.standard, // Cache for 5 minutes
+    onError: (err) => {
       console.error('Error fetching properties:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch properties';
-      setError(errorMessage);
       toast({
         title: 'Error',
         description: errorMessage,
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  });
+
+  const error = queryError?.message || null;
 
   return {
     properties,
     loading,
     error,
-    refetch: fetchProperties
+    refetch
   };
 }

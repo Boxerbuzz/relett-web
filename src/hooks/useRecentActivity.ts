@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { queryKeys, cacheConfig } from '@/lib/queryClient';
 
 export interface ActivityItem {
   id: string;
@@ -16,33 +17,30 @@ export interface ActivityItem {
 
 export function useRecentActivity() {
   const { user } = useAuth();
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchRecentActivity();
-    }
-  }, [user]);
+  const {
+    data: activities = [],
+    isLoading: loading,
+    refetch
+  } = useQuery({
+    queryKey: queryKeys.user.notifications(), // Reusing notifications key for activities
+    queryFn: async () => {
+      if (!user?.id) return [];
 
-  const fetchRecentActivity = async () => {
-    try {
       const { data, error } = await supabase
         .from('audit_trails')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .in('action', ['view', 'like', 'favorite', 'inquiry', 'booking'])
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      setActivities(data || []);
-    } catch (error) {
-      console.error('Error fetching recent activity:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data || [];
+    },
+    enabled: !!user?.id,
+    ...cacheConfig.standard,
+  });
 
   const trackActivity = async (resourceType: string, resourceId: string, action: string, metadata?: any) => {
     if (!user) return;
@@ -61,7 +59,7 @@ export function useRecentActivity() {
       if (error) throw error;
       
       // Refresh activities after tracking
-      fetchRecentActivity();
+      refetch();
     } catch (error) {
       console.error('Error tracking activity:', error);
     }
@@ -71,6 +69,6 @@ export function useRecentActivity() {
     activities,
     loading,
     trackActivity,
-    refetch: fetchRecentActivity
+    refetch
   };
 }

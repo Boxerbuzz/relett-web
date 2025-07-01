@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys, cacheConfig } from '@/lib/queryClient';
 
 export interface ConversationWithDetails {
   id: string;
@@ -27,71 +29,25 @@ export interface ConversationWithDetails {
   }>;
 }
 
-// Global subscription manager to prevent multiple subscriptions
-let globalChannel: any = null;
-let subscriptionCount = 0;
-let globalCallbacks: (() => void)[] = [];
-
 export function useConversations() {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!user) return;
+  const {
+    data: conversations = [],
+    isLoading: loading,
+    error: queryError,
+    refetch
+  } = useQuery({
+    queryKey: queryKeys.messaging.conversations(user?.id || ''),
+    queryFn: async () => {
+      if (!user?.id) return [];
 
-    fetchConversations();
-    
-    // Add this instance's callback to global callbacks
-    globalCallbacks.push(fetchConversations);
-    subscriptionCount++;
-
-    // Only create subscription if it doesn't exist
-    if (!globalChannel) {
-      globalChannel = supabase
-        .channel('conversations-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'conversations'
-          },
-          () => {
-            // Trigger all callbacks
-            globalCallbacks.forEach(callback => callback());
-          }
-        )
-        .subscribe();
-    }
-
-    return () => {
-      // Remove this instance's callback
-      const index = globalCallbacks.indexOf(fetchConversations);
-      if (index > -1) {
-        globalCallbacks.splice(index, 1);
-      }
-      subscriptionCount--;
-
-      // Remove subscription when no more instances
-      if (subscriptionCount === 0 && globalChannel) {
-        supabase.removeChannel(globalChannel);
-        globalChannel = null;
-        globalCallbacks = [];
-      }
-    };
-  }, [user]);
-
-  const fetchConversations = async () => {
-    try {
-      setLoading(true);
-      
       // Fetch conversations where user is participant or admin
       const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
         .select('*')
-        .or(`admin_id.eq.${user?.id},participants.cs.{${user?.id}}`)
+        .or(`admin_id.eq.${user.id},participants.cs.{${user.id}}`)
         .order('updated_at', { ascending: false });
 
       if (conversationsError) throw conversationsError;
@@ -121,16 +77,15 @@ export function useConversations() {
         })
       );
 
-      setConversations(conversationsWithDetails);
-    } catch (err) {
-      console.error('Error fetching conversations:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch conversations');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return conversationsWithDetails;
+    },
+    enabled: !!user?.id,
+    ...cacheConfig.realtime, // Use realtime config for conversations
+  });
 
   const createConversation = async (participantEmail: string, name: string) => {
+    if (!user?.id) throw new Error('User not authenticated');
+
     try {
       // Find user by email using direct query
       const { data: userData, error: userError } = await supabase
@@ -149,15 +104,19 @@ export function useConversations() {
         .insert({
           name,
           type: 'direct',
-          admin_id: user?.id,
-          participants: [user?.id, userData.id]
+          admin_id: user.id,
+          participants: [user.id, userData.id]
         })
         .select()
         .single();
 
       if (conversationError) throw conversationError;
 
-      await fetchConversations();
+      // Invalidate conversations cache
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.messaging.conversations(user.id) 
+      });
+
       return conversationData;
     } catch (err) {
       console.error('Error creating conversation:', err);
@@ -166,15 +125,21 @@ export function useConversations() {
   };
 
   const joinConversation = async (conversationId: string) => {
+    if (!user?.id) throw new Error('User not authenticated');
+
     try {
       const { data, error } = await supabase.rpc('add_conversation_participant', {
         conversation_id: conversationId,
-        user_id: user?.id
+        user_id: user.id
       });
 
       if (error) throw error;
 
-      await fetchConversations();
+      // Invalidate conversations cache
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.messaging.conversations(user.id) 
+      });
+
       return data;
     } catch (err) {
       console.error('Error joining conversation:', err);
@@ -182,11 +147,13 @@ export function useConversations() {
     }
   };
 
+  const error = queryError?.message || null;
+
   return {
     conversations,
     loading,
     error,
-    refetch: fetchConversations,
+    refetch,
     createConversation,
     joinConversation
   };

@@ -1,3 +1,4 @@
+
 import { QueryClient } from "@tanstack/react-query";
 
 // Create optimized query client with smart caching
@@ -31,7 +32,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Query key factories for consistent cache management
+// Enhanced query key factories for consistent cache management
 export const queryKeys = {
   // Properties
   properties: {
@@ -41,14 +42,22 @@ export const queryKeys = {
     details: () => [...queryKeys.properties.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.properties.details(), id] as const,
     search: (query: string) => [...queryKeys.properties.all, 'search', query] as const,
+    userProperties: (userId: string) => [...queryKeys.properties.all, 'user', userId] as const,
   },
   
-  // User data
+  // User data with user-specific keys
   user: {
     all: ['user'] as const,
-    profile: () => [...queryKeys.user.all, 'profile'] as const,
-    preferences: () => [...queryKeys.user.all, 'preferences'] as const,
-    notifications: () => [...queryKeys.user.all, 'notifications'] as const,
+    profile: (userId?: string) => userId 
+      ? [...queryKeys.user.all, 'profile', userId] as const
+      : [...queryKeys.user.all, 'profile'] as const,
+    preferences: (userId?: string) => userId
+      ? [...queryKeys.user.all, 'preferences', userId] as const
+      : [...queryKeys.user.all, 'preferences'] as const,
+    notifications: (userId?: string) => userId
+      ? [...queryKeys.user.all, 'notifications', userId] as const
+      : [...queryKeys.user.all, 'notifications'] as const,
+    activities: (userId: string) => [...queryKeys.user.all, 'activities', userId] as const,
   },
   
   // Market data (longer cache time)
@@ -61,8 +70,19 @@ export const queryKeys = {
   // Investment data
   investments: {
     all: ['investments'] as const,
-    portfolio: () => [...queryKeys.investments.all, 'portfolio'] as const,
-    tracking: () => [...queryKeys.investments.all, 'tracking'] as const,
+    portfolio: (userId?: string) => userId
+      ? [...queryKeys.investments.all, 'portfolio', userId] as const
+      : [...queryKeys.investments.all, 'portfolio'] as const,
+    tracking: (userId?: string) => userId
+      ? [...queryKeys.investments.all, 'tracking', userId] as const
+      : [...queryKeys.investments.all, 'tracking'] as const,
+  },
+
+  // Conversations and messaging
+  messaging: {
+    all: ['messaging'] as const,
+    conversations: (userId: string) => [...queryKeys.messaging.all, 'conversations', userId] as const,
+    messages: (conversationId: string) => [...queryKeys.messaging.all, 'messages', conversationId] as const,
   },
 };
 

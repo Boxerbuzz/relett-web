@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys, cacheConfig } from "@/lib/queryClient";
 
 export interface UserProfileData {
   // Core user data from users table
@@ -39,57 +41,59 @@ export interface UserProfileData {
 
 export function useUserProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    } else {
-      setProfile(null);
-      setLoading(false);
-    }
-  }, [user]);
+  const {
+    data: profile,
+    isLoading: loading,
+    error: queryError,
+    refetch
+  } = useQuery({
+    queryKey: queryKeys.user.profile(),
+    queryFn: async () => {
+      if (!user?.id) return null;
 
-  const fetchProfile = async () => {
-    try {
-      // Fetch user data directly from the consolidated users table
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", user.id)
         .single();
 
       if (userError) throw userError;
-
-      setProfile(userData as UserProfileData);
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return userData as UserProfileData;
+    },
+    enabled: !!user?.id,
+    ...cacheConfig.standard, // Cache for 5 minutes
+    staleTime: 10 * 60 * 1000, // Keep profile fresh for 10 minutes
+  });
 
   const updateProfile = async (updates: Partial<UserProfileData>) => {
+    if (!user?.id) throw new Error("User not authenticated");
+
     try {
-      // All updates go to the users table now
       const { error } = await supabase
         .from("users")
         .update(updates)
-        .eq("id", user?.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
-      // Refetch the updated profile
-      await fetchProfile();
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        queryKeys.user.profile(),
+        (oldData: UserProfileData | null | undefined) => {
+          if (!oldData) return oldData;
+          return { ...oldData, ...updates };
+        }
+      );
+
+      // Invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
+      
       return { data: profile, error: null };
     } catch (err) {
       console.error("Error updating profile:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to update profile";
-      setError(errorMessage);
+      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
       return { data: null, error: errorMessage };
     }
   };
@@ -102,6 +106,8 @@ export function useUserProfile() {
     return profile?.user_type || null;
   };
 
+  const error = queryError?.message || null;
+
   return {
     profile,
     loading,
@@ -109,6 +115,6 @@ export function useUserProfile() {
     updateProfile,
     hasRole,
     getPrimaryRole,
-    refetch: fetchProfile,
+    refetch,
   };
 }
