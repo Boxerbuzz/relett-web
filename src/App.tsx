@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,8 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./components/AuthProvider";
 import { PropertyContractProvider } from '@/contexts/PropertyContractContext';
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Layout } from './components/Layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Page imports
 import Index from "./pages/Index";
@@ -34,7 +35,7 @@ import AgentCalendar from "./pages/AgentCalendar";
 import AgentInspections from "./pages/AgentInspections";
 import AgentRentals from "./pages/AgentRentals";
 import AgentReservations from "./pages/AgentReservations";
-import Messaging from "./pages/Messaging";
+import { Messaging } from "./pages/Messaging";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import Services from "./pages/Services";
