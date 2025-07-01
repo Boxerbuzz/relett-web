@@ -124,13 +124,14 @@ async function deployContracts() {
           console.log(`   Attempt ${attempt}/${maxRetries}`);
           console.log(`   📄 Contract size: ${artifact.bytecode.length / 2 - 1} bytes`);
           
-          let contractCreateFlow = new ContractCreateFlow()
-            .setGas(2000000)
-            .setBytecode(artifact.bytecode)
-            .setMaxTransactionFee(Hbar.from(20));
+          // Create ContractCreateFlow with proper method calls
+          const contractCreateFlow = new ContractCreateFlow();
+          contractCreateFlow.setGas(2000000);
+          contractCreateFlow.setBytecode(artifact.bytecode);
+          contractCreateFlow.setMaxTransactionFee(new Hbar(20));
 
           if (constructorParams) {
-            contractCreateFlow = contractCreateFlow.setConstructorParameters(constructorParams);
+            contractCreateFlow.setConstructorParameters(constructorParams);
           }
 
           console.log(`   🔨 Creating contract...`);
