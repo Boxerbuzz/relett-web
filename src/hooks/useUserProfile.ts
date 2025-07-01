@@ -48,9 +48,9 @@ export function useUserProfile() {
     isLoading: loading,
     error: queryError,
     refetch
-  } = useQuery({
+  } = useQuery<UserProfileData | null, Error>({
     queryKey: queryKeys.user.profile(),
-    queryFn: async () => {
+    queryFn: async (): Promise<UserProfileData | null> => {
       if (!user?.id) return null;
 
       const { data: userData, error: userError } = await supabase

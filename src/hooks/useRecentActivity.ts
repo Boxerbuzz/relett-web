@@ -22,9 +22,9 @@ export function useRecentActivity() {
     data: activities = [],
     isLoading: loading,
     refetch
-  } = useQuery({
+  } = useQuery<ActivityItem[], Error>({
     queryKey: queryKeys.user.notifications(), // Reusing notifications key for activities
-    queryFn: async () => {
+    queryFn: async (): Promise<ActivityItem[]> => {
       if (!user?.id) return [];
 
       const { data, error } = await supabase

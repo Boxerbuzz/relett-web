@@ -38,9 +38,9 @@ export function useConversations() {
     isLoading: loading,
     error: queryError,
     refetch
-  } = useQuery({
+  } = useQuery<ConversationWithDetails[], Error>({
     queryKey: queryKeys.messaging.conversations(user?.id || ''),
-    queryFn: async () => {
+    queryFn: async (): Promise<ConversationWithDetails[]> => {
       if (!user?.id) return [];
 
       // Fetch conversations where user is participant or admin
