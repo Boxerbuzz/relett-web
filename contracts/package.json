@@ -10,7 +10,8 @@
     "deploy:testnet": "node deploy.js --network testnet",
     "deploy:mainnet": "node deploy.js --network mainnet",
     "test": "hardhat test",
-    "verify": "hardhat verify"
+    "verify": "hardhat verify",
+    "clean": "hardhat clean"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.65.1",
@@ -20,5 +21,8 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.2",
     "hardhat": "^2.17.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
