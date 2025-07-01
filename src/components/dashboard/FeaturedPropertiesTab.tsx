@@ -18,7 +18,7 @@ interface PropertyWithTokenization {
   views: number;
   is_verified: boolean;
   is_tokenized: boolean;
-  type: string;
+  type?: string;
   category?: string;
   backdrop?: string;
   tokenized_properties?: {
@@ -138,7 +138,7 @@ export function FeaturedPropertiesTab({
                 price: getPriceString(property.price),
                 image: getPropertyImage(property),
                 type: property.type || 'residential',
-                category: property.category || property.type || 'property',
+                category: property.type || 'property',
                 isVerified: property.is_verified,
                 isTokenized: property.is_tokenized,
                 views: property.views || 0,

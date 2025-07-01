@@ -169,6 +169,9 @@ const MyProperty = () => {
         const enrichedProperties: Property[] =
           propertiesData?.map((property) => ({
             ...property,
+            title: property.title || '',
+            is_tokenized: property.is_tokenized || false,
+            is_verified: property.is_verified || false,
             property_images: imagesByProperty[property.id] || [],
           })) as Property[] || [];
 
