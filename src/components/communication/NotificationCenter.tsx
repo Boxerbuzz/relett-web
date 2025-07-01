@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationDeliveryStatus } from "@/components/notifications/NotificationDeliveryStatus";
 import { NotificationTester } from "@/components/notifications/NotificationTester";
-import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
+import { NotificationsSkeleton } from "@/components/ui/notifications-skeleton";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface Notification {
@@ -156,7 +156,7 @@ export function NotificationCenter() {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   if (isLoading) {
-    return <LoadingSpinner size="lg" text="Loading notifications..." />;
+    return <NotificationsSkeleton />;
   }
 
   return (

@@ -116,6 +116,27 @@ interface LocationAnalysisResponse {
   };
 }
 
+// Helper function to clean and parse AI response
+function parseAIResponse(content: string): LocationAnalysis {
+  // Remove markdown code blocks if present
+  let cleanContent = content.trim();
+  
+  // Remove ```json and ``` if present
+  if (cleanContent.startsWith('```json')) {
+    cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (cleanContent.startsWith('```')) {
+    cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  
+  // Try to parse the cleaned content
+  try {
+    return JSON.parse(cleanContent);
+  } catch (parseError) {
+    console.error('Failed to parse cleaned content:', cleanContent);
+    throw parseError;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return createCorsResponse();
@@ -189,71 +210,9 @@ ${
     .join("") || "Limited nearby property data"
 }
 
-Please provide a comprehensive analysis covering:
+Please provide a comprehensive analysis covering all the key areas of location intelligence.
 
-1. AREA CLASSIFICATION
-   - Urban/Metro/Suburban/Rural designation
-   - Neighborhood character and demographics
-   - Development density and planning
-
-2. SECURITY ASSESSMENT
-   - General safety perception and crime rates
-   - Police presence and security infrastructure
-   - Community safety measures
-
-3. TRANSPORTATION & TRAFFIC
-   - Traffic congestion patterns
-   - Public transportation access
-   - Road infrastructure quality
-   - Parking availability
-
-4. INFRASTRUCTURE & UTILITIES
-   - Power supply reliability
-   - Water and sanitation
-   - Internet connectivity
-   - Waste management
-
-5. AMENITIES & SERVICES
-   - Educational institutions (schools, universities)
-   - Healthcare facilities
-   - Shopping centers and markets
-   - Entertainment and recreation
-
-6. ECONOMIC FACTORS
-   - Employment opportunities
-   - Income levels and affordability
-   - Commercial activity
-   - Cost of living
-
-7. FUTURE DEVELOPMENT
-   - Planned infrastructure projects
-   - Growth potential and trends
-   - Government development plans
-
-8. ENVIRONMENTAL FACTORS
-   - Air quality and pollution levels
-   - Noise levels
-   - Green spaces and parks
-   - Flood risk and drainage
-
-9. INVESTMENT OUTLOOK
-   - Property appreciation potential
-   - Rental demand and yields
-   - Market liquidity
-   - Risk factors
-
-Respond in JSON format with these fields:
-- areaClassification (object): { type, description, characteristics }
-- securityAssessment (object): { score, factors, recommendations }
-- transportation (object): { score, publicTransport, trafficCondition, infrastructure }
-- infrastructure (object): { powerSupply, water, internet, waste }
-- amenities (object): { education, healthcare, shopping, entertainment }
-- economicFactors (object): { employmentScore, incomeLevel, commercialActivity }
-- futureDevelopment (object): { growthPotential, plannedProjects, outlook }
-- environmental (object): { airQuality, noiseLevel, greenSpaces, floodRisk }
-- investmentOutlook (object): { appreciationPotential, rentalDemand, riskLevel }
-- overallScore (number): Overall location score (1-100)
-- summary (string): Executive summary of the location analysis
+IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or code blocks. Use this exact structure with all required fields properly nested.
 `;
 
     // Call OpenAI API
@@ -271,7 +230,7 @@ Respond in JSON format with these fields:
             {
               role: "system",
               content:
-                "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Provide detailed, accurate location intelligence.",
+                "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Always respond with valid JSON only, no markdown formatting.",
             },
             {
               role: "user",
@@ -291,12 +250,14 @@ Respond in JSON format with these fields:
     const aiResult = await openAIResponse.json();
     const aiContent = aiResult.choices[0].message.content;
 
-    // Parse AI response
+    // Parse AI response with better error handling
     let analysis: LocationAnalysis;
     try {
-      analysis = JSON.parse(aiContent);
+      analysis = parseAIResponse(aiContent);
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
+      console.error("AI content received:", aiContent);
+      
       // Fallback analysis if parsing fails
       analysis = {
         areaClassification: {

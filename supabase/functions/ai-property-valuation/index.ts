@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   createTypedSupabaseClient,
@@ -66,6 +65,27 @@ interface AIAnalysis {
   marketTrends?: string;
 }
 
+// Helper function to clean and parse AI response
+function parseAIResponse(content: string): AIAnalysis {
+  // Remove markdown code blocks if present
+  let cleanContent = content.trim();
+  
+  // Remove ```json and ``` if present
+  if (cleanContent.startsWith('```json')) {
+    cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (cleanContent.startsWith('```')) {
+    cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  
+  // Try to parse the cleaned content
+  try {
+    return JSON.parse(cleanContent);
+  } catch (parseError) {
+    console.error('Failed to parse cleaned content:', cleanContent);
+    throw parseError;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -131,12 +151,14 @@ Please provide:
 4. Key factors that influenced the valuation
 5. Market trends affecting the property value
 
-Respond in JSON format with these fields:
-- estimatedValue (number): The estimated value in NGN
-- confidenceScore (number): Confidence percentage (0-100)
-- marketAnalysis (string): Detailed analysis explanation
-- keyFactors (array): List of key valuation factors
-- marketTrends (string): Current market trends assessment
+IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or code blocks. Use this exact structure:
+{
+  "estimatedValue": [number],
+  "confidenceScore": [number 0-100],
+  "marketAnalysis": "[string]",
+  "keyFactors": ["[array of strings]"],
+  "marketTrends": "[string]"
+}
 `;
 
     // Call OpenAI API
@@ -151,7 +173,7 @@ Respond in JSON format with these fields:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert real estate appraiser specializing in Nigerian property markets. Provide accurate, data-driven valuations with detailed analysis.'
+            content: 'You are an expert real estate appraiser specializing in Nigerian property markets. Always respond with valid JSON only, no markdown formatting.'
           },
           {
             role: 'user',
@@ -170,17 +192,19 @@ Respond in JSON format with these fields:
     const aiResult = await openAIResponse.json();
     const aiContent = aiResult.choices[0].message.content;
 
-    // Parse AI response
+    // Parse AI response with better error handling
     let aiAnalysis: AIAnalysis;
     try {
-      aiAnalysis = JSON.parse(aiContent);
+      aiAnalysis = parseAIResponse(aiContent);
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
+      console.error('AI content received:', aiContent);
+      
       // Fallback to basic analysis if parsing fails
       aiAnalysis = {
         estimatedValue: Math.floor(Math.random() * 50000000) + 10000000,
         confidenceScore: 65,
-        marketAnalysis: aiContent || 'AI analysis generated but format needs adjustment.',
+        marketAnalysis: 'AI analysis generated but format needs adjustment.',
         keyFactors: ['Location', 'Property Type', 'Market Conditions'],
         marketTrends: 'Market data suggests stable growth in the area.'
       };
