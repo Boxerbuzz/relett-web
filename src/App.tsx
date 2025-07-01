@@ -1,8 +1,10 @@
 
+
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Outlet,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -58,6 +60,14 @@ const queryClient = new QueryClient({
   },
 });
 
+function LayoutWrapper() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -72,7 +82,7 @@ function App() {
                 <Route path="/terms" element={<TermsAndConditions />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 
-                <Route path="/" element={<Layout />}>
+                <Route path="/" element={<LayoutWrapper />}>
                   <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
@@ -117,3 +127,4 @@ function App() {
 }
 
 export default App;
+
