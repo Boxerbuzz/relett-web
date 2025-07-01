@@ -108,31 +108,59 @@ export const queryKeys = {
     stats: () => [...queryKeys.verification.all, 'stats'] as const,
   },
 
+  // Admin specific keys
+  admin: {
+    all: ['admin'] as const,
+    users: () => [...queryKeys.admin.all, 'users'] as const,
+    properties: () => [...queryKeys.admin.all, 'properties'] as const,
+    kyc: () => [...queryKeys.admin.all, 'kyc'] as const,
+    roleRequests: () => [...queryKeys.admin.all, 'role-requests'] as const,
+    analytics: () => [...queryKeys.admin.all, 'analytics'] as const,
+  },
+
 };
 
 // Cache configuration by data type
 export const cacheConfig = {
-  // Frequently changing data
+  // Frequently changing data (chat, notifications)
   realtime: {
     staleTime: 30 * 1000, // 30 seconds
-    gcTime: 2 * 60 * 1000, // 2 minutes (renamed from cacheTime)
+    gcTime: 2 * 60 * 1000, // 2 minutes
   },
   
-  // Standard data
+  // Standard data (properties, users)
   standard: {
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  },
+  
+  // Admin data (needs fresh data more often)
+  admin: {
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  },
+  
+  // Analytics data (less frequent updates)
+  analytics: {
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 20 * 60 * 1000, // 20 minutes
+  },
+  
+  // Market data (stable data)
+  market: {
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   },
   
   // Static/semi-static data
   static: {
     staleTime: 60 * 60 * 1000, // 1 hour
-    gcTime: 24 * 60 * 60 * 1000, // 24 hours (renamed from cacheTime)
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   },
   
   // Long-lived data
   persistent: {
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days (renamed from cacheTime)
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 };
