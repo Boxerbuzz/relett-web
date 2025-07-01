@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,13 +15,12 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { PropertyVerificationQueue } from "@/components/admin/PropertyVerificationQueue";
 import { AdminVerificationHub } from "@/components/admin/AdminVerificationHub";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "react-router-dom";
+import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
+import { useAdminRecentActivity } from "@/hooks/useAdminRecentActivity";
+import { Link } from "react-router-dom";
 import {
   Users,
-  CheckSquare,
   Shield,
-  Warning,
   House,
   CurrencyDollar,
   Activity,
@@ -31,123 +29,36 @@ import {
   FileText,
 } from "phosphor-react";
 
-interface DashboardStats {
-  totalUsers: number;
-  pendingVerifications: number;
-  totalProperties: number;
-  monthlyRevenue: number;
-  activeTokens: number;
-  pendingDocuments: number;
-}
-
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    pendingVerifications: 0,
-    totalProperties: 0,
-    monthlyRevenue: 0,
-    activeTokens: 0,
-    pendingDocuments: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [contactsCount, setContactsCount] = useState(0);
-  const [waitlistCount, setWaitlistCount] = useState(0);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
+  // Use optimized hooks for data fetching
+  const { stats, isLoading: statsLoading, error: statsError } = useAdminDashboardStats();
+  const { activities, isLoading: activitiesLoading } = useAdminRecentActivity();
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  const fetchDashboardStats = async () => {
-    try {
-      // Fetch total users
-      const { count: totalUsers } = await supabase
-        .from("users")
-        .select("*", { count: "exact", head: true });
-
-      // Fetch pending verifications
-      const { count: pendingVerifications } = await supabase
-        .from("identity_verifications")
-        .select("*", { count: "exact", head: true })
-        .eq("verification_status", "pending");
-
-      // Fetch total properties
-      const { count: totalProperties } = await supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true });
-
-      // Fetch active tokenized properties
-      const { count: activeTokens } = await supabase
-        .from("tokenized_properties")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "active");
-
-      // Fetch pending documents
-      const { count: pendingDocuments } = await supabase
-        .from("property_documents")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-
-      // Fetch unread contacts count
-      const { count: unreadContacts } = await supabase
-        .from("contacts_us")
-        .select("*", { count: "exact", head: true });
-
-      const { count: unreadWaitlist } = await supabase
-        .from("waitlist")
-        .select("*", { count: "exact", head: true });
-
-      setContactsCount(unreadContacts || 0);
-      setWaitlistCount(unreadWaitlist || 0);
-
-      // Calculate monthly revenue (placeholder - you'd need a payments/revenue table)
-      const currentMonth = new Date();
-      currentMonth.setDate(1);
-
-      const { data: payments } = await supabase
-        .from("payments")
-        .select("amount")
-        .eq("status", "completed")
-        .gte("created_at", currentMonth.toISOString());
-
-      const monthlyRevenue =
-        payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-
-      setStats({
-        totalUsers: totalUsers || 0,
-        pendingVerifications: pendingVerifications || 0,
-        totalProperties: totalProperties || 0,
-        monthlyRevenue: monthlyRevenue / 100, // Convert from cents
-        activeTokens: activeTokens || 0,
-        pendingDocuments: pendingDocuments || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch dashboard statistics",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Handle errors with toast
+  if (statsError) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch dashboard statistics",
+      variant: "destructive",
+    });
+  }
 
   const handleVerificationReview = (type: string) => {
     switch (type) {
-      case 'identity':
-        setActiveTab('verification-hub');
+      case "identity":
+        setActiveTab("verification-hub");
         break;
-      case 'documents':
-        setActiveTab('verification-hub');
+      case "documents":
+        setActiveTab("verification-hub");
         break;
-      case 'properties':
-        setActiveTab('properties');
+      case "properties":
+        setActiveTab("properties");
         break;
       default:
-        setActiveTab('verification-hub');
+        setActiveTab("verification-hub");
     }
   };
 
@@ -170,7 +81,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.totalUsers}
+              {statsLoading ? "..." : stats.totalUsers}
             </div>
             <p className="text-xs text-muted-foreground">Platform users</p>
           </CardContent>
@@ -185,7 +96,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.pendingVerifications}
+              {statsLoading ? "..." : stats.pendingVerifications}
             </div>
             <p className="text-xs text-muted-foreground">Requires attention</p>
           </CardContent>
@@ -200,7 +111,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.totalProperties}
+              {statsLoading ? "..." : stats.totalProperties}
             </div>
             <p className="text-xs text-muted-foreground">Listed properties</p>
           </CardContent>
@@ -215,7 +126,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₦{loading ? "..." : stats.monthlyRevenue.toLocaleString()}
+              ₦{statsLoading ? "..." : stats.monthlyRevenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
@@ -224,7 +135,10 @@ export function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('verification-hub')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("verification-hub")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               KYC & Role Management
@@ -232,7 +146,9 @@ export function AdminDashboard() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingVerifications}</div>
+            <div className="text-2xl font-bold">
+              {stats.pendingVerifications}
+            </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Pending reviews
               <ArrowRight className="ml-2 h-3 w-3" />
@@ -240,7 +156,10 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('users')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("users")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               User Management
@@ -249,7 +168,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.totalUsers}
+              {statsLoading ? "..." : stats.totalUsers}
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Manage all users
@@ -258,7 +177,10 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('properties')}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("properties")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Property Verification
@@ -267,7 +189,7 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.pendingDocuments}
+              {statsLoading ? "..." : stats.pendingDocuments}
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Pending reviews
@@ -285,7 +207,9 @@ export function AdminDashboard() {
               <Envelope className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{contactsCount}</div>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "..." : stats.contactsCount}
+              </div>
               <p className="text-xs text-muted-foreground flex items-center">
                 Unread messages
                 <ArrowRight className="ml-2 h-3 w-3" />
@@ -354,47 +278,37 @@ export function AdminDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        action: "New user registration",
-                        user: "john@example.com",
-                        time: "2 minutes ago",
-                      },
-                      {
-                        action: "Property verification completed",
-                        user: "admin",
-                        time: "15 minutes ago",
-                      },
-                      {
-                        action: "Token purchase",
-                        user: "sarah@example.com",
-                        time: "1 hour ago",
-                      },
-                      {
-                        action: "Document uploaded",
-                        user: "mike@example.com",
-                        time: "2 hours ago",
-                      },
-                    ].map((activity, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between py-2 border-b last:border-0"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {activity.action}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {activity.user}
-                          </p>
+                  {activitiesLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, index) => (
+                        <div key={index} className="animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                         </div>
-                        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                          {activity.time}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {activities.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between py-2 border-b last:border-0"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {activity.action}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {activity.user}
+                            </p>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                            {activity.time}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

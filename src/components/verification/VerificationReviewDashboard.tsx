@@ -1,180 +1,98 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { FileText, Check, X, Clock, Eye, Search, Users, BarChart3 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { VerificationTaskManager } from './VerificationTaskManager';
-import { DocumentViewer } from './DocumentViewer';
-
-interface VerificationStats {
-  totalTasks: number;
-  pendingTasks: number;
-  assignedTasks: number;
-  completedTasks: number;
-  averageCompletionTime: number;
-}
-
-interface VerificationRequest {
-  id: string;
-  document_id: string;
-  requested_by: string;
-  assigned_verifier: string | null;
-  status: string;
-  priority: string;
-  created_at: string;
-  property_documents: {
-    id: string;
-    document_name: string;
-    document_type: string;
-    file_url: string;
-    mime_type: string;
-    file_size: number;
-    property_id: string | null;
-    land_title_id: string | null;
-  };
-  requester?: {
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
-}
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  FileText,
+  Check,
+  X,
+  Clock,
+  Eye,
+  Search,
+  Users,
+  BarChart3,
+} from "lucide-react";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useVerificationStats } from "@/hooks/useVerificationStats";
+import { useVerificationRequests } from "@/hooks/useVerificationRequests";
+import { VerificationTaskManager } from "./VerificationTaskManager";
+import { DocumentViewer } from "./DocumentViewer";
 
 export function VerificationReviewDashboard() {
-  const [activeTab, setActiveTab] = useState('tasks');
-  const [stats, setStats] = useState<VerificationStats>({
-    totalTasks: 0,
-    pendingTasks: 0,
-    assignedTasks: 0,
-    completedTasks: 0,
-    averageCompletionTime: 0
-  });
-  const [requests, setRequests] = useState<VerificationRequest[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState("tasks");
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+
   const { hasRole } = useUserRoles();
-  const { toast } = useToast();
+  const { stats, loading: statsLoading } = useVerificationStats();
+  const { requests, loading: requestsLoading } = useVerificationRequests();
 
-  const isVerifier = hasRole('verifier') || hasRole('admin');
+  const isVerifier = hasRole("verifier") || hasRole("admin");
+  const isLoading = statsLoading || requestsLoading;
 
-  useEffect(() => {
-    if (isVerifier) {
-      fetchVerificationStats();
-      fetchVerificationRequests();
-    }
-  }, [isVerifier]);
-
-  const fetchVerificationStats = async () => {
-    try {
-      // Fetch verification tasks stats
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('verification_tasks')
-        .select('status, created_at, completed_at');
-
-      if (tasksError) throw tasksError;
-
-      const tasks = tasksData || [];
-      const totalTasks = tasks.length;
-      const pendingTasks = tasks.filter(t => t.status === 'pending').length;
-      const assignedTasks = tasks.filter(t => t.status === 'assigned' || t.status === 'in_progress').length;
-      const completedTasks = tasks.filter(t => t.status === 'completed').length;
-
-      // Calculate average completion time
-      const completedTasksWithTimes = tasks.filter(t => 
-        t.status === 'completed' && t.completed_at && t.created_at
-      );
-      
-      let averageCompletionTime = 0;
-      if (completedTasksWithTimes.length > 0) {
-        const totalTime = completedTasksWithTimes.reduce((sum, task) => {
-          const created = new Date(task.created_at).getTime();
-          const completed = new Date(task.completed_at!).getTime();
-          return sum + (completed - created);
-        }, 0);
-        averageCompletionTime = totalTime / completedTasksWithTimes.length / (1000 * 60 * 60 * 24); // Convert to days
-      }
-
-      setStats({
-        totalTasks,
-        pendingTasks,
-        assignedTasks,
-        completedTasks,
-        averageCompletionTime
-      });
-    } catch (error) {
-      console.error('Error fetching verification stats:', error);
-    }
-  };
-
-  const fetchVerificationRequests = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('document_verification_requests')
-        .select(`
-          *,
-          property_documents!inner(*),
-          users!requested_by(first_name, last_name, email)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const processedData = (data || []).map(item => ({
-        ...item,
-        requester: Array.isArray(item.users) ? item.users[0] : item.users
-      }));
-
-      setRequests(processedData as VerificationRequest[] || []);
-    } catch (error) {
-      console.error('Error fetching verification requests:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load verification requests.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const filteredRequests = requests.filter(request => {
-    const matchesStatus = filterStatus === 'all' || request.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || request.priority === filterPriority;
-    const matchesSearch = searchTerm === '' || 
-      request.property_documents.document_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.requester?.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.requester?.last_name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus =
+      filterStatus === "all" || request.status === filterStatus;
+    const matchesPriority =
+      filterPriority === "all" || request.priority === filterPriority;
+    const matchesSearch =
+      searchTerm === "" ||
+      request.property_documents.document_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      request.requester?.first_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      request.requester?.last_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     return matchesStatus && matchesPriority && matchesSearch;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-orange-100 text-orange-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-orange-100 text-orange-800";
+      case "low":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -183,7 +101,9 @@ export function VerificationReviewDashboard() {
       <Card>
         <CardContent className="p-8 text-center">
           <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Verifier Access Required</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Verifier Access Required
+          </h3>
           <p className="text-gray-600">
             You need verifier permissions to access the verification dashboard.
           </p>
@@ -207,7 +127,7 @@ export function VerificationReviewDashboard() {
         documentName={selectedRequest.property_documents.document_name}
         mimeType={selectedRequest.property_documents.mime_type}
         onClose={() => setShowDocumentViewer(false)}
-        onAnnotate={(annotations) => console.log('Annotations:', annotations)}
+        onAnnotate={(annotations) => console.log("Annotations:", annotations)}
         isVerificationMode={true}
       />
     );
@@ -219,7 +139,9 @@ export function VerificationReviewDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Verification Dashboard</h1>
-          <p className="text-muted-foreground">Manage property and document verification processes</p>
+          <p className="text-muted-foreground">
+            Manage property and document verification processes
+          </p>
         </div>
         <Badge variant="outline" className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4" />
@@ -236,7 +158,9 @@ export function VerificationReviewDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTasks}</div>
-            <p className="text-xs text-muted-foreground">All verification tasks</p>
+            <p className="text-xs text-muted-foreground">
+              All verification tasks
+            </p>
           </CardContent>
         </Card>
 
@@ -246,7 +170,9 @@ export function VerificationReviewDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pendingTasks}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pendingTasks}
+            </div>
             <p className="text-xs text-muted-foreground">Awaiting assignment</p>
           </CardContent>
         </Card>
@@ -257,7 +183,9 @@ export function VerificationReviewDashboard() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.assignedTasks}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.assignedTasks}
+            </div>
             <p className="text-xs text-muted-foreground">Being reviewed</p>
           </CardContent>
         </Card>
@@ -277,7 +205,11 @@ export function VerificationReviewDashboard() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="tasks">Property Verification Tasks</TabsTrigger>
           <TabsTrigger value="documents">Document Reviews</TabsTrigger>
@@ -312,7 +244,10 @@ export function VerificationReviewDashboard() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <Select
+                  value={filterPriority}
+                  onValueChange={setFilterPriority}
+                >
                   <SelectTrigger className="w-full sm:w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -333,12 +268,17 @@ export function VerificationReviewDashboard() {
               <Card>
                 <CardContent className="p-8 text-center">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No document verification requests found.</p>
+                  <p className="text-gray-500">
+                    No document verification requests found.
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               filteredRequests.map((request) => (
-                <Card key={request.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={request.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
@@ -346,12 +286,18 @@ export function VerificationReviewDashboard() {
                           {request.property_documents.document_name}
                         </CardTitle>
                         <CardDescription>
-                          Requested by: {request.requester?.first_name} {request.requester?.last_name}
+                          Requested by: {request.requester?.first_name}{" "}
+                          {request.requester?.last_name}
                         </CardDescription>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>Type: {request.property_documents.document_type}</span>
+                          <span>
+                            Type: {request.property_documents.document_type}
+                          </span>
                           <span>•</span>
-                          <span>Submitted: {new Date(request.created_at).toLocaleDateString()}</span>
+                          <span>
+                            Submitted:{" "}
+                            {new Date(request.created_at).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">

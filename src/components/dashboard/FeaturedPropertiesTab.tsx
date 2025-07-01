@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { PropertyCard } from "@/components/marketplace/PropertyCard";
 import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
-import { supabase } from "@/integrations/supabase/client";
+import { useFeaturedProperties } from "@/hooks/useFeaturedProperties";
 
 interface PropertyWithTokenization {
   id: string;
@@ -38,102 +37,10 @@ interface FeaturedPropertiesTabProps {
 export function FeaturedPropertiesTab({
   isActive,
 }: FeaturedPropertiesTabProps) {
-  const [featuredProperties, setFeaturedProperties] = useState<
-    PropertyWithTokenization[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isActive) {
-      fetchFeaturedProperties();
-    }
-  }, [isActive]);
+  const { featuredProperties, loading } = useFeaturedProperties();
 
   // Convert kobo to naira for display
   const convertKoboToNaira = (kobo: number) => kobo / 100;
-
-  const fetchFeaturedProperties = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("properties")
-        .select(
-          `
-          id,
-          title,
-          location,
-          price,
-          views,
-          is_verified,
-          is_tokenized,
-          backdrop,
-          tokenized_property_id
-        `
-        )
-        .eq("status", "active")
-        .eq("is_verified", true)
-        .order("created_at", { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-
-      // Fetch additional data for each property
-      const enrichedProperties = await Promise.all(
-        (data || []).map(async (property) => {
-          // Fetch property images
-          const { data: images } = await supabase
-            .from("property_images")
-            .select("url, is_primary")
-            .eq("property_id", property.id)
-            .order("sort_order", { ascending: true });
-
-          // Fetch tokenized property data if tokenized
-          let tokenizedData: {
-            token_price: number;
-            total_supply: string;
-            expected_roi: number;
-            token_holdings: any[];
-          } | null = null;
-          if (property.is_tokenized && property.tokenized_property_id) {
-            const { data: tokenizedProperty } = await supabase
-              .from("tokenized_properties")
-              .select(
-                `
-                token_price,
-                total_supply,
-                expected_roi,
-                token_holdings(id)
-              `
-              )
-              .eq("id", property.tokenized_property_id)
-              .single();
-
-            if (tokenizedProperty) {
-              tokenizedData = {
-                token_price: convertKoboToNaira(tokenizedProperty.token_price),
-                total_supply: tokenizedProperty.total_supply,
-                expected_roi: tokenizedProperty.expected_roi,
-                token_holdings: tokenizedProperty.token_holdings || [],
-              };
-            }
-          }
-
-          return {
-            ...property,
-            property_images: images || [],
-            tokenized_properties: tokenizedData,
-          };
-        })
-      );
-
-      setFeaturedProperties(enrichedProperties as PropertyWithTokenization[]);
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-      setFeaturedProperties([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleViewDetails = (propertyId: string) => {
     console.log("View details for property:", propertyId);

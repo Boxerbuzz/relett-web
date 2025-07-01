@@ -1,11 +1,8 @@
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
 import { 
   Bell, 
   CheckCircle, 
@@ -31,70 +28,7 @@ interface Notification {
 }
 
 export function NotificationsList() {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [markingRead, setMarkingRead] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
-
-  const fetchNotifications = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user?.id || '' )
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      setNotifications(data as Notification[] || []);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch notifications',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      setMarkingRead(notificationId);
-      
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId 
-            ? { ...notif, is_read: true }
-            : notif
-        )
-      );
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to mark notification as read',
-        variant: 'destructive'
-      });
-    } finally {
-      setMarkingRead(null);
-    }
-  };
+  const { notifications, loading, markAsRead } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -209,14 +143,9 @@ export function NotificationsList() {
                             variant="ghost"
                             size="sm"
                             onClick={() => markAsRead(notification.id)}
-                            disabled={markingRead === notification.id}
                             className="text-xs"
                           >
-                            {markingRead === notification.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <CheckCircle className="h-3 w-3" />
-                            )}
+                            <CheckCircle className="h-3 w-3" />
                             Mark Read
                           </Button>
                         )}

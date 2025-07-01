@@ -88,9 +88,6 @@ export const queryKeys = {
     tracking: (userId?: string) => userId
       ? [...queryKeys.investments.all, 'tracking', userId] as const
       : [...queryKeys.investments.all, 'tracking'] as const,
-    tokenized: (userId?: string) => userId
-      ? [...queryKeys.investments.all, 'tokenized', userId] as const
-      : [...queryKeys.investments.all, 'tokenized'] as const,
   },
 
   // Conversations and messaging
@@ -99,15 +96,6 @@ export const queryKeys = {
     conversations: (userId: string) => [...queryKeys.messaging.all, 'conversations', userId] as const,
     messages: (conversationId: string) => [...queryKeys.messaging.all, 'messages', conversationId] as const,
   },
-
-  // Verification requests
-  verification: {
-    all: ['verification'] as const,
-    requests: () => [...queryKeys.verification.all, 'requests'] as const,
-    detail: (id: string) => [...queryKeys.verification.all, 'detail', id] as const,
-    stats: () => [...queryKeys.verification.all, 'stats'] as const,
-  },
-
 };
 
 // Cache configuration by data type
