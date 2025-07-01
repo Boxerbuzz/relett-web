@@ -1,4 +1,3 @@
-
 // Fixed deployment script for Hedera network using correct SDK v2.x methods
 const { 
   Client, 
@@ -83,6 +82,9 @@ async function deployContracts() {
     
     client.setOperator(operatorId, operatorKey);
     
+    // Set default max transaction fee for all transactions
+    client.setDefaultMaxTransactionFee(new Hbar(20));
+    
     console.log(`🔗 Connecting to Hedera ${network}...`);
     
     const isConnected = await validateConnection(client, operatorId);
@@ -107,6 +109,13 @@ async function deployContracts() {
     async function deployContract(contractName, constructorParams = null, maxRetries = 3) {
       console.log(`\n📋 Deploying ${contractName}...`);
       
+      // Adaptive gas limits based on contract size and complexity
+      const gasStrategies = [
+        { gas: 8000000, label: "Conservative (8M)" },
+        { gas: 12000000, label: "Moderate (12M)" },
+        { gas: 15000000, label: "High (15M)" }
+      ];
+      
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           const artifactPath = path.join(__dirname, 'artifacts', 'contracts', `${contractName}.sol`, `${contractName}.json`);
@@ -121,17 +130,21 @@ async function deployContracts() {
             throw new Error(`No bytecode found in artifact for ${contractName}`);
           }
           
+          const contractSize = artifact.bytecode.length / 2 - 1;
           console.log(`   Attempt ${attempt}/${maxRetries}`);
-          console.log(`   📄 Contract size: ${artifact.bytecode.length / 2 - 1} bytes`);
+          console.log(`   📄 Contract size: ${contractSize} bytes`);
           
-          // Create ContractCreateFlow with proper method calls
-          const contractCreateFlow = new ContractCreateFlow();
-          contractCreateFlow.setGas(2000000);
-          contractCreateFlow.setBytecode(artifact.bytecode);
-          contractCreateFlow.setMaxTransactionFee(new Hbar(20));
+          // Use escalating gas strategy for retries
+          const gasStrategy = gasStrategies[Math.min(attempt - 1, gasStrategies.length - 1)];
+          console.log(`   ⛽ Gas strategy: ${gasStrategy.label}`);
+          
+          // Create ContractCreateFlow with escalating gas limit
+          let contractCreateFlow = new ContractCreateFlow()
+            .setGas(gasStrategy.gas)
+            .setBytecode(artifact.bytecode);
 
           if (constructorParams) {
-            contractCreateFlow.setConstructorParameters(constructorParams);
+            contractCreateFlow = contractCreateFlow.setConstructorParameters(constructorParams);
           }
 
           console.log(`   🔨 Creating contract...`);
@@ -140,15 +153,21 @@ async function deployContracts() {
           
           const contractId = contractCreateReceipt.contractId;
           console.log(`   ✅ ${contractName} deployed: ${contractId}`);
+          console.log(`   💰 Gas used: ~${gasStrategy.gas.toLocaleString()}`);
 
           return {
             contractId: contractId.toString(),
             solidityAddress: contractId.toSolidityAddress(),
-            transactionId: contractCreateResponse.transactionId.toString()
+            transactionId: contractCreateResponse.transactionId.toString(),
+            gasUsed: gasStrategy.gas
           };
 
         } catch (error) {
           console.log(`   ❌ Attempt ${attempt} failed: ${error.message}`);
+          
+          if (error.message.includes('INSUFFICIENT_GAS')) {
+            console.log(`   🔥 Gas insufficient, will try higher limit on next attempt`);
+          }
           
           if (attempt === maxRetries) {
             throw new Error(`Failed to deploy ${contractName} after ${maxRetries} attempts: ${error.message}`);
@@ -204,7 +223,7 @@ async function deployContracts() {
 
 if (require.main === module) {
   deployContracts()
-    .then((info) => {
+    .then(() => {
       console.log("\n✅ Deployment completed successfully!");
       process.exit(0);
     })
