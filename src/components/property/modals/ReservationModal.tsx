@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { paystackService } from '@/lib/paystack';
+import { PriceCalculationService } from '@/lib/services/PriceCalculationService';
 import {
   Dialog,
   DialogContent,
@@ -66,12 +66,25 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  const calculateTotal = () => {
+  const getCalculation = () => {
     const fromDate = form.watch('from_date');
     const toDate = form.watch('to_date');
-    const nights = calculateNights(fromDate, toDate);
-    const basePrice = property?.price?.amount || 0;
-    return basePrice * nights;
+    const adults = form.watch('adults');
+    const children = form.watch('children');
+    const infants = form.watch('infants');
+
+    if (!fromDate || !toDate || !property?.price) return null;
+
+    return PriceCalculationService.calculateReservationPrice({
+      pricing: property.price,
+      fromDate,
+      toDate,
+      guests: {
+        adults: adults || 1,
+        children: children || 0,
+        infants: infants || 0,
+      },
+    });
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -87,11 +100,13 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
     try {
       setLoading(true);
 
+      // Calculate reservation amount using PriceCalculationService
+      const calculation = getCalculation();
+      if (!calculation) {
+        throw new Error("Unable to calculate reservation price");
+      }
+
       const nights = calculateNights(values.from_date, values.to_date);
-      const basePrice = property?.price?.amount || 0;
-      const total = basePrice * nights;
-      const serviceFee = Math.round(total * 0.1); // 10% service fee
-      const finalTotal = total + serviceFee;
 
       // Create reservation record first
       const { data: reservation, error: reservationError } = await supabase
@@ -106,8 +121,9 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
           adults: values.adults,
           children: values.children || 0,
           infants: values.infants || 0,
-          total: finalTotal,
-          fee: serviceFee,
+          total: calculation.totalAmount,
+          fee: calculation.serviceCharge,
+          caution_deposit: calculation.deposit,
           note: values.note,
           status: 'pending'
         })
@@ -116,84 +132,46 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
 
       if (reservationError) throw reservationError;
 
-      // Generate payment reference
-      const paymentReference = `reservation_${reservation.id}_${Date.now()}`;
+      // Create payment session via edge function
+      const { data: paymentSession, error: sessionError } = await supabase.functions.invoke(
+        'create-payment-session',
+        {
+          body: {
+            type: 'reservation',
+            bookingId: reservation.id,
+            amount: calculation.totalAmount,
+            currency: calculation.currency,
+            metadata: {
+              reservation_id: reservation.id,
+              property_title: property.title,
+              check_in: values.from_date,
+              check_out: values.to_date,
+              nights,
+              guests: {
+                adults: values.adults,
+                children: values.children || 0,
+                infants: values.infants || 0
+              },
+              breakdown: calculation.breakdown,
+            },
+          },
+        }
+      );
 
-      // Create payment record
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert({
-          user_id: user.id,
-          amount: Math.round(finalTotal * 100), // Convert to kobo
-          currency: 'NGN',
-          type: 'reservation',
-          property_id: property.id,
-          related_id: reservation.id,
-          related_type: 'reservations',
-          status: 'pending',
-          method: 'card',
-          provider: 'paystack',
-          reference: paymentReference,
-          metadata: {
-            reservation_id: reservation.id,
-            property_title: property.title,
-            check_in: values.from_date,
-            check_out: values.to_date,
-            nights,
-            guests: {
-              adults: values.adults,
-              children: values.children || 0,
-              infants: values.infants || 0
-            }
-          }
-        });
-
-      if (paymentError) throw paymentError;
-
-      // Initialize Paystack payment
-      if (!paystackService.isConfigured()) {
-        toast({
-          title: 'Payment Configuration Error',
-          description: 'Payment system is not properly configured',
-          variant: 'destructive'
-        });
-        return;
+      if (sessionError || !paymentSession?.success) {
+        throw new Error(sessionError?.message || "Failed to create payment session");
       }
 
-      await paystackService.initializePayment({
-        amount: finalTotal,
-        email: user.email!,
-        reference: paymentReference,
-        metadata: {
-          user_id: user.id,
-          reservation_id: reservation.id,
-          property_id: property.id,
-          type: 'reservation'
-        },
-        onSuccess: (transaction) => {
-          toast({
-            title: 'Payment Successful',
-            description: 'Your reservation has been confirmed!'
-          });
-          form.reset();
-          onOpenChange(false);
-        },
-        onCancel: () => {
-          toast({
-            title: 'Payment Cancelled',
-            description: 'Your reservation payment was cancelled',
-            variant: 'destructive'
-          });
-        },
-        onError: (error) => {
-          toast({
-            title: 'Payment Error',
-            description: 'There was an error processing your payment',
-            variant: 'destructive'
-          });
-          console.error('Payment error:', error);
-        }
+      // Redirect to payment URL
+      window.open(paymentSession.payment_url, '_blank');
+
+      toast({
+        title: "Payment Initiated",
+        description: "Please complete your payment in the new tab",
       });
+
+      form.reset();
+      onOpenChange(false);
 
     } catch (error) {
       console.error('Error submitting reservation:', error);
@@ -210,9 +188,7 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
   const watchedFromDate = form.watch('from_date');
   const watchedToDate = form.watch('to_date');
   const nights = calculateNights(watchedFromDate, watchedToDate);
-  const total = calculateTotal();
-  const serviceFee = Math.round(total * 0.1);
-  const finalTotal = total + serviceFee;
+  const calculation = getCalculation();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -338,20 +314,20 @@ export function ReservationModal({ open, onOpenChange, property }: ReservationMo
               )}
             />
 
-            {nights > 0 && (
+            {calculation && nights > 0 && (
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>₦{property?.price?.amount?.toLocaleString()} × {nights} nights</span>
-                  <span>₦{total.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Service fee</span>
-                  <span>₦{serviceFee.toLocaleString()}</span>
-                </div>
+                {calculation.breakdown.map((item, index) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <span>{item.description}</span>
+                    <span className={item.amount < 0 ? "text-green-600" : ""}>
+                      {PriceCalculationService.formatAmount(item.amount, calculation.currency)}
+                    </span>
+                  </div>
+                ))}
                 <div className="border-t pt-2">
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>₦{finalTotal.toLocaleString()}</span>
+                    <span>{PriceCalculationService.formatAmount(calculation.totalAmount, calculation.currency)}</span>
                   </div>
                 </div>
               </div>

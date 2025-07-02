@@ -5,7 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { paystackService } from "@/lib/paystack";
+import { PriceCalculationService } from "@/lib/services/PriceCalculationService";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -77,22 +77,12 @@ export function RentalRequestModal({
     try {
       setLoading(true);
 
-      // Calculate rental amount based on property price and payment plan
-      const basePrice = property?.price?.amount || 0;
-      let rentalAmount = basePrice;
-
-      // Adjust amount based on payment plan
-      switch (values.payment_plan) {
-        case "monthly":
-          rentalAmount = basePrice;
-          break;
-        case "quarterly":
-          rentalAmount = basePrice * 3;
-          break;
-        case "annually":
-          rentalAmount = basePrice * 12;
-          break;
-      }
+      // Calculate rental amount using PriceCalculationService
+      const calculation = PriceCalculationService.calculateRentalPrice({
+        pricing: property.price,
+        paymentPlan: values.payment_plan as 'monthly' | 'quarterly' | 'annually',
+        moveInDate: values.move_in_date,
+      });
 
       // Create rental record first
       const { data: rental, error: rentalError } = await supabase
@@ -104,7 +94,7 @@ export function RentalRequestModal({
           payment_plan: values.payment_plan,
           move_in_date: values.move_in_date,
           message: values.message,
-          price: rentalAmount,
+          price: calculation.totalAmount,
           status: "pending",
           payment_status: "pending",
         })
@@ -113,76 +103,41 @@ export function RentalRequestModal({
 
       if (rentalError) throw rentalError;
 
-      // Generate payment reference
-      const paymentReference = `rental_${rental.id}_${Date.now()}`;
+      // Create payment session via edge function
+      const { data: paymentSession, error: sessionError } = await supabase.functions.invoke(
+        'create-payment-session',
+        {
+          body: {
+            type: 'rental',
+            bookingId: rental.id,
+            amount: calculation.totalAmount,
+            currency: calculation.currency,
+            metadata: {
+              rental_id: rental.id,
+              property_title: property.title,
+              payment_plan: values.payment_plan,
+              move_in_date: values.move_in_date,
+              breakdown: calculation.breakdown,
+            },
+          },
+        }
+      );
 
-      // Create payment record
-      const { error: paymentError } = await supabase.from("payments").insert({
-        user_id: user.id,
-        amount: Math.round(rentalAmount * 100), // Convert to kobo
-        currency: "NGN",
-        type: "rental",
-        property_id: property.id,
-        related_id: rental.id,
-        related_type: "rentals",
-        status: "pending",
-        method: "card",
-        provider: "paystack",
-        reference: paymentReference,
-        metadata: {
-          rental_id: rental.id,
-          property_title: property.title,
-          payment_plan: values.payment_plan,
-          move_in_date: values.move_in_date,
-        },
-      });
-
-      if (paymentError) throw paymentError;
-
-      // Initialize Paystack payment
-      if (!paystackService.isConfigured()) {
-        toast({
-          title: "Payment Configuration Error",
-          description: "Payment system is not properly configured",
-          variant: "destructive",
-        });
-        return;
+      if (sessionError || !paymentSession?.success) {
+        throw new Error(sessionError?.message || "Failed to create payment session");
       }
 
-      await paystackService.initializePayment({
-        amount: rentalAmount,
-        email: user.email!,
-        reference: paymentReference,
-        metadata: {
-          user_id: user.id,
-          rental_id: rental.id,
-          property_id: property.id,
-          type: "rental",
-        },
-        onSuccess: (transaction) => {
-          toast({
-            title: "Payment Successful",
-            description: "Your rental payment has been processed successfully",
-          });
-          form.reset();
-          onOpenChange(false);
-        },
-        onCancel: () => {
-          toast({
-            title: "Payment Cancelled",
-            description: "Your payment was cancelled",
-            variant: "destructive",
-          });
-        },
-        onError: (error) => {
-          toast({
-            title: "Payment Error",
-            description: "There was an error processing your payment",
-            variant: "destructive",
-          });
-          console.error("Payment error:", error);
-        },
+      // Redirect to payment URL
+      window.open(paymentSession.payment_url, '_blank');
+
+      toast({
+        title: "Payment Initiated",
+        description: "Please complete your payment in the new tab",
       });
+
+      form.reset();
+      onOpenChange(false);
+
     } catch (error) {
       console.error("Error submitting rental request:", error);
       toast({
@@ -195,20 +150,15 @@ export function RentalRequestModal({
     }
   };
 
-  const calculateAmount = () => {
-    const basePrice = property?.price?.amount || 0;
+  const getCalculation = () => {
     const paymentPlan = form.watch("payment_plan");
+    if (!paymentPlan || !property?.price) return null;
 
-    switch (paymentPlan) {
-      case "monthly":
-        return basePrice;
-      case "quarterly":
-        return basePrice * 3;
-      case "annually":
-        return basePrice * 12;
-      default:
-        return basePrice;
-    }
+    return PriceCalculationService.calculateRentalPrice({
+      pricing: property.price,
+      paymentPlan: paymentPlan as 'monthly' | 'quarterly' | 'annually',
+      moveInDate: form.watch("move_in_date") || new Date().toISOString(),
+    });
   };
 
   return (
@@ -281,17 +231,33 @@ export function RentalRequestModal({
                 )}
               />
 
-              {form.watch("payment_plan") && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm font-medium">Payment Amount</div>
-                  <div className="text-lg font-bold text-primary">
-                    ₦{calculateAmount().toLocaleString()}
+              {(() => {
+                const calculation = getCalculation();
+                return calculation ? (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                    <div className="text-sm font-medium">Payment Breakdown</div>
+                    {calculation.breakdown.map((item, index) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>{item.description}</span>
+                        <span className={item.amount < 0 ? "text-green-600" : ""}>
+                          {PriceCalculationService.formatAmount(item.amount, calculation.currency)}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between font-bold">
+                        <span>Total Amount</span>
+                        <span className="text-primary">
+                          {PriceCalculationService.formatAmount(calculation.totalAmount, calculation.currency)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {form.watch("payment_plan")} payment plan
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {form.watch("payment_plan")} payment
-                  </div>
-                </div>
-              )}
+                ) : null;
+              })()}
             </form>
           </Form>
         </div>

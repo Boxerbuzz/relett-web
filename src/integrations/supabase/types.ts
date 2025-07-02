@@ -3217,7 +3217,9 @@ export type Database = {
           move_in_date: string | null
           payment_id: string | null
           payment_plan: string
+          payment_reference: string | null
           payment_status: string
+          payment_url: string | null
           plan_id: string | null
           price: number | null
           property_id: string
@@ -3237,7 +3239,9 @@ export type Database = {
           move_in_date?: string | null
           payment_id?: string | null
           payment_plan?: string
+          payment_reference?: string | null
           payment_status?: string
+          payment_url?: string | null
           plan_id?: string | null
           price?: number | null
           property_id: string
@@ -3257,7 +3261,9 @@ export type Database = {
           move_in_date?: string | null
           payment_id?: string | null
           payment_plan?: string
+          payment_reference?: string | null
           payment_status?: string
+          payment_url?: string | null
           plan_id?: string | null
           price?: number | null
           property_id?: string
@@ -3314,6 +3320,8 @@ export type Database = {
           nights: number | null
           note: string | null
           payment_id: string | null
+          payment_reference: string | null
+          payment_url: string | null
           property_id: string
           status: string
           to_date: string | null
@@ -3337,6 +3345,8 @@ export type Database = {
           nights?: number | null
           note?: string | null
           payment_id?: string | null
+          payment_reference?: string | null
+          payment_url?: string | null
           property_id: string
           status?: string
           to_date?: string | null
@@ -3360,6 +3370,8 @@ export type Database = {
           nights?: number | null
           note?: string | null
           payment_id?: string | null
+          payment_reference?: string | null
+          payment_url?: string | null
           property_id?: string
           status?: string
           to_date?: string | null
