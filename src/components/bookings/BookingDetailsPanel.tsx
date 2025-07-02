@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, User, Phone, Mail, X } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 import { RentalDetailsContent } from './RentalDetailsContent';
 import { ReservationDetailsContent } from './ReservationDetailsContent';
 import { InspectionDetailsContent } from './InspectionDetailsContent';
@@ -26,7 +27,12 @@ export function BookingDetailsPanel({
   bookingData,
   onStatusUpdate
 }: BookingDetailsPanelProps) {
+  const { user } = useAuth();
   if (!bookingData) return null;
+
+  // Determine if current user is the agent or customer
+  const isAgent = user?.id === bookingData.agent_id;
+  const isCustomer = user?.id === bookingData.user_id;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -138,8 +144,8 @@ export function BookingDetailsPanel({
             </CardContent>
           </Card>
 
-          {/* User Information */}
-          {bookingData.user && (
+          {/* Contact Information - Show agent info to customer, customer info to agent */}
+          {isAgent && bookingData.user && (
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Customer Information</CardTitle>
@@ -161,6 +167,34 @@ export function BookingDetailsPanel({
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm">{bookingData.user.phone_number}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {isCustomer && bookingData.agent && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Agent Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-medium">
+                    {bookingData.agent.first_name} {bookingData.agent.last_name}
+                  </span>
+                </div>
+                {bookingData.agent.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{bookingData.agent.email}</span>
+                  </div>
+                )}
+                {bookingData.agent.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{bookingData.agent.phone}</span>
                   </div>
                 )}
               </CardContent>
