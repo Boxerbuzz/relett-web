@@ -10,7 +10,6 @@ import { AuthProvider } from "./components/AuthProvider";
 import { PropertyContractProvider } from "@/contexts/PropertyContractContext";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { useEffect } from "react";
 
 // Page imports
 // import Index from "./pages/Index";
@@ -49,7 +48,6 @@ import Documentation from "./pages/Documentation";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
-import Index from "./pages/Index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,98 +58,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Simple redirect component
-const ExternalRedirect = ({
-  url,
-  delay = 0,
-}: {
-  url: string;
-  delay?: number;
-}) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.location.href = url;
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [url, delay]);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Redirecting to external site...</p>
-        {delay > 0 && (
-          <p className="text-sm text-gray-400 mt-2">
-            Redirecting in {delay / 1000} seconds...
-          </p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const ExternalLinkRedirect = ({ url }: { url: string }) => {
-  useEffect(() => {
-    window.open(url, "_blank"); // Opens in new tab
-    // Optionally redirect current tab to another page
-    // window.location.href = '/dashboard';
-  }, [url]);
-
-  return (
-    <div className="text-center p-8">
-      <p>Opening external site in new tab...</p>
-      <a href={url} className="text-blue-600 underline">
-        Click here if redirect doesn't work
-      </a>
-    </div>
-  );
-};
-
-const ConditionalRedirect = () => {
-  const shouldRedirect = true; // Your condition here
-
-  if (shouldRedirect) {
-    window.location.href = "https://example.com";
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Redirecting to external site...</p>
-      </div>
-    );
-  }
-
-  return <Index />; // Fallback to original component
-};
-
-const SmartRedirect = () => {
-  const redirectUrl =
-    process.env.REACT_APP_REDIRECT_URL || "https://default-site.com";
-
-  useEffect(() => {
-    // Add any analytics or tracking here
-    console.log(`Redirecting to: ${redirectUrl}`);
-
-    // Small delay to ensure any tracking completes
-    setTimeout(() => {
-      window.location.href = redirectUrl;
-    }, 500);
-  }, [redirectUrl]);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="text-center">
-        <div className="animate-pulse">
-          <div className="w-16 h-16 bg-blue-200 rounded-full mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">
-            Redirecting...
-          </h2>
-          <p className="text-gray-500 mt-2">Taking you to our main site</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -160,15 +66,7 @@ function App() {
           <PropertyContractProvider>
             <div className="min-h-screen bg-background">
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <ExternalRedirect
-                      url="https://www.relett.com"
-                      delay={1000} // Optional 1 second delay
-                    />
-                  }
-                />
+                <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/terms" element={<TermsAndConditions />} />
@@ -214,14 +112,7 @@ function App() {
                     </Layout>
                   }
                 />
-                <Route
-                  path="/properties/:id"
-                  element={
-                    <Layout>
-                      <PropertyDetails />
-                    </Layout>
-                  }
-                />
+                <Route path="/properties/:id" element={<PropertyDetails />} />
                 <Route
                   path="/property-lookup"
                   element={

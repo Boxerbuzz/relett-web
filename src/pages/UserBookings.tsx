@@ -16,6 +16,11 @@ import {
   ShoppingCartIcon,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  BookingDetailsPanel,
+  BookingType,
+} from "@/components/bookings/BookingDetailsPanel";
+import { PropertyLocation } from "@/types/property";
 
 interface BookingItem {
   id: string;
@@ -23,9 +28,18 @@ interface BookingItem {
   status: string;
   created_at: string;
   property?: {
+    id: string;
     title: string;
     location: any;
     property_images: Array<{ url: string; is_primary: boolean }>;
+  };
+  agent?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    avatar: string;
   };
 }
 
@@ -33,6 +47,7 @@ interface Inspection extends BookingItem {
   mode: string;
   when: string;
   notes?: string;
+  agent_id: string;
 }
 
 interface Rental extends BookingItem {
@@ -40,6 +55,8 @@ interface Rental extends BookingItem {
   move_in_date: string;
   message?: string;
   payment_status: string;
+  price?: number;
+  agent_id: string;
 }
 
 interface Reservation extends BookingItem {
@@ -50,6 +67,10 @@ interface Reservation extends BookingItem {
   infants?: number;
   nights?: number;
   total?: number;
+  fee?: number;
+  caution_deposit?: number;
+  note?: string;
+  agent_id: string;
 }
 
 export default function UserBookings() {
@@ -59,6 +80,72 @@ export default function UserBookings() {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(
+    null
+  );
+  const [selectedBookingType, setSelectedBookingType] =
+    useState<BookingType>("inspection");
+
+  const handleBookingClick = (booking: BookingItem, type: BookingType) => {
+    // Add user information to the booking data for the details panel
+    const userMetadata = (user as any)?.user_metadata || {};
+    const bookingWithUser = {
+      ...booking,
+      user: {
+        first_name: userMetadata.first_name || user?.email?.split("@")[0] || "",
+        last_name: userMetadata.last_name || "",
+        email: user?.email || "",
+        phone_number: userMetadata.phone_number || "",
+      },
+    };
+    setSelectedBooking(bookingWithUser);
+    setSelectedBookingType(type);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedBooking(null);
+  };
+
+  const handleStatusUpdate = async (id: string, status: string) => {
+    try {
+      // Update the booking status in the database based on type
+      const table =
+        selectedBookingType === "inspection"
+          ? "inspections"
+          : selectedBookingType === "rental"
+          ? "rentals"
+          : "reservations";
+
+      const { error } = await supabase
+        .from(table)
+        .update({ status })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${selectedBookingType} status updated successfully`,
+      });
+
+      // Refresh bookings
+      fetchUserBookings();
+
+      // Close the details panel
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update booking status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getLocation = (location: any): PropertyLocation => {
+    return location as PropertyLocation;
+  };
 
   useEffect(() => {
     if (user) {
@@ -70,43 +157,67 @@ export default function UserBookings() {
     try {
       setLoading(true);
 
-      // Fetch inspections
+      // Fetch inspections with property and agent data
       const { data: inspectionsData, error: inspectionsError } = await supabase
         .from("inspections")
         .select(
           `
           *,
           properties (
+            id,
             title,
             location,
-            property_images (url, is_primary)
+            property_images (
+              url,
+              is_primary
+            )
+          ),
+          agent:users!agent_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            avatar
           )
         `
         )
-        .eq("user_id", user?.id || '')
+        .eq("user_id", user?.id || "")
         .order("created_at", { ascending: false });
 
       if (inspectionsError) throw inspectionsError;
 
-      // Fetch rentals
+      // Fetch rentals with property and agent data
       const { data: rentalsData, error: rentalsError } = await supabase
         .from("rentals")
         .select(
           `
           *,
           properties (
+            id,
             title,
             location,
-            property_images (url, is_primary)
+            property_images (
+              url,
+              is_primary
+            )
+          ),
+          agent:users!agent_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            avatar
           )
         `
         )
-        .eq("user_id", user?.id || '')
+        .eq("user_id", user?.id || "")
         .order("created_at", { ascending: false });
 
       if (rentalsError) throw rentalsError;
 
-      // Fetch reservations
+      // Fetch reservations with property and agent data
       const { data: reservationsData, error: reservationsError } =
         await supabase
           .from("reservations")
@@ -114,20 +225,32 @@ export default function UserBookings() {
             `
           *,
           properties (
+            id,
             title,
             location,
-            property_images (url, is_primary)
+            property_images (
+              url,
+              is_primary
+            )
+          ),
+          agent:users!agent_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            avatar
           )
         `
           )
-          .eq("user_id", user?.id || '')
+          .eq("user_id", user?.id || "")
           .order("created_at", { ascending: false });
 
       if (reservationsError) throw reservationsError;
 
-      setInspections(inspectionsData as Inspection[] || []);
-      setRentals(rentalsData as Rental[] || []);
-      setReservations(reservationsData as Reservation[] || []);
+      setInspections((inspectionsData as Inspection[]) || []);
+      setRentals((rentalsData as Rental[]) || []);
+      setReservations((reservationsData as Reservation[]) || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast({
@@ -263,7 +386,7 @@ export default function UserBookings() {
             </Card>
           ) : (
             inspections.map((inspection) => (
-              <Card key={inspection.id}>
+              <Card key={inspection.id} className="cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <img
@@ -280,8 +403,7 @@ export default function UserBookings() {
                           <div className="flex items-center text-gray-600 mb-2">
                             <MapPinIcon className="w-4 h-4 mr-1" />
                             <span className="text-sm">
-                              {inspection.property?.location?.address ||
-                                "Location not specified"}
+                              {getLocation(inspection.property?.location)?.city}
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -300,9 +422,20 @@ export default function UserBookings() {
                             </p>
                           )}
                         </div>
-                        <Badge className={getStatusColor(inspection.status)}>
-                          {inspection.status}
-                        </Badge>
+                        <div className="flex flex-col gap-2">
+                          <Badge className={getStatusColor(inspection.status)}>
+                            {inspection.status}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleBookingClick(inspection, "inspection")
+                            }
+                          >
+                            View Details
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -375,6 +508,13 @@ export default function UserBookings() {
                           >
                             {rental.payment_status}
                           </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleBookingClick(rental, "rental")}
+                          >
+                            View Details
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -448,9 +588,20 @@ export default function UserBookings() {
                             </p>
                           )}
                         </div>
-                        <Badge className={getStatusColor(reservation.status)}>
-                          {reservation.status}
-                        </Badge>
+                        <div className="flex flex-col gap-2">
+                          <Badge className={getStatusColor(reservation.status)}>
+                            {reservation.status}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleBookingClick(reservation, "reservation")
+                            }
+                          >
+                            View Details
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -475,13 +626,21 @@ export default function UserBookings() {
                   Purchase history coming soon
                 </h3>
                 <p className="text-gray-600 text-center">
-                  Property purchase tracking will be available in future updates.
+                  Property purchase tracking will be available in future
+                  updates.
                 </p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
       </Tabs>
+      <BookingDetailsPanel
+        isOpen={!!selectedBooking}
+        onClose={handleCloseDetails}
+        bookingType={selectedBookingType}
+        bookingData={selectedBooking}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </div>
   );
 }

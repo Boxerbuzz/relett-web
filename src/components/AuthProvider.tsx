@@ -261,7 +261,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         description: "You have successfully signed in.",
       });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Sign in error:", error);
       toast({
@@ -316,7 +316,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           title: "Welcome to Relett!",
           description: "Your account has been created successfully.",
         });
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Sign up error:", error);
