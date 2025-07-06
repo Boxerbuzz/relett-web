@@ -53,14 +53,8 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      // Mock balance for development
-      const mockResponse: BalanceResponse = {
-        balance: 100.0,
-        tokens: [],
-        accountId,
-        message: 'Mock balance check for development'
-      };
-      return createResponse(createSuccessResponse(mockResponse));
+      console.error('Hedera credentials not configured');
+      return createResponse(createErrorResponse('Hedera balance service not configured'), 500);
     }
 
     try {

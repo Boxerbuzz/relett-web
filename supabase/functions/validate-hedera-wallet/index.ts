@@ -53,13 +53,8 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get("HEDERA_PRIVATE_KEY");
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      // Mock validation for development
-      const mockResponse: WalletValidationResponse = {
-        valid: true,
-        balance: 100.0,
-        message: "Mock wallet validation for development",
-      };
-      return createResponse(createSuccessResponse(mockResponse));
+      console.error('Hedera credentials not configured');
+      return createResponse(createErrorResponse('Hedera wallet service not configured'), 500);
     }
 
     try {

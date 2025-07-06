@@ -50,14 +50,8 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      // Mock association check for development
-      const mockResponse: TokenAssociationResponse = {
-        isAssociated: true,
-        accountId,
-        tokenId,
-        message: 'Mock token association check for development'
-      };
-      return createResponse(createSuccessResponse(mockResponse));
+      console.error('Hedera credentials not configured');
+      return createResponse(createErrorResponse('Hedera token association check service not configured'), 500);
     }
 
     try {

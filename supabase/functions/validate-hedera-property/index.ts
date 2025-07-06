@@ -62,27 +62,18 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get("HEDERA_PRIVATE_KEY");
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      console.log('Hedera credentials not configured, using mock validation');
+      console.error('Hedera credentials not configured');
       
-      // Return mock validation for development
-      const mockResponse: ValidationResponse = {
-        valid: true,
-        tokenExists: true,
-        tokenDetails: {
-          tokenId: tokenId,
-          name: `Property Token ${propertyId}`,
-          symbol: 'PROP',
-          totalSupply: '1000000',
-          treasury: '0.0.123456',
-          decimals: 2
-        },
-        propertyHash: landTitleHash || 'mock_hash_' + propertyId,
-        lastUpdated: new Date().toISOString(),
+      const errorResponse: ValidationResponse = {
+        valid: false,
+        tokenExists: false,
+        error: 'Hedera property validation service not configured'
       };
 
       return new Response(
-        JSON.stringify(mockResponse),
+        JSON.stringify(errorResponse),
         { 
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );

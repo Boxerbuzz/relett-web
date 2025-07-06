@@ -56,33 +56,8 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      console.log('Hedera credentials not found, using mock token creation');
-      
-      // Mock token creation for development
-      const mockTokenId = `0.0.${Math.floor(Math.random() * 1000000)}`;
-      
-      const supabase = createTypedSupabaseClient();
-      const { error: updateError } = await supabase
-        .from('tokenized_properties')
-        .update({
-          hedera_token_id: mockTokenId,
-          status: 'minted'
-        })
-        .eq('id', tokenizedPropertyId);
-
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        return createResponse(createErrorResponse('Failed to update token'), 500);
-      }
-
-      const mockResponse: TokenCreationResponse = {
-        success: true,
-        token_id: mockTokenId,
-        transaction_id: `mock_tx_${Date.now()}`,
-        message: 'Mock token created for development'
-      };
-
-      return createResponse(createSuccessResponse(mockResponse));
+      console.error('Hedera credentials not configured');
+      return createResponse(createErrorResponse('Hedera token service not configured'), 500);
     }
 
     // Initialize Hedera client

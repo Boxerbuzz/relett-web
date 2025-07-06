@@ -74,14 +74,8 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      // Mock distribution for development
-      const mockResponse: RevenueDistributionResponse = {
-        success: true,
-        distribution_id: `mock_dist_${Date.now()}`,
-        total_holders: 0,
-        message: 'Mock revenue distribution for development'
-      };
-      return createResponse(createSuccessResponse(mockResponse));
+      console.error('Hedera credentials not configured');
+      return createResponse(createErrorResponse('Hedera revenue distribution service not configured'), 500);
     }
 
     // Initialize Hedera client

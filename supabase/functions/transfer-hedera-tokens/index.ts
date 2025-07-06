@@ -60,33 +60,9 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      // Mock transfer for development
-      const mockTxId = `mock_transfer_${Date.now()}`;
-      
-      // Update database with mock transaction
-      const { error: insertError } = await supabaseClient
-        .from('token_transactions')
-        .insert({
-          tokenized_property_id: tokenizedPropertyId,
-          from_holder: fromAccountId,
-          to_holder: toAccountId,
-          token_amount: amount.toString(),
-          price_per_token: pricePerToken || 0,
-          total_value: (amount * (pricePerToken || 0)),
-          transaction_type: 'transfer',
-          hedera_transaction_id: mockTxId,
-          status: 'confirmed'
-        });
-
-      if (insertError) {
-        console.error('Database insert error:', insertError);
-      }
-
-      return new Response(JSON.stringify({
-        success: true,
-        transaction_id: mockTxId,
-        message: 'Mock token transfer for development'
-      }), {
+      console.error('Hedera credentials not configured');
+      return new Response(JSON.stringify({ error: 'Hedera token service not configured' }), {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
