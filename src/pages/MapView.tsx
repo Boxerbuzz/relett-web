@@ -17,7 +17,9 @@ import {
   MapPinIcon,
   EyeIcon,
 } from "@phosphor-icons/react";
-import { Layers, Filter, Fullscreen } from "lucide-react";
+import { Layers, Filter, Fullscreen, Minimize } from "lucide-react";
+import { GoogleMapWithProperties } from "@/components/maps/GoogleMapWithProperties";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 const mapProperties = [
   {
@@ -56,6 +58,8 @@ const mapProperties = [
 ];
 
 const MapView = () => {
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "verified":
@@ -101,9 +105,13 @@ const MapView = () => {
             <Layers size={16} className="mr-2" />
             Layers
           </Button>
-          <Button variant="outline" size="sm">
-            <Fullscreen size={16} className="mr-2" />
-            Fullscreen
+          <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+            {isFullscreen ? (
+              <Minimize size={16} className="mr-2" />
+            ) : (
+              <Fullscreen size={16} className="mr-2" />
+            )}
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </Button>
         </div>
       </div>
@@ -167,22 +175,12 @@ const MapView = () => {
                 Interactive Property Map
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0 flex-1">
-              <div className="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-                <div className="text-center flex-col items-center justify-center">
-                  <MapPinIcon
-                    size={64}
-                    className="mx-auto text-gray-400 mb-4"
-                  />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Interactive Map
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Map integration will be implemented here
-                  </p>
-                  <Badge variant="outline">Coming Soon</Badge>
-                </div>
-              </div>
+            <CardContent className="p-0 flex-1 relative">
+              <GoogleMapWithProperties 
+                className="w-full h-full"
+                center={{ lat: 6.5244, lng: 3.3792 }}
+                zoom={11}
+              />
             </CardContent>
           </Card>
         </div>
