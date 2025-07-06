@@ -67,21 +67,22 @@ async function getUserDetails(userId: string, supabase: ReturnType<typeof create
 }
 
 function getNotificationContent(record: BookingRecord, isStatusChange: boolean = false): NotificationContent {
-  const { type, status } = record;
+  const { type, status, id } = record;
+  const maskId = (id: string) => id.slice(0, 6);
   
   if (isStatusChange) {
     return {
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} Status Updated`,
-      getUserMessage: (property) => `Your ${type} for "${property.title}" has been ${status}`,
-      getOwnerMessage: (user, property) => `${user.first_name} ${user.last_name}'s ${type} for "${property.title}" is now ${status}`,
-      getAgentMessage: (user, property) => `${type} by ${user.first_name} ${user.last_name} for "${property.title}" is now ${status}`
+      getUserMessage: (property) => `Your ${type} ${maskId(id)} for "${property.title}" has been ${status}`,
+      getOwnerMessage: (user, property) => `Your property "${property.title}" ${type} ${maskId(id)} is now ${status}`,
+      getAgentMessage: (user, property) => `Your property "${property.title}" ${type} ${maskId(id)} is now ${status}`
     };
   } else {
     return {
       title: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Request`,
-      getUserMessage: (property) => `Your ${type} request for "${property.title}" has been submitted`,
-      getOwnerMessage: (user, property) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`,
-      getAgentMessage: (user, property) => `New ${type} request from ${user.first_name} ${user.last_name} for "${property.title}"`
+      getUserMessage: (property) => `Your ${type} ${maskId(id)} for "${property.title}" has been submitted`,
+      getOwnerMessage: (user, property) => `Your property "${property.title}" has a new ${type} ${maskId(id)} from ${user.first_name} ${user.last_name}`,
+      getAgentMessage: (user, property) => `Your property "${property.title}" has a new ${type} ${maskId(id)} from ${user.first_name} ${user.last_name}`
     };
   }
 }

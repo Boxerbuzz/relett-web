@@ -35,16 +35,19 @@ Deno.serve(async (req) => {
       return createResponse({ success: false, error: 'Inspection not found' }, 404);
     }
 
+    // Helper function to mask ID
+    const maskId = (id: string) => id.slice(0, 6);
+
     const statusMessages = {
-      confirmed: 'Your inspection has been confirmed',
-      completed: 'Your inspection has been completed',
-      cancelled: 'Your inspection has been cancelled',
-      rescheduled: 'Your inspection has been rescheduled',
-      pending: 'Your inspection is pending confirmation'
+      confirmed: 'has been confirmed',
+      completed: 'has been completed',
+      cancelled: 'has been cancelled',
+      rescheduled: 'has been rescheduled',
+      pending: 'is pending confirmation'
     };
 
-    const message = statusMessages[payload.status as keyof typeof statusMessages] || 
-                   `Your inspection status has been updated to ${payload.status}`;
+    const statusText = statusMessages[payload.status as keyof typeof statusMessages] || 
+                      `status has been updated to ${payload.status}`;
 
     // Notify the user who requested the inspection
     if (inspection.user_id) {
@@ -54,7 +57,7 @@ Deno.serve(async (req) => {
           user_id: inspection.user_id,
           type: 'inspection',
           title: 'Inspection Update',
-          message: `${message} for ${inspection.properties.title}`,
+          message: `Your inspection ${maskId(payload.inspection_id)} ${statusText} for ${inspection.properties.title}`,
           metadata: {
             inspection_id: payload.inspection_id,
             property_id: inspection.property_id,
@@ -77,8 +80,8 @@ Deno.serve(async (req) => {
         .insert({
           user_id: inspection.agent_id,
           type: 'inspection',
-          title: 'Inspection Update',
-          message: `Inspection status updated to ${payload.status} for ${inspection.properties.title}`,
+          title: 'Property Inspection Update',
+          message: `Your property "${inspection.properties.title}" inspection ${maskId(payload.inspection_id)} ${statusText}`,
           metadata: {
             inspection_id: payload.inspection_id,
             property_id: inspection.property_id,

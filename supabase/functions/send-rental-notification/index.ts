@@ -35,19 +35,22 @@ Deno.serve(async (req) => {
       return createResponse({ success: false, error: 'Rental not found' }, 404);
     }
 
+    // Helper function to mask ID
+    const maskId = (id: string) => id.slice(0, 6);
+
     const statusMessages = {
-      confirmed: 'Your rental application has been confirmed',
-      approved: 'Your rental application has been approved',
-      rejected: 'Your rental application has been rejected',
-      cancelled: 'Your rental has been cancelled',
-      active: 'Your rental is now active',
-      expired: 'Your rental has expired'
+      confirmed: 'has been confirmed',
+      approved: 'has been approved', 
+      rejected: 'has been rejected',
+      cancelled: 'has been cancelled',
+      active: 'is now active',
+      expired: 'has expired'
     };
 
-    const message = statusMessages[payload.status as keyof typeof statusMessages] || 
-                   `Your rental status has been updated to ${payload.status}`;
+    const statusText = statusMessages[payload.status as keyof typeof statusMessages] || 
+                      `status has been updated to ${payload.status}`;
 
-    // Notify the tenant
+    // Notify the tenant (user who made the rental)
     if (rental.user_id) {
       const { error: tenantNotifError } = await supabase
         .from('notifications')
@@ -55,7 +58,7 @@ Deno.serve(async (req) => {
           user_id: rental.user_id,
           type: 'rental',
           title: 'Rental Update',
-          message: `${message} for ${rental.properties.title}`,
+          message: `Your rental ${maskId(payload.rental_id)} ${statusText} for ${rental.properties.title}`,
           metadata: {
             rental_id: payload.rental_id,
             property_id: rental.property_id,
@@ -71,15 +74,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Notify the property owner
+    // Notify the property owner/agent
     if (rental.properties.user_id && rental.properties.user_id !== rental.user_id) {
       const { error: ownerNotifError } = await supabase
         .from('notifications')
         .insert({
           user_id: rental.properties.user_id,
           type: 'rental',
-          title: 'Rental Update',
-          message: `Rental status updated to ${payload.status} for your property ${rental.properties.title}`,
+          title: 'Property Rental Update',
+          message: `Your property "${rental.properties.title}" rental ${maskId(payload.rental_id)} ${statusText}`,
           metadata: {
             rental_id: payload.rental_id,
             property_id: rental.property_id,

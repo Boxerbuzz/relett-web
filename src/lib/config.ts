@@ -1,40 +1,34 @@
 
 export const config = {
   paystack: {
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
-    isConfigured: () => !!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+    publicKey: '',
+    isConfigured: () => false,
   },
   supabase: {
     url: 'https://wossuijahchhtjzphsgh.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvc3N1aWphaGNoaHRqenBoc2doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5MjA5NjIsImV4cCI6MjA2MTQ5Njk2Mn0.eLKZrNi8hMUCAqyoHaw5TMaX8muaA7q_Q7HCHzBDSyM'
   },
   hedera: {
-    network: import.meta.env.VITE_HEDERA_NETWORK || 'testnet',
-    accountId: import.meta.env.VITE_HEDERA_ACCOUNT_ID || '',
-    privateKey: import.meta.env.VITE_HEDERA_PRIVATE_KEY || '',
+    network: 'testnet',
+    accountId: '', // This will be configured via backend
+    privateKey: '', // This will be configured via backend  
     contracts: {
-      propertyRegistry: import.meta.env.VITE_PROPERTY_REGISTRY_CONTRACT || '',
-      propertyMarketplace: import.meta.env.VITE_PROPERTY_MARKETPLACE_CONTRACT || '',
-      revenueDistributor: import.meta.env.VITE_REVENUE_DISTRIBUTOR_CONTRACT || '',
+      propertyRegistry: '', // These need to be set after contract deployment
+      propertyMarketplace: '',
+      revenueDistributor: '',
     },
-    isConfigured: () => !!(
-      import.meta.env.VITE_HEDERA_ACCOUNT_ID && 
-      import.meta.env.VITE_HEDERA_PRIVATE_KEY &&
-      import.meta.env.VITE_PROPERTY_REGISTRY_CONTRACT &&
-      import.meta.env.VITE_PROPERTY_MARKETPLACE_CONTRACT &&
-      import.meta.env.VITE_REVENUE_DISTRIBUTOR_CONTRACT
-    ),
+    isConfigured: () => false, // Temporarily disabled until proper backend integration
   },
   currency: {
     default: 'NGN',
     supported: ['NGN', 'USD']
   },
   maps: {
-    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    isConfigured: () => !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    apiKey: '', // This should be set in environment but not using VITE_
+    isConfigured: () => false,
   },
   ipfs: {
-    gatewayUrl: import.meta.env.VITE_IPFS_GATEWAY_URL || 'https://gateway.pinata.cloud/ipfs/',
-    isConfigured: () => !!import.meta.env.VITE_IPFS_GATEWAY_URL,
+    gatewayUrl: 'https://gateway.pinata.cloud/ipfs/',
+    isConfigured: () => true,
   }
 };

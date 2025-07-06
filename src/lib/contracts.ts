@@ -35,28 +35,26 @@ export class PropertyContracts {
   // Register a new property in the registry
   async registerProperty(propertyData: PropertyTokenData) {
     try {
-      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
+      // Use backend Edge Function for blockchain operations
+      const response = await fetch(`${config.supabase.url}/functions/v1/register-property-blockchain`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.supabase.anonKey}`,
+        },
+        body: JSON.stringify(propertyData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(1000000)
-        .setFunction("registerProperty", 
-          new ContractFunctionParameters()
-            .addString(propertyData.propertyId)
-            .addString(propertyData.landTitleId)
-            .addString(propertyData.tokenName)
-            .addString(propertyData.tokenSymbol)
-            .addUint256(propertyData.totalSupply)
-            .addUint256(propertyData.totalValue)
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
       return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
+        success: result.success,
+        transactionId: result.transactionId,
+        status: result.status
       };
     } catch (error) {
       console.error('Error registering property:', error);
