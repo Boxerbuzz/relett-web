@@ -29,6 +29,8 @@ import { PropertyBlockchainRegistration } from "@/components/hedera/PropertyBloc
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys, cacheConfig } from "@/lib/queryClient";
 
 interface Property {
   id: string;
@@ -98,30 +100,34 @@ const MyProperty = () => {
   const { toast } = useToast();
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
-  const [blockchainRegistrationOpen, setBlockchainRegistrationOpen] = useState(false);
+  const [blockchainRegistrationOpen, setBlockchainRegistrationOpen] =
+    useState(false);
   const [selectedProperty, setSelectedProperty] =
     useState<PropertyForDialog | null>(null);
   const [selectedPropertyForTokenize, setSelectedPropertyForTokenize] =
     useState<TokenizePropertyForDialog | null>(null);
   const [selectedPropertyForBlockchain, setSelectedPropertyForBlockchain] =
     useState<Property | null>(null);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    if (user) {
-      fetchProperties();
-    }
-  }, [user]);
+  // React-Query client for cache manipulation
+  const queryClient = useQueryClient();
 
-  // Convert kobo to naira for display
-  const convertKoboToNaira = (kobo: number) => kobo / 100;
+  const userPropertiesKey = queryKeys.properties.userProperties(
+    user?.id || ""
+  );
 
-  const fetchProperties = async () => {
-    try {
-      setLoading(true);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch: refetchProperties,
+  } = useQuery<Property[]>({
+    queryKey: userPropertiesKey,
+    enabled: !!user,
+    queryFn: async () => {
+      // Fetch properties belonging to the current user
       const { data: propertiesData, error: propertiesError } = await supabase
         .from("properties")
         .select(
@@ -145,51 +151,74 @@ const MyProperty = () => {
 
       if (propertiesError) throw propertiesError;
 
-      // Fetch property images separately
+      // Collect property IDs so we can fetch their images in one call
       const propertyIds = propertiesData?.map((p) => p.id) || [];
+
+      let imagesByProperty: Record<string, any[]> = {};
+
       if (propertyIds.length > 0) {
         const { data: imagesData, error: imagesError } = await supabase
           .from("property_images")
           .select("property_id, url, is_primary")
           .in("property_id", propertyIds);
 
-        if (imagesError) {
-          console.error("Error fetching images:", imagesError);
-        }
+        if (imagesError) throw imagesError;
 
-        // Group images by property
-        const imagesByProperty =
+        imagesByProperty =
           imagesData?.reduce((acc, img) => {
             if (!acc[img.property_id]) acc[img.property_id] = [];
             acc[img.property_id].push(img);
             return acc;
           }, {} as Record<string, any[]>) || {};
-
-        // Combine properties with their images
-        const enrichedProperties: Property[] =
-          propertiesData?.map((property) => ({
-            ...property,
-            title: property.title || '',
-            is_tokenized: property.is_tokenized || false,
-            is_verified: property.is_verified || false,
-            property_images: imagesByProperty[property.id] || [],
-          })) as Property[] || [];
-
-        setProperties(enrichedProperties);
-      } else {
-        setProperties([]);
       }
-    } catch (error) {
+
+      // Attach images and coerce to strict Property type
+      const enrichedProperties: Property[] = (propertiesData || []).map(
+        (property) => ({
+          id: property.id,
+          title: property.title || "",
+          location: property.location,
+          specification: property.specification,
+          status: property.status,
+          price: property.price,
+          is_tokenized: property.is_tokenized || false,
+          is_verified: property.is_verified || false,
+          type: property.type,
+          backdrop: (property.backdrop as string | null) || undefined,
+          blockchain_transaction_id: property.blockchain_transaction_id ?? undefined,
+          property_images: imagesByProperty[property.id] || [],
+        })
+      );
+
+      return enrichedProperties;
+    },
+    ...cacheConfig.standard,
+  });
+
+  // Derived, type-safe list of properties for rendering
+  const properties: Property[] = data ?? [];
+
+  // Show toast on error
+  useEffect(() => {
+    if (error) {
       console.error("Error fetching properties:", error);
       toast({
         title: "Error",
         description: "Failed to fetch properties. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
+
+  // If the user changes (e.g., logout), refetch the properties list
+  useEffect(() => {
+    if (user) {
+      refetchProperties();
+    }
+  }, [user]);
+
+  // Convert kobo to naira for display
+  const convertKoboToNaira = (kobo: number) => kobo / 100;
 
   const handleViewDetails = (property: Property) => {
     // Transform Property to PropertyForDialog
@@ -237,20 +266,21 @@ const MyProperty = () => {
   };
 
   const handleBlockchainRegistrationComplete = (transactionId: string) => {
-    // Update the property's blockchain status in state
     if (selectedPropertyForBlockchain) {
-      setProperties(prevProperties =>
-        prevProperties.map(prop =>
-          prop.id === selectedPropertyForBlockchain.id
-            ? { ...prop, blockchain_transaction_id: transactionId }
-            : prop
-        )
+      queryClient.setQueryData<Property[]>(
+        userPropertiesKey,
+        (old) =>
+          old?.map((prop) =>
+            prop.id === selectedPropertyForBlockchain.id
+              ? { ...prop, blockchain_transaction_id: transactionId }
+              : prop
+          ) || []
       );
     }
-    
+
     setBlockchainRegistrationOpen(false);
     setSelectedPropertyForBlockchain(null);
-    
+
     toast({
       title: "Success!",
       description: "Property registered on blockchain successfully.",
@@ -434,7 +464,7 @@ const MyProperty = () => {
       </Card>
 
       {/* Properties Grid */}
-      {loading ? (
+      {isLoading ? (
         <PropertyGridSkeleton count={8} />
       ) : filteredProperties.length === 0 ? (
         <Card>
@@ -461,6 +491,7 @@ const MyProperty = () => {
             <Card
               key={property.id}
               className="hover:shadow-lg transition-all duration-200 group"
+              onClick={() => handleViewDetails(property)}
             >
               <div className="relative aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
                 <img
@@ -539,8 +570,6 @@ const MyProperty = () => {
                   isRegistered={!!property.blockchain_transaction_id}
                   transactionId={property.blockchain_transaction_id}
                   size="sm"
-                  showRegisterButton={!property.blockchain_transaction_id && property.is_verified}
-                  onRegister={() => handleRegisterOnBlockchain(property)}
                 />
 
                 <div className="flex items-center justify-between">
@@ -549,24 +578,6 @@ const MyProperty = () => {
                       {getPriceString(property.price)}
                     </p>
                     <p className="text-xs text-gray-500">Est. value</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewDetails(property)}
-                    >
-                      <Eye size={14} className="mr-2" />
-                      <span className="hidden sm:inline">View</span>
-                    </Button>
-                    {!property.is_tokenized && property.is_verified && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleTokenizeProperty(property)}
-                      >
-                        Tokenize
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -581,21 +592,6 @@ const MyProperty = () => {
           open={detailsDialogOpen}
           onOpenChange={setDetailsDialogOpen}
           propertyId={selectedProperty.id.toString()}
-        />
-      )}
-      {selectedPropertyForTokenize && (
-        <TokenizePropertyDialog
-          open={tokenizeDialogOpen}
-          onOpenChange={setTokenizeDialogOpen}
-          property={selectedPropertyForTokenize}
-        />
-      )}
-      {selectedPropertyForBlockchain && (
-        <PropertyBlockchainRegistration
-          propertyData={selectedPropertyForBlockchain}
-          onRegistrationComplete={handleBlockchainRegistrationComplete}
-          onRegistrationSkip={handleBlockchainRegistrationSkip}
-          autoRegister={false}
         />
       )}
     </div>
