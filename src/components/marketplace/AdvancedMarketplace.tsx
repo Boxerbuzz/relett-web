@@ -28,11 +28,15 @@ import {
 import { getAmenityById } from "@/types/amenities";
 import { EnhancedPropertyPricing } from "@/types/property";
 import { capitalize } from "@/lib/utils";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { Fullscreen, Minimize } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function AdvancedMarketplace() {
   const [compareProperties, setCompareProperties] = useState<Property[]>([]);
   const [activeTab, setActiveTab] = useState("search");
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
   const {
     properties,
     isLoading,
@@ -96,11 +100,21 @@ export function AdvancedMarketplace() {
           </p>
         </div>
 
-        {compareProperties.length > 0 && (
-          <Badge className="bg-blue-100 text-blue-800 animate-pulse">
-            {compareProperties.length} properties selected for comparison
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          {compareProperties.length > 0 && (
+            <Badge className="bg-blue-100 text-blue-800 animate-pulse">
+              {compareProperties.length} properties selected for comparison
+            </Badge>
+          )}
+          <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+            {isFullscreen ? (
+              <Minimize className="h-4 w-4 mr-2" />
+            ) : (
+              <Fullscreen className="h-4 w-4 mr-2" />
+            )}
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          </Button>
+        </div>
       </div>
 
       <Tabs
