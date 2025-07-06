@@ -47,6 +47,7 @@ export function GooglePlacesAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string>("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteService = useRef<any>(null);
@@ -54,38 +55,42 @@ export function GooglePlacesAutocomplete({
   const sessionToken = useRef<any>(null);
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY!;
-    if (!apiKey) {
-      console.warn("Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
-      return;
-    }
+    const loadGoogleMaps = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.onload = () => {
-      if (!window.google) return;
+        if (!apiKey) {
+          console.warn("Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
+          return;
+        }
 
-      autocompleteService.current =
-        new window.google.maps.places.AutocompleteService();
-      sessionToken.current =
-        new window.google.maps.places.AutocompleteSessionToken();
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.onload = () => {
+          if (!window.google) return;
 
-      const mapDiv = document.createElement("div");
-      placesService.current = new window.google.maps.places.PlacesService(
-        mapDiv
-      );
+          autocompleteService.current =
+            new window.google.maps.places.AutocompleteService();
+          sessionToken.current =
+            new window.google.maps.places.AutocompleteSessionToken();
 
-      setIsScriptLoaded(true);
-    };
+          const mapDiv = document.createElement("div");
+          placesService.current = new window.google.maps.places.PlacesService(
+            mapDiv
+          );
 
-    document.head.appendChild(script);
+          setIsScriptLoaded(true);
+        };
 
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
+        document.head.appendChild(script);
+      } catch (err) {
+        console.error("Error loading Google Maps:", err);
+        setMapError("Failed to load Google Maps");
       }
     };
+
+    loadGoogleMaps();
   }, []);
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

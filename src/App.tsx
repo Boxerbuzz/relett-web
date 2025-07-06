@@ -260,7 +260,7 @@ function App() {
                 <Route
                   path="/messages"
                   element={
-                    <Layout>
+                    <Layout stripPadding>
                       <ProtectedRoute>
                         <Messaging />
                       </ProtectedRoute>

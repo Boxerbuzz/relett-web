@@ -93,7 +93,7 @@ const mainNavigation = [
   },
   {
     name: "Messaging",
-    href: "/messaging",
+    href: "/messages",
     icon: ChatIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
   },
