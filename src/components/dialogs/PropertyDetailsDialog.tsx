@@ -323,7 +323,7 @@ export function PropertyDetailsDialog({
           </div>
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 p-1">
               {/* Left Column - Image and Basic Info */}
               <div className="lg:col-span-1 space-y-4">
                 {/* Property Image */}
@@ -386,11 +386,11 @@ export function PropertyDetailsDialog({
               <div className="lg:col-span-2">
                 <Tabs defaultValue="overview" className="w-full">
                   <div className="sticky top-0 bg-white z-10 pb-4">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="investment">Investment</TabsTrigger>
-                      <TabsTrigger value="documents">Documents</TabsTrigger>
-                      <TabsTrigger value="location">Location</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+                      <TabsTrigger value="overview" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Overview</TabsTrigger>
+                      <TabsTrigger value="investment" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Investment</TabsTrigger>
+                      <TabsTrigger value="documents" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Documents</TabsTrigger>
+                      <TabsTrigger value="location" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Location</TabsTrigger>
                     </TabsList>
                   </div>
 

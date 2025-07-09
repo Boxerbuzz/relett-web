@@ -106,9 +106,9 @@ export function BuyTokenDialog({ open, onOpenChange, tokenizedProperty }: BuyTok
         <div className="flex-1 overflow-y-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="sticky top-0 bg-white z-10 pb-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="wallet">1. Setup Wallet</TabsTrigger>
-                <TabsTrigger value="purchase" disabled={!userWallet}>
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-auto gap-1">
+                <TabsTrigger value="wallet" className="text-xs sm:text-sm px-2 py-1.5">1. Setup Wallet</TabsTrigger>
+                <TabsTrigger value="purchase" disabled={!userWallet} className="text-xs sm:text-sm px-2 py-1.5">
                   2. Purchase Tokens
                 </TabsTrigger>
               </TabsList>

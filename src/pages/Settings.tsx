@@ -29,7 +29,7 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="notifications" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto gap-1 overflow-x-auto">
           <TabsTrigger
             value="notifications"
             className="flex items-center gap-2"

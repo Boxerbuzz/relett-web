@@ -227,11 +227,11 @@ export function AdminDashboard() {
           className="space-y-6 w-full"
         >
           <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="properties">Properties</TabsTrigger>
-              <TabsTrigger value="verification-hub">KYC & Roles</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1.5">Overview</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
+              <TabsTrigger value="properties" className="text-xs sm:text-sm px-2 py-1.5">Properties</TabsTrigger>
+              <TabsTrigger value="verification-hub" className="text-xs sm:text-sm px-2 py-1.5">KYC & Roles</TabsTrigger>
             </TabsList>
           </ScrollArea>
 

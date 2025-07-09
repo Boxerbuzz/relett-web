@@ -230,10 +230,10 @@ export function HederaTokenManager({
 
       {/* Token Management Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="transfer">Transfer</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-auto gap-1">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1.5">Overview</TabsTrigger>
+          <TabsTrigger value="transfer" className="text-xs sm:text-sm px-2 py-1.5">Transfer</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm px-2 py-1.5">History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">

@@ -346,7 +346,7 @@ export default function UserBookings() {
       </div>
 
       <Tabs defaultValue="inspections" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
           <TabsTrigger value="inspections" className="flex items-center gap-2">
             <EyeIcon size={16} className="w-4 h-4" />
             Inspections ({inspections.length})

@@ -282,7 +282,7 @@ const Welcome = () => {
       </div>
 
       <Tabs defaultValue="guide" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1">
           <TabsTrigger value="guide">Your Guide</TabsTrigger>
           <TabsTrigger value="features">Platform Status</TabsTrigger>
           <TabsTrigger value="quick-start">Quick Start</TabsTrigger>

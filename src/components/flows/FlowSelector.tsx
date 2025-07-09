@@ -67,17 +67,18 @@ export function FlowSelector({ activeFlow, onFlowChange }: FlowSelectorProps) {
       </div>
       
       <Tabs value={activeFlow} onValueChange={onFlowChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1 overflow-x-auto">
           {flows.map((flow) => {
             const Icon = flow.icon;
             return (
               <TabsTrigger
                 key={flow.id}
                 value={flow.id}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 min-w-0 flex-shrink-0"
               >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{flow.label}</span>
+                <Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">{flow.label}</span>
+                <span className="sm:hidden text-xs truncate">{flow.label.split(' ')[0]}</span>
               </TabsTrigger>
             );
           })}

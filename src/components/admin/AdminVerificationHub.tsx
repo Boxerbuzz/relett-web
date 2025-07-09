@@ -31,7 +31,7 @@ export function AdminVerificationHub() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="role-requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1">
             <TabsTrigger
               value="role-requests"
               className="flex items-center gap-2"

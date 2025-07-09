@@ -165,10 +165,10 @@ const MapView = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Map Container */}
-        <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col">
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <Card className="h-[400px] sm:h-[500px] lg:h-[600px] flex flex-col">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MapPinIcon size={20} className="mr-2" />
@@ -186,7 +186,7 @@ const MapView = () => {
         </div>
 
         {/* Property List */}
-        <div className="space-y-4">
+        <div className="space-y-4 order-1 lg:order-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Properties on Map</CardTitle>
@@ -194,10 +194,10 @@ const MapView = () => {
           </Card>
 
           <Tabs defaultValue="all" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="verified">Verified</TabsTrigger>
-              <TabsTrigger value="tokenized">Tokenized</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-auto">
+              <TabsTrigger value="all" className="text-xs sm:text-sm px-2 py-1.5">All</TabsTrigger>
+              <TabsTrigger value="verified" className="text-xs sm:text-sm px-2 py-1.5">Verified</TabsTrigger>
+              <TabsTrigger value="tokenized" className="text-xs sm:text-sm px-2 py-1.5">Tokenized</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">

@@ -182,11 +182,11 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
         </DialogHeader>
 
         <Tabs defaultValue="channels" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="channels">Channels</TabsTrigger>
-            <TabsTrigger value="types">Types</TabsTrigger>
-            <TabsTrigger value="digest">Digest</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+            <TabsTrigger value="channels" className="text-xs sm:text-sm px-2 py-1.5">Channels</TabsTrigger>
+            <TabsTrigger value="types" className="text-xs sm:text-sm px-2 py-1.5">Types</TabsTrigger>
+            <TabsTrigger value="digest" className="text-xs sm:text-sm px-2 py-1.5">Digest</TabsTrigger>
+            <TabsTrigger value="schedule" className="text-xs sm:text-sm px-2 py-1.5">Schedule</TabsTrigger>
           </TabsList>
 
           <TabsContent value="channels" className="space-y-6">

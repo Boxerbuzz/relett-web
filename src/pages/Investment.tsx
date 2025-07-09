@@ -48,7 +48,7 @@ const Investment = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto gap-1 overflow-x-auto">
           <TabsTrigger value="portfolio" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             Portfolio

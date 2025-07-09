@@ -187,7 +187,7 @@ const Documentation = () => {
           onValueChange={setActiveSection}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="database">Database</TabsTrigger>
             <TabsTrigger value="api">API & Functions</TabsTrigger>
