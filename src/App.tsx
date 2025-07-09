@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "./components/AuthProvider";
+import { AuthProvider } from "./contexts/AuthProvider";
 import { PropertyContractProvider } from "@/contexts/PropertyContractContext";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";

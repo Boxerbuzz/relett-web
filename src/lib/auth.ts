@@ -15,6 +15,7 @@ interface AuthContextType {
   ) => Promise<void>;
   signOut: () => Promise<void>;
   session: Session | null;
+  refreshUserData: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(

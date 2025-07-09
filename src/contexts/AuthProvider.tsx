@@ -9,6 +9,52 @@ import { User, Session } from "@supabase/supabase-js";
 import { User as AppUser } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
+// Cache interface for user data
+interface UserCache {
+  data: AppUser;
+  timestamp: number;
+  ttl: number; // Time to live in milliseconds
+}
+
+// Global cache for user data
+const userCache = new Map<string, UserCache>();
+
+// Cache configuration
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Cache utility functions
+const isCacheValid = (cache: UserCache): boolean => {
+  return Date.now() - cache.timestamp < cache.ttl;
+};
+
+const getUserFromCache = (userId: string): AppUser | null => {
+  const cached = userCache.get(userId);
+  if (cached && isCacheValid(cached)) {
+    console.log("User data retrieved from cache for:", userId);
+    return cached.data;
+  }
+  return null;
+};
+
+const setUserInCache = (userId: string, userData: AppUser): void => {
+  userCache.set(userId, {
+    data: userData,
+    timestamp: Date.now(),
+    ttl: CACHE_TTL,
+  });
+  console.log("User data cached for:", userId);
+};
+
+const invalidateUserCache = (userId: string): void => {
+  userCache.delete(userId);
+  console.log("User cache invalidated for:", userId);
+};
+
+const clearAllUserCache = (): void => {
+  userCache.clear();
+  console.log("All user cache cleared");
+};
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -68,6 +114,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null);
         setLoading(false);
         setSession(null);
+        // Clear cache on sign out
+        clearAllUserCache();
       }
 
       if (event === "INITIAL_SESSION" && session?.user) {
@@ -92,6 +140,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const fetchOrCreateUserProfile = async (authUser: User) => {
     console.log("=== STARTING fetchOrCreateUserProfile ===");
     try {
+      // Check cache first
+      const cachedUser = getUserFromCache(authUser.id);
+      if (cachedUser) {
+        console.log("Using cached user data for:", authUser.email);
+        setUser(cachedUser);
+        setLoading(false);
+        return;
+      }
+
       console.log("Step 1: Fetching user profile for:", authUser.email);
       console.log("Step 2: Querying users table...");
       console.log("Querying for user ID:", authUser.id);
@@ -198,6 +255,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           phone: createdUser.phone || undefined,
         };
 
+        // Cache the newly created user
+        setUserInCache(authUser.id, appUser);
         setUser(appUser);
         console.log("Step 12: Created user set successfully");
       } else {
@@ -212,6 +271,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           phone: userData.phone || undefined,
         };
 
+        // Cache the existing user
+        setUserInCache(authUser.id, appUser);
         setUser(appUser);
         console.log("Step 6: Existing user set successfully");
       }
@@ -238,6 +299,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log("=== FINALLY: Setting loading to false ===");
       setLoading(false);
     }
+  };
+
+  // Function to refresh user data and invalidate cache
+  const refreshUserData = async () => {
+    if (!session?.user) return;
+    
+    console.log("Refreshing user data and invalidating cache");
+    invalidateUserCache(session.user.id);
+    await fetchOrCreateUserProfile(session.user);
   };
 
   const signIn = async (email: string, password: string) => {
@@ -335,6 +405,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser(null);
       setSession(null);
+      // Clear cache on sign out
+      clearAllUserCache();
       navigate("/auth");
 
       toast({
@@ -355,7 +427,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signOut, session }}
+      value={{ user, loading, signIn, signUp, signOut, session, refreshUserData }}
     >
       <WalletProvider>{children}</WalletProvider>
     </AuthContext.Provider>
