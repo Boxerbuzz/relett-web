@@ -21,6 +21,13 @@ export function formatCurrency(
   }).format(amount);
 }
 
+export function formatNumber(amount: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function appLogger(domain: string, message: string) {
   console.log(`[${domain}] <=!=> ${message}`);
 }

@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import CurrencyInput from "@/components/input/CurrencyInput";
+import CounterInput from "@/components/input/CounterInput";
 
 interface BasicDetailsStepProps {
   form: UseFormReturn<any>;
@@ -205,17 +207,12 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Price Amount (NGN) *</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    min="1000"
-                    max="1000000000"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === '' ? undefined : parseFloat(value));
-                    }}
+                  <CurrencyInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="₦0"
+                    min={1000}
+                    max={1000000000}
                   />
                 </FormControl>
                 <FormMessage />
@@ -257,15 +254,10 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Deposit Amount</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === '' ? undefined : parseFloat(value));
-                    }}
+                  <CurrencyInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="₦0"
                   />
                 </FormControl>
                 <FormMessage />
@@ -282,15 +274,10 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Service Charge</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === '' ? undefined : parseFloat(value));
-                    }}
+                  <CurrencyInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="₦0"
                   />
                 </FormControl>
                 <FormMessage />
@@ -302,16 +289,31 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             control={form.control}
             name="price.is_negotiable"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+              <FormItem>
+                <FormLabel>Price Negotiability</FormLabel>
+                <div className="border border-gray-300 rounded-md p-4 py-2">
+                  <FormField
+                    control={form.control}
+                    name="price.is_negotiable"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-medium">
+                            Allow potential buyers/tenants to negotiate the
+                            price
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Price is negotiable</FormLabel>
                 </div>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -327,15 +329,12 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             <FormItem>
               <FormLabel>Maximum Guests</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
+                <CounterInput
+                  value={field.value}
+                  onChange={field.onChange}
                   placeholder="0"
-                  min="0"
-                  max="50"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(parseInt(e.target.value) || 0)
-                  }
+                  min={0}
+                  max={50}
                 />
               </FormControl>
               <FormMessage />
@@ -344,42 +343,90 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="is_exclusive"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Exclusive listing</FormLabel>
+      {/* Exclusive Listing Section */}
+      <div className="space-y-4">
+        <div className="border rounded-lg p-6 bg-blue-50/50">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
               </div>
-            </FormItem>
-          )}
-        />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Exclusive Listing
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Make your property an exclusive listing on Relett. This means
+                your property will be exclusively marketed and managed by
+                Relett, ensuring maximum visibility and professional handling.
+              </p>
 
-        <FormField
-          control={form.control}
-          name="is_featured"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Featured property</FormLabel>
+              <div className="space-y-3 mb-4">
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-gray-700">
+                    Priority placement in search results and featured sections
+                  </span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-gray-700">
+                    Dedicated property manager and marketing support
+                  </span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-gray-700">
+                    Professional photography and virtual tours included
+                  </span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-gray-700">
+                    Enhanced verification and trust indicators
+                  </span>
+                </div>
               </div>
-            </FormItem>
-          )}
-        />
+
+              <FormField
+                control={form.control}
+                name="is_exclusive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-base font-medium">
+                        Make this an exclusive listing
+                      </FormLabel>
+                      <p className="text-xs text-gray-500">
+                        Your property will be exclusively marketed by Relett
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <FormField

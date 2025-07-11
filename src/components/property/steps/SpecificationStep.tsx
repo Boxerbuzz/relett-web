@@ -1,4 +1,3 @@
-
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
@@ -13,10 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { X } from "lucide-react";
-import { getAmenities } from "@/types/amenities";
+import { getAmenities, getAmenityById } from "@/types/amenities";
 
 interface SpecificationStepProps {
   form: UseFormReturn<any>;
@@ -366,7 +371,7 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
                 variant="secondary"
                 className="flex items-center gap-1"
               >
-                {feature}
+                {getAmenityById(feature)?.name}
                 <X
                   className="w-3 h-3 cursor-pointer"
                   onClick={() => removeFeature(feature)}
