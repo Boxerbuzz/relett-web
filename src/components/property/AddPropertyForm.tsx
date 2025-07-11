@@ -233,8 +233,9 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
       case 2: // Specifications
         fieldsToValidate = ["sqrft"];
         break;
-      case 3: // Documents
-        fieldsToValidate = ["documents"];
+      case 3: // Documents - Make optional
+        // No validation required for documents step
+        return true;
         break;
       case 4: // Media
         fieldsToValidate = ["images"];
@@ -294,14 +295,15 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
       console.log("Submitting property:", data);
 
-      if (!data.documents || data.documents.length === 0) {
-        toast({
-          title: "Validation Error",
-          description: "At least one document is required",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Remove document validation requirement
+      // if (!data.documents || data.documents.length === 0) {
+      //   toast({
+      //     title: "Validation Error",
+      //     description: "At least one document is required",
+      //     variant: "destructive",
+      //   });
+      //   return;
+      // }
 
       if (!data.images || data.images.length === 0) {
         toast({
