@@ -1,24 +1,77 @@
-
-import { UseFormReturn } from 'react-hook-form';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BasicDetailsStepProps {
   form: UseFormReturn<any>;
 }
 
 export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
-  const category = form.watch('category');
+  const category = form.watch("category");
+  const type = form.watch("type");
+
+  // Define sub-type options based on property type
+  const getSubTypeOptions = (propertyType: string) => {
+    const subTypeOptions: Record<string, { value: string; label: string }[]> = {
+      residential: [
+        { value: "apartment", label: "Apartment" },
+        { value: "villa", label: "Villa" },
+        { value: "house", label: "House" },
+        { value: "condo", label: "Condo" },
+        { value: "townhouse", label: "Townhouse" },
+        { value: "duplex", label: "Duplex" },
+        { value: "penthouse", label: "Penthouse" },
+        { value: "studio", label: "Studio" },
+      ],
+      commercial: [
+        { value: "office", label: "Office" },
+        { value: "retail", label: "Retail" },
+        { value: "warehouse", label: "Warehouse" },
+        { value: "hotel", label: "Hotel" },
+        { value: "restaurant", label: "Restaurant" },
+        { value: "shop", label: "Shop" },
+        { value: "mall", label: "Mall" },
+      ],
+      industrial: [
+        { value: "factory", label: "Factory" },
+        { value: "manufacturing", label: "Manufacturing" },
+        { value: "logistics", label: "Logistics" },
+        { value: "warehouse", label: "Industrial Warehouse" },
+      ],
+      land: [
+        { value: "residential_land", label: "Residential Land" },
+        { value: "commercial_land", label: "Commercial Land" },
+        { value: "industrial_land", label: "Industrial Land" },
+        { value: "farmland", label: "Farmland" },
+        { value: "agricultural", label: "Agricultural Land" },
+      ],
+    };
+
+    return subTypeOptions[propertyType] || [];
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold mb-4">Basic Property Details</h2>
         <p className="text-gray-600 mb-6">
-          Tell us about your property. This information will help potential investors understand your listing.
+          Tell us about your property. This information will help potential
+          investors understand your listing.
         </p>
       </div>
 
@@ -30,7 +83,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             <FormItem className="md:col-span-2">
               <FormLabel>Property Title *</FormLabel>
               <FormControl>
-                <Input 
+                <Input
                   placeholder="e.g., Luxury Apartment Complex in Victoria Island"
                   {...field}
                 />
@@ -70,12 +123,20 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sub Type *</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="e.g., apartment, house, duplex, etc."
-                  {...field}
-                />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sub type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {getSubTypeOptions(type).map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -121,7 +182,9 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
                   <SelectItem value="newlyBuilt">Newly Built</SelectItem>
                   <SelectItem value="renovated">Recently Renovated</SelectItem>
                   <SelectItem value="good">Good Condition</SelectItem>
-                  <SelectItem value="needs_renovation">Needs Renovation</SelectItem>
+                  <SelectItem value="needs_renovation">
+                    Needs Renovation
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -133,7 +196,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
       {/* Price Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Pricing Information</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -142,13 +205,17 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Price Amount (NGN) *</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="0"
                     min="1000"
                     max="1000000000"
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === '' ? undefined : parseFloat(value));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -162,7 +229,10 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Price Term</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select term" />
@@ -187,11 +257,15 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Deposit Amount</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="0"
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === '' ? undefined : parseFloat(value));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -208,11 +282,15 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
               <FormItem>
                 <FormLabel>Service Charge</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="0"
                     {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    value={field.value || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === '' ? undefined : parseFloat(value));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -241,7 +319,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
       </div>
 
       {/* Additional Settings */}
-      {category === 'shortlet' && (
+      {category === "shortlet" && (
         <FormField
           control={form.control}
           name="max_guest"
@@ -249,13 +327,15 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             <FormItem>
               <FormLabel>Maximum Guests</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   placeholder="0"
                   min="0"
                   max="50"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || 0)
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -309,7 +389,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
           <FormItem>
             <FormLabel>Property Description *</FormLabel>
             <FormControl>
-              <Textarea 
+              <Textarea
                 placeholder="Describe your property in detail. Include key features, amenities, and what makes it special..."
                 className="min-h-32"
                 {...field}
