@@ -27,7 +27,7 @@ import {
 import { VerificationStatus } from "@/types/database";
 
 export function KYCUploadForm() {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
@@ -64,6 +64,8 @@ export function KYCUploadForm() {
 
   const fetchDocuments = async () => {
     if (!user) return;
+
+    await refreshUserData();
 
     try {
       const { data, error } = await supabase

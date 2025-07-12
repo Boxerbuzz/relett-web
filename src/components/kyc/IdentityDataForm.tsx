@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,14 +13,17 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIdentityVerification } from "@/hooks/useIdentityVerification";
 import { IdentityType } from "@/types/database";
-import { IdentificationCard, Spinner } from "@phosphor-icons/react";
+import { IdentificationCardIcon, SpinnerIcon } from "@phosphor-icons/react";
 
 interface IdentityDataFormProps {
   onSuccess: () => void;
   disabled?: boolean;
 }
 
-export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFormProps) {
+export function IdentityDataForm({
+  onSuccess,
+  disabled = false,
+}: IdentityDataFormProps) {
   const { toast } = useToast();
   const { createVerification } = useIdentityVerification();
   const [submitting, setSubmitting] = useState(false);
@@ -36,13 +38,20 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
     { value: "bvn" as IdentityType, label: "Bank Verification Number (BVN)" },
     { value: "passport" as IdentityType, label: "International Passport" },
     { value: "drivers_license" as IdentityType, label: "Driver's License" },
-    { value: "voters_card" as IdentityType, label: "Voter's Registration Card" },
+    {
+      value: "voters_card" as IdentityType,
+      label: "Voter's Registration Card",
+    },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.identityType || !formData.identityNumber || !formData.fullName) {
+
+    if (
+      !formData.identityType ||
+      !formData.identityNumber ||
+      !formData.fullName
+    ) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -85,7 +94,7 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <IdentificationCard className="h-5 w-5" />
+          <IdentificationCardIcon className="h-5 w-5" />
           Identity Information
         </CardTitle>
       </CardHeader>
@@ -140,7 +149,10 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
               id="identityNumber"
               value={formData.identityNumber}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, identityNumber: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  identityNumber: e.target.value,
+                }))
               }
               placeholder={
                 formData.identityType === "nin"
@@ -161,7 +173,7 @@ export function IdentityDataForm({ onSuccess, disabled = false }: IdentityDataFo
           >
             {submitting ? (
               <>
-                <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (

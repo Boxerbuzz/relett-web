@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +35,13 @@ export interface UserProfileData {
   middle_name?: string | null;
   gender?: "male" | "female" | "other" | null;
   last_login?: string | null;
-  address?: any | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  interest?: string | null;
+  coordinates?: { lat: number; lng: number } | null;
 }
 
 export function useUserProfile() {
@@ -47,7 +52,7 @@ export function useUserProfile() {
     data: profile,
     isLoading: loading,
     error: queryError,
-    refetch
+    refetch,
   } = useQuery<UserProfileData | null, Error>({
     queryKey: queryKeys.user.profile(),
     queryFn: async (): Promise<UserProfileData | null> => {
@@ -88,12 +93,15 @@ export function useUserProfile() {
       );
 
       // Invalidate and refetch to ensure consistency
-      await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
-      
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.user.profile(),
+      });
+
       return { data: profile, error: null };
     } catch (err) {
       console.error("Error updating profile:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update profile";
       return { data: null, error: errorMessage };
     }
   };

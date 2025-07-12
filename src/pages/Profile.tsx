@@ -9,34 +9,22 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmailVerificationStatus } from "@/components/profile/EmailVerificationStatus";
 import { KYCUploadForm } from "@/components/kyc/KYCUploadForm";
+import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/profile/UserAvatar";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuth } from "@/lib/auth";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   UserIcon,
   FileTextIcon,
   CameraIcon,
-  MapPinIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
   PencilSimpleIcon,
-  FloppyDiskIcon,
-  XIcon,
 } from "@phosphor-icons/react";
+import { Separator } from "@/components/ui/separator";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -62,12 +50,15 @@ const Profile = () => {
     hasSetup: Boolean(profile?.first_name && profile?.last_name),
     createdAt: profile?.created_at || "",
     preferences: {
-      country: profile?.address?.country || "",
-      state: profile?.address?.state || "",
-      city: profile?.address?.city || "",
-      address: profile?.address?.address_line || "",
-      interest: "property_rental",
-      coordinates: { lat: 6.4281, lng: 3.4219 },
+      country: profile?.country || "",
+      state: profile?.state || "",
+      city: profile?.city || "",
+      address: profile?.address || "",
+      interest: profile?.interest || "property_rental",
+      coordinates: {
+        lat: profile?.coordinates?.lat || 6.4281,
+        lng: profile?.coordinates?.lng || 3.4219,
+      },
     },
   };
 
@@ -95,6 +86,10 @@ const Profile = () => {
       default:
         return <XCircleIcon size={16} className="text-gray-600" />;
     }
+  };
+
+  const handleSaveSuccess = () => {
+    setIsEditingProfile(false);
   };
 
   return (
@@ -156,17 +151,8 @@ const Profile = () => {
                   onClick={() => setIsEditingProfile(!isEditingProfile)}
                   className="flex items-center gap-2"
                 >
-                  {isEditingProfile ? (
-                    <>
-                      <XIcon size={16} />
-                      Cancel
-                    </>
-                  ) : (
-                    <>
-                      <PencilSimpleIcon size={16} />
-                      Edit Profile
-                    </>
-                  )}
+                  <PencilSimpleIcon size={16} />
+                  {isEditingProfile ? "Cancel" : "Edit Profile"}
                 </Button>
               </div>
               <CardDescription>
@@ -203,181 +189,75 @@ const Profile = () => {
 
               {/* Editable Profile Information */}
               {isEditingProfile && (
-                <>
-                  <Separator />
-
-                  {/* Personal Information */}
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Personal Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input
-                          id="firstName"
-                          defaultValue={userData.firstName}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" defaultValue={userData.lastName} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          defaultValue={userData.email}
-                        />
-                        <p className="text-xs text-gray-500">
-                          Email changes require verification
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" defaultValue={userData.phone} />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea
-                          id="bio"
-                          defaultValue={userData.bio}
-                          placeholder="Tell us about yourself..."
-                        />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="interest">Primary Interest</Label>
-                        <Select defaultValue={userData.preferences.interest}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="property_rental">
-                              Property Rental
-                            </SelectItem>
-                            <SelectItem value="co_living">
-                              Co-Living Spaces
-                            </SelectItem>
-                            <SelectItem value="property_management">
-                              Property Management
-                            </SelectItem>
-                            <SelectItem value="real_estate_investor">
-                              Real Estate Investor
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Location Information */}
-                  <div className="space-y-4">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <MapPinIcon size={18} />
-                      Location Information
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="country">Country</Label>
-                        <Select defaultValue={userData.preferences.country}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Nigeria">Nigeria</SelectItem>
-                            <SelectItem value="Ghana">Ghana</SelectItem>
-                            <SelectItem value="Kenya">Kenya</SelectItem>
-                            <SelectItem value="South Africa">
-                              South Africa
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State/Province</Label>
-                        <Input
-                          id="state"
-                          defaultValue={userData.preferences.state}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
-                        <Input
-                          id="city"
-                          defaultValue={userData.preferences.city}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input
-                          id="address"
-                          defaultValue={userData.preferences.address}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button onClick={() => setIsEditingProfile(false)}>
-                      <FloppyDiskIcon size={16} className="mr-2" />
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditingProfile(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </>
+                <ProfileEditForm
+                  userData={userData}
+                  onCancel={() => setIsEditingProfile(false)}
+                  onSave={handleSaveSuccess}
+                />
               )}
 
               {/* Account Status - Always visible */}
-              <Separator />
+              {!isEditingProfile && (
+                <>
+                  <Separator />
 
-              <div className="space-y-4">
-                <h4 className="font-semibold">Account Status</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Email Verified</p>
-                      <p className="text-sm text-gray-600">
-                        Your email is verified
-                      </p>
-                    </div>
-                    {userData.isVerified ? (
-                      <CheckCircleIcon size={20} className="text-green-600" />
-                    ) : (
-                      <XCircleIcon size={20} className="text-red-600" />
-                    )}
-                  </div>
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Account Status</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Email Verified</p>
+                          <p className="text-sm text-gray-600">
+                            Your email is verified
+                          </p>
+                        </div>
+                        {userData.isVerified ? (
+                          <CheckCircleIcon
+                            size={20}
+                            className="text-green-600"
+                          />
+                        ) : (
+                          <XCircleIcon size={20} className="text-red-600" />
+                        )}
+                      </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Profile Setup</p>
-                      <p className="text-sm text-gray-600">Profile completed</p>
-                    </div>
-                    {userData.hasSetup ? (
-                      <CheckCircleIcon size={20} className="text-green-600" />
-                    ) : (
-                      <XCircleIcon size={20} className="text-red-600" />
-                    )}
-                  </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Profile Setup</p>
+                          <p className="text-sm text-gray-600">
+                            Profile completed
+                          </p>
+                        </div>
+                        {userData.hasSetup ? (
+                          <CheckCircleIcon
+                            size={20}
+                            className="text-green-600"
+                          />
+                        ) : (
+                          <XCircleIcon size={20} className="text-red-600" />
+                        )}
+                      </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Account Active</p>
-                      <p className="text-sm text-gray-600">Account status</p>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Account Active</p>
+                          <p className="text-sm text-gray-600">
+                            Account status
+                          </p>
+                        </div>
+                        {userData.isActive ? (
+                          <CheckCircleIcon
+                            size={20}
+                            className="text-green-600"
+                          />
+                        ) : (
+                          <XCircleIcon size={20} className="text-red-600" />
+                        )}
+                      </div>
                     </div>
-                    {userData.isActive ? (
-                      <CheckCircleIcon size={20} className="text-green-600" />
-                    ) : (
-                      <XCircleIcon size={20} className="text-red-600" />
-                    )}
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -8,52 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { User as AppUser } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-
-// Cache interface for user data
-interface UserCache {
-  data: AppUser;
-  timestamp: number;
-  ttl: number; // Time to live in milliseconds
-}
-
-// Global cache for user data
-const userCache = new Map<string, UserCache>();
-
-// Cache configuration
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-// Cache utility functions
-const isCacheValid = (cache: UserCache): boolean => {
-  return Date.now() - cache.timestamp < cache.ttl;
-};
-
-const getUserFromCache = (userId: string): AppUser | null => {
-  const cached = userCache.get(userId);
-  if (cached && isCacheValid(cached)) {
-    console.log("User data retrieved from cache for:", userId);
-    return cached.data;
-  }
-  return null;
-};
-
-const setUserInCache = (userId: string, userData: AppUser): void => {
-  userCache.set(userId, {
-    data: userData,
-    timestamp: Date.now(),
-    ttl: CACHE_TTL,
-  });
-  console.log("User data cached for:", userId);
-};
-
-const invalidateUserCache = (userId: string): void => {
-  userCache.delete(userId);
-  console.log("User cache invalidated for:", userId);
-};
-
-const clearAllUserCache = (): void => {
-  userCache.clear();
-  console.log("All user cache cleared");
-};
+import {
+  clearAllUserCache,
+  getUserFromCache,
+  invalidateUserCache,
+  setUserInCache,
+} from "@/utils/cache";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -304,7 +264,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Function to refresh user data and invalidate cache
   const refreshUserData = async () => {
     if (!session?.user) return;
-    
+
     console.log("Refreshing user data and invalidating cache");
     invalidateUserCache(session.user.id);
     await fetchOrCreateUserProfile(session.user);
@@ -347,7 +307,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     password: string,
     role: "landowner" | "verifier" | "agent" | "user",
     firstName: string,
-    lastName: string,
+    lastName: string
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -427,7 +387,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signOut, session, refreshUserData }}
+      value={{
+        user,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        session,
+        refreshUserData,
+      }}
     >
       <WalletProvider>{children}</WalletProvider>
     </AuthContext.Provider>
