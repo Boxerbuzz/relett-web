@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyMap } from "@/components/maps/PropertyMap";
 import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
+import { DocumentUploadComponent } from "@/components/property/DocumentUploadComponent";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import {
   MapPin,
   TrendUp,
@@ -23,9 +25,12 @@ import {
   Car,
   Spinner,
   ArrowLeft,
+  Coins,
 } from "phosphor-react";
+import { PencilIcon } from "lucide-react";
 import { getAmenityById } from "@/types/amenities";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
+import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 
 interface PropertyData {
   id: string;
@@ -54,6 +59,7 @@ interface PropertyData {
   likes?: number | null;
   favorites?: number | null;
   land_title_id?: string | null;
+  user_id?: string | null;
   tokenized_property?: {
     token_price: number | null;
     total_supply: string | null;
@@ -77,7 +83,9 @@ export function PropertyDetailsDialog({
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (propertyId) {
@@ -348,13 +356,32 @@ export function PropertyDetailsDialog({
                   Share
                 </Button>
               </div>
-              <div className="flex gap-2">
-                {!property.is_tokenized && property.is_verified && (
-                  <Button size="sm" onClick={() => handleTokenizeProperty()}>
-                    Tokenize
+              
+              {/* Property Owner Actions */}
+              {property.user_id === user?.id && (
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => setShowEditDialog(true)}
+                  >
+                    <PencilIcon size={16} className="mr-2" />
+                    Edit Property
                   </Button>
-                )}
-              </div>
+                  
+                  {!property.is_tokenized && property.is_verified && (
+                    <Button 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleTokenizeProperty()}
+                    >
+                      <Coins size={16} className="mr-2" />
+                      Tokenize
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -525,6 +552,14 @@ export function PropertyDetailsDialog({
                   propertyId={property.id}
                   landTitleId={property.land_title_id || undefined}
                 />
+                
+                {/* Document Upload for Property Owner */}
+                {property.user_id === user?.id && (
+                  <DocumentUploadComponent
+                    propertyId={property.id}
+                    onDocumentUploaded={fetchPropertyDetails}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="location" className="space-y-4 mt-4">
@@ -562,6 +597,14 @@ export function PropertyDetailsDialog({
           }}
         />
       )}
+
+      {/* Edit Property Dialog */}
+      <EditPropertyDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        propertyId={propertyId}
+        onPropertyUpdated={fetchPropertyDetails}
+      />
     </>
   );
 }
