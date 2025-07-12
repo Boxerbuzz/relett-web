@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { UseFormReturn } from 'react-hook-form';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { FileDropzone } from '@/components/ui/file-dropzone';
-import { useSupabaseStorage } from '@/hooks/useSupabaseStorage';
-import { FileText, X, Eye, Download } from 'lucide-react';
+import { UseFormReturn } from "react-hook-form";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { FileDropzone } from "@/components/ui/file-dropzone";
+import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
+import { FileText, X, Eye, Download, SkipForward } from "lucide-react";
 
 interface DocumentsStepProps {
   form: UseFormReturn<any>;
@@ -23,26 +23,32 @@ interface UploadedDocument {
 }
 
 const DOCUMENT_TYPES = [
-  { type: 'deed', label: 'Property Deed', required: true },
-  { type: 'survey', label: 'Survey Report', required: true },
-  { type: 'certificate', label: 'Title Certificate', required: false },
-  { type: 'tax_clearance', label: 'Tax Clearance', required: false },
-  { type: 'other', label: 'Other Documents', required: false }
+  { type: "deed", label: "Property Deed", required: true },
+  { type: "survey", label: "Survey Report", required: true },
+  { type: "certificate", label: "Title Certificate", required: false },
+  { type: "tax_clearance", label: "Tax Clearance", required: false },
+  { type: "other", label: "Other Documents", required: false },
 ];
 
 export function DocumentsStep({ form }: DocumentsStepProps) {
-  const documents = form.watch('documents') || [];
-  const [selectedDocType, setSelectedDocType] = useState<string>('deed');
-  const { uploadFile, deleteFile, isUploading, uploadProgress } = useSupabaseStorage();
+  const documents = form.watch("documents") || [];
+  const [selectedDocType, setSelectedDocType] = useState<string>("deed");
+  const { uploadFile, deleteFile, isUploading, uploadProgress } =
+    useSupabaseStorage();
 
   const handleFilesSelected = async (files: File[]) => {
     try {
       const uploadPromises = files.map(async (file) => {
         const result = await uploadFile(file, {
-          bucket: 'property-documents',
+          bucket: "property-documents",
           folder: selectedDocType,
           maxSize: 10 * 1024 * 1024, // 10MB
-          allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+          allowedTypes: [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/jpg",
+          ],
         });
 
         return {
@@ -50,15 +56,15 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
           filename: file.name,
           url: result.url,
           path: result.path,
-          size: result.size
+          size: result.size,
         };
       });
 
       const uploadedDocs = await Promise.all(uploadPromises);
       const updatedDocs = [...documents, ...uploadedDocs];
-      form.setValue('documents', updatedDocs);
+      form.setValue("documents", updatedDocs);
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     }
   };
 
@@ -66,14 +72,14 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
     const doc = documents[index];
     if (doc?.path) {
       try {
-        await deleteFile('property-documents', doc.path);
+        await deleteFile("property-documents", doc.path);
       } catch (error) {
-        console.error('Delete failed:', error);
+        console.error("Delete failed:", error);
       }
     }
-    
+
     const updatedDocs = documents.filter((_: any, i: number) => i !== index);
-    form.setValue('documents', updatedDocs);
+    form.setValue("documents", updatedDocs);
   };
 
   const getDocumentsByType = (type: string) => {
@@ -81,15 +87,37 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
     <div className="space-y-6">
+      {/* Header with Skip Option */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Property Documents</h2>
+          <p className="text-gray-600">
+            Upload important documents for your property. This step is optional
+            but recommended for better verification.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            // Skip the documents step by setting empty array
+            form.setValue("documents", []);
+          }}
+          className="flex items-center gap-2"
+        >
+          <SkipForward className="h-4 w-4" />
+          Skip for Now
+        </Button>
+      </div>
+
       {/* Document Type Selection */}
       <div>
         <h3 className="text-lg font-medium mb-4">Select Document Type</h3>
@@ -101,8 +129,8 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
               onClick={() => setSelectedDocType(type)}
               className={`p-3 border rounded-lg text-left transition-colors ${
                 selectedDocType === type
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -126,19 +154,19 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
       {/* File Upload */}
       <div>
         <h4 className="font-medium mb-2">
-          Upload {DOCUMENT_TYPES.find(d => d.type === selectedDocType)?.label}
+          Upload {DOCUMENT_TYPES.find((d) => d.type === selectedDocType)?.label}
         </h4>
         <FileDropzone
           onFilesSelected={handleFilesSelected}
           accept={{
-            'application/pdf': ['.pdf'],
-            'image/*': ['.png', '.jpg', '.jpeg']
+            "application/pdf": [".pdf"],
+            "image/*": [".png", ".jpg", ".jpeg"],
           }}
           maxFiles={5}
           maxSize={10 * 1024 * 1024}
           disabled={isUploading}
         />
-        
+
         {isUploading && (
           <div className="mt-4">
             <div className="flex items-center justify-between text-sm mb-2">
@@ -167,24 +195,32 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
               <CardContent>
                 <div className="space-y-2">
                   {typeDocuments.map((doc: UploadedDocument, index: number) => {
-                    const globalIndex = documents.findIndex((d: UploadedDocument) => 
-                      d.url === doc.url && d.type === doc.type
+                    const globalIndex = documents.findIndex(
+                      (d: UploadedDocument) =>
+                        d.url === doc.url && d.type === doc.type
                     );
-                    
+
                     return (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <FileText className="h-5 w-5 text-blue-500" />
                           <div>
-                            <p className="font-medium text-sm">{doc.filename}</p>
-                            <p className="text-xs text-gray-500">{formatFileSize(doc.size)}</p>
+                            <p className="font-medium text-sm">
+                              {doc.filename}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(doc.size)}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => window.open(doc.url, '_blank')}
+                            onClick={() => window.open(doc.url, "_blank")}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -192,7 +228,7 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              const link = document.createElement('a');
+                              const link = document.createElement("a");
                               link.href = doc.url;
                               link.download = doc.filename;
                               link.click();
@@ -219,19 +255,29 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
         })}
       </div>
 
-      {/* Upload Guidelines */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2 flex items-center">
-          <FileText className="w-4 h-4 mr-2" />
-          Upload Guidelines
-        </h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• All documents must be clear and legible</li>
-          <li>• Accepted formats: PDF, JPG, PNG (max 10MB each)</li>
-          <li>• Required documents must be uploaded before property submission</li>
-          <li>• Documents will be verified by our team within 2-3 business days</li>
-        </ul>
-      </div>
+      {/* Skip Notice */}
+      {documents.length === 0 && (
+        <Card className="border-dashed border-gray-300 bg-gray-50">
+          <CardContent className="p-6 text-center">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Documents Uploaded
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You can upload property documents now or skip this step and add
+              them later.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                form.setValue("documents", []);
+              }}
+            >
+              Continue Without Documents
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

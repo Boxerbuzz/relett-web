@@ -24,6 +24,7 @@ import {
   Eye,
   Loader2,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 export function LandownerDashboard() {
   const { properties, loading: propertiesLoading } = useProperties();
@@ -71,7 +72,7 @@ export function LandownerDashboard() {
     },
     {
       title: "Portfolio Value",
-      value: `$${(totalPortfolioValue / 1000).toFixed(1)}K`,
+      value: `₦${(totalPortfolioValue / 1000).toFixed(1)}K`,
       icon: <DollarSign className="h-4 w-4" />,
       description: "Based on current market value",
       trend: totalROI > 0 ? { value: totalROI, isPositive: true } : undefined,
@@ -139,14 +140,7 @@ export function LandownerDashboard() {
                   <div className="flex-1">
                     <h3 className="font-medium">{property.title}</h3>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                      <span>
-                        Value:{" "}
-                        {typeof property.price === "object"
-                          ? `$${
-                              property.price.amount?.toLocaleString() || "N/A"
-                            }`
-                          : property.price}
-                      </span>
+                      <span>{formatCurrency((property.price.amount / 100) || 0)}</span>
                       <span>
                         Status: {property.is_verified ? "Verified" : "Pending"}
                       </span>

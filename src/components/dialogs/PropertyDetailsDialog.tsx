@@ -1,12 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,21 +12,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   MapPin,
-  TrendingUp,
+  TrendUp,
   Heart,
   Share,
   Star,
   Calendar,
-  Home,
+  House,
   Ruler,
   Users,
   Car,
-  Loader2,
-  Eye,
-} from "lucide-react";
+  Spinner,
+  ArrowLeft,
+} from "phosphor-react";
 import { getAmenityById } from "@/types/amenities";
-import { PropertyBlockchainRegistration } from "../hedera/PropertyBlockchainRegistration";
-import { TokenizePropertyDialog } from "./TokenizePropertyDialog";
+import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 
 interface PropertyData {
   id: string;
@@ -73,30 +66,24 @@ interface PropertyData {
 }
 
 interface PropertyDetailsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   propertyId: string;
+  onBack: () => void;
 }
 
 export function PropertyDetailsDialog({
-  open,
-  onOpenChange,
   propertyId,
+  onBack,
 }: PropertyDetailsDialogProps) {
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showBlockchainRegistration, setShowBlockchainRegistration] =
-    useState(false);
   const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (open && propertyId) {
+    if (propertyId) {
       fetchPropertyDetails();
     }
-  }, [open, propertyId]);
-
-  console.log(propertyId);
+  }, [propertyId]);
 
   const fetchPropertyDetails = async () => {
     try {
@@ -116,8 +103,6 @@ export function PropertyDetailsDialog({
         )
         .eq("id", propertyId)
         .maybeSingle();
-
-      ///https://wossuijahchhtjzphsgh.supabase.co/rest/v1/properties?select=*%2Ctokenized_properties%3Atokenized_properties_property_id_fkey%28*%29%2Cproperty_images%28url%2Cis_primary%29&id=eq.134994583
 
       if (error) throw error;
       if (data) {
@@ -175,40 +160,9 @@ export function PropertyDetailsDialog({
     return "Price not available";
   };
 
-  const handleRegisterOnBlockchain = () => {
-    setShowBlockchainRegistration(true);
-  };
-
-  const handleBlockchainRegistrationComplete = (transactionId: string) => {
-    setShowBlockchainRegistration(false);
-    toast({
-      title: "Success!",
-      description: "Property registered on blockchain successfully.",
-    });
-    // Optionally refresh property data here
-  };
-
-  const handleBlockchainRegistrationSkip = () => {
-    setShowBlockchainRegistration(false);
-  };
-
   const handleTokenizeProperty = () => {
     if (!property) return;
-
-    const tokenizeData = {
-      id: property.id,
-      title: property.title,
-      value: formatPrice(property.price),
-      location: formatLocation(property.location),
-      image: getPropertyImage(),
-    };
-
     setShowTokenizeDialog(true);
-  };
-
-  const formatLocation = (location: any) => {
-    if (!location || typeof location !== "object") return "N/A";
-    return `${location.address}, ${location.city}, ${location.state}`;
   };
 
   const getPropertyImage = () => {
@@ -224,31 +178,48 @@ export function PropertyDetailsDialog({
         {
           label: "Property Type",
           value: property.category || property.type || "N/A",
-          icon: Home,
+          icon: House,
+          id: "type",
         },
-        { label: "Size", value: property.sqrft || "N/A", icon: Ruler },
-        { label: "Condition", value: property.condition || "Good", icon: Star },
+        {
+          label: "Size",
+          value: property.sqrft || "N/A",
+          icon: Ruler,
+          id: "size",
+        },
+        {
+          label: "Condition",
+          value: property.condition || "Good",
+          icon: Star,
+          id: "condition",
+        },
         {
           label: "Year Built",
           value: property.year_built || "N/A",
           icon: Calendar,
+          id: "year_built",
         },
         {
           label: "Max Guests",
           value: property.max_guest?.toString() || "0",
           icon: Users,
+          id: "max_guest",
         },
         {
           label: "Garages",
           value: property.garages?.toString() || "0",
           icon: Car,
+          id: "garages",
         },
       ]
     : [];
 
   const investmentSpecs = property
     ? [
-        { label: "Total Value", value: formatPrice(property.price) },
+        {
+          label: "Total Value",
+          value: formatPrice(property.price.amount / 100),
+        },
         {
           label: "Token Price",
           value: property.tokenized_property
@@ -276,347 +247,308 @@ export function PropertyDetailsDialog({
 
   if (loading) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
-          <div className="flex items-center justify-center flex-1">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Properties
+          </Button>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Spinner className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
     );
   }
 
   if (!property) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
-          <div className="flex items-center justify-center flex-1">
-            <p>Property not found</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Properties
+          </Button>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <p>Property not found</p>
+        </div>
+      </div>
     );
   }
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
-          {/* Fixed Header */}
-          <div className="flex-shrink-0">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {property.title}
-                <div className="flex gap-1">
-                  {property.is_featured && (
-                    <Badge className="bg-orange-500">Featured</Badge>
-                  )}
-                  {property.is_verified && (
-                    <Badge className="bg-green-500">Verified</Badge>
-                  )}
-                  {property.is_tokenized && (
-                    <Badge className="bg-blue-500">Tokenized</Badge>
-                  )}
-                </div>
-              </DialogTitle>
-            </DialogHeader>
+      <div className="space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center justify-between">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Properties
+          </Button>
+          <div className="flex gap-1">
+            {property.is_featured && (
+              <Badge className="bg-orange-500">Featured</Badge>
+            )}
+            {property.is_verified && (
+              <Badge className="bg-green-500">Verified</Badge>
+            )}
+            {property.is_tokenized && (
+              <Badge className="bg-blue-500">Tokenized</Badge>
+            )}
           </div>
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 p-1">
-              {/* Left Column - Image and Basic Info */}
-              <div className="lg:col-span-1 space-y-4">
-                {/* Property Image */}
-                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <img
-                    src={getPrimaryImage()}
-                    alt={property.title || "Property Image"}
-                    className="w-full h-full object-cover"
-                  />
+        </div>
+
+        {/* Property Title */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {property.title}
+          </h1>
+          <div className="flex items-center gap-2 text-gray-600">
+            <MapPin size={16} />
+            <span className="text-sm">{getLocationString()}</span>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Image and Basic Info */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Property Image */}
+            <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <img
+                src={getPrimaryImage()}
+                alt={property.title || "Property Image"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Basic Info */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Star size={16} className="text-yellow-500" />
+                  <span className="text-sm font-medium">
+                    {(property.ratings || 0).toFixed(1)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({property.review_count || 0} reviews)
+                  </span>
                 </div>
+              </div>
 
-                {/* Basic Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin size={16} />
-                    <span className="text-sm">{getLocationString()}</span>
-                  </div>
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Heart size={16} className="mr-2" />
+                  Save
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Share size={16} className="mr-2" />
+                  Share
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                {!property.is_tokenized && property.is_verified && (
+                  <Button size="sm" onClick={() => handleTokenizeProperty()}>
+                    Tokenize
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Star size={16} className="text-yellow-500" />
-                      <span className="text-sm font-medium">
-                        {(property.ratings || 0).toFixed(1)}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        ({property.review_count || 0} reviews)
-                      </span>
+          {/* Right Column - Detailed Information */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+                <TabsTrigger
+                  value="overview"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger
+                  value="investment"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5"
+                >
+                  Investment
+                </TabsTrigger>
+                <TabsTrigger
+                  value="documents"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5"
+                >
+                  Documents
+                </TabsTrigger>
+                <TabsTrigger
+                  value="location"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5"
+                >
+                  Location
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4 mt-4">
+                {/* Description */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-3">Description</h3>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {property.description ||
+                        "No description available for this property."}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Property Specifications */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-4">
+                      Property Specifications
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {keySpecs.map((spec, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <spec.icon size={16} className="text-gray-500" />
+                          <div>
+                            <p className="text-xs text-gray-600">
+                              {spec.label}
+                            </p>
+                            <p className="font-medium text-sm">
+                              {spec.id === "year_built"
+                                ? new Date(spec.value).getFullYear()
+                                : spec.value}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Heart size={16} className="mr-2" />
-                      Save
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Share size={16} className="mr-2" />
-                      Share
-                    </Button>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => {}}>
-                      <Eye size={14} className="mr-2" />
-                      <span className="hidden sm:inline">View</span>
-                    </Button>
-                    {!property.is_tokenized && property.is_verified && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleTokenizeProperty()}
-                      >
-                        Tokenize
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Detailed Information */}
-              <div className="lg:col-span-2">
-                <Tabs defaultValue="overview" className="w-full">
-                  <div className="sticky top-0 bg-white z-10 pb-4">
-                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Overview</TabsTrigger>
-                      <TabsTrigger value="investment" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Investment</TabsTrigger>
-                      <TabsTrigger value="documents" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Documents</TabsTrigger>
-                      <TabsTrigger value="location" className="text-xs sm:text-sm px-1 sm:px-3 py-1.5">Location</TabsTrigger>
-                    </TabsList>
-                  </div>
-
-                  <TabsContent value="overview" className="space-y-4">
-                    {/* Description */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-3">Description</h3>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {property.description ||
-                            "No description available for this property."}
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    {/* Property Specifications */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">
-                          Property Specifications
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          {keySpecs.map((spec, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-3"
-                            >
-                              <spec.icon size={16} className="text-gray-500" />
-                              <div>
-                                <p className="text-xs text-gray-600">
-                                  {spec.label}
-                                </p>
-                                <p className="font-medium text-sm">
-                                  {spec.value}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Features & Amenities */}
-                    {(property.features?.length ||
-                      property.amenities?.length) && (
-                      <Card>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold mb-3">
-                            Features & Amenities
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            {property.features?.map((feature, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 text-sm"
-                              >
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <span>{feature}</span>
-                              </div>
-                            ))}
-                            {property.amenities?.map((amenity, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 text-sm"
-                              >
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span>
-                                  {getAmenityById(amenity)?.name || amenity}
-                                </span>
-                              </div>
-                            ))}
+                {/* Features & Amenities */}
+                {(property.features?.length || property.amenities?.length) && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-3">
+                        Features & Amenities
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        {property.features?.map((feature, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span>
+                              {getAmenityById(feature)?.name || feature}
+                            </span>
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="investment" className="space-y-4">
-                    {/* Investment Overview */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">
-                          Investment Details
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          {investmentSpecs.map((spec, index) => (
-                            <div key={index} className="space-y-1">
-                              <p className="text-xs text-gray-600">
-                                {spec.label}
-                              </p>
-                              <p className="font-medium text-sm">
-                                {spec.value}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {property.is_tokenized && property.tokenized_property && (
-                      <Card>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold mb-4">
-                            Tokenization Details
-                          </h3>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Token Price</span>
-                              <span className="font-semibold">
-                                ₦{property.tokenized_property.token_price}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">Total Supply</span>
-                              <span className="font-semibold">
-                                {parseInt(
-                                  property.tokenized_property.total_supply ||
-                                    "0"
-                                ).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <TrendingUp
-                                  size={16}
-                                  className="text-green-600 mr-1"
-                                />
-                                <span className="text-green-600 font-medium text-sm">
-                                  {property.tokenized_property.expected_roi}%
-                                  Expected ROI
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-600">
-                                Annual projected return
-                              </span>
-                            </div>
+                        ))}
+                        {property.amenities?.map((amenity, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>
+                              {getAmenityById(amenity)?.name || amenity}
+                            </span>
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
 
-                  <TabsContent value="documents" className="space-y-4">
-                    <PropertyDocumentViewer
-                      propertyId={property.id}
-                      landTitleId={property.land_title_id || undefined}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="location" className="space-y-4">
-                    <PropertyMap
-                      coordinates={getCoordinates()}
-                      address={getLocationString()}
-                    />
-
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-4">
-                          Location Information
-                        </h3>
-                        <div>
-                          <p className="font-medium text-sm">Address</p>
-                          <p className="text-gray-600 text-sm">
-                            {getLocationString()}
-                          </p>
+              <TabsContent value="investment" className="space-y-4 mt-4">
+                {/* Investment Overview */}
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-4">Investment Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {investmentSpecs.map((spec, index) => (
+                        <div key={index} className="space-y-1">
+                          <p className="text-xs text-gray-600">{spec.label}</p>
+                          <p className="font-medium text-sm">{spec.value}</p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-          </div>
-          {/* Fixed Footer Action Buttons */}
-          <div className="flex-shrink-0 pt-4 border-t">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="flex-1"
-              >
-                Close
-              </Button>
-              {property.is_tokenized && (
-                <Button className="flex-1">Invest Now</Button>
-              )}
-            </div>
-          </div>
-          {/* Blockchain Registration Dialog */}
-          {showBlockchainRegistration && property && (
-            <Dialog
-              open={showBlockchainRegistration}
-              onOpenChange={setShowBlockchainRegistration}
-            >
-              <DialogContent className="max-w-2xl">
-                <PropertyBlockchainRegistration
-                  propertyData={{
-                    id: property.id,
-                    title: property.title || "",
-                    type: property.type,
-                    location: property.location,
-                    price: property.price,
-                  }}
-                  onRegistrationComplete={handleBlockchainRegistrationComplete}
-                  onRegistrationSkip={handleBlockchainRegistrationSkip}
-                  autoRegister={false}
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {property.is_tokenized && property.tokenized_property && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-4">
+                        Tokenization Details
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Token Price</span>
+                          <span className="font-semibold">
+                            ₦{property.tokenized_property.token_price}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Total Supply</span>
+                          <span className="font-semibold">
+                            {parseInt(
+                              property.tokenized_property.total_supply || "0"
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <TrendUp
+                              size={16}
+                              className="text-green-600 mr-1"
+                            />
+                            <span className="text-green-600 font-medium text-sm">
+                              {property.tokenized_property.expected_roi}%
+                              Expected ROI
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-600">
+                            Annual projected return
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="documents" className="space-y-4 mt-4">
+                <PropertyDocumentViewer
+                  propertyId={property.id}
+                  landTitleId={property.land_title_id || undefined}
                 />
-              </DialogContent>
-            </Dialog>
-          )}
-          {/* Tokenize Property Dialog */}
-          {showTokenizeDialog && property && (
-            <TokenizePropertyDialog
-              open={showTokenizeDialog}
-              onOpenChange={setShowTokenizeDialog}
-              property={{
-                id: property.id,
-                title: property.title || "",
-                value: formatPrice(property.price),
-                location: formatLocation(property.location),
-                image: getPropertyImage(),
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+              </TabsContent>
+
+              <TabsContent value="location" className="space-y-4 mt-4">
+                <PropertyMap
+                  coordinates={getCoordinates()}
+                  address={getLocationString()}
+                />
+
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-4">Location Information</h3>
+                    <div>
+                      <p className="font-medium text-sm">Address</p>
+                      <p className="text-gray-600 text-sm">
+                        {getLocationString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
 
       {property && (
         <TokenizePropertyDialog
@@ -628,20 +560,6 @@ export function PropertyDetailsDialog({
             image: getPropertyImage()[0] || "",
             title: property.title || "",
           }}
-        />
-      )}
-      {property && (
-        <PropertyBlockchainRegistration
-          propertyData={{
-            ...property,
-            title: property.title || "",
-            type: property.type,
-            location: property.location,
-            price: property.price,
-          }}
-          onRegistrationComplete={handleBlockchainRegistrationComplete}
-          onRegistrationSkip={handleBlockchainRegistrationSkip}
-          autoRegister={false}
         />
       )}
     </>

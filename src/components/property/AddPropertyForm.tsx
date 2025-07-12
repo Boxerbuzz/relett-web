@@ -116,7 +116,7 @@ const propertySchema = z.object({
         url: z.string().url("Invalid document URL"),
       })
     )
-    .min(1, "At least one document is required"),
+    .default([]),
   images: z
     .array(
       z.object({
@@ -295,16 +295,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
       console.log("Submitting property:", data);
 
-      // Remove document validation requirement
-      // if (!data.documents || data.documents.length === 0) {
-      //   toast({
-      //     title: "Validation Error",
-      //     description: "At least one document is required",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
       if (!data.images || data.images.length === 0) {
         toast({
           title: "Validation Error",
@@ -321,6 +311,18 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
               lng: data.location.coordinates.lng,
             }
           : null;
+
+      // Convert price values to kobo (smallest currency unit)
+      const convertedPrice = {
+        amount: Math.round((data.price.amount || 0) * 100), // Convert to kobo
+        currency: data.price.currency || "NGN",
+        term: data.price.term || "month",
+        deposit: data.price.deposit ? Math.round(data.price.deposit * 100) : 0,
+        service_charge: data.price.service_charge
+          ? Math.round(data.price.service_charge * 100)
+          : 0,
+        is_negotiable: data.price.is_negotiable || false,
+      };
 
       // Create property with all fields properly mapped
       const {
@@ -348,8 +350,10 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
             landmark: data.location.landmark || "",
             postal_code: data.location.postal_code || "",
           },
+          images: data.images.map((img) => img.url),
+          backdrop: data.images[0].url,
           specification: data.specification,
-          price: data.price,
+          price: convertedPrice, // Use converted price
           sqrft: data.sqrft || "",
           max_guest: data.max_guest || 0,
           features: data.features,
@@ -358,6 +362,9 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
           is_exclusive: data.is_exclusive,
           is_featured: data.is_featured,
           garages: data.specification.garages || 0,
+          year_built: new Date(
+            data.specification.year_built || new Date().getFullYear()
+          ).toISOString(),
         })
         .select()
         .single();
@@ -406,7 +413,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
     // Navigate after a short delay to show success message
     setTimeout(() => {
-      navigate("/my-property");
+      navigate("/my-properties");
       if (onClose) onClose();
     }, 2000);
   };

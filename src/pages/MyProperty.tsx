@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -15,22 +9,19 @@ import {
   Plus,
   MagnifyingGlass,
   MapPin,
-  Eye,
   DotsThreeVertical,
   Heart,
   Share,
 } from "phosphor-react";
 import { Link } from "react-router-dom";
-import { PropertyDetailsDialog } from "@/components/dialogs/PropertyDetailsDialog";
-import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
 import { BlockchainStatusBadge } from "@/components/property/BlockchainStatusBadge";
-import { PropertyBlockchainRegistration } from "@/components/hedera/PropertyBlockchainRegistration";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryKeys, cacheConfig } from "@/lib/queryClient";
+import { PropertyDetailsDialog } from "@/components/dialogs/PropertyDetailsDialog";
 
 interface Property {
   id: string;
@@ -50,73 +41,16 @@ interface Property {
   }>;
 }
 
-// Extended interface for dialog components
-interface PropertyForDialog {
-  id: string;
-  title: string;
-  location: string;
-  size: string;
-  value?: string;
-  price?: string;
-  tokenPrice?: string;
-  totalTokens?: number;
-  availableTokens?: number;
-  roi?: string;
-  category?: string;
-  type?: string;
-  status?: string;
-  featured?: boolean;
-  tokenized?: boolean;
-  image: string;
-  description?: string;
-  condition?: string;
-  yearBuilt?: string;
-  sqrft?: string;
-  maxGuest?: number;
-  garages?: number;
-  ratings?: number;
-  reviewCount?: number;
-  amenities?: string[];
-  features?: string[];
-  tags?: string[];
-  views?: number;
-  likes?: number;
-  favorites?: number;
-  isVerified?: boolean;
-  isExclusive?: boolean;
-  isAd?: boolean;
-}
-
-interface TokenizePropertyForDialog {
-  id: string;
-  title: string;
-  value: string;
-  location: string;
-  image: string;
-}
-
 const MyProperty = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
-  const [blockchainRegistrationOpen, setBlockchainRegistrationOpen] =
-    useState(false);
-  const [selectedProperty, setSelectedProperty] =
-    useState<PropertyForDialog | null>(null);
-  const [selectedPropertyForTokenize, setSelectedPropertyForTokenize] =
-    useState<TokenizePropertyForDialog | null>(null);
-  const [selectedPropertyForBlockchain, setSelectedPropertyForBlockchain] =
-    useState<Property | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // React-Query client for cache manipulation
-  const queryClient = useQueryClient();
-
-  const userPropertiesKey = queryKeys.properties.userProperties(
-    user?.id || ""
-  );
+  const userPropertiesKey = queryKeys.properties.userProperties(user?.id || "");
 
   const {
     data,
@@ -185,7 +119,8 @@ const MyProperty = () => {
           is_verified: property.is_verified || false,
           type: property.type,
           backdrop: (property.backdrop as string | null) || undefined,
-          blockchain_transaction_id: property.blockchain_transaction_id ?? undefined,
+          blockchain_transaction_id:
+            property.blockchain_transaction_id ?? undefined,
           property_images: imagesByProperty[property.id] || [],
         })
       );
@@ -221,75 +156,11 @@ const MyProperty = () => {
   const convertKoboToNaira = (kobo: number) => kobo / 100;
 
   const handleViewDetails = (property: Property) => {
-    // Transform Property to PropertyForDialog
-    const propertyForDialog: PropertyForDialog = {
-      id: property.id,
-      title: property.title,
-      location: getLocationString(property.location),
-      size: getPropertySize(property.specification),
-      value: getPriceString(property.price),
-      price: getPriceString(property.price),
-      category: property.type,
-      type: property.type,
-      status: property.status,
-      tokenized: property.is_tokenized,
-      image: getPropertyImage(property),
-      isVerified: property.is_verified,
-      views: 0,
-      likes: 0,
-      favorites: 0,
-      ratings: 0,
-      reviewCount: 0,
-    };
-
-    setSelectedProperty(propertyForDialog);
-    setDetailsDialogOpen(true);
+    setSelectedPropertyId(property.id);
   };
 
-  const handleTokenizeProperty = (property: Property) => {
-    // Transform Property to TokenizePropertyForDialog
-    const propertyForTokenize: TokenizePropertyForDialog = {
-      id: property.id,
-      title: property.title,
-      value: getPriceString(property.price),
-      location: getLocationString(property.location),
-      image: getPropertyImage(property),
-    };
-
-    setSelectedPropertyForTokenize(propertyForTokenize);
-    setTokenizeDialogOpen(true);
-  };
-
-  const handleRegisterOnBlockchain = (property: Property) => {
-    setSelectedPropertyForBlockchain(property);
-    setBlockchainRegistrationOpen(true);
-  };
-
-  const handleBlockchainRegistrationComplete = (transactionId: string) => {
-    if (selectedPropertyForBlockchain) {
-      queryClient.setQueryData<Property[]>(
-        userPropertiesKey,
-        (old) =>
-          old?.map((prop) =>
-            prop.id === selectedPropertyForBlockchain.id
-              ? { ...prop, blockchain_transaction_id: transactionId }
-              : prop
-          ) || []
-      );
-    }
-
-    setBlockchainRegistrationOpen(false);
-    setSelectedPropertyForBlockchain(null);
-
-    toast({
-      title: "Success!",
-      description: "Property registered on blockchain successfully.",
-    });
-  };
-
-  const handleBlockchainRegistrationSkip = () => {
-    setBlockchainRegistrationOpen(false);
-    setSelectedPropertyForBlockchain(null);
+  const handleBackToList = () => {
+    setSelectedPropertyId(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -388,6 +259,17 @@ const MyProperty = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // If a property is selected, show the embedded details view
+  if (selectedPropertyId) {
+    return (
+      <PropertyDetailsDialog
+        propertyId={selectedPropertyId}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Otherwise, show the property list
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
@@ -490,7 +372,7 @@ const MyProperty = () => {
           {filteredProperties.map((property) => (
             <Card
               key={property.id}
-              className="hover:shadow-lg transition-all duration-200 group"
+              className="hover:shadow-lg transition-all duration-200 group cursor-pointer"
               onClick={() => handleViewDetails(property)}
             >
               <div className="relative aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
@@ -584,15 +466,6 @@ const MyProperty = () => {
             </Card>
           ))}
         </div>
-      )}
-
-      {/* Dialogs */}
-      {selectedProperty && (
-        <PropertyDetailsDialog
-          open={detailsDialogOpen}
-          onOpenChange={setDetailsDialogOpen}
-          propertyId={selectedProperty.id.toString()}
-        />
       )}
     </div>
   );
