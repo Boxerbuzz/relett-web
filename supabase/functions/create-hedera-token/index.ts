@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import {
   Client,
   AccountId,
@@ -37,6 +37,8 @@ serve(async (req) => {
     return createCorsResponse();
   }
 
+  let client: Client | null = null;
+
   try {
     const authHeader = req.headers.get('Authorization')!;
     const userResult = await verifyUser(authHeader);
@@ -63,7 +65,7 @@ serve(async (req) => {
     // Initialize Hedera client
     const operatorId = AccountId.fromString(hederaAccountId);
     const operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
-    const client = Client.forTestnet();
+    client = Client.forTestnet();
     client.setOperator(operatorId, operatorKey);
 
     console.log('Creating Hedera token:', { tokenName, tokenSymbol, totalSupply });
@@ -120,9 +122,6 @@ serve(async (req) => {
         return createResponse(createErrorResponse('Token created but database update failed'), 500);
       }
 
-      // Close client
-      client.close();
-
       const response: TokenCreationResponse = {
         success: true,
         token_id: tokenId.toString(),
@@ -134,7 +133,6 @@ serve(async (req) => {
 
     } catch (hederaError) {
       console.error('Hedera token creation error:', hederaError);
-      client.close();
       
       const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
       return createResponse(createErrorResponse('Failed to create Hedera token', errorMessage), 500);
@@ -144,5 +142,14 @@ serve(async (req) => {
     console.error('Token creation error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
+  } finally {
+    // Ensure Hedera client is always closed
+    if (client) {
+      try {
+        client.close();
+      } catch (closeError) {
+        console.error('Error closing Hedera client:', closeError);
+      }
+    }
   }
 });

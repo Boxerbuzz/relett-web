@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import {
   Client,
   AccountId,
@@ -34,6 +34,8 @@ serve(async (req) => {
     return createCorsResponse();
   }
 
+  let client: Client | null = null;
+
   try {
     const authHeader = req.headers.get('Authorization')!;
     const userResult = await verifyUser(authHeader);
@@ -59,7 +61,7 @@ serve(async (req) => {
 
     try {
       // Initialize Hedera client
-      const client = Client.forTestnet();
+      client = Client.forTestnet();
       
       const account = AccountId.fromString(accountId);
       
@@ -79,8 +81,6 @@ serve(async (req) => {
         });
       }
       
-      client.close();
-
       const response: BalanceResponse = {
         balance: parseFloat(balance.hbars.toString()),
         tokens: tokenBalances,
@@ -100,5 +100,14 @@ serve(async (req) => {
     console.error('Balance query error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
+  } finally {
+    // Ensure Hedera client is always closed
+    if (client) {
+      try {
+        client.close();
+      } catch (closeError) {
+        console.error('Error closing Hedera client:', closeError);
+      }
+    }
   }
 });

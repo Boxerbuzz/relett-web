@@ -27,6 +27,18 @@ interface DeliveryResult {
   success: boolean;
 }
 
+interface PushNotificationData {
+  notification_id?: string;
+  action_url?: string;
+  [key: string]: unknown;
+}
+
+interface NotificationServiceResponse {
+  success: boolean;
+  error?: string;
+  data?: unknown;
+}
+
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -36,8 +48,8 @@ async function sendPushNotification(
   userToken: string,
   title: string,
   message: string,
-  data?: any
-) {
+  data?: PushNotificationData
+): Promise<NotificationServiceResponse> {
   const oneSignalAppId = Deno.env.get("ONESIGNAL_APP_ID");
   const oneSignalApiKey = Deno.env.get("ONESIGNAL_API_KEY");
 
@@ -70,7 +82,7 @@ async function sendPushNotification(
   }
 }
 
-async function sendEmail(to: string, subject: string, content: string) {
+async function sendEmail(to: string, subject: string, content: string): Promise<NotificationServiceResponse> {
   const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const twilioEmailApiKey = Deno.env.get("TWILIO_EMAIL_API_KEY");
 
@@ -117,7 +129,7 @@ async function sendEmail(to: string, subject: string, content: string) {
   }
 }
 
-async function sendSMS(to: string, message: string) {
+async function sendSMS(to: string, message: string): Promise<NotificationServiceResponse> {
   const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");

@@ -1,4 +1,20 @@
-export const systemLogger = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[SYSTEM-LOGGER] ${step} - ${detailsStr}`);
+/**
+ * System logger utility for consistent logging across Edge Functions
+ * @param step - The logging step or context
+ * @param details - Optional details to log (will be JSON stringified)
+ */
+export const systemLogger = (step: string, details?: unknown) => {
+  const timestamp = new Date().toISOString();
+  let detailsStr = "";
+  
+  if (details !== undefined) {
+    try {
+      detailsStr = ` - ${JSON.stringify(details)}`;
+    } catch (error) {
+      // Handle circular references or other JSON.stringify errors
+      detailsStr = ` - [Unable to serialize details: ${String(details)}]`;
+    }
+  }
+  
+  console.log(`[${timestamp}] ${step}${detailsStr}`);
 };

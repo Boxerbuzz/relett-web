@@ -1,7 +1,47 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { createHmac } from 'https://deno.land/std@0.168.0/node/crypto.ts'
+import { createHmac } from 'https://deno.land/std@0.190.0/node/crypto.ts'
+import { timingSafeEqual } from 'https://deno.land/std@0.190.0/crypto/timing_safe_equal.ts'
+import { systemLogger } from '../shared/system-logger.ts'
+
+interface PaystackWebhookData {
+  event: string;
+  data: {
+    reference: string;
+    amount: number;
+    currency: string;
+    customer?: Record<string, unknown>;
+    status: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Safely compare two strings using timing-safe comparison to prevent timing attacks
+ */
+function timingSafeStringEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  
+  return timingSafeEqual(aBytes, bBytes);
+}
+
+/**
+ * Validate webhook signature using timing-safe comparison
+ */
+function verifyWebhookSignature(body: string, signature: string, secret: string): boolean {
+  const hash = createHmac('sha512', secret)
+    .update(body, 'utf8')
+    .digest('hex');
+  
+  return timingSafeStringEqual(hash, signature);
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,21 +73,18 @@ serve(async (req) => {
       throw new Error('Paystack secret key not configured')
     }
 
-    const hash = createHmac('sha512', secret)
-      .update(body, 'utf8')
-      .digest('hex')
-
-    if (hash !== signature) {
+    if (!verifyWebhookSignature(body, signature, secret)) {
+      systemLogger('[PAYSTACK-WEBHOOK]', 'Invalid webhook signature detected')
       throw new Error('Invalid signature')
     }
 
-    console.log('Paystack webhook signature verified')
+    systemLogger('[PAYSTACK-WEBHOOK]', 'Webhook signature verified')
 
     // Parse the webhook data
     const webhookData = JSON.parse(body)
     const { event, data } = webhookData
 
-    console.log('Paystack webhook event:', event, 'Reference:', data?.reference)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Processing event: ${event}, Reference: ${data?.reference}`)
 
     // Handle different webhook events
     switch (event) {
@@ -68,7 +105,7 @@ serve(async (req) => {
         break
       
       default:
-        console.log('Unhandled webhook event:', event)
+        systemLogger('[PAYSTACK-WEBHOOK]', `Unhandled webhook event: ${event}`)
     }
 
     return new Response(
@@ -80,12 +117,12 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Paystack webhook error:', error)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Webhook processing error: ${error.message}`)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Webhook processing failed' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     )
   }
@@ -94,7 +131,7 @@ serve(async (req) => {
 async function handleChargeSuccess(supabaseClient: any, data: any) {
   const { reference, amount, currency, customer, status } = data
   
-  console.log('Processing successful charge:', reference)
+  systemLogger('[PAYSTACK-WEBHOOK]', `Processing successful charge: ${reference}`)
 
   // Find the payment record
   const { data: payment, error: paymentError } = await supabaseClient
@@ -104,7 +141,7 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
     .single()
 
   if (paymentError || !payment) {
-    console.error('Payment record not found for reference:', reference)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Payment record not found for reference: ${reference}`)
     return
   }
 
@@ -122,11 +159,11 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
     .eq('id', payment.id)
 
   if (updateError) {
-    console.error('Failed to update payment:', updateError)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Failed to update payment: ${updateError.message}`)
     return
   }
 
-  console.log('Payment updated successfully:', payment.id)
+  systemLogger('[PAYSTACK-WEBHOOK]', `Payment updated successfully: ${payment.id}`)
 
   // Process based on payment type
   if (payment.related_type === 'rentals') {
@@ -159,7 +196,7 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
 async function handleChargeFailed(supabaseClient: any, data: any) {
   const { reference, amount, currency } = data
   
-  console.log('Processing failed charge:', reference)
+  systemLogger('[PAYSTACK-WEBHOOK]', `Processing failed charge: ${reference}`)
 
   // Find and update payment record
   const { error: updateError } = await supabaseClient
@@ -173,7 +210,7 @@ async function handleChargeFailed(supabaseClient: any, data: any) {
     .eq('reference', reference)
 
   if (updateError) {
-    console.error('Failed to update payment:', updateError)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Failed to update failed payment: ${updateError.message}`)
     return
   }
 
@@ -216,7 +253,7 @@ async function processRentalPayment(supabaseClient: any, payment: any, transacti
     .eq('id', payment.related_id)
 
   if (rentalError) {
-    console.error('Failed to update rental:', rentalError)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Failed to update rental: ${rentalError.message}`)
     return
   }
 
@@ -275,7 +312,7 @@ async function processReservationPayment(supabaseClient: any, payment: any, tran
     .eq('id', payment.related_id)
 
   if (reservationError) {
-    console.error('Failed to update reservation:', reservationError)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Failed to update reservation: ${reservationError.message}`)
     return
   }
 
@@ -331,7 +368,7 @@ async function processWalletTopup(supabaseClient: any, payment: any, transaction
     })
 
   if (accountError) {
-    console.error('Failed to update wallet:', accountError)
+    systemLogger('[PAYSTACK-WEBHOOK]', `Failed to update wallet: ${accountError.message}`)
   }
 }
 
@@ -368,12 +405,12 @@ async function creditAgentAccount(supabaseClient: any, agentId: string, amount: 
 }
 
 async function handleTransferSuccess(supabaseClient: any, data: any) {
-  console.log('Transfer successful:', data)
+  systemLogger('[PAYSTACK-WEBHOOK]', `Transfer successful: ${data.reference || 'unknown'}`)
   // Handle successful transfers (e.g., agent payouts)
 }
 
 async function handleTransferFailed(supabaseClient: any, data: any) {
-  console.log('Transfer failed:', data)
+  systemLogger('[PAYSTACK-WEBHOOK]', `Transfer failed: ${data.reference || 'unknown'}`)
   // Handle failed transfers
 }
 

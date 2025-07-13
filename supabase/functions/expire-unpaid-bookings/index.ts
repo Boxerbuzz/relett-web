@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
+import { systemLogger } from "../shared/system-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -12,7 +14,10 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Starting expiration job for unpaid bookings...");
+    systemLogger(
+      "[EXPIRE-UNPAID-BOOKINGS]",
+      "Starting expiration job for unpaid bookings..."
+    );
 
     // Create Supabase client
     const supabaseClient = createClient(
@@ -32,75 +37,92 @@ serve(async (req) => {
       .lt("created_at", fourHoursAgo.toISOString());
 
     if (rentalsError) {
-      console.error("Error fetching expired rentals:", rentalsError);
+      systemLogger("Error fetching expired rentals:", rentalsError);
     } else if (expiredRentals && expiredRentals.length > 0) {
-      console.log(`Found ${expiredRentals.length} expired rentals to cancel`);
+      systemLogger(`Found ${expiredRentals.length} expired rentals to cancel`);
 
       // Update expired rentals
       const { error: updateRentalsError } = await supabaseClient
         .from("rentals")
-        .update({ 
+        .update({
           status: "expired",
-          payment_status: "expired" 
+          payment_status: "expired",
         })
-        .in("id", expiredRentals.map(r => r.id));
+        .in(
+          "id",
+          expiredRentals.map((r) => r.id)
+        );
 
       if (updateRentalsError) {
-        console.error("Error updating expired rentals:", updateRentalsError);
+        systemLogger("Error updating expired rentals:", updateRentalsError);
       } else {
-        console.log(`Successfully expired ${expiredRentals.length} rentals`);
+        systemLogger(`Successfully expired ${expiredRentals.length} rentals`);
       }
     }
 
     // Find unpaid reservations older than 4 hours
-    const { data: expiredReservations, error: reservationsError } = await supabaseClient
-      .from("reservations")
-      .select("id, user_id, property_id, status, created_at")
-      .in("status", ["pending", "awaiting_payment"])
-      .lt("created_at", fourHoursAgo.toISOString());
+    const { data: expiredReservations, error: reservationsError } =
+      await supabaseClient
+        .from("reservations")
+        .select("id, user_id, property_id, status, created_at")
+        .in("status", ["pending", "awaiting_payment"])
+        .lt("created_at", fourHoursAgo.toISOString());
 
     if (reservationsError) {
       console.error("Error fetching expired reservations:", reservationsError);
     } else if (expiredReservations && expiredReservations.length > 0) {
-      console.log(`Found ${expiredReservations.length} expired reservations to cancel`);
+      console.log(
+        `Found ${expiredReservations.length} expired reservations to cancel`
+      );
 
       // Update expired reservations
       const { error: updateReservationsError } = await supabaseClient
         .from("reservations")
-        .update({ 
-          status: "expired"
+        .update({
+          status: "expired",
         })
-        .in("id", expiredReservations.map(r => r.id));
+        .in(
+          "id",
+          expiredReservations.map((r) => r.id)
+        );
 
       if (updateReservationsError) {
-        console.error("Error updating expired reservations:", updateReservationsError);
+        console.error(
+          "Error updating expired reservations:",
+          updateReservationsError
+        );
       } else {
-        console.log(`Successfully expired ${expiredReservations.length} reservations`);
+        console.log(
+          `Successfully expired ${expiredReservations.length} reservations`
+        );
       }
     }
 
-    const totalExpired = (expiredRentals?.length || 0) + (expiredReservations?.length || 0);
-    console.log(`Expiration job completed. Total bookings expired: ${totalExpired}`);
+    const totalExpired =
+      (expiredRentals?.length || 0) + (expiredReservations?.length || 0);
+    console.log(
+      `Expiration job completed. Total bookings expired: ${totalExpired}`
+    );
 
     return new Response(
       JSON.stringify({
         success: true,
         message: `Expired ${totalExpired} unpaid bookings`,
         expired_rentals: expiredRentals?.length || 0,
-        expired_reservations: expiredReservations?.length || 0
+        expired_reservations: expiredReservations?.length || 0,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
-
   } catch (error) {
-    console.error("Expiration job error:", error);
+    systemLogger("Expiration job error:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: message,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
