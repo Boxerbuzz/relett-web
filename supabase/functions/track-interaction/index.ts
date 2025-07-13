@@ -6,6 +6,7 @@ import {
   createResponse,
   createCorsResponse 
 } from '../shared/supabase-client.ts';
+import { systemLogger } from "../shared/system-logger.ts";
 
 interface InteractionRequest {
   user_id: string;
@@ -62,7 +63,7 @@ serve(async (req) => {
       .single();
 
     if (auditError) {
-      console.error('Audit trail error:', auditError);
+      systemLogger('[TRACK-INTERACTION]', auditError);
       return createResponse(createErrorResponse('Failed to record interaction'), 500);
     }
 
@@ -128,7 +129,7 @@ serve(async (req) => {
     return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('Interaction tracking error:', error);
+    systemLogger('[TRACK-INTERACTION]', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
   }

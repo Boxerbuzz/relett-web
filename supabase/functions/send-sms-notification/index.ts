@@ -7,6 +7,7 @@ import {
   createResponse,
   createCorsResponse 
 } from '../shared/supabase-client.ts';
+import { systemLogger } from "../shared/system-logger.ts";
 
 interface SMSNotificationRequest {
   phoneNumber: string;
@@ -113,7 +114,7 @@ serve(async (req) => {
     return createResponse(createSuccessResponse(response));
 
   } catch (error) {
-    console.error('SMS notification error:', error);
+    systemLogger('[SEND-SMS-NOTIFICATION]', error);
     
     // Log failed delivery
     const supabase = createTypedSupabaseClient();

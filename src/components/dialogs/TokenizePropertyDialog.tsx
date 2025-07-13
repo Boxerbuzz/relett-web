@@ -1,16 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Coins, FileText, Calculator, Eye } from 'lucide-react';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Coins, FileText, Calculator, Eye } from "phosphor-react";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 
 interface TokenizePropertyDialogProps {
   open: boolean;
@@ -24,28 +35,32 @@ interface TokenizePropertyDialogProps {
   };
 }
 
-export function TokenizePropertyDialog({ open, onOpenChange, property }: TokenizePropertyDialogProps) {
+export function TokenizePropertyDialog({
+  open,
+  onOpenChange,
+  property,
+}: TokenizePropertyDialogProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    totalTokens: '100000',
-    pricePerToken: '25',
-    minimumInvestment: '100',
-    expectedROI: '12.5',
-    distributionFrequency: 'quarterly',
-    lockupPeriod: '12',
-    description: '',
-    riskLevel: 'medium'
+    totalTokens: "100000",
+    pricePerToken: "25",
+    minimumInvestment: "100",
+    expectedROI: "12.5",
+    distributionFrequency: "quarterly",
+    lockupPeriod: "12",
+    description: "",
+    riskLevel: "medium",
   });
 
   const steps = [
-    { title: 'Token Configuration', icon: Coins },
-    { title: 'Financial Terms', icon: Calculator },
-    { title: 'Legal & Documentation', icon: FileText },
-    { title: 'Review & Submit', icon: Eye }
+    { title: "Token Configuration", icon: Coins },
+    { title: "Financial Terms", icon: Calculator },
+    { title: "Legal & Documentation", icon: FileText },
+    { title: "Review & Submit", icon: Eye },
   ];
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const nextStep = () => setStep(Math.min(step + 1, 4));
@@ -63,7 +78,9 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   id="totalTokens"
                   type="number"
                   value={formData.totalTokens}
-                  onChange={(e) => handleInputChange('totalTokens', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("totalTokens", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -73,18 +90,24 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   type="number"
                   step="0.01"
                   value={formData.pricePerToken}
-                  onChange={(e) => handleInputChange('pricePerToken', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("pricePerToken", e.target.value)
+                  }
                 />
               </div>
             </div>
-            
+
             <div>
-              <Label htmlFor="minimumInvestment">Minimum Investment (USD)</Label>
+              <Label htmlFor="minimumInvestment">
+                Minimum Investment (USD)
+              </Label>
               <Input
                 id="minimumInvestment"
                 type="number"
                 value={formData.minimumInvestment}
-                onChange={(e) => handleInputChange('minimumInvestment', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("minimumInvestment", e.target.value)
+                }
               />
             </div>
 
@@ -94,13 +117,21 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   <div>
                     <p className="text-gray-600">Total Value:</p>
                     <p className="font-semibold">
-                      ${(parseInt(formData.totalTokens) * parseFloat(formData.pricePerToken)).toLocaleString()}
+                      $
+                      {(
+                        parseInt(formData.totalTokens) *
+                        parseFloat(formData.pricePerToken)
+                      ).toLocaleString()}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Min. Tokens:</p>
                     <p className="font-semibold">
-                      {Math.ceil(parseFloat(formData.minimumInvestment) / parseFloat(formData.pricePerToken))} tokens
+                      {Math.ceil(
+                        parseFloat(formData.minimumInvestment) /
+                          parseFloat(formData.pricePerToken)
+                      )}{" "}
+                      tokens
                     </p>
                   </div>
                 </div>
@@ -120,7 +151,9 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   type="number"
                   step="0.1"
                   value={formData.expectedROI}
-                  onChange={(e) => handleInputChange('expectedROI', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("expectedROI", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -129,16 +162,22 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   id="lockupPeriod"
                   type="number"
                   value={formData.lockupPeriod}
-                  onChange={(e) => handleInputChange('lockupPeriod', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lockupPeriod", e.target.value)
+                  }
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="distributionFrequency">Distribution Frequency</Label>
-              <Select 
-                value={formData.distributionFrequency} 
-                onValueChange={(value) => handleInputChange('distributionFrequency', value)}
+              <Label htmlFor="distributionFrequency">
+                Distribution Frequency
+              </Label>
+              <Select
+                value={formData.distributionFrequency}
+                onValueChange={(value) =>
+                  handleInputChange("distributionFrequency", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -154,9 +193,9 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
 
             <div>
               <Label htmlFor="riskLevel">Risk Level</Label>
-              <Select 
-                value={formData.riskLevel} 
-                onValueChange={(value) => handleInputChange('riskLevel', value)}
+              <Select
+                value={formData.riskLevel}
+                onValueChange={(value) => handleInputChange("riskLevel", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -180,7 +219,9 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                 id="description"
                 placeholder="Describe the investment opportunity, property details, and expected returns..."
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={4}
               />
             </div>
@@ -191,14 +232,17 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  'Property Valuation Report',
-                  'Legal Title Documents',
-                  'Property Survey',
-                  'Insurance Documents',
-                  'Financial Projections',
-                  'Legal Opinion Letter'
+                  "Property Valuation Report",
+                  "Legal Title Documents",
+                  "Property Survey",
+                  "Insurance Documents",
+                  "Financial Projections",
+                  "Legal Opinion Letter",
                 ].map((doc, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <span className="text-sm">{doc}</span>
                     <Badge variant="outline">Required</Badge>
                   </div>
@@ -231,7 +275,9 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                   </div>
                   <div>
                     <p className="text-gray-600">Lock-up Period:</p>
-                    <p className="font-semibold">{formData.lockupPeriod} months</p>
+                    <p className="font-semibold">
+                      {formData.lockupPeriod} months
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -239,8 +285,10 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-sm text-yellow-800">
-                <strong>Important:</strong> Once submitted, your property will go through a verification process 
-                that typically takes 5-7 business days. You'll be notified of any additional requirements.
+                <strong>Important:</strong> Once submitted, your property will
+                go through a verification process that typically takes 5-7
+                business days. You'll be notified of any additional
+                requirements.
               </p>
             </div>
           </div>
@@ -252,24 +300,24 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[90vh] flex flex-col">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="max-w-2xl flex flex-col">
         {/* Fixed Header */}
         <div className="flex-shrink-0 space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="flex items-center gap-2">
               <Coins size={20} />
               Tokenize Property
-            </DialogTitle>
-          </DialogHeader>
+            </ResponsiveDialogTitle>
+          </ResponsiveDialogHeader>
 
           {/* Property Info */}
           {property && (
             <Card>
               <CardContent className="p-4">
                 <div className="flex gap-3">
-                  <img 
-                    src={property.image} 
+                  <img
+                    src={property.image}
                     alt={property.title}
                     className="w-16 h-16 rounded-lg object-cover"
                   />
@@ -290,12 +338,18 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
                 const IconComponent = stepInfo.icon;
                 return (
                   <div key={index} className="flex flex-col items-center gap-1">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      index + 1 <= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        index + 1 <= step
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                    >
                       <IconComponent size={16} />
                     </div>
-                    <span className="text-xs text-center">{stepInfo.title}</span>
+                    <span className="text-xs text-center">
+                      {stepInfo.title}
+                    </span>
                   </div>
                 );
               })}
@@ -305,9 +359,7 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
         </div>
 
         {/* Scrollable Step Content */}
-        <div className="flex-1 overflow-y-auto py-4">
-          {renderStep()}
-        </div>
+        <div className="flex-1 overflow-y-auto py-4">{renderStep()}</div>
 
         {/* Fixed Footer Navigation */}
         <div className="flex-shrink-0 pt-4 border-t">
@@ -316,21 +368,17 @@ export function TokenizePropertyDialog({ open, onOpenChange, property }: Tokeniz
               variant="outline"
               onClick={step === 1 ? () => onOpenChange(false) : prevStep}
             >
-              {step === 1 ? 'Cancel' : 'Previous'}
+              {step === 1 ? "Cancel" : "Previous"}
             </Button>
-            
+
             {step === 4 ? (
-              <Button>
-                Submit for Review
-              </Button>
+              <Button>Submit for Review</Button>
             ) : (
-              <Button onClick={nextStep}>
-                Next
-              </Button>
+              <Button onClick={nextStep}>Next</Button>
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

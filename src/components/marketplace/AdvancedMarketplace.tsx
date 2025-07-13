@@ -397,7 +397,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
         {/* Year Built */}
         {property.year_built && (
           <div className="text-xs text-gray-500">
-            Built in {property.year_built}
+            Built in {new Date(property.year_built).getFullYear()}
           </div>
         )}
 

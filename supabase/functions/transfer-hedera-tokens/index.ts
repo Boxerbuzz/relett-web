@@ -9,6 +9,7 @@ import {
   TransferTransaction,
   Hbar
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+import { systemLogger } from "../shared/system-logger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,7 +61,7 @@ serve(async (req) => {
     const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
 
     if (!hederaAccountId || !hederaPrivateKey) {
-      console.error('Hedera credentials not configured');
+      systemLogger('[TRANSFER-HEDERA-TOKENS]', 'Hedera credentials not configured');
       return new Response(JSON.stringify({ error: 'Hedera token service not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -74,7 +75,7 @@ serve(async (req) => {
     const toAccount = AccountId.fromString(toAccountId);
     const token = TokenId.fromString(tokenId);
 
-    console.log('Transferring tokens:', { tokenId, fromAccountId, toAccountId, amount });
+    systemLogger('[TRANSFER-HEDERA-TOKENS]', { tokenId, fromAccountId, toAccountId, amount });
 
     try {
       // Create transfer transaction
@@ -89,7 +90,7 @@ serve(async (req) => {
       const transferSubmit = await transferSign.execute(client);
       const transferReceipt = await transferSubmit.getReceipt(client);
 
-      console.log('Token transfer successful:', transferSubmit.transactionId.toString());
+      systemLogger('[TRANSFER-HEDERA-TOKENS]', `Token transfer successful: ${transferSubmit.transactionId.toString()}`);
 
       // Record transaction in database
       const { error: insertError } = await supabaseClient
@@ -107,7 +108,7 @@ serve(async (req) => {
         });
 
       if (insertError) {
-        console.error('Database insert error:', insertError);
+        systemLogger('[TRANSFER-HEDERA-TOKENS]', insertError);
       }
 
       // Update token holdings
@@ -130,7 +131,7 @@ serve(async (req) => {
       });
 
     } catch (hederaError) {
-      console.error('Hedera transfer error:', hederaError);
+      systemLogger('[TRANSFER-HEDERA-TOKENS]', hederaError);
       client.close();
       
       return new Response(JSON.stringify({ 
@@ -143,7 +144,7 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Token transfer error:', error);
+    systemLogger('[TRANSFER-HEDERA-TOKENS]', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

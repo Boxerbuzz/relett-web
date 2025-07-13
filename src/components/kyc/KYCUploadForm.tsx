@@ -60,7 +60,7 @@ export function KYCUploadForm() {
     if (user) {
       fetchDocuments();
     }
-  }, [user]);
+  }, []);
 
   const fetchDocuments = async () => {
     if (!user) return;

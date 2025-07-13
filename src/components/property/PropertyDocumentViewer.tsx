@@ -1,24 +1,22 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { DocumentViewer } from '@/components/verification/DocumentViewer';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  FileText, 
-  Download, 
-  Eye, 
-  Shield, 
-  Calendar,
-  User,
-  AlertCircle,
-  CheckCircle
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DocumentViewer } from "@/components/verification/DocumentViewer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  FileTextIcon,
+  DownloadIcon,
+  EyeIcon,
+  ShieldCheckIcon,
+  CalendarIcon,
+  WarningIcon,
+  CheckCircleIcon,
+} from "@phosphor-icons/react";
 
 interface PropertyDocument {
   id: string;
@@ -39,10 +37,14 @@ interface PropertyDocumentViewerProps {
   landTitleId?: string;
 }
 
-export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocumentViewerProps) {
+export function PropertyDocumentViewer({
+  propertyId,
+  landTitleId,
+}: PropertyDocumentViewerProps) {
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
+  const [selectedDocument, setSelectedDocument] =
+    useState<PropertyDocument | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const { toast } = useToast();
 
@@ -53,30 +55,30 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      
+
       let query = supabase
-        .from('property_documents')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("property_documents")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (propertyId) {
-        query = query.eq('property_id', propertyId);
+        query = query.eq("property_id", propertyId);
       }
-      
+
       if (landTitleId) {
-        query = query.eq('land_title_id', landTitleId);
+        query = query.eq("land_title_id", landTitleId);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      setDocuments(data as PropertyDocument[] || []);
+      setDocuments((data as PropertyDocument[]) || []);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch property documents',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch property documents",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -84,53 +86,59 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
   };
 
   const getDocumentIcon = (type: string, mimeType: string) => {
-    if (mimeType.startsWith('image/')) {
-      return '🖼️';
+    if (mimeType.startsWith("image/")) {
+      return "🖼️";
     }
-    if (mimeType === 'application/pdf') {
-      return '📄';
+    if (mimeType === "application/pdf") {
+      return "📄";
     }
     switch (type) {
-      case 'deed': return '📜';
-      case 'survey': return '🗺️';
-      case 'certificate_of_occupancy': return '🏠';
-      case 'government_consent': return '🏛️';
-      case 'tax_clearance': return '💰';
-      default: return '📄';
+      case "deed":
+        return "📜";
+      case "survey":
+        return "🗺️";
+      case "certificate_of_occupancy":
+        return "🏠";
+      case "government_consent":
+        return "🏛️";
+      case "tax_clearance":
+        return "💰";
+      default:
+        return "📄";
     }
   };
 
   const getStatusBadge = (status: string, expiresAt?: string) => {
     const isExpired = expiresAt && new Date(expiresAt) < new Date();
-    
+
     if (isExpired) {
       return (
         <Badge variant="destructive" className="text-xs">
-          <AlertCircle className="h-3 w-3 mr-1" />
+          <WarningIcon className="h-3 w-3 mr-1" />
           Expired
         </Badge>
       );
     }
 
     switch (status) {
-      case 'verified':
+      case "verified":
         return (
           <Badge className="bg-green-500 text-xs">
-            <CheckCircle className="h-3 w-3 mr-1" />
+            <CheckCircleIcon className="h-3 w-3 mr-1" />
             Verified
           </Badge>
         );
-      case 'pending':
+      case "pending":
         return (
           <Badge variant="outline" className="text-xs">
-            <Calendar className="h-3 w-3 mr-1" />
+            <CalendarIcon className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         );
-      case 'rejected':
+      case "rejected":
         return (
           <Badge variant="destructive" className="text-xs">
-            <AlertCircle className="h-3 w-3 mr-1" />
+            <WarningIcon className="h-3 w-3 mr-1" />
             Rejected
           </Badge>
         );
@@ -149,25 +157,28 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const DocumentSkeleton = () => (
     <div className="space-y-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+        <div
+          key={i}
+          className="flex items-center justify-between p-4 border rounded-lg"
+        >
           <div className="flex items-center gap-3">
             <Skeleton className="w-10 h-10 rounded" />
             <div className="space-y-2">
@@ -189,7 +200,7 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <FileTextIcon className="h-5 w-5" />
             Property Documents
           </CardTitle>
         </CardHeader>
@@ -205,13 +216,13 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <FileTextIcon className="h-5 w-5" />
             Property Documents
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <FileTextIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p>No documents available</p>
             <p className="text-sm">Documents will appear here once uploaded</p>
           </div>
@@ -225,32 +236,40 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <FileTextIcon className="h-5 w-5" />
             Property Documents
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {documents.map((document) => (
-              <div key={document.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+              <div
+                key={document.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+              >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">
-                    {getDocumentIcon(document.document_type, document.mime_type)}
+                    {getDocumentIcon(
+                      document.document_type,
+                      document.mime_type
+                    )}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm">{document.document_name}</p>
+                      <p className="font-medium text-sm">
+                        {document.document_name}
+                      </p>
                       {getStatusBadge(document.status, document.expires_at)}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span>{formatFileSize(document.file_size)}</span>
                       <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                        <CalendarIcon className="h-3 w-3" />
                         {formatDate(document.created_at)}
                       </span>
                       {document.verified_at && (
                         <span className="flex items-center gap-1">
-                          <Shield className="h-3 w-3" />
+                          <ShieldCheckIcon className="h-3 w-3" />
                           Verified {formatDate(document.verified_at)}
                         </span>
                       )}
@@ -258,20 +277,20 @@ export function PropertyDocumentViewer({ propertyId, landTitleId }: PropertyDocu
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleViewDocument(document)}
                   >
-                    <Eye className="h-4 w-4 mr-2" />
+                    <EyeIcon className="h-4 w-4 mr-2" />
                     View
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => window.open(document.file_url, '_blank')}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(document.file_url, "_blank")}
                   >
-                    <Download className="h-4 w-4" />
+                    <DownloadIcon className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

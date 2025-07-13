@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "./profile/UserAvatar";
 import { Badge } from "@/components/ui/badge";
-import { Bell, List, Gear, SignOut, User } from "phosphor-react";
+import { Bell, List, Gear, SignOut, User, Star } from "phosphor-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -122,6 +122,15 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                     {notificationCount}
                   </Badge>
                 )}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                to="/favourites"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Star size={16} />
+                Favourites
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

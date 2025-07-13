@@ -26,8 +26,8 @@ import {
   Spinner,
   ArrowLeft,
   Coins,
+  PencilCircle,
 } from "phosphor-react";
-import { PencilIcon } from "lucide-react";
 import { getAmenityById } from "@/types/amenities";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
@@ -171,14 +171,6 @@ export function PropertyDetailsDialog({
   const handleTokenizeProperty = () => {
     if (!property) return;
     setShowTokenizeDialog(true);
-  };
-
-  const getPropertyImage = () => {
-    return (
-      property?.property_images?.[0]?.url ||
-      property?.backdrop ||
-      "placeholder-image-url"
-    );
   };
 
   const keySpecs = property
@@ -356,23 +348,23 @@ export function PropertyDetailsDialog({
                   Share
                 </Button>
               </div>
-              
+
               {/* Property Owner Actions */}
               {property.user_id === user?.id && (
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => setShowEditDialog(true)}
                   >
-                    <PencilIcon size={16} className="mr-2" />
+                    <PencilCircle size={16} className="mr-2" />
                     Edit Property
                   </Button>
-                  
+
                   {!property.is_tokenized && property.is_verified && (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="flex-1"
                       onClick={() => handleTokenizeProperty()}
                     >
@@ -552,7 +544,7 @@ export function PropertyDetailsDialog({
                   propertyId={property.id}
                   landTitleId={property.land_title_id || undefined}
                 />
-                
+
                 {/* Document Upload for Property Owner */}
                 {property.user_id === user?.id && (
                   <DocumentUploadComponent
@@ -590,9 +582,10 @@ export function PropertyDetailsDialog({
           open={showTokenizeDialog}
           onOpenChange={setShowTokenizeDialog}
           property={{
-            ...property,
+            id: property.id,
+            location: getLocationString(),
             value: formatPrice(property.price),
-            image: getPropertyImage()[0] || "",
+            image: property.backdrop || "",
             title: property.title || "",
           }}
         />

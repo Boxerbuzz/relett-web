@@ -1,21 +1,20 @@
+"use client";
 
-'use client';
-
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BlockchainStatusBadge } from '@/components/property/BlockchainStatusBadge';
-import { 
-  MapPin, 
-  Eye, 
-  Heart, 
-  Share2, 
-  Star,
-  Bed,
-  Bath,
-  Square,
-  TrendingUp
-} from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BlockchainStatusBadge } from "@/components/property/BlockchainStatusBadge";
+import {
+  MapPinIcon,
+  EyeIcon,
+  HeartIcon,
+  ShareIcon,
+  StarIcon,
+  BedIcon,
+  ShowerIcon,
+  SquareIcon,
+  TrendUpIcon,
+} from "@phosphor-icons/react";
 
 interface PropertyCardProps {
   property: {
@@ -45,15 +44,17 @@ interface PropertyCardProps {
   className?: string;
 }
 
-export function PropertyCard({ 
-  property, 
-  onView, 
-  onLike, 
+export function PropertyCard({
+  property,
+  onView,
+  onLike,
   onShare,
-  className = "" 
+  className = "",
 }: PropertyCardProps) {
   return (
-    <Card className={`overflow-hidden hover:shadow-lg transition-all duration-200 group ${className}`}>
+    <Card
+      className={`overflow-hidden hover:shadow-lg transition-all duration-200 group ${className}`}
+    >
       {/* Property Image */}
       <div className="relative aspect-video bg-gray-100 overflow-hidden">
         <img
@@ -61,17 +62,15 @@ export function PropertyCard({
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
         />
-        
+
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {property.isVerified && (
-            <Badge className="bg-green-600 text-white border-0">
-              Verified
-            </Badge>
+            <Badge className="bg-green-600 text-white border-0">Verified</Badge>
           )}
           {property.expectedROI && (
             <Badge className="bg-blue-600 text-white border-0">
-              <TrendingUp className="w-3 h-3 mr-1" />
+              <TrendUpIcon className="w-3 h-3 mr-1" />
               {property.expectedROI}% ROI
             </Badge>
           )}
@@ -85,7 +84,7 @@ export function PropertyCard({
             className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
             onClick={onLike}
           >
-            <Heart className="w-4 h-4" />
+            <HeartIcon className="w-4 h-4" />
           </Button>
           <Button
             variant="secondary"
@@ -93,7 +92,7 @@ export function PropertyCard({
             className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
             onClick={onShare}
           >
-            <Share2 className="w-4 h-4" />
+            <ShareIcon className="w-4 h-4" />
           </Button>
         </div>
 
@@ -112,7 +111,7 @@ export function PropertyCard({
             {property.title}
           </h3>
           <div className="flex items-center text-sm text-gray-600">
-            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+            <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
             <span className="truncate">{property.location}</span>
           </div>
         </div>
@@ -123,19 +122,19 @@ export function PropertyCard({
             <div className="flex items-center gap-3">
               {property.bedrooms && (
                 <div className="flex items-center gap-1">
-                  <Bed className="w-4 h-4" />
+                  <BedIcon className="w-4 h-4" />
                   <span>{property.bedrooms}</span>
                 </div>
               )}
               {property.bathrooms && (
                 <div className="flex items-center gap-1">
-                  <Bath className="w-4 h-4" />
+                  <ShowerIcon className="w-4 h-4" />
                   <span>{property.bathrooms}</span>
                 </div>
               )}
               {property.area && (
                 <div className="flex items-center gap-1">
-                  <Square className="w-4 h-4" />
+                  <SquareIcon className="w-4 h-4" />
                   <span>{property.area}</span>
                 </div>
               )}
@@ -165,23 +164,21 @@ export function PropertyCard({
           <div className="flex items-center gap-4">
             {property.rating && (
               <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <StarIcon className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 <span>{property.rating}</span>
-                {property.reviewCount && (
-                  <span>({property.reviewCount})</span>
-                )}
+                {property.reviewCount && <span>({property.reviewCount})</span>}
               </div>
             )}
             <div className="flex items-center gap-3">
               {property.views && (
                 <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
+                  <EyeIcon className="w-4 h-4" />
                   <span>{property.views}</span>
                 </div>
               )}
               {property.likes && (
                 <div className="flex items-center gap-1">
-                  <Heart className="w-4 h-4" />
+                  <HeartIcon className="w-4 h-4" />
                   <span>{property.likes}</span>
                 </div>
               )}
@@ -194,7 +191,7 @@ export function PropertyCard({
           <div>
             <p className="text-xl font-bold text-primary">{property.price}</p>
             <p className="text-xs text-gray-500">
-              {property.category === 'rent' ? 'per month' : 'total price'}
+              {property.category === "rent" ? "per month" : "total price"}
             </p>
           </div>
           <Button onClick={onView} className="flex-shrink-0">

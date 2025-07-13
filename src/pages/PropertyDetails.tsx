@@ -12,7 +12,6 @@ import { InvestNowDialog } from "@/components/dialogs/InvestNowDialog";
 import {
   ArrowLeftIcon,
   HeartIcon,
-  ShareNetworkIcon,
   MapPinIcon,
   EyeIcon,
   CalendarIcon,
@@ -36,7 +35,6 @@ import { EnhancedPropertyPricing } from "@/types/property";
 import RentalSheet from "@/components/property/sheets/RentalSheet";
 import { LocationAnalysis } from "@/components/property/LocationAnalysis";
 import { AIValuationWidget } from "@/components/property/AIValuationWidget";
-import { AIPropertyValuation } from "@/components/property/AIPropertyValuation";
 import { useToast } from "@/hooks/use-toast";
 
 const PropertyDetails = () => {
@@ -44,7 +42,12 @@ const PropertyDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { property, loading, error, agent } = usePropertyDetails(id || "");
-  const { isLiked, likeCount, loading: likesLoading, toggleLike } = usePropertyLikes(id || "");
+  const {
+    isLiked,
+    likeCount,
+    loading: likesLoading,
+    toggleLike,
+  } = usePropertyLikes(id || "");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showInvestDialog, setShowInvestDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -67,18 +70,21 @@ const PropertyDetails = () => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      toast({
-        title: 'Link Copied',
-        description: 'Property link copied to clipboard'
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        toast({
+          title: "Link Copied",
+          description: "Property link copied to clipboard",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "Failed to copy link",
+          variant: "destructive",
+        });
       });
-    }).catch(() => {
-      toast({
-        title: 'Error',
-        description: 'Failed to copy link',
-        variant: 'destructive'
-      });
-    });
   };
 
   if (loading) {
@@ -173,15 +179,15 @@ const PropertyDetails = () => {
             Back
           </Button>
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={toggleLike}
               disabled={likesLoading}
               className="flex items-center gap-2"
             >
-              <Heart 
-                size={16} 
-                className={isLiked ? 'fill-red-500 text-red-500' : ''} 
+              <Heart
+                size={16}
+                className={isLiked ? "fill-red-500 text-red-500" : ""}
               />
               {likeCount > 0 && <span className="text-sm">{likeCount}</span>}
               Save
@@ -398,7 +404,9 @@ const PropertyDetails = () => {
                       {property.features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-sm">{feature}</span>
+                          <span className="text-sm">
+                            {getAmenityById(feature)?.name}
+                          </span>
                         </div>
                       ))}
                     </div>
