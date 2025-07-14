@@ -1,20 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, CheckCircle, XCircle, ExternalLink, RefreshCw } from 'lucide-react';
-import { usePaymentFlow, PaymentStatus } from '@/hooks/usePaymentFlow';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Loader2,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
+  RefreshCw,
+} from "lucide-react";
+import { usePaymentFlow, PaymentStatus } from "@/hooks/usePaymentFlow";
 
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: 'rental' | 'reservation';
+  type: "rental" | "reservation";
   bookingId?: string;
   amount: number;
   currency?: string;
@@ -31,23 +37,29 @@ export function PaymentDialog({
   type,
   bookingId,
   amount,
-  currency = 'NGN',
+  currency = "NGN",
   metadata,
   propertyId,
   propertyTitle,
   onSuccess,
   onCancel,
 }: PaymentDialogProps) {
-  const { loading, paymentStatus, initializePayment, verifyPaymentStatus, retryPayment } = usePaymentFlow();
+  const {
+    loading,
+    paymentStatus,
+    initializePayment,
+    verifyPaymentStatus,
+    retryPayment,
+  } = usePaymentFlow();
   const [reference, setReference] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     // Auto-verify payment status when dialog opens and we have a reference
-    if (open && reference && paymentStatus?.status === 'pending') {
+    if (open && reference && paymentStatus?.status === "pending") {
       const interval = setInterval(async () => {
         const status = await verifyPaymentStatus(reference);
-        if (status.status === 'completed') {
+        if (status.status === "completed") {
           onSuccess?.();
           clearInterval(interval);
         }
@@ -69,32 +81,32 @@ export function PaymentDialog({
       });
       setReference(paymentRef);
     } catch (error) {
-      console.error('Payment initialization failed:', error);
+      console.error("Payment initialization failed:", error);
     }
   };
 
   const handleRetryPayment = async () => {
     if (!bookingId) return;
-    
+
     try {
       const paymentRef = await retryPayment(bookingId, type);
       setReference(paymentRef);
     } catch (error) {
-      console.error('Payment retry failed:', error);
+      console.error("Payment retry failed:", error);
     }
   };
 
   const handleVerifyPayment = async () => {
     if (!reference) return;
-    
+
     setVerifying(true);
     try {
       const status = await verifyPaymentStatus(reference);
-      if (status.status === 'completed') {
+      if (status.status === "completed") {
         onSuccess?.();
       }
     } catch (error) {
-      console.error('Payment verification failed:', error);
+      console.error("Payment verification failed:", error);
     } finally {
       setVerifying(false);
     }
@@ -105,41 +117,41 @@ export function PaymentDialog({
     onOpenChange(false);
   };
 
-  const getStatusIcon = (status: PaymentStatus['status']) => {
+  const getStatusIcon = (status: PaymentStatus["status"]) => {
     switch (status) {
-      case 'processing':
-      case 'pending':
+      case "processing":
+      case "pending":
         return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
-      case 'completed':
+      case "completed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'failed':
-      case 'expired':
+      case "failed":
+      case "expired":
         return <XCircle className="h-5 w-5 text-red-500" />;
       default:
         return null;
     }
   };
 
-  const getStatusMessage = (status: PaymentStatus['status']) => {
+  const getStatusMessage = (status: PaymentStatus["status"]) => {
     switch (status) {
-      case 'processing':
-        return 'Initializing payment...';
-      case 'pending':
-        return 'Payment window opened. Complete your payment and return here.';
-      case 'completed':
-        return 'Payment successful! Your booking has been confirmed.';
-      case 'failed':
-        return 'Payment failed. Please try again.';
-      case 'expired':
-        return 'Payment session expired. Please start a new payment.';
+      case "processing":
+        return "Initializing payment...";
+      case "pending":
+        return "Payment window opened. Complete your payment and return here.";
+      case "completed":
+        return "Payment successful! Your booking has been confirmed.";
+      case "failed":
+        return "Payment failed. Please try again.";
+      case "expired":
+        return "Payment session expired. Please start a new payment.";
       default:
-        return '';
+        return "";
     }
   };
 
   const formatAmount = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
       currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -151,7 +163,7 @@ export function PaymentDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {type === 'rental' ? 'Rental Payment' : 'Reservation Payment'}
+            {type === "rental" ? "Rental Payment" : "Reservation Payment"}
           </DialogTitle>
           <DialogDescription>
             {propertyTitle && `Payment for ${propertyTitle}`}
@@ -175,7 +187,9 @@ export function PaymentDialog({
                 <AlertDescription>
                   {getStatusMessage(paymentStatus.status)}
                   {paymentStatus.error && (
-                    <div className="text-red-600 mt-1">{paymentStatus.error}</div>
+                    <div className="text-red-600 mt-1">
+                      {paymentStatus.error}
+                    </div>
                   )}
                 </AlertDescription>
               </div>
@@ -183,11 +197,11 @@ export function PaymentDialog({
           )}
 
           {/* Payment URL */}
-          {paymentStatus?.paymentUrl && paymentStatus.status === 'pending' && (
+          {paymentStatus?.paymentUrl && paymentStatus.status === "pending" && (
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => window.open(paymentStatus.paymentUrl, '_blank')}
+              onClick={() => window.open(paymentStatus.paymentUrl, "_blank")}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Open Payment Window
@@ -198,11 +212,15 @@ export function PaymentDialog({
           <div className="flex gap-2 pt-4">
             {!paymentStatus && (
               <>
-                <Button variant="outline" onClick={handleCancel} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleInitializePayment} 
+                <Button
+                  onClick={handleInitializePayment}
                   disabled={loading}
                   className="flex-1"
                 >
@@ -212,19 +230,23 @@ export function PaymentDialog({
                       Processing...
                     </>
                   ) : (
-                    'Start Payment'
+                    "Start Payment"
                   )}
                 </Button>
               </>
             )}
 
-            {paymentStatus?.status === 'pending' && (
+            {paymentStatus?.status === "pending" && (
               <>
-                <Button variant="outline" onClick={handleCancel} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleVerifyPayment} 
+                <Button
+                  onClick={handleVerifyPayment}
                   disabled={verifying}
                   className="flex-1"
                 >
@@ -243,13 +265,20 @@ export function PaymentDialog({
               </>
             )}
 
-            {(paymentStatus?.status === 'failed' || paymentStatus?.status === 'expired') && (
+            {(paymentStatus?.status === "failed" ||
+              paymentStatus?.status === "expired") && (
               <>
-                <Button variant="outline" onClick={handleCancel} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={bookingId ? handleRetryPayment : handleInitializePayment} 
+                <Button
+                  onClick={
+                    bookingId ? handleRetryPayment : handleInitializePayment
+                  }
                   disabled={loading}
                   className="flex-1"
                 >
@@ -259,13 +288,13 @@ export function PaymentDialog({
                       Processing...
                     </>
                   ) : (
-                    'Retry Payment'
+                    "Retry Payment"
                   )}
                 </Button>
               </>
             )}
 
-            {paymentStatus?.status === 'completed' && (
+            {paymentStatus?.status === "completed" && (
               <Button onClick={() => onOpenChange(false)} className="w-full">
                 Close
               </Button>

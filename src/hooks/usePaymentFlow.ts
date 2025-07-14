@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PaymentFlowParams {
-  type: 'rental' | 'reservation';
+  type: "rental" | "reservation";
   bookingId?: string;
   amount: number;
   currency?: string;
@@ -16,7 +16,7 @@ export interface PaymentFlowParams {
 }
 
 export interface PaymentStatus {
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'expired';
+  status: "pending" | "processing" | "completed" | "failed" | "expired";
   paymentUrl?: string;
   reference?: string;
   error?: string;
@@ -26,38 +26,40 @@ export function usePaymentFlow() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(
+    null
+  );
 
   const generatePaymentReference = (type: string, bookingId?: string) => {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
-    return bookingId 
+    return bookingId
       ? `${type}_${bookingId}_${timestamp}_${random}`
       : `${type}_${timestamp}_${random}`;
   };
 
   const createBooking = async (params: PaymentFlowParams) => {
     if (!user) {
-      throw new Error('User must be authenticated');
+      throw new Error("User must be authenticated");
     }
 
     const bookingData = {
       user_id: user.id,
       property_id: params.propertyId,
-      status: 'awaiting_payment',
+      status: "awaiting_payment",
       ...params.metadata,
     };
 
-    if (params.type === 'rental') {
+    if (params.type === "rental") {
       const { data, error } = await supabase
-        .from('rentals')
+        .from("rentals")
         .insert({
           ...bookingData,
           payment_plan: params.metadata.payment_plan,
           move_in_date: params.metadata.move_in_date,
           message: params.metadata.message,
           price: params.amount,
-          payment_status: 'pending',
+          payment_status: "pending",
         })
         .select()
         .single();
@@ -66,7 +68,7 @@ export function usePaymentFlow() {
       return data;
     } else {
       const { data, error } = await supabase
-        .from('reservations')
+        .from("reservations")
         .insert({
           ...bookingData,
           from_date: params.metadata.from_date,
@@ -87,13 +89,15 @@ export function usePaymentFlow() {
     }
   };
 
-  const initializePayment = async (params: PaymentFlowParams): Promise<string> => {
+  const initializePayment = async (
+    params: PaymentFlowParams
+  ): Promise<string> => {
     if (!user) {
-      throw new Error('User must be authenticated');
+      throw new Error("User must be authenticated");
     }
 
     setLoading(true);
-    setPaymentStatus({ status: 'processing' });
+    setPaymentStatus({ status: "processing" });
 
     try {
       // Create booking if no bookingId provided
@@ -104,90 +108,104 @@ export function usePaymentFlow() {
       }
 
       // Call centralized payment session creation
-      const { data, error } = await supabase.functions.invoke('create-payment-session', {
-        body: {
-          type: params.type,
-          bookingId,
-          amount: params.amount,
-          currency: params.currency || 'NGN',
-          metadata: {
-            ...params.metadata,
-            property_id: params.propertyId,
-            user_email: user.email,
+      const { data, error } = await supabase.functions.invoke(
+        "create-payment-session",
+        {
+          body: {
+            type: params.type,
+            bookingId,
+            amount: params.amount,
+            currency: params.currency || "NGN",
+            metadata: {
+              ...params.metadata,
+              property_id: params.propertyId,
+              user_email: user.email,
+            },
           },
-        },
-      });
+        }
+      );
 
       if (error) throw error;
 
       setPaymentStatus({
-        status: 'pending',
+        status: "pending",
         paymentUrl: data.payment_url,
         reference: data.payment_reference,
       });
 
       // Open payment URL in new tab
-      window.open(data.payment_url, '_blank');
+      window.open(data.payment_url, "_blank");
 
       return data.payment_reference;
     } catch (error) {
-      console.error('Payment initialization failed:', error);
+      console.error("Payment initialization failed:", error);
       setPaymentStatus({
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'Payment failed',
+        status: "failed",
+        error: error instanceof Error ? error.message : "Payment failed",
       });
-      
+
       toast({
-        title: 'Payment Error',
-        description: error instanceof Error ? error.message : 'Failed to initialize payment',
-        variant: 'destructive',
+        title: "Payment Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to initialize payment",
+        variant: "destructive",
       });
-      
+
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const verifyPaymentStatus = async (reference: string): Promise<PaymentStatus> => {
+  const verifyPaymentStatus = async (
+    reference: string
+  ): Promise<PaymentStatus> => {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-payment', {
-        body: { reference },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "verify-payment",
+        {
+          body: { reference },
+        }
+      );
 
       if (error) throw error;
 
       const status: PaymentStatus = {
-        status: data.success ? 'completed' : 'failed',
+        status: data.success ? "completed" : "failed",
         reference,
       };
 
       setPaymentStatus(status);
       return status;
     } catch (error) {
-      console.error('Payment verification failed:', error);
+      console.error("Payment verification failed:", error);
       const status: PaymentStatus = {
-        status: 'failed',
+        status: "failed",
         reference,
-        error: error instanceof Error ? error.message : 'Verification failed',
+        error: error instanceof Error ? error.message : "Verification failed",
       };
-      
+
       setPaymentStatus(status);
       return status;
     }
   };
 
-  const retryPayment = async (bookingId: string, type: 'rental' | 'reservation'): Promise<string> => {
+  const retryPayment = async (
+    bookingId: string,
+    type: "rental" | "reservation"
+  ): Promise<string> => {
     try {
       let booking: any;
       let amount: number;
       let metadata: Record<string, any>;
 
-      if (type === 'rental') {
+      if (type === "rental") {
         const { data: rentalData, error: rentalError } = await supabase
-          .from('rentals')
-          .select('*')
-          .eq('id', bookingId)
+          .from("rentals")
+          .select("*")
+          .eq("id", bookingId)
           .single();
 
         if (rentalError) throw rentalError;
@@ -199,11 +217,12 @@ export function usePaymentFlow() {
           message: booking.message,
         };
       } else {
-        const { data: reservationData, error: reservationError } = await supabase
-          .from('reservations')
-          .select('*')
-          .eq('id', bookingId)
-          .single();
+        const { data: reservationData, error: reservationError } =
+          await supabase
+            .from("reservations")
+            .select("*")
+            .eq("id", bookingId)
+            .single();
 
         if (reservationError) throw reservationError;
         booking = reservationData;
@@ -228,7 +247,7 @@ export function usePaymentFlow() {
         metadata,
       });
     } catch (error) {
-      console.error('Payment retry failed:', error);
+      console.error("Payment retry failed:", error);
       throw error;
     }
   };

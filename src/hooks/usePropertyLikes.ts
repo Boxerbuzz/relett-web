@@ -34,7 +34,7 @@ export function usePropertyLikes(propertyId: string) {
           .select('id')
           .eq('property_id', propertyId)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         setIsLiked(!!userLike);
       }

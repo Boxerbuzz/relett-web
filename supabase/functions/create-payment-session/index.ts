@@ -1,13 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// deno-lint-ignore-file no-explicit-any
+import { serve } from "std/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
+import { systemLogger } from "../shared/system-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface PaymentSessionRequest {
-  type: 'rental' | 'reservation';
+  type: "rental" | "reservation";
   bookingId: string;
   amount: number;
   currency: string;
@@ -33,13 +36,22 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser(token);
+
     if (userError || !user) {
       throw new Error("Invalid or expired token");
     }
 
-    const { type, bookingId, amount, currency, metadata }: PaymentSessionRequest = await req.json();
+    const {
+      type,
+      bookingId,
+      amount,
+      currency,
+      metadata,
+    }: PaymentSessionRequest = await req.json();
 
     if (!type || !bookingId || !amount) {
       throw new Error("Missing required fields: type, bookingId, amount");
@@ -55,9 +67,10 @@ serve(async (req) => {
         user_id: user.id,
         amount: Math.round(amount * 100), // Convert to kobo
         currency: currency || "NGN",
-        type: type,
+        type: "initial", // Assuming 'initial' is the type for initial payment session (recurring, deposit, refund, etc. can be handled later),
         related_id: bookingId,
-        related_type: type === 'rental' ? 'rentals' : 'reservations',
+        ///related_type: type === "rental" ? "rentals" : "reservations",
+        related_type: type,
         status: "pending",
         method: "card",
         provider: "paystack",
@@ -65,7 +78,7 @@ serve(async (req) => {
         metadata: {
           ...metadata,
           booking_id: bookingId,
-          user_email: user.email
+          user_email: user.email,
         },
       })
       .select()
@@ -82,27 +95,37 @@ serve(async (req) => {
       throw new Error("Paystack secret key not configured");
     }
 
-    const paystackResponse = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${paystackSecretKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: user.email,
-        amount: Math.round(amount * 100), // Convert to kobo
-        reference: paymentReference,
-        currency: currency || "NGN",
-        metadata: {
-          user_id: user.id,
-          booking_id: bookingId,
-          type: type,
-          ...metadata
+    const paystackResponse = await fetch(
+      "https://api.paystack.co/transaction/initialize",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${paystackSecretKey}`,
+          "Content-Type": "application/json",
         },
-        callback_url: `${req.headers.get("origin")}/bookings?payment=success`,
-        channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"]
-      }),
-    });
+        body: JSON.stringify({
+          email: user.email,
+          amount: Math.round(amount * 100), // Convert to kobo
+          reference: paymentReference,
+          currency: currency || "NGN",
+          metadata: {
+            user_id: user.id,
+            booking_id: bookingId,
+            type: type,
+            ...metadata,
+          },
+          callback_url: `${req.headers.get("origin")}/bookings?payment=success`,
+          channels: [
+            "card",
+            "bank",
+            "ussd",
+            "qr",
+            "mobile_money",
+            "bank_transfer",
+          ],
+        }),
+      }
+    );
 
     const paystackData = await paystackResponse.json();
 
@@ -114,13 +137,13 @@ serve(async (req) => {
     const paymentUrl = paystackData.data.authorization_url;
 
     // Update booking record with payment URL
-    const table = type === 'rental' ? 'rentals' : 'reservations';
+    const table = type === "rental" ? "rentals" : "reservations";
     const { error: updateError } = await supabaseClient
       .from(table)
       .update({
         payment_url: paymentUrl,
         payment_reference: paymentReference,
-        status: "awaiting_payment"
+        status: "awaiting_payment",
       })
       .eq("id", bookingId);
 
@@ -133,7 +156,7 @@ serve(async (req) => {
     await supabaseClient
       .from("payments")
       .update({
-        link: paymentUrl
+        link: paymentUrl,
       })
       .eq("id", payment.id);
 
@@ -142,20 +165,20 @@ serve(async (req) => {
         success: true,
         payment_url: paymentUrl,
         payment_reference: paymentReference,
-        payment_id: payment.id
+        payment_id: payment.id,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
-
   } catch (error) {
-    console.error("Payment session creation error:", error);
+    systemLogger("[PAYMENT-SESSION-ERROR]", error);
+    const errorMessage = (error as Error).message || "Internal server error";
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: errorMessage,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

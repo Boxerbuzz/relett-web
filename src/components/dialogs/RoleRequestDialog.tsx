@@ -27,8 +27,8 @@ import {
   MapPinIcon,
   CheckCircleIcon,
   FileTextIcon,
+  SpinnerIcon,
 } from "@phosphor-icons/react";
-import { Loader2 } from "lucide-react";
 
 interface RoleRequestDialogProps {
   open: boolean;
@@ -291,7 +291,7 @@ export function RoleRequestDialog({
           <ResponsiveDialogCloseButton />
           <Button type="submit" disabled={submitting} onClick={handleSubmit}>
             {submitting ? "Submitting" : "Submit Request"}
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            {submitting && <SpinnerIcon className="h-4 w-4 animate-spin" />}
           </Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

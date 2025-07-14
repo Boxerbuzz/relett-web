@@ -27,18 +27,6 @@ interface DeliveryResult {
   success: boolean;
 }
 
-interface PushNotificationData {
-  notification_id?: string;
-  action_url?: string;
-  [key: string]: unknown;
-}
-
-interface NotificationServiceResponse {
-  success: boolean;
-  error?: string;
-  data?: unknown;
-}
-
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -48,8 +36,8 @@ async function sendPushNotification(
   userToken: string,
   title: string,
   message: string,
-  data?: PushNotificationData
-): Promise<NotificationServiceResponse> {
+  data?: any
+): Promise<{ success: boolean; data?: any; error?: string }> {
   const oneSignalAppId = Deno.env.get("ONESIGNAL_APP_ID");
   const oneSignalApiKey = Deno.env.get("ONESIGNAL_API_KEY");
 
@@ -77,12 +65,16 @@ async function sendPushNotification(
     const result = await response.json();
     return { success: response.ok, data: result };
   } catch (error) {
+    const message = error instanceof Error ? error : new Error(String(error));
     systemLogger("[PUSH-NOTIFICATION]", error);
-    return { success: false, error: error.message };
+    return {
+      success: false,
+      error: message.message || "Failed to send push notification",
+    };
   }
 }
 
-async function sendEmail(to: string, subject: string, content: string): Promise<NotificationServiceResponse> {
+async function sendEmail(to: string, subject: string, content: string) {
   const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const twilioEmailApiKey = Deno.env.get("TWILIO_EMAIL_API_KEY");
 
@@ -124,12 +116,13 @@ async function sendEmail(to: string, subject: string, content: string): Promise<
     const result = await response.text();
     return { success: response.ok, data: result };
   } catch (error) {
+    const message = error instanceof Error ? error : new Error(String(error));
     systemLogger("[EMAIL-NOTIFICATION]", error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }
 
-async function sendSMS(to: string, message: string): Promise<NotificationServiceResponse> {
+async function sendSMS(to: string, message: string) {
   const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -160,8 +153,9 @@ async function sendSMS(to: string, message: string): Promise<NotificationService
     const result = await response.json();
     return { success: response.ok, data: result };
   } catch (error) {
+    const message = error instanceof Error ? error : new Error(String(error));
     systemLogger("[SMS-NOTIFICATION]", error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }
 
@@ -217,7 +211,7 @@ async function processNotification(notificationId: string) {
   }
 
   // Get user notification preferences
-  const { data: preferences, error: preferencesError } = await supabase
+  const { data: preferences, error: _ } = await supabase
     .from("notification_preferences")
     .select("*")
     .eq("user_id", notification.user_id)
@@ -294,7 +288,7 @@ async function processNotification(notificationId: string) {
       .select()
       .single();
 
-    const pushResult = await sendPushNotification(
+    const pushResult: any = await sendPushNotification(
       user.id,
       notification.title,
       notification.message || "",
@@ -434,7 +428,8 @@ serve(async (req) => {
     });
   } catch (error) {
     systemLogger("[PROCESS-NOTIFICATION]", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = (error as Error).message || "Unknown error";
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

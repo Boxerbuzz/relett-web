@@ -1,9 +1,8 @@
-
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
-import { queryKeys, cacheConfig } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { queryKeys, cacheConfig } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export interface RoleRequest {
   id: string;
@@ -11,7 +10,7 @@ export interface RoleRequest {
   requested_role: string;
   current_role: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   requested_at: string;
   reviewed_at?: string;
   reviewed_by?: string;
@@ -27,31 +26,31 @@ export function useRoleRequests() {
     data: requests = [],
     isLoading: loading,
     error: queryError,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: [...queryKeys.admin.roleRequests(), user?.id || ''],
+    queryKey: [...queryKeys.admin.roleRequests(), user?.id || ""],
     queryFn: async (): Promise<RoleRequest[]> => {
       if (!user?.id) return [];
 
       const { data, error } = await supabase
-        .from('user_role_requests')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("user_role_requests")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
-      return (data || []).map(item => ({
+
+      return (data || []).map((item) => ({
         id: item.id,
         user_id: item.user_id,
         requested_role: item.requested_role,
-        current_role: 'user', // Default since this field doesn't exist in the actual table
+        current_role: "user", // Default since this field doesn't exist in the actual table
         reason: item.reason,
-        status: item.status as 'pending' | 'approved' | 'rejected',
+        status: item.status as "pending" | "approved" | "rejected",
         requested_at: item.created_at,
         reviewed_at: item.reviewed_at || undefined,
         reviewed_by: item.reviewed_by || undefined,
-        admin_notes: '' // No admin notes field exists in the table
+        admin_notes: "", // No admin notes field exists in the table
       }));
     },
     enabled: !!user?.id,
@@ -60,16 +59,22 @@ export function useRoleRequests() {
   });
 
   const submitRoleRequestMutation = useMutation({
-    mutationFn: async ({ requestedRole, reason }: { requestedRole: string; reason: string }) => {
-      if (!user?.id) throw new Error('User not authenticated');
+    mutationFn: async ({
+      requestedRole,
+      reason,
+    }: {
+      requestedRole: string;
+      reason: string;
+    }) => {
+      if (!user?.id) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
-        .from('user_role_requests')
+        .from("user_role_requests")
         .insert({
           user_id: user.id,
           requested_role: requestedRole,
           reason: reason,
-          status: 'pending'
+          status: "pending",
         })
         .select()
         .single();
@@ -78,18 +83,20 @@ export function useRoleRequests() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.admin.roleRequests()] });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.admin.roleRequests()],
+      });
       toast({
-        title: 'Success',
-        description: 'Role request submitted successfully',
+        title: "Success",
+        description: "Role request submitted successfully",
       });
     },
     onError: (error) => {
-      console.error('Error submitting role request:', error);
+      console.error("Error submitting role request:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to submit role request',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to submit role request",
+        variant: "destructive",
       });
     },
   });
@@ -98,13 +105,15 @@ export function useRoleRequests() {
 
   const getPendingRequest = (role?: string) => {
     if (!role) {
-      return requests.find(req => req.status === 'pending');
+      return requests.find((req) => req.status === "pending");
     }
-    return requests.find(req => req.requested_role === role && req.status === 'pending');
+    return requests.find(
+      (req) => req.requested_role === role && req.status === "pending"
+    );
   };
 
   const hasActivePendingRequest = () => {
-    return requests.some(req => req.status === 'pending');
+    return requests.some((req) => req.status === "pending");
   };
 
   const getLatestRequest = () => {
@@ -120,6 +129,6 @@ export function useRoleRequests() {
     getPendingRequest,
     hasActivePendingRequest,
     getLatestRequest,
-    refetch
+    refetch,
   };
 }

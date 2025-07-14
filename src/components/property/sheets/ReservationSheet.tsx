@@ -35,14 +35,6 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
-  dateRange: z
-    .object({
-      from: z.date(),
-      to: z.date(),
-    })
-    .refine((data) => data.from < data.to, {
-      message: "Check-out date must be after check-in date",
-    }),
   adults: z.number().min(1, "At least 1 adult required"),
   children: z.number().min(0).optional(),
   infants: z.number().min(0).optional(),
@@ -85,8 +77,14 @@ export function ReservationSheet({
 
   const calculateTotal = () => {
     const nights = calculateNights();
-    const basePrice = property?.price?.amount || 0;
-    return basePrice * nights;
+    const basePrice = property?.price?.amount / 100 || 0;
+    const deposit = property?.price?.deposit / 100 || 0;
+    const serviceCharge = property?.price?.service_charge / 100 || 0;
+
+    const accommodationCost = basePrice * nights;
+    const totalCost = accommodationCost + deposit + serviceCharge;
+
+    return totalCost;
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -108,14 +106,29 @@ export function ReservationSheet({
       return;
     }
 
+    // Add the missing validation
+    if (dateRange.from >= dateRange.to) {
+      toast({
+        title: "Invalid Date Range",
+        description: "Check-out date must be after check-in date",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Show payment dialog with reservation metadata
     setShowPaymentDialog(true);
   };
 
   const nights = calculateNights();
+  const basePrice = property?.price?.amount / 100 || 0;
+  const deposit = property?.price?.deposit / 100 || 0;
+  const serviceCharge = property?.price?.service_charge / 100 || 0;
+
+  const accommodationCost = basePrice * nights;
   const total = calculateTotal();
-  const serviceFee = Math.round(total * 0.1);
-  const finalTotal = total + serviceFee;
+  const platformServiceFee = Math.round(accommodationCost * 0.01); // Only apply platform fee to accommodation cost
+  const finalTotal = total + platformServiceFee;
 
   return (
     <>
@@ -266,14 +279,26 @@ export function ReservationSheet({
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>
-                      ₦{property?.price?.amount?.toLocaleString()} × {nights}{" "}
-                      nights
+                      ₦{(property?.price?.amount / 100).toLocaleString()} ×{" "}
+                      {nights} nights
                     </span>
-                    <span>₦{total.toLocaleString()}</span>
+                    <span>₦{accommodationCost.toLocaleString()}</span>
                   </div>
+                  {deposit > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Refundable deposit</span>
+                      <span>₦{deposit.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {serviceCharge > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Service charge</span>
+                      <span>₦{serviceCharge.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
-                    <span>Service fee</span>
-                    <span>₦{serviceFee.toLocaleString()}</span>
+                    <span>Platform service fee</span>
+                    <span>₦{platformServiceFee.toLocaleString()}</span>
                   </div>
                   <div className="border-t pt-2">
                     <div className="flex justify-between font-bold">
@@ -310,13 +335,15 @@ export function ReservationSheet({
         propertyId={property?.id}
         propertyTitle={property?.title}
         metadata={{
-          from_date: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "",
+          from_date: dateRange?.from
+            ? format(dateRange.from, "yyyy-MM-dd")
+            : "",
           to_date: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "",
           nights: calculateNights(),
           adults: form.watch("adults"),
           children: form.watch("children") || 0,
           infants: form.watch("infants") || 0,
-          fee: serviceFee,
+          fee: platformServiceFee,
           note: form.watch("note"),
           agent_id: property?.user_id,
         }}
