@@ -135,7 +135,7 @@ const UserDashboard = () => {
             <Button
               variant="outline"
               className="flex space-x-1 items-center justify-center"
-              onClick={() => navigate("/me")}
+              onClick={() => navigate("/bookings")}
             >
               <CalendarIcon className="h-6 w-6" />
               <span>My Bookings</span>

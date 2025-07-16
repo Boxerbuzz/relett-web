@@ -1,34 +1,42 @@
-
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Eye, MoreHorizontal, Phone, Mail, MapPin, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  DotsThreeIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  CalendarIcon,
+} from "@phosphor-icons/react";
+import { format } from "date-fns";
 
 interface InspectionCardProps {
   inspection: any;
   onUpdateStatus: (id: string, status: string) => void;
 }
 
-export function InspectionCard({ inspection, onUpdateStatus }: InspectionCardProps) {
+export function InspectionCard({
+  inspection,
+  onUpdateStatus,
+}: InspectionCardProps) {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed':
-        return 'default';
-      case 'pending':
-        return 'secondary';
-      case 'completed':
-        return 'outline';
-      case 'cancelled':
-        return 'destructive';
+      case "confirmed":
+        return "default";
+      case "pending":
+        return "secondary";
+      case "completed":
+        return "outline";
+      case "cancelled":
+        return "destructive";
       default:
-        return 'secondary';
+        return "secondary";
     }
   };
 
@@ -37,28 +45,36 @@ export function InspectionCard({ inspection, onUpdateStatus }: InspectionCardPro
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-blue-600" />
             <div>
-              <h3 className="font-semibold">{inspection.property?.title || 'Property Inspection'}</h3>
+              <h3 className="font-semibold">
+                {inspection.property?.title || "Property Inspection"}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                {inspection.property?.location?.address || 'Location not specified'}
+                {inspection.property?.location?.address ||
+                  "Location not specified"}
               </p>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
+                <DotsThreeIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onUpdateStatus(inspection.id, 'confirmed')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(inspection.id, "confirmed")}
+              >
                 Confirm
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onUpdateStatus(inspection.id, 'completed')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(inspection.id, "completed")}
+              >
                 Mark Complete
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onUpdateStatus(inspection.id, 'cancelled')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(inspection.id, "cancelled")}
+              >
                 Cancel
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -77,8 +93,10 @@ export function InspectionCard({ inspection, onUpdateStatus }: InspectionCardPro
 
         {inspection.when && (
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4" />
-            <span>{format(new Date(inspection.when), 'MMM d, yyyy h:mm a')}</span>
+            <CalendarIcon className="h-4 w-4" />
+            <span>
+              {format(new Date(inspection.when), "MMM d, yyyy h:mm a")}
+            </span>
           </div>
         )}
 
@@ -91,13 +109,13 @@ export function InspectionCard({ inspection, onUpdateStatus }: InspectionCardPro
               </p>
               {inspection.user.email && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-3 w-3" />
+                  <EnvelopeIcon className="h-3 w-3" />
                   <span>{inspection.user.email}</span>
                 </div>
               )}
               {inspection.user.phone && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Phone className="h-3 w-3" />
+                  <PhoneIcon className="h-3 w-3" />
                   <span>{inspection.user.phone}</span>
                 </div>
               )}
@@ -114,11 +132,11 @@ export function InspectionCard({ inspection, onUpdateStatus }: InspectionCardPro
 
         <div className="flex gap-2 pt-2">
           <Button size="sm" variant="outline" className="flex-1">
-            <Phone className="h-3 w-3 mr-1" />
+            <PhoneIcon className="h-3 w-3 mr-1" />
             Call
           </Button>
           <Button size="sm" variant="outline" className="flex-1">
-            <Mail className="h-3 w-3 mr-1" />
+            <EnvelopeIcon className="h-3 w-3 mr-1" />
             Email
           </Button>
         </div>

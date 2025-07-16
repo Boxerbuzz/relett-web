@@ -26,6 +26,7 @@ import {
   ChatIcon,
   WrenchIcon,
   StarIcon,
+  ChartDonutIcon,
 } from "@phosphor-icons/react";
 import {
   Collapsible,
@@ -58,7 +59,7 @@ const mainNavigation = [
   {
     name: "Admin Dashboard",
     href: "/admin",
-    icon: ChartBarIcon,
+    icon: ChartDonutIcon,
     roles: ["admin"],
   },
   {
@@ -216,7 +217,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed md:sticky top-0">
+    <div className="w-80 bg-white border-r border-gray-200 h-screen flex flex-col fixed md:sticky top-0">
       {/* Header */}
       <div className="p-6 border-b h-16 flex items-center flex-shrink-0">
         <div>

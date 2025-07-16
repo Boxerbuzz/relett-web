@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileDropzone } from "@/components/ui/file-dropzone";
 import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
 import { FileText, X, Eye, Download, SkipForward } from "lucide-react";
+import { DocumentUpload } from "../DocumentUpload";
 
 interface DocumentsStepProps {
   form: UseFormReturn<any>;
@@ -118,65 +118,20 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
         </Button>
       </div>
 
-      {/* Document Type Selection */}
-      <div>
-        <h3 className="text-lg font-medium mb-4">Select Document Type</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {DOCUMENT_TYPES.map(({ type, label, required }) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setSelectedDocType(type)}
-              className={`p-3 border rounded-lg text-left transition-colors ${
-                selectedDocType === type
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-sm">{label}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {getDocumentsByType(type).length} uploaded
-                  </p>
-                </div>
-                {required && (
-                  <Badge variant="destructive" className="text-xs">
-                    Required
-                  </Badge>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* File Upload */}
-      <div>
-        <h4 className="font-medium mb-2">
-          Upload {DOCUMENT_TYPES.find((d) => d.type === selectedDocType)?.label}
-        </h4>
-        <FileDropzone
-          onFilesSelected={handleFilesSelected}
-          accept={{
-            "application/pdf": [".pdf"],
-            "image/*": [".png", ".jpg", ".jpeg"],
-          }}
-          maxFiles={5}
-          maxSize={10 * 1024 * 1024}
-          disabled={isUploading}
-        />
-
-        {isUploading && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span>Uploading...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} className="h-2" />
+      {isUploading && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-sm mb-2">
+            <span>Uploading...</span>
+            <span>{uploadProgress}%</span>
           </div>
-        )}
-      </div>
+          <Progress value={uploadProgress} className="h-2" />
+        </div>
+      )}
+
+      <DocumentUpload
+        propertyId={form.getValues("id")}
+        onDocumentUploaded={() => {}}
+      />
 
       {/* Uploaded Documents by Type */}
       <div className="space-y-4">
@@ -254,30 +209,6 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
           );
         })}
       </div>
-
-      {/* Skip Notice */}
-      {documents.length === 0 && (
-        <Card className="border-dashed border-gray-300 bg-gray-50">
-          <CardContent className="p-6 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Documents Uploaded
-            </h3>
-            <p className="text-gray-600 mb-4">
-              You can upload property documents now or skip this step and add
-              them later.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                form.setValue("documents", []);
-              }}
-            >
-              Continue Without Documents
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

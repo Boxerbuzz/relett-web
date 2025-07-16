@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyMap } from "@/components/maps/PropertyMap";
 import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
-import { DocumentUploadComponent } from "@/components/property/DocumentUploadComponent";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
@@ -546,12 +545,12 @@ export function PropertyDetailsDialog({
                 />
 
                 {/* Document Upload for Property Owner */}
-                {property.user_id === user?.id && (
-                  <DocumentUploadComponent
-                    propertyId={property.id}
-                    onDocumentUploaded={fetchPropertyDetails}
-                  />
-                )}
+                {/* {property.user_id === user?.id && (
+                  // <DocumentUploadComponent
+                  //   propertyId={property.id}
+                  //   onDocumentUploaded={fetchPropertyDetails}
+                  // />
+                )} */}
               </TabsContent>
 
               <TabsContent value="location" className="space-y-4 mt-4">

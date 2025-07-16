@@ -1,6 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Eye, Home, Users } from "lucide-react";
+import {
+  CalendarIcon,
+  EyeIcon,
+  HouseIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
 import { useAgentInspections } from "@/hooks/useAgentInspections";
 import { useAgentRentals } from "@/hooks/useAgentRentals";
 import { useAgentReservations } from "@/hooks/useAgentReservations";
@@ -32,7 +37,6 @@ const AgentCalendar = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <CalendarDays className="w-8 h-8 text-blue-600" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Agent Calendar</h1>
             <p className="text-muted-foreground">
@@ -47,7 +51,7 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-blue-600" />
+              <CalendarIcon className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">
                   Total Activities
@@ -60,7 +64,7 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-blue-600" />
+              <EyeIcon className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Inspections</p>
                 <p className="text-2xl font-bold">
@@ -73,7 +77,7 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Home className="h-5 w-5 text-green-600" />
+              <HouseIcon className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Rentals</p>
                 <p className="text-2xl font-bold">
@@ -86,7 +90,7 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-purple-600" />
+              <UsersIcon className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Reservations</p>
                 <p className="text-2xl font-bold">
@@ -118,7 +122,7 @@ const AgentCalendar = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5 text-blue-600" />
+                  <EyeIcon className="h-5 w-5 text-blue-600" />
                   Upcoming Inspections
                 </CardTitle>
               </CardHeader>
@@ -158,7 +162,7 @@ const AgentCalendar = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Home className="h-5 w-5 text-green-600" />
+                  <HouseIcon className="h-5 w-5 text-green-600" />
                   Upcoming Move-ins
                 </CardTitle>
               </CardHeader>
@@ -198,7 +202,7 @@ const AgentCalendar = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-purple-600" />
+                  <UsersIcon className="h-5 w-5 text-purple-600" />
                   Upcoming Check-ins
                 </CardTitle>
               </CardHeader>

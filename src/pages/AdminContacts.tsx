@@ -101,7 +101,7 @@ export default function AdminContacts() {
         );
 
       if (error) throw error;
-      setContacts(data as Contact[] || []);
+      setContacts((data as Contact[]) || []);
     } catch (error) {
       console.error("Error fetching contacts:", error);
       toast({
@@ -195,14 +195,14 @@ export default function AdminContacts() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="spacing-y-4">
         <Link to="/admin">
           <Button variant="ghost" size="sm">
             <ArrowLeft size={16} className="mr-2" />
             Back to Admin
           </Button>
         </Link>
-        <div>
+        <div className="mt-4">
           <h1 className="text-2xl font-bold">Contact Us Management</h1>
           <p className="text-gray-600">Manage and respond to user inquiries</p>
         </div>

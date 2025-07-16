@@ -1,24 +1,39 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Home, Search, Filter } from 'lucide-react';
-import { useAgentRentals } from '@/hooks/useAgentRentals';
-import { RentalCard } from '@/components/agent/RentalCard';
-import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArchiveIcon,
+} from "@phosphor-icons/react";
+import { useAgentRentals } from "@/hooks/useAgentRentals";
+import { RentalCard } from "@/components/agent/RentalCard";
+import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
 
 const AgentRentals = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const { rentals, isLoading, updateRental } = useAgentRentals();
 
-  const filteredRentals = rentals.filter(rental => {
-    const matchesSearch = rental.property?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         rental.user?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         rental.user?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || rental.status === statusFilter;
+  const filteredRentals = rentals.filter((rental) => {
+    const matchesSearch =
+      rental.property?.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      rental.user?.first_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      rental.user?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || rental.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -40,10 +55,11 @@ const AgentRentals = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Home className="w-8 h-8 text-green-600" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Rental Requests</h1>
-            <p className="text-muted-foreground">Manage your rental applications</p>
+            <p className="text-muted-foreground">
+              Manage your rental applications
+            </p>
           </div>
         </div>
       </div>
@@ -66,7 +82,9 @@ const AgentRentals = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{statusCounts.pending || 0}</p>
+                <p className="text-2xl font-bold">
+                  {statusCounts.pending || 0}
+                </p>
               </div>
               <Badge variant="secondary">{statusCounts.pending || 0}</Badge>
             </div>
@@ -88,7 +106,9 @@ const AgentRentals = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Completed</p>
-                <p className="text-2xl font-bold">{statusCounts.completed || 0}</p>
+                <p className="text-2xl font-bold">
+                  {statusCounts.completed || 0}
+                </p>
               </div>
               <Badge variant="outline">{statusCounts.completed || 0}</Badge>
             </div>
@@ -99,7 +119,7 @@ const AgentRentals = () => {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search rentals..."
             value={searchTerm}
@@ -109,7 +129,7 @@ const AgentRentals = () => {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className="h-4 w-4 mr-2" />
+            <FunnelIcon className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -127,12 +147,12 @@ const AgentRentals = () => {
       {filteredRentals.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Home className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <ArchiveIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Rentals Found</h3>
             <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Try adjusting your filters to see more results.' 
-                : 'You don\'t have any rental requests yet.'}
+              {searchTerm || statusFilter !== "all"
+                ? "Try adjusting your filters to see more results."
+                : "You don't have any rental requests yet."}
             </p>
           </CardContent>
         </Card>
@@ -142,7 +162,9 @@ const AgentRentals = () => {
             <RentalCard
               key={rental.id}
               rental={rental}
-              onUpdateStatus={(id, status) => updateRental({ id, updates: { status } })}
+              onUpdateStatus={(id, status) =>
+                updateRental({ id, updates: { status } })
+              }
             />
           ))}
         </div>

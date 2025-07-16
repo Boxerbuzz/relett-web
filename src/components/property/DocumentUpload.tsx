@@ -1,12 +1,23 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Upload, FileText, CheckCircle, X, AlertTriangle } from 'lucide-react';
-import { useSupabaseStorage } from '@/hooks/useSupabaseStorage';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  UploadIcon,
+  FileTextIcon,
+  CheckCircleIcon,
+  XIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
+import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
+import { useToast } from "@/hooks/use-toast";
 
 interface DocumentUploadProps {
   propertyId?: string;
@@ -26,43 +37,79 @@ interface UploadedDocument {
 }
 
 const DOCUMENT_TYPES = [
-  { key: 'deed', label: 'Property Deed', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
-  { key: 'survey', label: 'Survey Plan', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
-  { key: 'certificate_of_occupancy', label: 'Certificate of Occupancy', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
-  { key: 'tax_clearance', label: 'Tax Clearance', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
-  { key: 'other', label: 'Other Documents', required: false, accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }
+  {
+    key: "deed",
+    label: "Property Deed",
+    required: true,
+    accept: ".pdf,.jpg,.jpeg,.png, .webp",
+  },
+  {
+    key: "survey",
+    label: "Survey Report",
+    required: true,
+    accept: ".pdf,.jpg,.jpeg,.png, .webp",
+  },
+  {
+    key: "certificate",
+    label: "C of O",
+    required: false,
+    accept: ".pdf,.jpg,.jpeg,.png, .webp",
+  },
+  {
+    key: "tax_clearance",
+    label: "Tax Clearance",
+    required: false,
+    accept: ".pdf,.jpg,.jpeg,.png, .webp",
+  },
+  {
+    key: "other",
+    label: "Other Documents",
+    required: false,
+    accept: ".pdf,.jpg,.jpeg,.png,.doc,.docx, .webp",
+  },
 ];
 
-export function DocumentUpload({ 
-  propertyId, 
-  onDocumentUploaded, 
+export function DocumentUpload({
+  propertyId,
+  onDocumentUploaded,
   maxFiles = 10,
-  requiredTypes = ['deed', 'survey']
+  requiredTypes = ["deed", "survey"],
 }: DocumentUploadProps) {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
-  const { uploadFile, deleteFile, isUploading, uploadProgress } = useSupabaseStorage();
+  const { uploadFile, deleteFile, isUploading, uploadProgress } =
+    useSupabaseStorage();
   const { toast } = useToast();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>, docType: string) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    docType: string
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file size (max 10MB for documents)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: 'File too large',
-        description: 'Please select a file smaller than 10MB.',
-        variant: 'destructive'
+        title: "File too large",
+        description: "Please select a file smaller than 10MB.",
+        variant: "destructive",
       });
       return;
     }
 
     try {
       const result = await uploadFile(file, {
-        bucket: 'property-documents',
-        folder: propertyId ? `property-${propertyId}` : 'temp',
+        bucket: "property-documents",
+        folder: propertyId ? `property-${propertyId}` : "temp",
         maxSize: 10 * 1024 * 1024,
-        allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+        allowedTypes: [
+          "application/pdf",
+          "image/jpeg",
+          "image/png",
+          "image/jpg",
+          "image/webp",
+          "application/msword",
+        ],
       });
 
       const newDocument: UploadedDocument = {
@@ -72,55 +119,56 @@ export function DocumentUpload({
         url: result.url,
         size: file.size,
         uploadedAt: new Date().toISOString(),
-        required: requiredTypes.includes(docType)
+        required: requiredTypes.includes(docType),
       };
 
-      setDocuments(prev => [...prev, newDocument]);
+      setDocuments((prev) => [...prev, newDocument]);
       onDocumentUploaded?.(newDocument);
-
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     }
 
     // Reset input
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const handleRemoveDocument = async (documentId: string, url: string) => {
     try {
       // Extract path from URL for deletion
-      const urlParts = url.split('/');
-      const pathIndex = urlParts.findIndex(part => part === 'property-documents');
+      const urlParts = url.split("/");
+      const pathIndex = urlParts.findIndex(
+        (part) => part === "property-documents"
+      );
       if (pathIndex !== -1) {
-        const path = urlParts.slice(pathIndex + 1).join('/');
-        await deleteFile('property-documents', path);
+        const path = urlParts.slice(pathIndex + 1).join("/");
+        await deleteFile("property-documents", path);
       }
-      
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+
+      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
     } catch (error) {
-      console.error('Delete failed:', error);
+      console.error("Delete failed:", error);
     }
   };
 
   const getDocumentTypeStatus = (docType: string) => {
-    const hasDocument = documents.some(doc => doc.type === docType);
+    const hasDocument = documents.some((doc) => doc.type === docType);
     const isRequired = requiredTypes.includes(docType);
-    
-    if (hasDocument) return 'uploaded';
-    if (isRequired) return 'required';
-    return 'optional';
+
+    if (hasDocument) return "uploaded";
+    if (isRequired) return "required";
+    return "optional";
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const allRequiredUploaded = requiredTypes.every(type => 
-    documents.some(doc => doc.type === type)
+  const allRequiredUploaded = requiredTypes.every((type) =>
+    documents.some((doc) => doc.type === type)
   );
 
   return (
@@ -128,8 +176,9 @@ export function DocumentUpload({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Property Documents
-          <Badge variant={allRequiredUploaded ? 'default' : 'destructive'}>
-            {documents.filter(doc => doc.required).length}/{requiredTypes.length} Required
+          <Badge variant={allRequiredUploaded ? "default" : "destructive"}>
+            {documents.filter((doc) => doc.required).length}/
+            {requiredTypes.length} Required
           </Badge>
         </CardTitle>
         <CardDescription>
@@ -152,28 +201,38 @@ export function DocumentUpload({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {DOCUMENT_TYPES.map((docType) => {
             const status = getDocumentTypeStatus(docType.key);
-            const hasDocument = documents.some(doc => doc.type === docType.key);
+            const hasDocument = documents.some(
+              (doc) => doc.type === docType.key
+            );
 
             return (
-              <Card key={docType.key} className={`cursor-pointer transition-all ${
-                status === 'uploaded' ? 'border-green-500 bg-green-50' :
-                status === 'required' ? 'border-red-500 bg-red-50' :
-                'border-gray-200 hover:border-gray-300'
-              }`}>
+              <Card
+                key={docType.key}
+                className={`cursor-pointer transition-all ${
+                  status === "uploaded"
+                    ? "border-green-500 bg-green-50"
+                    : status === "required"
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      {status === 'uploaded' ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : status === 'required' ? (
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                      {status === "uploaded" ? (
+                        <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                      ) : status === "required" ? (
+                        <WarningIcon className="h-4 w-4 text-red-600" />
                       ) : (
-                        <FileText className="h-4 w-4 text-gray-400" />
+                        <FileTextIcon className="h-4 w-4 text-gray-400" />
                       )}
                       {docType.label}
                     </span>
                     {docType.required && (
-                      <Badge variant={hasDocument ? 'default' : 'destructive'} className="text-xs">
+                      <Badge
+                        variant={hasDocument ? "default" : "destructive"}
+                        className="text-xs"
+                      >
                         Required
                       </Badge>
                     )}
@@ -189,23 +248,25 @@ export function DocumentUpload({
                         onChange={(e) => handleFileSelect(e, docType.key)}
                         disabled={isUploading}
                       />
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
+                        variant="outline"
                         className="w-full"
                         disabled={isUploading}
                         asChild
                       >
                         <div>
-                          <Upload className="h-4 w-4 mr-2" />
+                          <UploadIcon className="h-4 w-4 mr-2" />
                           Upload {docType.label}
                         </div>
                       </Button>
                     </label>
                   ) : (
                     <div className="text-center">
-                      <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-green-900">Uploaded</p>
+                      <CheckCircleIcon className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-green-900">
+                        Uploaded
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -217,22 +278,31 @@ export function DocumentUpload({
         {/* Uploaded Documents List */}
         {documents.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-medium">Uploaded Documents ({documents.length})</h4>
+            <h4 className="font-medium">
+              Uploaded Documents ({documents.length})
+            </h4>
             <div className="space-y-2">
               {documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                >
                   <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-blue-500" />
+                    <FileTextIcon className="h-5 w-5 text-blue-500" />
                     <div>
                       <p className="font-medium text-sm">{doc.name}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <span className="capitalize">{doc.type.replace('_', ' ')}</span>
+                        <span className="capitalize">
+                          {doc.type.replace("_", " ")}
+                        </span>
                         <span>•</span>
                         <span>{formatFileSize(doc.size)}</span>
                         {doc.required && (
                           <>
                             <span>•</span>
-                            <Badge variant="outline" className="text-xs">Required</Badge>
+                            <Badge variant="outline" className="text-xs">
+                              Required
+                            </Badge>
                           </>
                         )}
                       </div>
@@ -242,7 +312,7 @@ export function DocumentUpload({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(doc.url, '_blank')}
+                      onClick={() => window.open(doc.url, "_blank")}
                     >
                       View
                     </Button>
@@ -252,7 +322,7 @@ export function DocumentUpload({
                       onClick={() => handleRemoveDocument(doc.id, doc.url)}
                       className="text-red-600 hover:text-red-700"
                     >
-                      <X className="h-4 w-4" />
+                      <XIcon className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -264,14 +334,18 @@ export function DocumentUpload({
         {/* Upload Guidelines */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2 flex items-center">
-            <AlertTriangle className="w-4 h-4 mr-2" />
+            <WarningIcon className="w-4 h-4 mr-2" />
             Upload Guidelines
           </h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• All documents must be clear and legible</li>
             <li>• Accepted formats: PDF, JPG, PNG, WebP (max 10MB each)</li>
-            <li>• Required documents must be uploaded before property submission</li>
-            <li>• Documents will be verified by our team within 2-3 business days</li>
+            <li>
+              • Required documents must be uploaded before property submission
+            </li>
+            <li>
+              • Documents will be verified by our team within 2-3 business days
+            </li>
           </ul>
         </div>
       </CardContent>

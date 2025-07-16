@@ -350,7 +350,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
             landmark: data.location.landmark || "",
             postal_code: data.location.postal_code || "",
           },
-          images: data.images.map((img) => img.url),
+          //images: data.images.map((img) => img.url),
           backdrop: data.images[0].url,
           specification: data.specification,
           price: convertedPrice, // Use converted price
@@ -425,16 +425,40 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         "Property created successfully. You can register on blockchain later.",
     });
 
-    navigate("/my-property");
+    navigate("/my-properties");
     if (onClose) onClose();
   };
 
   const renderStep = () => {
+    // switch (currentStep) {
+    //   case 0:
+    //     return <BasicDetailsStep form={form} />;
+    //   case 1:
+    //     return <LocationStep form={form} />;
+    //   case 2:
+    //     return <SpecificationStep form={form} />;
+    //   case 3:
+    //     return <DocumentsStep form={form} />;
+    //   case 4:
+    //     return <MediaStep form={form} />;
+    //   case 5:
+    //     return <ReviewStep form={form} />;
+    //   case 6:
+    //     return createdProperty ? (
+    //       <PropertyBlockchainRegistration
+    //         propertyData={createdProperty}
+    //         onRegistrationComplete={handleBlockchainRegistrationComplete}
+    //         onRegistrationSkip={handleBlockchainRegistrationSkip}
+    //       />
+    //     ) : null;
+    //   default:
+    //     return null;
+    // }
     switch (currentStep) {
       case 0:
-        return <BasicDetailsStep form={form} />;
+        return <DocumentsStep form={form} />;
       case 1:
-        return <LocationStep form={form} />;
+        return <MediaStep form={form} />;
       case 2:
         return <SpecificationStep form={form} />;
       case 3:
