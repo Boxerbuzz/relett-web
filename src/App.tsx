@@ -18,6 +18,7 @@ import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import AddProperty from "./pages/AddProperty";
+import EditProperty from "./pages/EditProperty";
 import MyProperty from "./pages/MyProperty";
 import PropertyDetails from "./pages/PropertyDetails";
 import PropertyLookup from "./pages/PropertyLookup";
@@ -98,6 +99,16 @@ function App() {
                     <Layout>
                       <ProtectedRoute>
                         <AddProperty />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/edit-property/:id"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <EditProperty />
                       </ProtectedRoute>
                     </Layout>
                   }

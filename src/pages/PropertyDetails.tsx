@@ -417,7 +417,20 @@ const PropertyDetails = () => {
               {/* Documents */}
               {property.property_documents &&
                 property.property_documents.length > 0 && (
-                  <PropertyDocumentViewer propertyId={property.id} />
+                  <PropertyDocumentViewer 
+                    propertyId={property.id} 
+                    documents={property.property_documents?.map(doc => ({
+                      id: doc.id,
+                      document_name: doc.document_name,
+                      document_type: doc.document_type,
+                      file_url: doc.file_url,
+                      status: doc.status,
+                      verified_at: doc.verified_at,
+                      file_size: 0,
+                      mime_type: '',
+                      created_at: new Date().toISOString()
+                    })) || []} 
+                  />
                 )}
             </div>
 
