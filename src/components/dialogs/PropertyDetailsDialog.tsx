@@ -32,6 +32,7 @@ import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 import { DocumentUpload } from "@/components/property/DocumentUpload";
 import { ArchiveBoxIcon } from "@phosphor-icons/react";
 import { capitalize } from "@/lib/utils";
+import { usePropertyDocument } from "@/hooks/usePropertyDocument";
 
 interface PropertyData {
   id: string;
@@ -98,6 +99,8 @@ export function PropertyDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const { createDocument, updateDocument, deleteDocument } =
+    usePropertyDocument();
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -576,7 +579,25 @@ export function PropertyDetailsDialog({
                 {property.user_id === user?.id && (
                   <DocumentUpload
                     propertyId={property.id}
-                    onDocumentUploaded={(doc) => {}}
+                    onDocumentDeleted={(docId) => {
+                      deleteDocument(docId, "property-documents");
+                    }}
+                    onDocumentUploaded={(doc) => {
+                      createDocument({
+                        property_id: property.id,
+                        document_name: doc.name,
+                        document_type: doc.type as any,
+                        file_url: doc.url,
+                        file_size: doc.size,
+                        document_hash: doc.hash || "",
+                        mime_type: doc.mime_type || "",
+                        created_at: new Date().toISOString(),
+                        verified_at: null,
+                        verified_by: null,
+                        status: "pending",
+                        expires_at: null,
+                      });
+                    }}
                   />
                 )}
               </TabsContent>

@@ -22,9 +22,10 @@ import { calculateFileHash } from "@/utils/fileHash";
 
 interface DocumentUploadProps {
   propertyId?: string;
-  onDocumentUploaded?: (document: any) => void;
+  onDocumentUploaded?: (document: UploadedDocument) => void;
   maxFiles?: number;
   requiredTypes?: string[];
+  onDocumentDeleted?: (documentId: string) => void;
 }
 
 interface UploadedDocument {
@@ -77,6 +78,7 @@ export function DocumentUpload({
   onDocumentUploaded,
   maxFiles = 10,
   requiredTypes = ["deed", "survey"],
+  onDocumentDeleted,
 }: DocumentUploadProps) {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const { uploadFile, deleteFile, isUploading, uploadProgress } =
@@ -150,6 +152,8 @@ export function DocumentUpload({
       }
 
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+
+      onDocumentDeleted?.(documentId);
     } catch (error) {
       console.error("Delete failed:", error);
     }
