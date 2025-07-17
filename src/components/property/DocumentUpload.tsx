@@ -145,7 +145,6 @@ export function DocumentUpload({
         (part) => part === "property-documents"
       );
       if (pathIndex !== -1) {
-        // For new structure: property-documents/{propertyId}/{documentType}/{filename}
         const path = urlParts.slice(pathIndex + 1).join("/");
         await deleteFile("property-documents", path);
       }
@@ -179,10 +178,10 @@ export function DocumentUpload({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Property Documents
-          <Badge variant={allRequiredUploaded ? "default" : "destructive"}>
+      <CardHeader className="space-y-3">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span>Property Documents</span>
+          <Badge variant={allRequiredUploaded ? "default" : "destructive"} className="w-fit">
             {documents.filter((doc) => doc.required).length}/
             {requiredTypes.length} Required
           </Badge>
@@ -204,7 +203,7 @@ export function DocumentUpload({
         )}
 
         {/* Document Type Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {DOCUMENT_TYPES.map((docType) => {
             const status = getDocumentTypeStatus(docType.key);
             const hasDocument = documents.some(
@@ -222,29 +221,29 @@ export function DocumentUpload({
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span className="flex items-center gap-2">
+                <CardHeader className="pb-3 px-4 sm:px-6">
+                  <CardTitle className="text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <span className="flex items-center gap-2 min-w-0">
                       {status === "uploaded" ? (
-                        <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                        <CheckCircleIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
                       ) : status === "required" ? (
-                        <WarningIcon className="h-4 w-4 text-red-600" />
+                        <WarningIcon className="h-4 w-4 text-red-600 flex-shrink-0" />
                       ) : (
-                        <FileTextIcon className="h-4 w-4 text-gray-400" />
+                        <FileTextIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
                       )}
-                      {docType.label}
+                      <span className="truncate">{docType.label}</span>
                     </span>
                     {docType.required && (
                       <Badge
                         variant={hasDocument ? "default" : "destructive"}
-                        className="text-xs"
+                        className="text-xs w-fit"
                       >
                         Required
                       </Badge>
                     )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
                   {!hasDocument ? (
                     <label className="block">
                       <input
@@ -257,13 +256,13 @@ export function DocumentUpload({
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full"
+                        className="w-full h-12 sm:h-10 text-sm"
                         disabled={isUploading}
                         asChild
                       >
-                        <div>
-                          <UploadIcon className="h-4 w-4 mr-2" />
-                          Upload {docType.label}
+                        <div className="flex items-center justify-center">
+                          <UploadIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span className="truncate">Upload {docType.label}</span>
                         </div>
                       </Button>
                     </label>
@@ -291,21 +290,21 @@ export function DocumentUpload({
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg bg-gray-50 gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileTextIcon className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="font-medium text-sm">{doc.name}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <FileTextIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{doc.name}</p>
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs text-gray-600">
                         <span className="capitalize">
                           {doc.type.replace("_", " ")}
                         </span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>{formatFileSize(doc.size)}</span>
                         {doc.required && (
                           <>
-                            <span>•</span>
+                            <span className="hidden sm:inline">•</span>
                             <Badge variant="outline" className="text-xs">
                               Required
                             </Badge>
@@ -314,19 +313,21 @@ export function DocumentUpload({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 sm:flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => window.open(doc.url, "_blank")}
+                      className="h-8 px-2 sm:px-3"
                     >
-                      View
+                      <span className="hidden sm:inline">View</span>
+                      <span className="sm:hidden">👁️</span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveDocument(doc.id, doc.url)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 h-8 px-2 sm:px-3"
                     >
                       <XIcon className="h-4 w-4" />
                     </Button>
@@ -340,7 +341,7 @@ export function DocumentUpload({
         {/* Upload Guidelines */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2 flex items-center">
-            <WarningIcon className="w-4 h-4 mr-2" />
+            <WarningIcon className="w-4 h-4 mr-2 flex-shrink-0" />
             Upload Guidelines
           </h4>
           <ul className="text-sm text-blue-800 space-y-1">

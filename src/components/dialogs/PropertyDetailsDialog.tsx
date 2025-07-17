@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyMap } from "@/components/maps/PropertyMap";
 import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +29,9 @@ import {
 import { getAmenityById } from "@/types/amenities";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
+import { DocumentUpload } from "@/components/property/DocumentUpload";
+import { ArchiveBoxIcon } from "@phosphor-icons/react";
+import { capitalize } from "@/lib/utils";
 
 interface PropertyData {
   id: string;
@@ -68,6 +70,19 @@ interface PropertyData {
     url: string | null;
     is_primary: boolean | null;
   }>;
+  documents: Array<{
+    id: string;
+    document_name: string;
+    document_type: string;
+    file_url: string;
+    file_size: number;
+    mime_type: string;
+    status: string | null;
+    verified_at?: string | null;
+    verified_by?: string | null;
+    created_at: string;
+    expires_at?: string | null;
+  }>;
 }
 
 interface PropertyDetailsDialogProps {
@@ -105,6 +120,9 @@ export function PropertyDetailsDialog({
           property_images (
             url,
             is_primary
+          ),
+          documents: property_documents_property_id_fkey(
+            *
           )
         `
         )
@@ -118,6 +136,7 @@ export function PropertyDetailsDialog({
           property_images: Array.isArray(data.property_images)
             ? data.property_images
             : [],
+          documents: Array.isArray(data.documents) ? data.documents : [],
         });
       }
     } catch (error) {
@@ -269,8 +288,12 @@ export function PropertyDetailsDialog({
             Back to Properties
           </Button>
         </div>
-        <div className="flex items-center justify-center py-12">
-          <p>Property not found</p>
+        <div className="flex flex-col items-center justify-center py-12 gap-2 h-full">
+          <ArchiveBoxIcon size={32} className="text-gray-500" />
+          <p className="text-gray-900 font-bold text-lg">Property not found</p>
+          <p className="text-gray-500 text-sm">
+            The property you are looking for does not exist.
+          </p>
         </div>
       </div>
     );
@@ -435,7 +458,7 @@ export function PropertyDetailsDialog({
                             <p className="font-medium text-sm">
                               {spec.id === "year_built"
                                 ? new Date(spec.value).getFullYear()
-                                : spec.value}
+                                : capitalize(spec.value)}
                             </p>
                           </div>
                         </div>
@@ -542,15 +565,20 @@ export function PropertyDetailsDialog({
                 <PropertyDocumentViewer
                   propertyId={property.id}
                   landTitleId={property.land_title_id || undefined}
+                  documents={property.documents || []}
+                  onDocumentUploaded={fetchPropertyDetails}
+                  onDocumentDeleted={fetchPropertyDetails}
+                  onDocumentUpdated={fetchPropertyDetails}
+                  reloadDocuments={fetchPropertyDetails}
                 />
 
                 {/* Document Upload for Property Owner */}
-                {/* {property.user_id === user?.id && (
-                  // <DocumentUploadComponent
-                  //   propertyId={property.id}
-                  //   onDocumentUploaded={fetchPropertyDetails}
-                  // />
-                )} */}
+                {property.user_id === user?.id && (
+                  <DocumentUpload
+                    propertyId={property.id}
+                    onDocumentUploaded={(doc) => {}}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="location" className="space-y-4 mt-4">

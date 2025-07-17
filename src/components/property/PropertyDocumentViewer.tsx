@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,37 +20,43 @@ import {
 
 interface PropertyDocument {
   id: string;
-  document_name: string;
+  document_name: string | null;
   document_type: string;
   file_url: string;
   file_size: number;
   mime_type: string;
-  status: string;
-  verified_at?: string;
-  verified_by?: string;
+  status: string | null;
+  verified_at?: string | null;
+  verified_by?: string | null;
   created_at: string;
-  expires_at?: string;
+  expires_at?: string | null;
 }
 
 interface PropertyDocumentViewerProps {
   propertyId: string;
   landTitleId?: string;
+  documents: PropertyDocument[];
+  onDocumentUploaded?: () => void;
+  onDocumentDeleted?: (documentId: string) => void;
+  onDocumentUpdated?: (document: PropertyDocument) => void;
+  reloadDocuments?: () => void;
 }
 
 export function PropertyDocumentViewer({
   propertyId,
   landTitleId,
+  documents: docs,
+  onDocumentUploaded,
+  onDocumentDeleted,
+  onDocumentUpdated,
+  reloadDocuments,
 }: PropertyDocumentViewerProps) {
-  const [documents, setDocuments] = useState<PropertyDocument[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [documents, setDocuments] = useState<PropertyDocument[]>(docs);
+  const [loading, setLoading] = useState(false);
   const [selectedDocument, setSelectedDocument] =
     useState<PropertyDocument | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchDocuments();
-  }, [propertyId, landTitleId]);
 
   const fetchDocuments = async () => {
     try {
@@ -259,7 +265,10 @@ export function PropertyDocumentViewer({
                       <p className="font-medium text-sm">
                         {document.document_name}
                       </p>
-                      {getStatusBadge(document.status, document.expires_at)}
+                      {getStatusBadge(
+                        document.status || "pending",
+                        document.expires_at || undefined
+                      )}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span>{formatFileSize(document.file_size)}</span>
@@ -303,7 +312,7 @@ export function PropertyDocumentViewer({
       {selectedDocument && (
         <DocumentViewer
           documentUrl={selectedDocument.file_url}
-          documentName={selectedDocument.document_name}
+          documentName={selectedDocument.document_name || ""}
           mimeType={selectedDocument.mime_type}
           onClose={() => {
             setViewerOpen(false);

@@ -143,6 +143,76 @@ export function usePropertyCreation() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // New reusable function for creating property documents
+  const createPropertyDocuments = async (
+    propertyId: string,
+    documents: PropertyFormData["documents"]
+  ) => {
+    if (!documents || documents.length === 0) {
+      return { success: true, error: null };
+    }
+
+    try {
+      const documentInserts = documents.map((doc) => ({
+        property_id: propertyId,
+        document_name: doc.name || "",
+        document_type: doc.type || "",
+        file_url: doc.url || "",
+        mime_type: doc.mime_type || "",
+        file_size: doc.size || 0,
+        document_hash: doc.hash || "", // This needs to be a valid hash
+        status: "pending" as const,
+      }));
+
+      const { error: documentError } = await supabase
+        .from("property_documents")
+        .insert(documentInserts);
+
+      if (documentError) {
+        console.error("Error storing documents:", documentError);
+        return { success: false, error: documentError };
+      }
+
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Error creating property documents:", error);
+      return { success: false, error };
+    }
+  };
+
+  // New reusable function for creating property images
+  const createPropertyImages = async (
+    propertyId: string,
+    images: PropertyFormData["images"]
+  ) => {
+    if (!images || images.length === 0) {
+      return { success: true, error: null };
+    }
+
+    try {
+      const imageInserts = images.map((img) => ({
+        property_id: propertyId,
+        url: img.url,
+        is_primary: img.is_primary,
+        category: img.category,
+      }));
+
+      const { error: imageError } = await supabase
+        .from("property_images")
+        .insert(imageInserts);
+
+      if (imageError) {
+        console.error("Error storing images:", imageError);
+        return { success: false, error: imageError };
+      }
+
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Error creating property images:", error);
+      return { success: false, error };
+    }
+  };
+
   const createProperty = async (
     data: PropertyFormData
   ): Promise<PropertyFormData | null> => {
@@ -195,10 +265,9 @@ export function usePropertyCreation() {
             landmark: data.location.landmark || "",
             postal_code: data.location.postal_code || "",
           },
-          //images: data.images.map((img) => img.url),
           backdrop: data.images[0].url,
           specification: data.specification,
-          price: convertedPrice, // Use converted price
+          price: convertedPrice,
           sqrft: data.sqrft || "",
           max_guest: data.max_guest || 0,
           features: data.features,
@@ -216,50 +285,28 @@ export function usePropertyCreation() {
 
       if (propertyError) throw propertyError;
 
-      // Store images
-      if (data.images && data.images.length > 0) {
-        const imageInserts = data.images.map((img) => ({
-          property_id: property.id,
-          url: img.url,
-          is_primary: img.is_primary,
-          category: img.category,
-        }));
-
-        const { error: imageError } = await supabase
-          .from("property_images")
-          .insert(imageInserts);
-
-        if (imageError) {
-          console.error("Error storing images:", imageError);
-        }
+      // Create images using the new function
+      const imageResult = await createPropertyImages(property.id, data.images);
+      if (!imageResult.success) {
+        console.error("Failed to create property images:", imageResult.error);
+        // You might want to handle this error appropriately
       }
 
-      // Store documents
-      if (data.documents && data.documents.length > 0) {
-        const documentInserts = data.documents.map((doc) => ({
-          property_id: property.id,
-          document_name: doc.name || "",
-          document_type: doc.type || "",
-          file_url: doc.url || "",
-          mime_type: doc.mime_type || "",
-          url: doc.url || "",
-          file_size: doc.size || 0,
-          document_hash: doc.hash || "",
-          status: "pending" as const,
-        }));
-
-        const { error: documentError } = await supabase
-          .from("property_documents")
-          .insert(documentInserts);
-
-        if (documentError) {
-          console.error("Error storing documents:", documentError);
-        }
+      // Create documents using the new function
+      const documentResult = await createPropertyDocuments(
+        property.id,
+        data.documents
+      );
+      if (!documentResult.success) {
+        console.error(
+          "Failed to create property documents:",
+          documentResult.error
+        );
+        // You might want to handle this error appropriately
       }
 
       return {
         ...property,
-
         documents: [],
         images: [],
         title: data.title,
@@ -338,6 +385,8 @@ export function usePropertyCreation() {
 
   return {
     createProperty,
+    createPropertyDocuments, // Export the new function
+    createPropertyImages, // Export the new function
     createPaymentSession,
     tokenizeProperty,
     isLoading,
