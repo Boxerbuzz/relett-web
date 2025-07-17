@@ -3,159 +3,33 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { usePropertyCreation } from "@/hooks/usePropertyCreation";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  usePropertyCreation,
+  propertySchema,
+  PropertyFormData,
+  steps,
+} from "@/hooks/usePropertyCreation";
 import { BasicDetailsStep } from "./steps/BasicDetailsStep";
 import { LocationStep } from "./steps/LocationStep";
 import { SpecificationStep } from "./steps/SpecificationStep";
 import { DocumentsStep } from "./steps/DocumentsStep";
 import { MediaStep } from "./steps/MediaStep";
 import { ReviewStep } from "./steps/ReviewStep";
-import { PropertyBlockchainRegistration } from "@/components/hedera/PropertyBlockchainRegistration";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const propertySchema = z.object({
-  id: z.string().uuid(),
-  title: z
-    .string()
-    .min(5, "Title must be at least 5 characters")
-    .max(100, "Title must be less than 100 characters")
-    .regex(/^[a-zA-Z0-9\s\-,.']+$/, "Title contains invalid characters"),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters")
-    .max(1000, "Description must be less than 1000 characters"),
-  type: z.enum(["residential", "commercial", "industrial", "land"], {
-    required_error: "Property type is required",
-  }),
-  sub_type: z
-    .string()
-    .min(1, "Sub-type is required")
-    .max(50, "Sub-type must be less than 50 characters"),
-  category: z.enum(["sell", "rent", "shortlet", "lease"], {
-    required_error: "Listing category is required",
-  }),
-  condition: z.enum(["newlyBuilt", "renovated", "good", "needs_renovation"], {
-    required_error: "Property condition is required",
-  }),
-  price: z.object({
-    amount: z
-      .number()
-      .min(1000, "Price must be at least ₦1,000")
-      .max(1000000000, "Price cannot exceed ₦1 billion"),
-    currency: z.string().default("NGN"),
-    term: z.enum(["night", "week", "month", "year"]).default("month"),
-    deposit: z.number().optional(),
-    service_charge: z.number().optional(),
-    is_negotiable: z.boolean().default(false),
-  }),
-  location: z.object({
-    address: z
-      .string()
-      .min(5, "Address must be at least 5 characters")
-      .max(200, "Address must be less than 200 characters"),
-    city: z
-      .string()
-      .min(2, "City must be at least 2 characters")
-      .max(50, "City must be less than 50 characters")
-      .regex(/^[a-zA-Z\s\-']+$/, "City contains invalid characters"),
-    state: z
-      .string()
-      .min(2, "State must be at least 2 characters")
-      .max(50, "State must be less than 50 characters")
-      .regex(/^[a-zA-Z\s\-']+$/, "State contains invalid characters"),
-    country: z
-      .string()
-      .min(2, "Country must be at least 2 characters")
-      .max(50, "Country must be less than 50 characters")
-      .regex(/^[a-zA-Z\s\-']+$/, "Country contains invalid characters"),
-    coordinates: z
-      .object({
-        lat: z.number().min(-90).max(90).optional(),
-        lng: z.number().min(-180).max(180).optional(),
-      })
-      .optional(),
-    landmark: z.string().optional(),
-    postal_code: z.string().optional(),
-  }),
-  specification: z.object({
-    bedrooms: z.number().min(0).max(20).optional(),
-    bathrooms: z.number().min(0).max(20).optional(),
-    toilets: z.number().min(0).max(20).optional(),
-    parking: z.number().min(0).max(50).optional(),
-    garages: z.number().min(0).max(50).optional(),
-    floors: z.number().min(0).max(100).optional(),
-    units: z.number().min(0).max(1000).optional(),
-    area: z.number().min(0).optional(),
-    area_unit: z.string().optional(),
-    year_built: z
-      .number()
-      .min(1800, "Year built cannot be before 1800")
-      .max(new Date().getFullYear(), `Year built cannot be in the future`)
-      .optional(),
-    is_furnished: z.boolean().default(false),
-    full_bedroom_count: z.number().min(0).max(20).optional(),
-    full_bathroom_count: z.number().min(0).max(20).optional(),
-  }),
-  sqrft: z.string().optional(),
-  max_guest: z.number().min(0).max(50).optional(),
-  features: z.array(z.string().min(1, "Feature cannot be empty")).default([]),
-  amenities: z.array(z.string().min(1, "Amenity cannot be empty")).default([]),
-  documents: z
-    .array(
-      z.object({
-        type: z.enum(["deed", "survey", "certificate", "other"]),
-        filename: z.string().min(1, "Document filename is required"),
-        url: z.string().url("Invalid document URL"),
-      })
-    )
-    .default([]),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url("Invalid image URL"),
-        is_primary: z.boolean().default(false),
-        category: z.string().default("general"),
-      })
-    )
-    .min(1, "At least one image is required"),
-  tags: z.array(z.string()).default([]),
-  is_exclusive: z.boolean().default(false),
-  is_featured: z.boolean().default(false),
-});
-
-type PropertyFormData = z.infer<typeof propertySchema>;
-
-const steps = [
-  { title: "Basic Details", description: "Property information" },
-  { title: "Location", description: "Address and coordinates" },
-  { title: "Specifications", description: "Size and features" },
-  { title: "Documents", description: "Legal documents" },
-  { title: "Media", description: "Photos and videos" },
-  { title: "Review", description: "Confirm details" },
-  { title: "Blockchain", description: "Register on blockchain" },
-];
-
-interface AddPropertyFormProps {
-  onClose?: () => void;
-}
-
-export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
+export function AddPropertyForm() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [createdProperty, setCreatedProperty] = useState<any>(null);
-  const [blockchainTransactionId, setBlockchainTransactionId] = useState<
-    string | null
-  >(null);
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { createProperty, isLoading } = usePropertyCreation();
+  const navigate = useNavigate();
+
+  const propertyId = crypto.randomUUID();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -187,7 +61,7 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
       max_guest: 0,
       is_exclusive: false,
       is_featured: false,
-      id: crypto.randomUUID(),
+      id: propertyId,
     },
   });
 
@@ -282,9 +156,11 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
   };
 
   const onSubmit = async (data: PropertyFormData) => {
+    console.log("Submitting property:", data);
     try {
       const isValid = await form.trigger();
       if (!isValid) {
+        console.log("Validation error:", form.formState.errors);
         toast({
           title: "Validation Error",
           description: "Please fix all errors before submitting",
@@ -292,8 +168,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         });
         return;
       }
-
-      console.log("Submitting property:", data);
 
       if (!data.images || data.images.length === 0) {
         toast({
@@ -304,95 +178,17 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         return;
       }
 
-      const coordinates =
-        data.location.coordinates?.lat && data.location.coordinates?.lng
-          ? {
-              lat: data.location.coordinates.lat,
-              lng: data.location.coordinates.lng,
-            }
-          : null;
+      const property = await createProperty(data);
 
-      // Convert price values to kobo (smallest currency unit)
-      const convertedPrice = {
-        amount: Math.round((data.price.amount || 0) * 100), // Convert to kobo
-        currency: data.price.currency || "NGN",
-        term: data.price.term || "month",
-        deposit: data.price.deposit ? Math.round(data.price.deposit * 100) : 0,
-        service_charge: data.price.service_charge
-          ? Math.round(data.price.service_charge * 100)
-          : 0,
-        is_negotiable: data.price.is_negotiable || false,
-      };
-
-      // Create property with all fields properly mapped
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      const { data: property, error: propertyError } = await supabase
-        .from("properties")
-        .insert({
-          user_id: user.id,
-          title: data.title,
-          description: data.description,
-          type: data.type,
-          sub_type: data.sub_type,
-          category: data.category,
-          condition: data.condition,
-          status: "pending",
-          location: {
-            address: data.location.address,
-            city: data.location.city,
-            state: data.location.state,
-            country: data.location.country,
-            coordinates,
-            landmark: data.location.landmark || "",
-            postal_code: data.location.postal_code || "",
-          },
-          //images: data.images.map((img) => img.url),
-          backdrop: data.images[0].url,
-          specification: data.specification,
-          price: convertedPrice, // Use converted price
-          sqrft: data.sqrft || "",
-          max_guest: data.max_guest || 0,
-          features: data.features,
-          amenities: data.amenities,
-          tags: data.tags,
-          is_exclusive: data.is_exclusive,
-          is_featured: data.is_featured,
-          garages: data.specification.garages || 0,
-          year_built: new Date(
-            data.specification.year_built || new Date().getFullYear()
-          ).toISOString(),
-        })
-        .select()
-        .single();
-
-      if (propertyError) throw propertyError;
-
-      // Store images
-      if (data.images && data.images.length > 0) {
-        const imageInserts = data.images.map((img) => ({
-          property_id: property.id,
-          url: img.url,
-          is_primary: img.is_primary,
-          category: img.category,
-        }));
-
-        const { error: imageError } = await supabase
-          .from("property_images")
-          .insert(imageInserts);
-
-        if (imageError) {
-          console.error("Error storing images:", imageError);
-        }
+      if (property) {
+        toast({
+          title: "Success",
+          description: "Property created successfully",
+        });
+        setCurrentStep(steps.length - 1);
+        form.reset();
+        navigate("/my-properties");
       }
-
-      setCreatedProperty(property);
-
-      // Move to blockchain registration step
-      setCurrentStep(steps.length - 1);
     } catch (error) {
       console.error("Error submitting property:", error);
       toast({
@@ -403,62 +199,12 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
     }
   };
 
-  const handleBlockchainRegistrationComplete = (transactionId: string) => {
-    setBlockchainTransactionId(transactionId);
-    toast({
-      title: "Success!",
-      description:
-        "Property created and registered on blockchain successfully.",
-    });
-
-    // Navigate after a short delay to show success message
-    setTimeout(() => {
-      navigate("/my-properties");
-      if (onClose) onClose();
-    }, 2000);
-  };
-
-  const handleBlockchainRegistrationSkip = () => {
-    toast({
-      title: "Success!",
-      description:
-        "Property created successfully. You can register on blockchain later.",
-    });
-
-    navigate("/my-properties");
-    if (onClose) onClose();
-  };
-
   const renderStep = () => {
-    // switch (currentStep) {
-    //   case 0:
-    //     return <BasicDetailsStep form={form} />;
-    //   case 1:
-    //     return <LocationStep form={form} />;
-    //   case 2:
-    //     return <SpecificationStep form={form} />;
-    //   case 3:
-    //     return <DocumentsStep form={form} />;
-    //   case 4:
-    //     return <MediaStep form={form} />;
-    //   case 5:
-    //     return <ReviewStep form={form} />;
-    //   case 6:
-    //     return createdProperty ? (
-    //       <PropertyBlockchainRegistration
-    //         propertyData={createdProperty}
-    //         onRegistrationComplete={handleBlockchainRegistrationComplete}
-    //         onRegistrationSkip={handleBlockchainRegistrationSkip}
-    //       />
-    //     ) : null;
-    //   default:
-    //     return null;
-    // }
     switch (currentStep) {
       case 0:
-        return <DocumentsStep form={form} />;
+        return <BasicDetailsStep form={form} />;
       case 1:
-        return <MediaStep form={form} />;
+        return <LocationStep form={form} />;
       case 2:
         return <SpecificationStep form={form} />;
       case 3:
@@ -467,14 +213,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
         return <MediaStep form={form} />;
       case 5:
         return <ReviewStep form={form} />;
-      case 6:
-        return createdProperty ? (
-          <PropertyBlockchainRegistration
-            propertyData={createdProperty}
-            onRegistrationComplete={handleBlockchainRegistrationComplete}
-            onRegistrationSkip={handleBlockchainRegistrationSkip}
-          />
-        ) : null;
       default:
         return null;
     }
@@ -543,7 +281,6 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
             </form>
           </Form>
         </CardContent>
-
         {/* Footer */}
         <div className="flex justify-between p-6 border-t bg-gray-50 rounded-b-md">
           <Button
@@ -559,7 +296,11 @@ export function AddPropertyForm({ onClose }: AddPropertyFormProps) {
 
           {currentStep === steps.length - 2 ? (
             <Button
-              onClick={form.handleSubmit(onSubmit)}
+              onClick={() => {
+                console.log("Submitting property:", form.getValues());
+                console.log("Documents:", form.getValues("documents"));
+                onSubmit(form.getValues());
+              }}
               disabled={isLoading}
               className="min-w-32"
             >

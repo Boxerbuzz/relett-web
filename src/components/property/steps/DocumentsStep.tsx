@@ -1,7 +1,6 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ interface DocumentsStepProps {
 
 interface UploadedDocument {
   type: string;
-  filename: string;
+  name: string;
   url: string;
   path: string;
   size: number;
@@ -32,41 +31,7 @@ const DOCUMENT_TYPES = [
 
 export function DocumentsStep({ form }: DocumentsStepProps) {
   const documents = form.watch("documents") || [];
-  const [selectedDocType, setSelectedDocType] = useState<string>("deed");
-  const { uploadFile, deleteFile, isUploading, uploadProgress } =
-    useSupabaseStorage();
-
-  const handleFilesSelected = async (files: File[]) => {
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const result = await uploadFile(file, {
-          bucket: "property-documents",
-          folder: selectedDocType,
-          maxSize: 10 * 1024 * 1024, // 10MB
-          allowedTypes: [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-          ],
-        });
-
-        return {
-          type: selectedDocType,
-          filename: file.name,
-          url: result.url,
-          path: result.path,
-          size: result.size,
-        };
-      });
-
-      const uploadedDocs = await Promise.all(uploadPromises);
-      const updatedDocs = [...documents, ...uploadedDocs];
-      form.setValue("documents", updatedDocs);
-    } catch (error) {
-      console.error("Upload failed:", error);
-    }
-  };
+  const { deleteFile, isUploading, uploadProgress } = useSupabaseStorage();
 
   const removeDocument = async (index: number) => {
     const doc = documents[index];
@@ -130,7 +95,9 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
 
       <DocumentUpload
         propertyId={form.getValues("id")}
-        onDocumentUploaded={() => {}}
+        onDocumentUploaded={(document) => {
+          form.setValue("documents", [...documents, document]);
+        }}
       />
 
       {/* Uploaded Documents by Type */}
@@ -163,9 +130,7 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
                         <div className="flex items-center gap-3">
                           <FileText className="h-5 w-5 text-blue-500" />
                           <div>
-                            <p className="font-medium text-sm">
-                              {doc.filename}
-                            </p>
+                            <p className="font-medium text-sm">{doc.name}</p>
                             <p className="text-xs text-gray-500">
                               {formatFileSize(doc.size)}
                             </p>
@@ -185,7 +150,7 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
                             onClick={() => {
                               const link = document.createElement("a");
                               link.href = doc.url;
-                              link.download = doc.filename;
+                              link.download = doc.name;
                               link.click();
                             }}
                           >

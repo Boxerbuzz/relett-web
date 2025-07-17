@@ -12,7 +12,7 @@ interface UploadResult {
 
 interface UploadOptions {
   bucket: string;
-  folder?: string;
+  path: string; // Direct path instead of folder/subfolder
   maxSize?: number; // in bytes
   allowedTypes?: string[];
   generateThumbnail?: boolean;
@@ -55,8 +55,9 @@ export function useSupabaseStorage() {
       const fileName = `${Date.now()}_${Math.random()
         .toString(36)
         .substring(2)}.${fileExt}`;
-      const folder = options.folder || "general";
-      const filePath = `${user.id}/${folder}/${fileName}`;
+      
+      // Use the provided path directly
+      const filePath = `${options.path}/${fileName}`;
 
       setUploadProgress(30);
 

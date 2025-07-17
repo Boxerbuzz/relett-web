@@ -18,6 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
 import { useToast } from "@/hooks/use-toast";
+import { calculateFileHash } from "@/utils/fileHash";
 
 interface DocumentUploadProps {
   propertyId?: string;
@@ -34,6 +35,8 @@ interface UploadedDocument {
   size: number;
   uploadedAt: string;
   required?: boolean;
+  hash?: string;
+  mime_type?: string;
 }
 
 const DOCUMENT_TYPES = [
@@ -50,7 +53,7 @@ const DOCUMENT_TYPES = [
     accept: ".pdf,.jpg,.jpeg,.png, .webp",
   },
   {
-    key: "certificate",
+    key: "certificate_of_occupancy",
     label: "C of O",
     required: false,
     accept: ".pdf,.jpg,.jpeg,.png, .webp",
@@ -100,7 +103,7 @@ export function DocumentUpload({
     try {
       const result = await uploadFile(file, {
         bucket: "property-documents",
-        folder: propertyId ? `property-${propertyId}` : "temp",
+        path: propertyId ? `${propertyId}/${docType}` : `temp/${docType}`,
         maxSize: 10 * 1024 * 1024,
         allowedTypes: [
           "application/pdf",
@@ -115,11 +118,13 @@ export function DocumentUpload({
       const newDocument: UploadedDocument = {
         id: crypto.randomUUID(),
         name: file.name,
+        hash: await calculateFileHash(file),
         type: docType,
         url: result.url,
         size: file.size,
         uploadedAt: new Date().toISOString(),
         required: requiredTypes.includes(docType),
+        mime_type: result.type,
       };
 
       setDocuments((prev) => [...prev, newDocument]);
@@ -140,6 +145,7 @@ export function DocumentUpload({
         (part) => part === "property-documents"
       );
       if (pathIndex !== -1) {
+        // For new structure: property-documents/{propertyId}/{documentType}/{filename}
         const path = urlParts.slice(pathIndex + 1).join("/");
         await deleteFile("property-documents", path);
       }

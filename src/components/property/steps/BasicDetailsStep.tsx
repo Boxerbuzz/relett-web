@@ -305,8 +305,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-sm font-medium">
-                            Allow potential buyers/tenants to negotiate the
-                            price
+                            Price is negotiable
                           </FormLabel>
                         </div>
                       </FormItem>

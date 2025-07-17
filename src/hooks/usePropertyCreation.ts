@@ -1,204 +1,337 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import * as z from "zod";
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+export const propertySchema = z.object({
+  id: z.string().uuid(),
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(100, "Title must be less than 100 characters")
+    .regex(/^[a-zA-Z0-9\s\-,.']+$/, "Title contains invalid characters"),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters")
+    .max(1000, "Description must be less than 1000 characters"),
+  type: z.enum(["residential", "commercial", "industrial", "land"], {
+    required_error: "Property type is required",
+  }),
+  sub_type: z
+    .string()
+    .min(1, "Sub-type is required")
+    .max(50, "Sub-type must be less than 50 characters"),
+  category: z.enum(["sell", "rent", "shortlet", "lease"], {
+    required_error: "Listing category is required",
+  }),
+  condition: z.enum(["newlyBuilt", "renovated", "good", "needs_renovation"], {
+    required_error: "Property condition is required",
+  }),
+  price: z.object({
+    amount: z
+      .number()
+      .min(1000, "Price must be at least ₦1,000")
+      .max(1000000000, "Price cannot exceed ₦1 billion"),
+    currency: z.string().default("NGN"),
+    term: z.enum(["night", "week", "month", "year"]).default("month"),
+    deposit: z.number().optional(),
+    service_charge: z.number().optional(),
+    is_negotiable: z.boolean().default(false),
+  }),
+  location: z.object({
+    address: z
+      .string()
+      .min(5, "Address must be at least 5 characters")
+      .max(200, "Address must be less than 200 characters"),
+    city: z
+      .string()
+      .min(2, "City must be at least 2 characters")
+      .max(50, "City must be less than 50 characters")
+      .regex(/^[a-zA-Z\s\-']+$/, "City contains invalid characters"),
+    state: z
+      .string()
+      .min(2, "State must be at least 2 characters")
+      .max(50, "State must be less than 50 characters")
+      .regex(/^[a-zA-Z\s\-']+$/, "State contains invalid characters"),
+    country: z
+      .string()
+      .min(2, "Country must be at least 2 characters")
+      .max(50, "Country must be less than 50 characters")
+      .regex(/^[a-zA-Z\s\-']+$/, "Country contains invalid characters"),
+    coordinates: z
+      .object({
+        lat: z.number().min(-90).max(90).optional(),
+        lng: z.number().min(-180).max(180).optional(),
+      })
+      .optional(),
+    landmark: z.string().optional(),
+    postal_code: z.string().optional(),
+  }),
+  specification: z.object({
+    bedrooms: z.number().min(0).max(20).optional(),
+    bathrooms: z.number().min(0).max(20).optional(),
+    toilets: z.number().min(0).max(20).optional(),
+    parking: z.number().min(0).max(50).optional(),
+    garages: z.number().min(0).max(50).optional(),
+    floors: z.number().min(0).max(100).optional(),
+    units: z.number().min(0).max(1000).optional(),
+    area: z.number().min(0).optional(),
+    area_unit: z.string().optional(),
+    year_built: z
+      .number()
+      .min(1800, "Year built cannot be before 1800")
+      .max(new Date().getFullYear(), `Year built cannot be in the future`)
+      .optional(),
+    is_furnished: z.boolean().default(false),
+    full_bedroom_count: z.number().min(0).max(20).optional(),
+    full_bathroom_count: z.number().min(0).max(20).optional(),
+  }),
+  sqrft: z.string().optional(),
+  max_guest: z.number().min(0).max(50).optional(),
+  features: z.array(z.string().min(1, "Feature cannot be empty")).default([]),
+  amenities: z.array(z.string().min(1, "Amenity cannot be empty")).default([]),
+  documents: z
+    .array(
+      z.object({
+        type: z.enum([
+          "deed",
+          "survey",
+          "certificate_of_occupancy",
+          "other",
+          "tax_clearance",
+        ]),
+        name: z.string().min(1, "Document filename is required"),
+        url: z.string().url("Invalid document URL"),
+        id: z.string().optional(), // Add this since your data has it
+        size: z.number().optional(), // Add this since your data has it
+        uploadedAt: z.string().optional(), // Add this since your data has it
+        required: z.boolean().optional(), // Add this since your data has it
+        hash: z.string().optional(),
+        mime_type: z.string().optional(),
+      })
+    )
+    .default([]),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url("Invalid image URL"),
+        is_primary: z.boolean().default(false),
+        category: z.string().default("general"),
+        name: z.string().default(""),
+        size: z.number().default(0),
+        path: z.string().default(""),
+      })
+    )
+    .min(1, "At least one image is required"),
+  tags: z.array(z.string()).default([]),
+  is_exclusive: z.boolean().default(false),
+  is_featured: z.boolean().default(false),
+});
 
-interface PropertyData {
-  basicInfo: {
-    title: string;
-    description: string;
-    propertyType: string;
-    category: string;
-    status: string;
-  };
-  location: {
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    coordinates: { lat: number; lng: number } | null;
-    landmark?: string;
-    postal_code?: string;
-  };
-  documents: Array<{
-    id: string;
-    name: string;
-    type: string;
-    url: string;
-    size: number;
-  }>;
-  valuation: {
-    estimatedValue: number;
-    currency: string;
-    valuationMethod: string;
-    marketAnalysis: string;
-  };
-  specification?: any;
-  price?: any;
-  features?: string[];
-  amenities?: string[];
-  images?: any[];
-  sub_type?: string;
-  condition?: string;
-  max_guest?: number;
-  tags?: string[];
-  is_exclusive?: boolean;
-  is_featured?: boolean;
-  sqrft?: string;
-}
+export type PropertyFormData = z.infer<typeof propertySchema>;
+
+export const steps = [
+  { title: "Basic Details", description: "Property information" },
+  { title: "Location", description: "Address and coordinates" },
+  { title: "Specifications", description: "Size and features" },
+  { title: "Documents", description: "Legal documents" },
+  { title: "Media", description: "Photos and videos" },
+  { title: "Review", description: "Confirm details" },
+];
 
 export function usePropertyCreation() {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const createProperty = async (propertyData: PropertyData) => {
+  const createProperty = async (
+    data: PropertyFormData
+  ): Promise<PropertyFormData | null> => {
     setIsLoading(true);
+    console.log("Submitting property:", data);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const coordinates =
+        data.location.coordinates?.lat && data.location.coordinates?.lng
+          ? {
+              lat: data.location.coordinates.lat,
+              lng: data.location.coordinates.lng,
+            }
+          : null;
+
+      // Convert price values to kobo (smallest currency unit)
+      const convertedPrice = {
+        amount: Math.round((data.price.amount || 0) * 100), // Convert to kobo
+        currency: data.price.currency || "NGN",
+        term: data.price.term || "month",
+        deposit: data.price.deposit ? Math.round(data.price.deposit * 100) : 0,
+        service_charge: data.price.service_charge
+          ? Math.round(data.price.service_charge * 100)
+          : 0,
+        is_negotiable: data.price.is_negotiable || false,
+      };
+
+      // Create property with all fields properly mapped
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
 
       const { data: property, error: propertyError } = await supabase
-        .from('properties')
+        .from("properties")
         .insert({
           user_id: user.id,
-          title: propertyData.basicInfo.title,
-          description: propertyData.basicInfo.description,
-          type: propertyData.basicInfo.propertyType,
-          sub_type: propertyData.sub_type,
-          category: propertyData.basicInfo.category,
-          condition: propertyData.condition,
-          status: propertyData.basicInfo.status,
-          location: propertyData.location,
-          specification: propertyData.specification || {},
-          price: propertyData.price || {
-            amount: propertyData.valuation.estimatedValue,
-            currency: propertyData.valuation.currency
+          title: data.title,
+          description: data.description,
+          type: data.type,
+          sub_type: data.sub_type,
+          category: data.category,
+          condition: data.condition,
+          status: "pending",
+          location: {
+            address: data.location.address,
+            city: data.location.city,
+            state: data.location.state,
+            country: data.location.country,
+            coordinates,
+            landmark: data.location.landmark || "",
+            postal_code: data.location.postal_code || "",
           },
-          sqrft: propertyData.sqrft || '',
-          max_guest: propertyData.max_guest || 0,
-          features: propertyData.features || [],
-          amenities: propertyData.amenities || [],
-          tags: propertyData.tags || [],
-          is_exclusive: propertyData.is_exclusive || false,
-          is_featured: propertyData.is_featured || false,
-          garages: propertyData.specification?.garages || 0
+          //images: data.images.map((img) => img.url),
+          backdrop: data.images[0].url,
+          specification: data.specification,
+          price: convertedPrice, // Use converted price
+          sqrft: data.sqrft || "",
+          max_guest: data.max_guest || 0,
+          features: data.features,
+          amenities: data.amenities,
+          tags: data.tags,
+          is_exclusive: data.is_exclusive,
+          is_featured: data.is_featured,
+          garages: data.specification.garages || 0,
+          year_built: new Date(
+            data.specification.year_built || new Date().getFullYear()
+          ).toISOString(),
         })
         .select()
         .single();
 
       if (propertyError) throw propertyError;
 
-      const { error: workflowError } = await supabase
-        .from('property_creation_workflows')
-        .insert({
-          user_id: user.id,
-          property_id: property.id,
-          current_step: 5,
-          step_data: JSON.parse(JSON.stringify(propertyData)),
-          status: 'completed'
-        });
-
-      if (workflowError) throw workflowError;
-
-      // Store uploaded documents in property_documents table
-      if (propertyData.documents && propertyData.documents.length > 0) {
-        await storePropertyDocuments(property.id, propertyData.documents);
-      }
-
       // Store images
-      if (propertyData.images && propertyData.images.length > 0) {
-        const imageInserts = propertyData.images.map(img => ({
+      if (data.images && data.images.length > 0) {
+        const imageInserts = data.images.map((img) => ({
           property_id: property.id,
           url: img.url,
           is_primary: img.is_primary,
-          category: img.category
+          category: img.category,
         }));
 
         const { error: imageError } = await supabase
-          .from('property_images')
+          .from("property_images")
           .insert(imageInserts);
 
         if (imageError) {
-          console.error('Error storing images:', imageError);
+          console.error("Error storing images:", imageError);
         }
       }
 
-      toast({
-        title: 'Property Created Successfully',
-        description: 'Your property has been submitted for verification.',
-      });
+      // Store documents
+      if (data.documents && data.documents.length > 0) {
+        const documentInserts = data.documents.map((doc) => ({
+          property_id: property.id,
+          document_name: doc.name || "",
+          document_type: doc.type || "",
+          file_url: doc.url || "",
+          mime_type: doc.mime_type || "",
+          url: doc.url || "",
+          file_size: doc.size || 0,
+          document_hash: doc.hash || "",
+          status: "pending" as const,
+        }));
 
-      return property;
+        const { error: documentError } = await supabase
+          .from("property_documents")
+          .insert(documentInserts);
+
+        if (documentError) {
+          console.error("Error storing documents:", documentError);
+        }
+      }
+
+      return {
+        ...property,
+
+        documents: [],
+        images: [],
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        sub_type: data.sub_type,
+        category: data.category,
+        condition: data.condition,
+        price: convertedPrice,
+        specification: data.specification,
+        sqrft: data.sqrft || "",
+        max_guest: data.max_guest || 0,
+        features: data.features,
+        amenities: data.amenities,
+        tags: data.tags,
+        is_exclusive: data.is_exclusive,
+        is_featured: data.is_featured,
+        location: data.location,
+      };
     } catch (error) {
-      console.error('Error creating property:', error);
+      console.error("Error submitting property:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to create property. Please try again.',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to create property. Please try again.",
+        variant: "destructive",
       });
-      throw error;
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const storePropertyDocuments = async (propertyId: string, documents: PropertyData['documents']) => {
-    for (const doc of documents) {
-      const { error } = await supabase
-        .from('property_documents')
-        .insert({
-          property_id: propertyId,
-          document_type: doc.type as any,
-          document_name: doc.name,
-          file_url: doc.url,
-          file_size: doc.size,
-          mime_type: 'application/pdf', // Default, should be detected during upload
-          document_hash: `hash_${Date.now()}`, // Should be calculated during upload
-          status: 'pending'
-        });
-
-      if (error) {
-        console.error('Error storing document:', error);
-      }
-    }
-  };
-
   const createPaymentSession = async (amount: number, purpose: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment-session', {
-        body: {
-          amount,
-          currency: 'USD',
-          purpose,
-          metadata: { timestamp: Date.now() }
+      const { data, error } = await supabase.functions.invoke(
+        "create-payment-session",
+        {
+          body: {
+            amount,
+            currency: "USD",
+            purpose,
+            metadata: { timestamp: Date.now() },
+          },
         }
-      });
+      );
 
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Payment session error:', error);
+      console.error("Payment session error:", error);
       throw error;
     }
   };
 
   const tokenizeProperty = async (propertyId: string, tokenDetails: any) => {
     try {
-      const { data, error } = await supabase.functions.invoke('create-hedera-token', {
-        body: {
-          tokenizedPropertyId: propertyId,
-          tokenName: tokenDetails.name,
-          tokenSymbol: tokenDetails.symbol,
-          totalSupply: tokenDetails.supply
+      const { data, error } = await supabase.functions.invoke(
+        "create-hedera-token",
+        {
+          body: {
+            tokenizedPropertyId: propertyId,
+            tokenName: tokenDetails.name,
+            tokenSymbol: tokenDetails.symbol,
+            totalSupply: tokenDetails.supply,
+          },
         }
-      });
+      );
 
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Tokenization error:', error);
+      console.error("Tokenization error:", error);
       throw error;
     }
   };
@@ -207,6 +340,6 @@ export function usePropertyCreation() {
     createProperty,
     createPaymentSession,
     tokenizeProperty,
-    isLoading
+    isLoading,
   };
 }

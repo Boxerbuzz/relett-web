@@ -98,7 +98,7 @@ export function KYCUploadForm() {
 
       const { url } = await uploadFile(file, {
         bucket: "kyc-documents",
-        folder: user.id,
+        path: user.id,
         maxSize: 10 * 1024 * 1024, // 10MB
         allowedTypes: ["application/pdf", "image/jpeg", "image/png"],
         generateThumbnail: false,
