@@ -30,7 +30,7 @@ import { InspectionSheet } from "@/components/property/sheets/InspectionSheet";
 import { ReservationSheet } from "@/components/property/sheets/ReservationSheet";
 import { OfferSheet } from "@/components/property/sheets/OfferSheet";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
-import { capitalize } from "@/lib/utils";
+import { capitalize, formatDate, formatDateTime } from "@/lib/utils";
 import { EnhancedPropertyPricing } from "@/types/property";
 import RentalSheet from "@/components/property/sheets/RentalSheet";
 import { LocationAnalysis } from "@/components/property/LocationAnalysis";
@@ -42,6 +42,16 @@ import {
   useUserReservations,
   useUserInspections,
 } from "@/hooks/useUserBookings";
+import { BookingDetails } from "@/components/bookings/BookingDetails";
+import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
+import { ActiveBookingsSidebar } from "@/components/property/details/ActiveBookingsSidebar";
+import { AgentInfoCard } from "@/components/property/details/AgentInfoCard";
+import { InvestmentOpportunityCard } from "@/components/property/details/InvestmentOpportunityCard";
+import { QuickActionsCard } from "@/components/property/details/QuickActionsCard";
+import { ImageGallery } from "@/components/property/details/ImageGallery";
+import { PropertySummaryCard } from "@/components/property/details/PropertySummaryCard";
+import { AmenitiesFeaturesCard } from "@/components/property/details/AmenitiesFeaturesCard";
+import { PropertyDocumentsDetailsSection } from "@/components/property/details/PropertyDocumentsDetailsSection";
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -57,6 +67,11 @@ const PropertyDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showInvestDialog, setShowInvestDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [bookingDialog, setBookingDialog] = useState<{
+    open: boolean;
+    type: "inspection" | "rental" | "reservation" | null;
+    booking: any;
+  }>({ open: false, type: null, booking: null });
   const { user } = useAuth();
 
   // Fetch user bookings for this property
@@ -93,6 +108,14 @@ const PropertyDetails = () => {
       i.status !== "completed" &&
       i.status !== "canceled"
   );
+
+  // Helper to check if a type is disabled
+  const isActionDisabled = (type: string) => {
+    if (type === "inspection") return activeInspections.length > 0;
+    if (type === "rental") return activeRentals.length > 0;
+    if (type === "reservation") return activeReservations.length > 0;
+    return false;
+  };
 
   const handleShare = async () => {
     if (navigator.share && property) {
@@ -239,402 +262,82 @@ const PropertyDetails = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Image Gallery */}
-              <Card className="relative rounded-lg overflow-hidden h-100">
-                <CardContent className="p-0">
-                  {currentImage ? (
-                    <>
-                      <img
-                        src={currentImage.url}
-                        alt={property.title || "Property"}
-                        className="w-full h-full object-cover"
-                      />
-                      {images.length > 1 && (
-                        <>
-                          <button
-                            title="Previous Image"
-                            aria-label="Previous Image"
-                            type="button"
-                            onClick={prevImage}
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
-                          >
-                            <ArrowLeftIcon className="h-5 w-5" />
-                          </button>
-                          <button
-                            title="Next Image"
-                            aria-label="Next Image"
-                            type="button"
-                            onClick={nextImage}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
-                          >
-                            <ArrowLeftIcon className="h-5 w-5 rotate-180" />
-                          </button>
-
-                          {/* Image Counter */}
-                          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                            {currentImageIndex + 1} / {images.length}
-                          </div>
-                        </>
-                      )}
-
-                      {/* Status Badges */}
-                      <div className="absolute top-4 left-4 flex gap-2">
-                        {property.is_featured && (
-                          <Badge className="bg-yellow-500 text-white">
-                            <StarIcon className="h-3 w-3 mr-1" />
-                            Featured
-                          </Badge>
-                        )}
-                        {property.is_verified && (
-                          <Badge className="bg-green-500 text-white">
-                            Verified
-                          </Badge>
-                        )}
-                        {property.is_tokenized && (
-                          <Badge className="bg-purple-500 text-white">
-                            Tokenized
-                          </Badge>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImagesIcon className="h-16 w-16 text-gray-400" />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <ImageGallery
+                images={images.map((img) => ({
+                  url: img.url,
+                  is_primary: img.is_primary === true,
+                }))}
+                propertyTitle={property.title}
+                currentImageIndex={currentImageIndex}
+                onPrev={prevImage}
+                onNext={nextImage}
+                isFeatured={property.is_featured}
+                isVerified={property.is_verified}
+                isTokenized={property.is_tokenized}
+              />
 
               {/* Property Summary */}
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-2xl font-bold mb-2">
-                        {property.title || "Property Title"}
-                      </CardTitle>
-                      <div className="flex items-center text-gray-600 mb-4">
-                        <MapPinIcon className="h-4 w-4 mr-2" />
-                        <span>
-                          {property.location?.address ||
-                            `${property.location?.city || ""} ${
-                              property.location?.state || ""
-                            }`.trim() ||
-                            "Address not specified"}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant="secondary">
-                          {capitalize(property.category)}
-                        </Badge>
-                        <Badge variant="outline">
-                          {capitalize(property.type)}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(property.price)}
-                        {property.price.term && (
-                          <span className="text-sm text-gray-600">
-                            /{capitalize(property.price.term)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-sm text-gray-600">Price</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <Bed className="w-5 h-5 mr-1" />
-                        <span className="text-lg font-semibold">
-                          {property.specification?.bedrooms || 0}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600">Bedrooms</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <Shower className="w-5 h-5 mr-1" />
-                        <span className="text-lg font-semibold">
-                          {property.specification?.bathrooms || 0}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600">Bathrooms</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <Square className="w-5 h-5 mr-1" />
-                        <span className="text-lg font-semibold">
-                          {property.specification?.area || "N/A"}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600">Sq ft</div>
-                    </div>
-                  </div>
-
-                  <Separator className="my-6" />
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Description</h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {property.description || "No description available."}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-6 mt-6 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <EyeIcon className="h-4 w-4" />
-                      <span>{property.views || 0} views</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <HeartIcon className="h-4 w-4" />
-                      <span>{property.likes || 0} likes</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-4 w-4" />
-                      <span>
-                        Listed{" "}
-                        {new Date(property.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {property.ratings > 0 && (
-                      <div className="flex items-center gap-1">
-                        <StarIcon className="h-4 w-4 fill-current text-yellow-500" />
-                        <span>{property.ratings.toFixed(1)} rating</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <PropertySummaryCard
+                property={property}
+                formatPrice={formatPrice}
+                capitalize={capitalize}
+              />
 
               {/* Add Reviews Section */}
               <PropertyReviews propertyId={property.id} />
 
               {/* Property Amenities & Features */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Property Amenities & Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Amenities */}
-                  {property.amenities && property.amenities.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {property.amenities.map((amenity, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-sm">
-                            {getAmenityById(amenity)?.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Features */}
-                  {property.features && property.features.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {property.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-sm">
-                            {getAmenityById(feature)?.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <AmenitiesFeaturesCard
+                amenities={property.amenities}
+                features={property.features}
+                getAmenityById={getAmenityById}
+              />
 
               {/* Documents */}
-              {property.property_documents &&
-                property.property_documents.length > 0 && (
-                  <PropertyDocumentViewer
-                    propertyId={property.id}
-                    documents={
-                      property.property_documents?.map((doc) => ({
-                        id: doc.id,
-                        document_name: doc.document_name,
-                        document_type: doc.document_type,
-                        file_url: doc.file_url,
-                        status: doc.status,
-                        verified_at: doc.verified_at,
-                        file_size: 0,
-                        mime_type: "",
-                        created_at: new Date().toISOString(),
-                      })) || []
-                    }
-                  />
-                )}
+              <PropertyDocumentsDetailsSection
+                propertyId={property.id}
+                propertyDocuments={property.property_documents}
+              />
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Active Bookings Section */}
-              {(activeRentals.length > 0 ||
-                activeReservations.length > 0 ||
-                activeInspections.length > 0) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Active Bookings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {activeRentals.map((rental) => (
-                      <div key={rental.id} className="mb-2">
-                        <strong>Rental:</strong> {rental.status}{" "}
-                        {rental.move_in_date &&
-                          `(Move-in: ${new Date(
-                            rental.move_in_date
-                          ).toLocaleDateString()})`}
-                      </div>
-                    ))}
-                    {activeReservations.map((reservation) => (
-                      <div key={reservation.id} className="mb-2">
-                        <strong>Reservation:</strong> {reservation.status}{" "}
-                        {reservation.from_date &&
-                          `(From: ${new Date(
-                            reservation.from_date
-                          ).toLocaleDateString()})`}
-                      </div>
-                    ))}
-                    {activeInspections.map((inspection) => (
-                      <div key={inspection.id} className="mb-2">
-                        <strong>Inspection:</strong> {inspection.status}{" "}
-                        {inspection.when &&
-                          `(On: ${new Date(
-                            inspection.when
-                          ).toLocaleDateString()})`}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-              {/* Agent Info */}
-              {agent && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Property Agent</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        {agent.avatar ? (
-                          <img
-                            src={agent.avatar}
-                            alt="Agent"
-                            className="w-12 h-12 rounded-full"
-                          />
-                        ) : (
-                          <User className="w-6 h-6 text-gray-500" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">
-                          {agent.first_name} {agent.last_name}
-                        </h4>
-                        <p className="text-sm text-gray-600">Property Agent</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      {agent.phone && (
-                        <div className="flex items-center">
-                          <Phone className="w-4 h-4 mr-3 text-gray-500" />
-                          <span className="text-sm">{agent.phone}</span>
-                        </div>
-                      )}
-                      {agent.email && (
-                        <div className="flex items-center">
-                          <Envelope className="w-4 h-4 mr-3 text-gray-500" />
-                          <span className="text-sm">{agent.email}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <Button className="w-full mt-4" variant="outline">
-                      Contact Agent
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-
               <Card>
-                <CardContent className="p-4 space-y-4">
-                  {/* Investment Section */}
-                  {property.is_tokenized && property.tokenized_property?.id && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle>Quick Actions</CardTitle>
-                        <Badge className="bg-blue-500">Tokenized</Badge>
-                      </div>
-                      <Button
-                        onClick={() => {}}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        <CurrencyDollarIcon className="h-4 w-4 mr-2" />
-                        Invest Now
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {actions.map((action, index) => (
-                        <SheetTrigger asChild>
-                          <Button
-                            key={index}
-                            variant={action.primary ? "default" : "outline"}
-                            onClick={action.action}
-                            className="w-full"
-                            size="lg"
-                          >
-                            {action.label}
-                          </Button>
-                        </SheetTrigger>
-                      ))}
-                    </div>
-                  </div>
+                <CardHeader>
+                  <CardTitle>Your Active Bookings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ActiveBookingsSidebar
+                    activeRentals={activeRentals}
+                    activeReservations={activeReservations}
+                    activeInspections={activeInspections}
+                    onBookingClick={(type, booking) =>
+                      setBookingDialog({ open: true, type, booking })
+                    }
+                  />
                 </CardContent>
               </Card>
+              {/* Booking Details Dialog */}
+              <BookingDetails
+                isOpen={bookingDialog.open}
+                onClose={() =>
+                  setBookingDialog({ open: false, type: null, booking: null })
+                }
+                bookingType={bookingDialog.type as any}
+                bookingData={bookingDialog.booking}
+                onStatusUpdate={() => {}}
+              />
+              {/* Agent Info */}
+              <AgentInfoCard agent={agent} />
 
-              {property.is_tokenized && property.tokenized_property && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Investment Opportunity</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Token Price</p>
-                        <p className="font-bold">
-                          ${property.tokenized_property.token_price}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Expected ROI</p>
-                        <p className="font-bold text-green-600">
-                          {property.tokenized_property.expected_roi}%
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Min Investment</p>
-                        <p className="font-bold">
-                          ${property.tokenized_property.minimum_investment}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Total Supply</p>
-                        <p className="font-bold">
-                          {property.tokenized_property.total_supply}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <QuickActionsCard
+                isTokenized={property.is_tokenized}
+                tokenizedProperty={property.tokenized_property || undefined}
+                actions={actions}
+                isActionDisabled={isActionDisabled}
+                onInvestClick={() => setShowInvestDialog(true)}
+              />
 
               <LocationAnalysis propertyId={property.id} />
 
