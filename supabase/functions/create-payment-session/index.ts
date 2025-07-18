@@ -2,6 +2,7 @@
 import { serve } from "std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
 import { systemLogger } from "../shared/system-logger.ts";
+import { Database } from "../types/database.types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,8 +14,8 @@ interface PaymentSessionRequest {
   type: "rental" | "reservation";
   bookingId: string;
   amount: number;
-  currency: string;
-  metadata: Record<string, any>;
+  currency?: string;
+  metadata?: Record<string, any>;
 }
 
 serve(async (req) => {
@@ -23,53 +24,71 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
+    const supabase = createClient<Database>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get user from Authorization header
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("Authorization header missing");
-    }
+    if (!authHeader) throw new Error("Authorization header missing");
 
     const token = authHeader.replace("Bearer ", "");
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser(token);
-
+    } = await supabase.auth.getUser(token);
     if (userError || !user) {
+      systemLogger("[PAYMENT-SESSION-ERROR]", userError);
       throw new Error("Invalid or expired token");
+    }
+
+    // Parse request body
+    let requestBody: PaymentSessionRequest;
+    try {
+      requestBody = await req.json();
+      systemLogger("[PAYMENT-SESSION-DEBUG]", requestBody);
+    } catch (parseError) {
+      systemLogger("[PAYMENT-SESSION-ERROR]", parseError);
+      throw new Error(`Invalid JSON in request body: ${parseError}`);
     }
 
     const {
       type,
       bookingId,
       amount,
-      currency,
-      metadata,
-    }: PaymentSessionRequest = await req.json();
+      currency = "NGN",
+      metadata = {},
+    } = requestBody;
 
-    if (!type || !bookingId || !amount) {
+    // Validate required fields
+    if (!type || !bookingId || amount === undefined || amount === null) {
       throw new Error("Missing required fields: type, bookingId, amount");
     }
 
-    // Generate payment reference
-    const paymentReference = `${type}_${bookingId}_${Date.now()}`;
+    // Validate field types
+    if (typeof type !== "string" || !["rental", "reservation"].includes(type)) {
+      throw new Error("Invalid type. Must be 'rental' or 'reservation'");
+    }
 
-    // Create payment record
-    const { data: payment, error: paymentError } = await supabaseClient
+    if (typeof bookingId !== "string" || bookingId.trim() === "") {
+      throw new Error("Invalid bookingId. Must be a non-empty string");
+    }
+
+    if (typeof amount !== "number" || amount <= 0) {
+      throw new Error("Invalid amount. Must be a positive number");
+    }
+
+    const paymentReference = `${type}_${bookingId}_${Date.now()}`;
+    const paymentAmount = Math.round(amount * 100); // Convert to kobo
+
+    const { data: payment, error: paymentError } = await supabase
       .from("payments")
       .insert({
         user_id: user.id,
-        amount: Math.round(amount * 100), // Convert to kobo
-        currency: currency || "NGN",
-        type: "initial", // Assuming 'initial' is the type for initial payment session (recurring, deposit, refund, etc. can be handled later),
+        amount: paymentAmount,
+        currency,
+        type: "initial",
         related_id: bookingId,
-        ///related_type: type === "rental" ? "rentals" : "reservations",
         related_type: type,
         status: "pending",
         method: "card",
@@ -85,11 +104,10 @@ serve(async (req) => {
       .single();
 
     if (paymentError) {
-      console.error("Payment creation error:", paymentError);
+      systemLogger("[PAYMENT-SESSION-ERROR]", paymentError);
       throw new Error("Failed to create payment record");
     }
 
-    // Create Paystack payment session
     const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!paystackSecretKey) {
       throw new Error("Paystack secret key not configured");
@@ -105,13 +123,13 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           email: user.email,
-          amount: Math.round(amount * 100), // Convert to kobo
+          amount: paymentAmount,
           reference: paymentReference,
-          currency: currency || "NGN",
+          currency,
           metadata: {
             user_id: user.id,
             booking_id: bookingId,
-            type: type,
+            type,
             ...metadata,
           },
           callback_url: `${req.headers.get("origin")}/bookings?payment=success`,
@@ -128,18 +146,16 @@ serve(async (req) => {
     );
 
     const paystackData = await paystackResponse.json();
-
     if (!paystackData.status) {
-      console.error("Paystack initialization failed:", paystackData);
+      systemLogger("[PAYMENT-SESSION-ERROR]", paystackData);
       throw new Error(paystackData.message || "Failed to initialize payment");
     }
 
     const paymentUrl = paystackData.data.authorization_url;
 
-    // Update booking record with payment URL
-    const table = type === "rental" ? "rentals" : "reservations";
-    const { error: updateError } = await supabaseClient
-      .from(table)
+    const bookingTable = type === "rental" ? "rentals" : "reservations";
+    const { error: bookingUpdateError } = await supabase
+      .from(bookingTable)
       .update({
         payment_url: paymentUrl,
         payment_reference: paymentReference,
@@ -147,17 +163,13 @@ serve(async (req) => {
       })
       .eq("id", bookingId);
 
-    if (updateError) {
-      console.error("Booking update error:", updateError);
-      // Continue even if booking update fails - payment URL is still valid
+    if (bookingUpdateError) {
+      systemLogger("[PAYMENT-SESSION-ERROR]", bookingUpdateError);
     }
 
-    // Also update payment record with URL
-    await supabaseClient
+    await supabase
       .from("payments")
-      .update({
-        link: paymentUrl,
-      })
+      .update({ link: paymentUrl })
       .eq("id", payment.id);
 
     return new Response(
@@ -168,20 +180,34 @@ serve(async (req) => {
         payment_id: payment.id,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
         status: 200,
       }
     );
-  } catch (error) {
-    systemLogger("[PAYMENT-SESSION-ERROR]", error);
-    const errorMessage = (error as Error).message || "Internal server error";
+  } catch (err) {
+    // Better error logging
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    
+    systemLogger("[PAYMENT-SESSION-ERROR]", {
+      message: errorMessage,
+      stack: errorStack,
+      error: err
+    });
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: errorMessage,
+        error: errorMessage || "Internal server error",
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
         status: 400,
       }
     );

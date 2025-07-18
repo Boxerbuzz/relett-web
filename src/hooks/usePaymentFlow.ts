@@ -23,7 +23,7 @@ export interface PaymentStatus {
 }
 
 export function usePaymentFlow() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(
