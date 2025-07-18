@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  EyeIcon,
+  BinocularsIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
 } from "@phosphor-icons/react";
@@ -152,7 +152,7 @@ const AgentInspections = () => {
       {filteredInspections.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <EyeIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <BinocularsIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Inspections Found</h3>
             <p className="text-muted-foreground">
               {searchTerm || statusFilter !== "all"

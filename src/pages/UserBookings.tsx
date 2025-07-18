@@ -1,15 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  CalendarIcon,
-  MapPinIcon,
-  ClockIcon,
   EyeIcon,
   HouseIcon,
   BuildingsIcon,
@@ -17,77 +11,45 @@ import {
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  BookingDetailsPanel,
+  BookingDetails,
   BookingType,
-} from "@/components/bookings/BookingDetailsPanel";
-import { PropertyLocation } from "@/types/property";
-
-interface BookingItem {
-  id: string;
-  property_id: string;
-  status: string;
-  created_at: string;
-  property?: {
-    id: string;
-    title: string;
-    location: any;
-    property_images: Array<{ url: string; is_primary: boolean }>;
-  };
-  agent?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    avatar: string;
-  };
-}
-
-interface Inspection extends BookingItem {
-  mode: string;
-  when: string;
-  notes?: string;
-  agent_id: string;
-}
-
-interface Rental extends BookingItem {
-  payment_plan: string;
-  move_in_date: string;
-  message?: string;
-  payment_status: string;
-  price?: number;
-  agent_id: string;
-}
-
-interface Reservation extends BookingItem {
-  from_date: string;
-  to_date: string;
-  adults: number;
-  children?: number;
-  infants?: number;
-  nights?: number;
-  total?: number;
-  fee?: number;
-  caution_deposit?: number;
-  note?: string;
-  agent_id: string;
-}
+} from "@/components/bookings/BookingDetails";
+import { BookingCard } from "@/components/bookings/BookingCard";
+import {
+  useUserInspections,
+  useUserRentals,
+  useUserReservations,
+  useUpdateBookingStatus,
+} from "@/hooks/useUserBookings";
 
 export default function UserBookings() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [inspections, setInspections] = useState<Inspection[]>([]);
-  const [rentals, setRentals] = useState<Rental[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(
-    null
-  );
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [selectedBookingType, setSelectedBookingType] =
     useState<BookingType>("inspection");
 
-  const handleBookingClick = (booking: BookingItem, type: BookingType) => {
-    // Add user information to the booking data for the details panel
+  // Data hooks
+  const {
+    data: inspections = [],
+    isLoading: inspectionsLoading,
+    error: inspectionsError,
+  } = useUserInspections(user?.id || "");
+
+  const {
+    data: rentals = [],
+    isLoading: rentalsLoading,
+    error: rentalsError,
+  } = useUserRentals(user?.id || "");
+
+  const {
+    data: reservations = [],
+    isLoading: reservationsLoading,
+    error: reservationsError,
+  } = useUserReservations(user?.id || "");
+
+  const updateStatusMutation = useUpdateBookingStatus();
+
+  const handleBookingClick = (booking: any, type: BookingType) => {
     const userMetadata = (user as any)?.user_metadata || {};
     const bookingWithUser = {
       ...booking,
@@ -108,214 +70,22 @@ export default function UserBookings() {
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
-      // Update the booking status in the database based on type
-      const table =
-        selectedBookingType === "inspection"
-          ? "inspections"
-          : selectedBookingType === "rental"
-          ? "rentals"
-          : "reservations";
-
-      const { error } = await supabase
-        .from(table)
-        .update({ status })
-        .eq("id", id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `${selectedBookingType} status updated successfully`,
+      await updateStatusMutation.mutateAsync({
+        id,
+        status,
+        type: selectedBookingType,
       });
-
-      // Refresh bookings
-      fetchUserBookings();
-
-      // Close the details panel
       setSelectedBooking(null);
     } catch (error) {
       console.error("Error updating status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update booking status",
-        variant: "destructive",
-      });
     }
-  };
-
-  const getLocation = (location: any): PropertyLocation => {
-    return location as PropertyLocation;
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchUserBookings();
-    }
-  }, [user]);
-
-  const fetchUserBookings = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch inspections with property and agent data
-      const { data: inspectionsData, error: inspectionsError } = await supabase
-        .from("inspections")
-        .select(
-          `
-          *,
-          properties (
-            id,
-            title,
-            location,
-            property_images (
-              url,
-              is_primary
-            )
-          ),
-          agent:users!agent_id (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            avatar
-          )
-        `
-        )
-        .eq("user_id", user?.id || "")
-        .order("created_at", { ascending: false });
-
-      if (inspectionsError) throw inspectionsError;
-
-      // Fetch rentals with property and agent data
-      const { data: rentalsData, error: rentalsError } = await supabase
-        .from("rentals")
-        .select(
-          `
-          *,
-          properties (
-            id,
-            title,
-            location,
-            property_images (
-              url,
-              is_primary
-            )
-          ),
-          agent:users!agent_id (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            avatar
-          )
-        `
-        )
-        .eq("user_id", user?.id || "")
-        .order("created_at", { ascending: false });
-
-      if (rentalsError) throw rentalsError;
-
-      // Fetch reservations with property and agent data
-      const { data: reservationsData, error: reservationsError } =
-        await supabase
-          .from("reservations")
-          .select(
-            `
-          *,
-          properties (
-            id,
-            title,
-            location,
-            property_images (
-              url,
-              is_primary
-            )
-          ),
-          agent:users!agent_id (
-            id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            avatar
-          )
-        `
-          )
-          .eq("user_id", user?.id || "")
-          .order("created_at", { ascending: false });
-
-      if (reservationsError) throw reservationsError;
-
-      setInspections((inspectionsData as Inspection[]) || []);
-      setRentals((rentalsData as Rental[]) || []);
-      setReservations((reservationsData as Reservation[]) || []);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch your bookings",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getPropertyImage = (property: any) => {
-    const primaryImage = property?.property_images?.find(
-      (img: any) => img.is_primary
-    );
-    return (
-      primaryImage?.url ||
-      property?.property_images?.[0]?.url ||
-      "/placeholder.svg"
-    );
   };
 
   const BookingSkeleton = () => (
     <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
-          <Skeleton className="w-20 h-20 rounded-lg" />
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <Skeleton className="w-16 h-16 rounded-lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -326,10 +96,23 @@ export default function UserBookings() {
                   <Skeleton className="h-4 w-20" />
                 </div>
               </div>
-              <Skeleton className="h-6 w-16 rounded-full" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-8 w-20" />
+              </div>
             </div>
           </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+
+  const EmptyState = ({ icon: Icon, title, description }: any) => (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <Icon className="w-12 h-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+        <p className="text-gray-600 text-center">{description}</p>
       </CardContent>
     </Card>
   );
@@ -346,295 +129,128 @@ export default function UserBookings() {
       </div>
 
       <Tabs defaultValue="inspections" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
-          <TabsTrigger value="inspections" className="flex items-center gap-2">
-            <EyeIcon size={16} className="w-4 h-4" />
-            Inspections ({inspections.length})
+        <TabsList className="grid w-full grid-cols-4 h-auto gap-1">
+          <TabsTrigger
+            value="inspections"
+            className="flex flex-col items-center gap-1 py-2"
+          >
+            <EyeIcon size={20} className="w-5 h-5" />
+            <span className="text-xs hidden sm:inline">
+              Inspections ({inspections.length})
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="rentals" className="flex items-center gap-2">
-            <HouseIcon className="w-4 h-4" />
-            Rentals ({rentals.length})
+          <TabsTrigger
+            value="rentals"
+            className="flex flex-col items-center gap-1 py-2"
+          >
+            <HouseIcon className="w-5 h-5" />
+            <span className="text-xs hidden sm:inline">
+              Rentals ({rentals.length})
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="reservations" className="flex items-center gap-2">
-            <BuildingsIcon className="w-4 h-4" />
-            Reservations ({reservations.length})
+          <TabsTrigger
+            value="reservations"
+            className="flex flex-col items-center gap-1 py-2"
+          >
+            <BuildingsIcon className="w-5 h-5" />
+            <span className="text-xs hidden sm:inline">
+              Reservations ({reservations.length})
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="purchases" className="flex items-center gap-2">
-            <ShoppingCartIcon className="w-4 h-4" />
-            Purchases (0)
+          <TabsTrigger
+            value="purchases"
+            className="flex flex-col items-center gap-1 py-2"
+          >
+            <ShoppingCartIcon className="w-5 h-5" />
+            <span className="text-xs hidden sm:inline">Purchases (0)</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="inspections" className="space-y-4">
-          {loading ? (
+          {inspectionsLoading ? (
             <>
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
             </>
           ) : inspections.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <EyeIcon className="w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No inspections yet
-                </h3>
-                <p className="text-gray-600 text-center">
-                  You haven't requested any property inspections yet.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={EyeIcon}
+              title="No inspections yet"
+              description="You haven't requested any property inspections yet."
+            />
           ) : (
             inspections.map((inspection) => (
-              <Card key={inspection.id} className="cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={getPropertyImage(inspection.property)}
-                      alt={inspection.property?.title}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {inspection.property?.title}
-                          </h3>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPinIcon className="w-4 h-4 mr-1" />
-                            <span className="text-sm">
-                              {getLocation(inspection.property?.location)?.city}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center">
-                              <CalendarIcon className="w-4 h-4 mr-1" />
-                              {formatDateTime(inspection.when)}
-                            </div>
-                            <div className="flex items-center">
-                              <ClockIcon className="w-4 h-4 mr-1" />
-                              {inspection.mode}
-                            </div>
-                          </div>
-                          {inspection.notes && (
-                            <p className="text-sm text-gray-600 mt-2">
-                              {inspection.notes}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <Badge className={getStatusColor(inspection.status)}>
-                            {inspection.status}
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleBookingClick(inspection, "inspection")
-                            }
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <BookingCard
+                key={inspection.id}
+                booking={inspection}
+                type="inspection"
+                onViewDetails={handleBookingClick}
+              />
             ))
           )}
         </TabsContent>
 
         <TabsContent value="rentals" className="space-y-4">
-          {loading ? (
+          {rentalsLoading ? (
             <>
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
             </>
           ) : rentals.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <HouseIcon className="w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No rental requests
-                </h3>
-                <p className="text-gray-600 text-center">
-                  You haven't submitted any rental requests yet.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={HouseIcon}
+              title="No rental requests"
+              description="You haven't submitted any rental requests yet."
+            />
           ) : (
             rentals.map((rental) => (
-              <Card key={rental.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={getPropertyImage(rental.property)}
-                      alt={rental.property?.title}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {rental.property?.title}
-                          </h3>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPinIcon className="w-4 h-4 mr-1" />
-                            <span className="text-sm">
-                              {rental.property?.location?.address ||
-                                "Location not specified"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span>Payment: {rental.payment_plan}</span>
-                            <span>
-                              Move-in: {formatDate(rental.move_in_date)}
-                            </span>
-                          </div>
-                          {rental.message && (
-                            <p className="text-sm text-gray-600 mt-2">
-                              {rental.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <Badge className={getStatusColor(rental.status)}>
-                            {rental.status}
-                          </Badge>
-                          <Badge
-                            className={getStatusColor(rental.payment_status)}
-                          >
-                            {rental.payment_status}
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleBookingClick(rental, "rental")}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <BookingCard
+                key={rental.id}
+                booking={rental}
+                type="rental"
+                onViewDetails={handleBookingClick}
+              />
             ))
           )}
         </TabsContent>
 
         <TabsContent value="reservations" className="space-y-4">
-          {loading ? (
+          {reservationsLoading ? (
             <>
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
             </>
           ) : reservations.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <BuildingsIcon className="w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No reservations
-                </h3>
-                <p className="text-gray-600 text-center">
-                  You haven't made any property reservations yet.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={BuildingsIcon}
+              title="No reservations"
+              description="You haven't made any property reservations yet."
+            />
           ) : (
             reservations.map((reservation) => (
-              <Card key={reservation.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={getPropertyImage(reservation.property)}
-                      alt={reservation.property?.title}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {reservation.property?.title}
-                          </h3>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPinIcon className="w-4 h-4 mr-1" />
-                            <span className="text-sm">
-                              {reservation.property?.location?.address ||
-                                "Location not specified"}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                            <span>
-                              Check-in: {formatDate(reservation.from_date)}
-                            </span>
-                            <span>
-                              Check-out: {formatDate(reservation.to_date)}
-                            </span>
-                            <span>
-                              Guests: {reservation.adults} adults
-                              {reservation.children
-                                ? `, ${reservation.children} children`
-                                : ""}
-                            </span>
-                            <span>Nights: {reservation.nights || 0}</span>
-                          </div>
-                          {reservation.total && (
-                            <p className="text-lg font-semibold text-primary mt-2">
-                              Total: ₦{reservation.total.toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <Badge className={getStatusColor(reservation.status)}>
-                            {reservation.status}
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleBookingClick(reservation, "reservation")
-                            }
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <BookingCard
+                key={reservation.id}
+                booking={reservation}
+                type="reservation"
+                onViewDetails={handleBookingClick}
+              />
             ))
           )}
         </TabsContent>
 
         <TabsContent value="purchases" className="space-y-4">
-          {loading ? (
-            <>
-              <BookingSkeleton />
-              <BookingSkeleton />
-              <BookingSkeleton />
-            </>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <ShoppingCartIcon className="w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Purchase history coming soon
-                </h3>
-                <p className="text-gray-600 text-center">
-                  Property purchase tracking will be available in future
-                  updates.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <EmptyState
+            icon={ShoppingCartIcon}
+            title="Purchase history coming soon"
+            description="Property purchase tracking will be available in future updates."
+          />
         </TabsContent>
       </Tabs>
-      <BookingDetailsPanel
+
+      <BookingDetails
         isOpen={!!selectedBooking}
         onClose={handleCloseDetails}
         bookingType={selectedBookingType}

@@ -25,7 +25,7 @@ export function useAdminRecentActivity() {
             action,
             created_at,
             resource_type,
-            users!inner(email, first_name, last_name)
+            users!audit_trails_user_id_fkey(email, first_name, last_name)
           `)
           .order('created_at', { ascending: false })
           .limit(10);

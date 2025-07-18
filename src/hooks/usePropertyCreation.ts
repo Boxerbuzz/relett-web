@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as z from "zod";
+import { useCreateVerificationTasks } from "./useCreateVerificationTask";
 
 export const propertySchema = z.object({
   id: z.string().uuid(),
@@ -142,6 +143,7 @@ export const steps = [
 export function usePropertyCreation() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { mutate: createVerificationTask } = useCreateVerificationTasks();
 
   // New reusable function for creating property documents
   const createPropertyDocuments = async (
@@ -304,6 +306,8 @@ export function usePropertyCreation() {
         );
         // You might want to handle this error appropriately
       }
+
+      createVerificationTask(property.id);
 
       return {
         ...property,

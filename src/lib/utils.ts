@@ -31,3 +31,23 @@ export function formatNumber(amount: number): string {
 export function appLogger(domain: string, message: string) {
   console.log(`[${domain}] <=!=> ${message}`);
 }
+
+
+export const formatDateTime = (dateString: string) => {
+  return new Date(dateString).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+
+export const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};

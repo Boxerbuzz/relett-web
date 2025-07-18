@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -30,13 +29,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Search,
-  FileCheck,
-  Eye,
-  CheckCircle,
-  XCircle,
-  UserPlus,
-} from "lucide-react";
+  MagnifyingGlassIcon,
+  FileIcon,
+  EyeIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  UserPlusIcon,
+} from "@phosphor-icons/react";
 import { Json } from "@/types/database";
 import { PropertyMobileCard } from "./PropertyMobileCard";
 import { PropertyVerificationActions } from "@/components/verification/PropertyVerificationActions";
@@ -297,7 +296,7 @@ export function PropertyVerificationQueue() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FileCheck className="h-5 w-5" />
+          <FileIcon className="h-5 w-5" />
           Property Verification Queue
         </CardTitle>
         <CardDescription>
@@ -309,7 +308,7 @@ export function PropertyVerificationQueue() {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search properties..."
                 value={searchTerm}
@@ -411,7 +410,7 @@ export function PropertyVerificationQueue() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" />
                       </Button>
                       {!hasActiveVerificationTask(property) &&
                         !property.is_verified && (
@@ -420,7 +419,7 @@ export function PropertyVerificationQueue() {
                             onClick={() => handleInitiateVerification(property)}
                             className="bg-blue-600 hover:bg-blue-700"
                           >
-                            <UserPlus className="h-4 w-4" />
+                            <UserPlusIcon className="h-4 w-4" />
                           </Button>
                         )}
                       {!property.is_verified &&
@@ -433,7 +432,7 @@ export function PropertyVerificationQueue() {
                                 updatePropertyStatus(property.id, true)
                               }
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircleIcon className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
@@ -442,7 +441,7 @@ export function PropertyVerificationQueue() {
                                 updatePropertyStatus(property.id, false)
                               }
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircleIcon className="h-4 w-4" />
                             </Button>
                           </>
                         )}

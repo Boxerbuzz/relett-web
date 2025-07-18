@@ -147,6 +147,9 @@ export function PropertyVerificationActions({
           .eq('id', data);
       }
 
+
+      
+
       toast({
         title: 'Verification Initiated',
         description: 'Property verification task has been assigned successfully.',

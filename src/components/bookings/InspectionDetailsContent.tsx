@@ -1,218 +1,196 @@
+import { Badge } from "@/components/ui/badge";
+import { Inspection } from "@/hooks/useUserBookings";
+import { formatDate } from "@/lib/utils";
+import {
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
+  UserIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  NotSubsetOfIcon,
+  NoteIcon,
+} from "@phosphor-icons/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, MessageSquare, Video, MapPin } from 'lucide-react';
-
-interface InspectionDetailsContentProps {
-  inspection: any;
+interface Props {
+  inspection: Inspection;
   onStatusUpdate?: (id: string, status: string) => void;
 }
 
-export function InspectionDetailsContent({ inspection, onStatusUpdate }: InspectionDetailsContentProps) {
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+function getUserActions(status: string) {
+  switch (status) {
+    case "pending":
+      return ["cancel", "reschedule"];
+    case "confirmed":
+      return ["cancel", "reschedule", "report"];
+    case "rescheduled":
+      return ["cancel", "report"];
+    case "completed":
+      return ["report"];
+    default:
+      return [];
+  }
+}
+
+export function InspectionDetailsContent({
+  inspection,
+  onStatusUpdate,
+}: Props) {
+  const property = inspection.property;
+  const agent = inspection.agent;
+
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const actions = getUserActions(inspection.status);
+
+  const handleCancel = () => {
+    // Call your cancel logic, pass cancelReason
+    if (onStatusUpdate) onStatusUpdate(inspection.id, "cancelled");
+    setShowCancelDialog(false);
+    setCancelReason("");
   };
 
-  const handleStatusUpdate = (newStatus: string) => {
-    if (onStatusUpdate) {
-      onStatusUpdate(inspection.id, newStatus);
-    }
-  };
-
-  const getModeIcon = (mode: string) => {
-    switch (mode) {
-      case 'virtual':
-        return <Video className="w-4 h-4 text-muted-foreground" />;
-      case 'physical':
-        return <MapPin className="w-4 h-4 text-muted-foreground" />;
-      default:
-        return <Clock className="w-4 h-4 text-muted-foreground" />;
-    }
-  };
-
-  const getActionButtons = () => {
-    switch (inspection.status) {
-      case 'pending':
-        return (
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => handleStatusUpdate('confirmed')}
-              size="sm"
-            >
-              Confirm Inspection
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleStatusUpdate('rescheduled')}
-              size="sm"
-            >
-              Reschedule
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => handleStatusUpdate('cancelled')}
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        );
-      case 'confirmed':
-        return (
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => handleStatusUpdate('completed')}
-              size="sm"
-            >
-              Mark as Completed
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleStatusUpdate('rescheduled')}
-              size="sm"
-            >
-              Reschedule
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => handleStatusUpdate('cancelled')}
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        );
-      case 'rescheduled':
-        return (
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => handleStatusUpdate('confirmed')}
-              size="sm"
-            >
-              Confirm New Time
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => handleStatusUpdate('cancelled')}
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        );
-      default:
-        return null;
-    }
+  const handleReport = () => {
+    // Open a report dialog or redirect to support
   };
 
   return (
-    <div className="space-y-6">
-      {/* Inspection Schedule */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inspection Schedule</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Scheduled Time</label>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <p className="font-medium">{formatDateTime(inspection.when)}</p>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Inspection Mode</label>
-              <div className="flex items-center gap-2">
-                {getModeIcon(inspection.mode)}
-                <p className="font-medium capitalize">{inspection.mode}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <>
+      <div className="flex flex-col md:flex-row gap-6 border p-2 rounded-xl mx-4 md:mx-0">
+        {/* Property Image */}
+        <div className="md:w-1/5 w-full flex-shrink-0">
+          <img
+            src={
+              property?.property_images?.find((img: any) => img.is_primary)
+                ?.url ||
+              property?.backdrop ||
+              "/placeholder.svg"
+            }
+            alt={property?.title}
+            className="w-full h-48 md:h-40 object-cover rounded-lg"
+          />
+        </div>
 
-      {/* Inspection Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inspection Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Status</label>
-              <Badge className="capitalize">{inspection.status}</Badge>
+        {/* Details */}
+        <div className="flex-1 flex flex-col gap-4 justify-center">
+          {/* Property Info */}
+          <div>
+            <h2 className="text-2xl font-bold mb-1">{property?.title}</h2>
+            <div className="flex items-center text-gray-600 mb-2">
+              <MapPinIcon className="w-4 h-4 mr-1" />
+              <span>
+                {property?.location?.address || "Location not specified"}
+              </span>
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Requested On</label>
-              <p className="font-medium">{formatDateTime(inspection.created_at)}</p>
+            <div className="flex items-center gap-2">
+              <Badge>{property?.type}</Badge>
+              <Badge>{property?.category}</Badge>
             </div>
           </div>
 
-          {inspection.notes && (
-            <>
-              <Separator />
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Inspector Notes</label>
-                <div className="bg-muted p-3 rounded-lg mt-2">
-                  <p className="text-sm">{inspection.notes}</p>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+          {/* Inspection Info */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-4 text-gray-700">
+              <CalendarIcon className="w-4 h-4" />
+              <span>
+                {inspection.when
+                  ? formatDate(inspection.when || "")
+                  : "Date not set"}
+              </span>
+              <ClockIcon className="w-4 h-4" />
+              <span className="capitalize">{inspection.mode}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* Inspection Guidelines */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inspection Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>• Ensure all areas of the property are accessible</p>
-            <p>• Have property documents ready for review</p>
-            <p>• Be available to answer questions about the property</p>
-            {inspection.mode === 'virtual' && (
-              <p>• Ensure good internet connection for video call</p>
+      <div className="border p-2 rounded-xl mx-4 md:mx-0 my-3">
+        {inspection.notes && (
+          <div className="text-gray-700 flex items-center text-sm">
+            <span className="font-medium mr-2">
+              <NoteIcon size={20} />
+            </span>{" "}
+            {inspection.notes}
+          </div>
+        )}
+      </div>
+      <div className="mx-4 md:mx-0 my-3">
+        {/* User Actions */}
+        {actions.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {actions.includes("cancel") && (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowCancelDialog(true)}
+                >
+                  Cancel Inspection
+                </Button>
+                <Dialog
+                  open={showCancelDialog}
+                  onOpenChange={setShowCancelDialog}
+                >
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cancel Inspection</DialogTitle>
+                    </DialogHeader>
+                    <div>
+                      <label className="block mb-2 text-sm font-medium">
+                        Reason for cancellation
+                      </label>
+                      <Textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        placeholder="Please provide a reason..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCancelDialog(false)}
+                      >
+                        Close
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleCancel}
+                        disabled={!cancelReason.trim()}
+                      >
+                        Confirm Cancel
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
-            {inspection.mode === 'physical' && (
-              <p>• Be present at the property during inspection</p>
+            {actions.includes("reschedule") && (
+              <Button
+                variant="outline"
+                size="sm" /* onClick={handleReschedule} */
+              >
+                Reschedule
+              </Button>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {getActionButtons()}
-            <Button variant="outline" size="sm">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Contact Inspector
-            </Button>
-            {inspection.mode === 'virtual' && inspection.status === 'confirmed' && (
-              <Button variant="outline" size="sm">
-                <Video className="w-4 h-4 mr-2" />
-                Join Video Call
+            {actions.includes("report") && (
+              <Button variant="outline" size="sm" /* onClick={handleReport} */>
+                Report Issue
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </div>
+    </>
   );
 }

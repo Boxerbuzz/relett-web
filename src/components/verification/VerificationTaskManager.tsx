@@ -12,49 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VerificationTaskList } from "./VerificationTaskList";
 import { VerificationTaskDetail } from "./VerificationTaskDetail";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { Badge } from "@/components/ui/badge";
-import { FileCheck, Clock, CheckCircle, AlertTriangle } from "lucide-react";
-
-interface VerificationTask {
-  id: string;
-  property_id: string;
-  verifier_id: string | null;
-  task_type: string;
-  status: string;
-  priority: string;
-  assigned_at: string | null;
-  completed_at: string | null;
-  deadline: string | null;
-  verification_checklist: any;
-  verifier_notes: string | null;
-  decision: string | null;
-  decision_reason: string | null;
-  created_at: string;
-  updated_at: string;
-  properties: {
-    id: string;
-    title: string | null;
-    type: string;
-    location: {
-      address: string;
-      city: string;
-      state: string;
-      country: string;
-      postal_code: string;
-    };
-    user_id: string;
-    price?: {
-      amount: number;
-      currency: string;
-    };
-    users?: {
-      first_name: string;
-      last_name: string;
-      email: string;
-      phone?: string;
-    };
-  };
-}
+import { ClockIcon, CheckCircleIcon, WarningIcon } from "@phosphor-icons/react";
+import { FileCheck } from "lucide-react";
+import { VerificationTask } from "./types";
 
 export function VerificationTaskManager() {
   const [selectedTask, setSelectedTask] = useState<VerificationTask | null>(
@@ -83,7 +43,7 @@ export function VerificationTaskManager() {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <WarningIcon className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">
             Verifier Access Required
           </h3>
@@ -108,20 +68,6 @@ export function VerificationTaskManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Verification Task Manager</h1>
-          <p className="text-muted-foreground">
-            Manage property verification tasks and reviews
-          </p>
-        </div>
-        <Badge variant="outline" className="flex items-center gap-2">
-          <FileCheck className="w-4 h-4" />
-          Verifier Dashboard
-        </Badge>
-      </div>
-
       {/* Task Management Tabs */}
       <Tabs
         value={activeTab}
@@ -130,7 +76,7 @@ export function VerificationTaskManager() {
       >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="available" className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
+            <ClockIcon className="w-4 h-4" />
             Available Tasks
           </TabsTrigger>
           <TabsTrigger value="assigned" className="flex items-center gap-2">
@@ -138,11 +84,11 @@ export function VerificationTaskManager() {
             My Tasks
           </TabsTrigger>
           <TabsTrigger value="in_progress" className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
+            <WarningIcon className="w-4 h-4" />
             In Progress
           </TabsTrigger>
           <TabsTrigger value="completed" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
+            <CheckCircleIcon className="w-4 h-4" />
             Completed
           </TabsTrigger>
         </TabsList>

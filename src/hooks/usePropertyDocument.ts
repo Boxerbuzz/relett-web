@@ -246,11 +246,13 @@ export function usePropertyDocument() {
     verifiedBy?: string
   ): Promise<PropertyDocument | null> => {
     setIsLoading(true);
+
+    console.log(status, 'logger');
     try {
       const { data: verifiedDocument, error } = await supabase
         .from("property_documents")
         .update({
-          status,
+          status: status,
           verification_notes: notes,
           verified_by: verifiedBy,
           verified_at: new Date().toISOString(),

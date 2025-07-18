@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,56 +19,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import {
-  CheckCircle,
-  XCircle,
-  FileText,
-  Home,
-  ArrowLeft,
-  Save,
-} from "lucide-react";
-
-interface VerificationTask {
-  id: string;
-  property_id: string;
-  verifier_id: string | null;
-  task_type: string;
-  status: string;
-  priority: string;
-  assigned_at: string | null;
-  completed_at: string | null;
-  deadline: string | null;
-  verification_checklist: any;
-  verifier_notes: string | null;
-  decision: string | null;
-  decision_reason: string | null;
-  created_at: string;
-  updated_at: string;
-  properties: {
-    id: string;
-    title: string | null;
-    type: string;
-    location: {
-      address: string;
-      city: string;
-      state: string;
-      country: string;
-      postal_code: string;
-    };
-    user_id: string;
-    price?: {
-      amount: number;
-      currency: string;
-    };
-    users?: {
-      first_name: string;
-      last_name: string;
-      email: string;
-    };
-  };
-}
+  CheckCircleIcon,
+  XCircleIcon,
+  FileTextIcon,
+  HouseIcon,
+  ArrowLeftIcon,
+  FloppyDiskIcon,
+} from "@phosphor-icons/react";
+import { VerificationTask } from "./types";
+import { capitalize } from "@/lib/utils";
+import { VerificationStatusBadge } from "./VerificationStatusBadge";
+import { useVerificationTaskDetailAction } from "@/hooks/useDocumentAndVerificationTask";
+import { PropertyDocumentVerificationList } from "./PropertyDocumentVerificationList";
 
 interface VerificationTaskDetailProps {
   task: VerificationTask;
@@ -100,98 +63,26 @@ export function VerificationTaskDetail({
   const [checklist, setChecklist] = useState(
     task.verification_checklist || DEFAULT_CHECKLIST
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const { toast } = useToast();
+  const { saveProgress, completeVerification, isUpdating, isSubmitting } =
+    useVerificationTaskDetailAction({
+      task,
+      checklist,
+      verifierNotes,
+      decision,
+      decisionReason,
+      onTaskUpdated: onTaskUpdated,
+      onBack: onBack,
+      setChecklist,
+      setVerifierNotes,
+      setDecision,
+      setDecisionReason,
+    });
 
   const handleChecklistChange = (key: string, checked: boolean) => {
     setChecklist((prev) => ({
       ...prev,
       [key]: checked,
     }));
-  };
-
-  const saveProgress = async () => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from("verification_tasks")
-        .update({
-          verification_checklist: checklist,
-          verifier_notes: verifierNotes,
-          status: "in_progress",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", task.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Progress Saved",
-        description: "Your verification progress has been saved.",
-      });
-
-      onTaskUpdated();
-    } catch (error) {
-      console.error("Error saving progress:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save progress",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const completeVerification = async () => {
-    if (!decision) {
-      toast({
-        title: "Decision Required",
-        description: "Please select approve or reject before completing.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!verifierNotes.trim()) {
-      toast({
-        title: "Notes Required",
-        description: "Please provide verification notes.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.rpc("complete_verification_task", {
-        p_task_id: task.id,
-        p_decision: decision,
-        p_decision_reason: decisionReason || undefined,
-        p_verifier_notes: verifierNotes,
-        p_checklist: checklist,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Verification Complete",
-        description: `Property has been ${decision}.`,
-      });
-
-      onTaskUpdated();
-      onBack();
-    } catch (error) {
-      console.error("Error completing verification:", error);
-      toast({
-        title: "Error",
-        description: "Failed to complete verification",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const formatPrice = (price: any) => {
@@ -203,21 +94,6 @@ export function VerificationTaskDetail({
     if (!location || typeof location !== "object")
       return "Location not specified";
     return location.city || "Location not specified";
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "assigned":
-        return "bg-blue-100 text-blue-800";
-      case "in_progress":
-        return "bg-orange-100 text-orange-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -267,12 +143,12 @@ export function VerificationTaskDetail({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex-col items-center gap-4">
         <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeftIcon className="w-4 h-4 mr-2" />
           Back to Tasks
         </Button>
-        <div className="flex-1">
+        <div className="flex-1 mt-4">
           <h1 className="text-2xl font-bold">Verification Task Details</h1>
           <p className="text-muted-foreground">
             Review and verify property information
@@ -280,9 +156,9 @@ export function VerificationTaskDetail({
         </div>
         <div className="flex items-center gap-2">
           <Badge className={getPriorityColor(task.priority)}>
-            {task.priority} Priority
+            {capitalize(task.priority)} Priority
           </Badge>
-          <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
+          <VerificationStatusBadge status={task.status} />
         </div>
       </div>
 
@@ -290,7 +166,7 @@ export function VerificationTaskDetail({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Home className="w-5 h-5" />
+            <HouseIcon className="w-5 h-5" />
             Property Information
           </CardTitle>
         </CardHeader>
@@ -355,68 +231,77 @@ export function VerificationTaskDetail({
         </CardContent>
       </Card>
 
-      {/* Verification Checklist */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Verification Checklist
-          </CardTitle>
-          <CardDescription>
-            Complete all verification checks before making a decision
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {checklistItems.map((item) => (
-            <div key={item.key} className="flex items-center space-x-2">
-              <Checkbox
-                id={item.key}
-                checked={checklist[item.key] || false}
-                onCheckedChange={(checked) =>
-                  handleChecklistChange(item.key, !!checked)
-                }
+      <PropertyDocumentVerificationList propertyId={task.property_id} />
+
+      {/* Verification Checklist and Notes */}
+      <div className="flex flex-col md:flex-row gap-4 md:items-stretch">
+        {/* Verification Checklist */}
+        <div className="flex-1 flex flex-col">
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileTextIcon className="w-5 h-5" />
+                Verification Checklist
+              </CardTitle>
+              <CardDescription>
+                Complete all verification checks before making a decision
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 flex-1">
+              {checklistItems.map((item) => (
+                <div key={item.key} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={item.key}
+                    checked={checklist[item.key] || false}
+                    onCheckedChange={(checked) =>
+                      handleChecklistChange(item.key, !!checked)
+                    }
+                  />
+                  <label
+                    htmlFor={item.key}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm">
+                  Progress: {Object.values(checklist).filter(Boolean).length} of{" "}
+                  {checklistItems.length} checks completed
+                  {allChecksPassed && (
+                    <span className="text-green-600 font-medium ml-2">
+                      ✓ All checks completed
+                    </span>
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Verification Notes */}
+        <div className="flex-1 flex flex-col">
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle>Verification Notes</CardTitle>
+              <CardDescription>
+                Provide detailed notes about your verification findings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <Textarea
+                value={verifierNotes}
+                onChange={(e) => setVerifierNotes(e.target.value)}
+                placeholder="Enter your verification notes here..."
+                rows={6}
+                className="resize-none flex-1"
               />
-              <label
-                htmlFor={item.key}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {item.label}
-              </label>
-            </div>
-          ))}
-
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm">
-              Progress: {Object.values(checklist).filter(Boolean).length} of{" "}
-              {checklistItems.length} checks completed
-              {allChecksPassed && (
-                <span className="text-green-600 font-medium ml-2">
-                  ✓ All checks completed
-                </span>
-              )}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Verification Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Verification Notes</CardTitle>
-          <CardDescription>
-            Provide detailed notes about your verification findings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={verifierNotes}
-            onChange={(e) => setVerifierNotes(e.target.value)}
-            placeholder="Enter your verification notes here..."
-            rows={6}
-            className="resize-none"
-          />
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Decision Section */}
       {task.status !== "completed" && (
@@ -440,13 +325,13 @@ export function VerificationTaskDetail({
                 <SelectContent>
                   <SelectItem value="approved">
                     <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                      <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
                       Approve Property
                     </div>
                   </SelectItem>
                   <SelectItem value="rejected">
                     <div className="flex items-center">
-                      <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                      <XCircleIcon className="h-4 w-4 mr-2 text-red-600" />
                       Reject Property
                     </div>
                   </SelectItem>
@@ -474,7 +359,7 @@ export function VerificationTaskDetail({
                 onClick={saveProgress}
                 disabled={isUpdating}
               >
-                <Save className="w-4 h-4 mr-2" />
+                <FloppyDiskIcon className="w-4 h-4 mr-2" />
                 {isUpdating ? "Saving..." : "Save Progress"}
               </Button>
               <Button

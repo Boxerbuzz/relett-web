@@ -69,6 +69,9 @@ export const queryKeys = {
       userId
         ? ([...queryKeys.user.all, "roles", userId] as const)
         : ([...queryKeys.user.all, "roles"] as const),
+    inspections: (userId?: string) => ['user', 'inspections', userId],
+    rentals: (userId?: string) => ['user', 'rentals', userId],
+    reservations: (userId?: string) => ['user', 'reservations', userId],
   },
 
   // Notifications
@@ -121,6 +124,10 @@ export const queryKeys = {
     detail: (id: string) =>
       [...queryKeys.verification.all, "detail", id] as const,
     stats: () => [...queryKeys.verification.all, "stats"] as const,
+    documents: () => [...queryKeys.verification.all, "documents"] as const,
+    tasks: () => [...queryKeys.verification.all, "tasks"] as const,
+    document_request: () =>
+      [...queryKeys.verification.all, "document_verification_request"] as const,
   },
 
   // Admin specific keys
