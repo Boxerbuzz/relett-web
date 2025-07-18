@@ -36,6 +36,12 @@ import RentalSheet from "@/components/property/sheets/RentalSheet";
 import { LocationAnalysis } from "@/components/property/LocationAnalysis";
 import { AIValuationWidget } from "@/components/property/AIValuationWidget";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import {
+  useUserRentals,
+  useUserReservations,
+  useUserInspections,
+} from "@/hooks/useUserBookings";
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -51,6 +57,42 @@ const PropertyDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showInvestDialog, setShowInvestDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  // Fetch user bookings for this property
+  const { data: userRentals = [] } = useUserRentals(user?.id || "");
+  const { data: userReservations = [] } = useUserReservations(user?.id || "");
+  const { data: userInspections = [] } = useUserInspections(user?.id || "");
+
+  if (loading) {
+    return <PropertyDetailSkeleton />;
+  }
+
+  if (error || !property) {
+    return <PropertyDetailsNotFound error={error || "Property not found"} />;
+  }
+
+  // Filter for this property and active status (after property is confirmed)
+  const activeRentals = userRentals.filter(
+    (r) =>
+      r.property_id === property.id &&
+      r.status !== "completed" &&
+      r.status !== "canceled"
+  );
+
+  const activeReservations = userReservations.filter(
+    (r) =>
+      r.property_id === property.id &&
+      r.status !== "completed" &&
+      r.status !== "canceled"
+  );
+
+  const activeInspections = userInspections.filter(
+    (i) =>
+      i.property_id === property.id &&
+      i.status !== "completed" &&
+      i.status !== "canceled"
+  );
 
   const handleShare = async () => {
     if (navigator.share && property) {
@@ -86,14 +128,6 @@ const PropertyDetails = () => {
         });
       });
   };
-
-  if (loading) {
-    return <PropertyDetailSkeleton />;
-  }
-
-  if (error || !property) {
-    return <PropertyDetailsNotFound error={error || "Property not found"} />;
-  }
 
   const images =
     property.property_images?.length > 0
@@ -438,6 +472,45 @@ const PropertyDetails = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Active Bookings Section */}
+              {(activeRentals.length > 0 ||
+                activeReservations.length > 0 ||
+                activeInspections.length > 0) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Active Bookings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {activeRentals.map((rental) => (
+                      <div key={rental.id} className="mb-2">
+                        <strong>Rental:</strong> {rental.status}{" "}
+                        {rental.move_in_date &&
+                          `(Move-in: ${new Date(
+                            rental.move_in_date
+                          ).toLocaleDateString()})`}
+                      </div>
+                    ))}
+                    {activeReservations.map((reservation) => (
+                      <div key={reservation.id} className="mb-2">
+                        <strong>Reservation:</strong> {reservation.status}{" "}
+                        {reservation.from_date &&
+                          `(From: ${new Date(
+                            reservation.from_date
+                          ).toLocaleDateString()})`}
+                      </div>
+                    ))}
+                    {activeInspections.map((inspection) => (
+                      <div key={inspection.id} className="mb-2">
+                        <strong>Inspection:</strong> {inspection.status}{" "}
+                        {inspection.when &&
+                          `(On: ${new Date(
+                            inspection.when
+                          ).toLocaleDateString()})`}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
               {/* Agent Info */}
               {agent && (
                 <Card>
