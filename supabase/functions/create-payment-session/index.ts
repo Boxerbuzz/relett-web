@@ -16,6 +16,8 @@ interface PaymentSessionRequest {
   amount: number;
   currency?: string;
   metadata?: Record<string, any>;
+  agentId?: string;
+  propertyId?: string;
 }
 
 serve(async (req) => {
@@ -58,6 +60,8 @@ serve(async (req) => {
       amount,
       currency = "NGN",
       metadata = {},
+      agentId = "",
+      propertyId = "",
     } = requestBody;
 
     // Validate required fields
@@ -86,6 +90,8 @@ serve(async (req) => {
       .insert({
         user_id: user.id,
         amount: paymentAmount,
+        agent_id: agentId,
+        property_id: propertyId,
         currency,
         type: "initial",
         related_id: bookingId,
@@ -191,13 +197,13 @@ serve(async (req) => {
     // Better error logging
     const errorMessage = err instanceof Error ? err.message : String(err);
     const errorStack = err instanceof Error ? err.stack : undefined;
-    
+
     systemLogger("[PAYMENT-SESSION-ERROR]", {
       message: errorMessage,
       stack: errorStack,
-      error: err
+      error: err,
     });
-    
+
     return new Response(
       JSON.stringify({
         success: false,

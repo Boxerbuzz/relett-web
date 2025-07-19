@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -117,8 +116,9 @@ export default function UserBookings() {
     </Card>
   );
 
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           My Bookings & Requests
@@ -139,10 +139,7 @@ export default function UserBookings() {
               Inspections ({inspections.length})
             </span>
           </TabsTrigger>
-          <TabsTrigger
-            value="rentals"
-            className="flex items-center gap-2 py-2"
-          >
+          <TabsTrigger value="rentals" className="flex items-center gap-2 py-2">
             <HouseIcon className="w-5 h-5" />
             <span className="text-xs hidden sm:inline">
               Rentals ({rentals.length})

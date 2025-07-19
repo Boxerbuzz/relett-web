@@ -31,7 +31,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -331,6 +331,7 @@ export function ReservationSheet({
         onOpenChange={setShowPaymentDialog}
         type="reservation"
         amount={finalTotal}
+        agentId={property.agent?.id || ""}
         currency="NGN"
         propertyId={property?.id}
         propertyTitle={property?.title}

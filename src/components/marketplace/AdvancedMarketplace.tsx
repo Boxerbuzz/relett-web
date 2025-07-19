@@ -123,7 +123,10 @@ export function AdvancedMarketplace() {
         className="w-full relative"
       >
         <TabsList className="w-full flex md:grid md:grid-cols-4 px-2 md:px-0">
-          <TabsTrigger value="search" className="flex items-center gap-2 flex-1 md:flex-none">
+          <TabsTrigger
+            value="search"
+            className="flex items-center gap-2 flex-1 md:flex-none"
+          >
             <MagnifyingGlassIcon className="w-4 h-4" />
             <span className="hidden md:inline">Search & Browse</span>
           </TabsTrigger>
@@ -174,7 +177,7 @@ export function AdvancedMarketplace() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6">
                 {properties.map((property) => (
                   <PropertyCard
                     key={property.id}

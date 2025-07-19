@@ -3,9 +3,13 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
+import { RightPanel } from "./RightPanel";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import Intercom from "@intercom/messenger-js-sdk";
 import useIntercom from "@/hooks/useIntercom";
+import { useRightPanel } from "@/contexts/RightPanelContext";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,6 +19,8 @@ interface LayoutProps {
 export function Layout({ children, stripPadding = false }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { intercomToken, user } = useIntercom();
+  const { isOpen: isRightPanelOpen } = useRightPanel();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   useEffect(() => {
     if (intercomToken && user) {
@@ -45,15 +51,22 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Main Content Area with proper spacing for fixed sidebar */}
+      {/* Main Content Area with proper spacing for fixed sidebar and right panel */}
       <div className="flex-1 flex flex-col min-h-screen lg:ml-80 min-w-0">
         {/* Header - Fixed positioning at top */}
-        <div className="fixed top-0 left-0 lg:left-80 right-0 z-30 bg-white border-b border-gray-200 h-16">
+        <div className={cn(
+          "fixed top-0 left-0 lg:left-80 z-30 bg-white border-b border-gray-200 h-16",
+          "transition-all duration-300 ease-in-out"
+        )}>
           <Navbar onToggleSidebar={() => setSidebarOpen(true)} />
         </div>
 
-        {/* Page Content - Properly spaced below fixed header */}
-        <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto">
+        {/* Page Content - Properly spaced below fixed header and adjusts for right panel */}
+        <main className={cn(
+          "flex-1 mt-16 overflow-x-hidden overflow-y-auto",
+          "transition-all duration-300 ease-in-out",
+          isDesktop && isRightPanelOpen ? "pr-80" : "pr-0"
+        )}>
           <div
             className={`max-w-full min-w-0 w-full ${
               stripPadding ? "p-0" : "p-4 md:p-6"
@@ -63,6 +76,9 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Right Panel */}
+      <RightPanel />
     </div>
   );
 }

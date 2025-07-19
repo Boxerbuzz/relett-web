@@ -27,6 +27,7 @@ interface PaymentDialogProps {
   metadata: Record<string, any>;
   propertyId: string;
   propertyTitle?: string;
+  agentId: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -43,6 +44,7 @@ export function PaymentDialog({
   propertyTitle,
   onSuccess,
   onCancel,
+  agentId,
 }: PaymentDialogProps) {
   const {
     loading,
@@ -78,6 +80,7 @@ export function PaymentDialog({
         currency,
         metadata,
         propertyId,
+        agentId,
       });
       setReference(paymentRef);
     } catch (error) {

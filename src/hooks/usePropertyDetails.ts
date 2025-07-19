@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryKeys, cacheConfig } from "@/lib/queryClient";
 import { useCacheManager } from "@/hooks/useCacheManager";
 
-interface PropertyDetails {
+export interface PropertyDetails {
   id: string;
   title: string;
   description: string;

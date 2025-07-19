@@ -31,6 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { PropertyDetails } from "@/hooks/usePropertyDetails";
 
 const formSchema = z.object({
   payment_plan: z.string().min(1, "Payment plan is required"),
@@ -41,7 +42,7 @@ const formSchema = z.object({
 interface RentalRequestModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  property: any;
+  property: PropertyDetails;
 }
 
 const RentalSheet = ({
@@ -120,7 +121,10 @@ const RentalSheet = ({
           </SheetHeader>
           <div className="px-4 md:px-0">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="payment_plan"
@@ -194,10 +198,7 @@ const RentalSheet = ({
           </div>
 
           <SheetFooter>
-            <Button
-              type="submit"
-              onClick={form.handleSubmit(onSubmit)}
-            >
+            <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
               Pay & Submit Request
             </Button>
           </SheetFooter>
@@ -212,6 +213,7 @@ const RentalSheet = ({
         currency="NGN"
         propertyId={property?.id}
         propertyTitle={property?.title}
+        agentId={property.agent?.id || ""}
         metadata={{
           payment_plan: form.watch("payment_plan"),
           move_in_date: form.watch("move_in_date"),

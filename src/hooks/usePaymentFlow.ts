@@ -9,6 +9,7 @@ export interface PaymentFlowParams {
   amount: number;
   currency?: string;
   metadata: Record<string, any>;
+  agentId: string;
   propertyId: string;
   onSuccess?: (transaction: any) => void;
   onCancel?: () => void;
@@ -116,6 +117,8 @@ export function usePaymentFlow() {
             bookingId,
             amount: params.amount,
             currency: params.currency || "NGN",
+            agentId: params.agentId || null,
+            propertyId: params.propertyId,
             metadata: {
               ...params.metadata,
               property_id: params.propertyId,
@@ -134,7 +137,7 @@ export function usePaymentFlow() {
       });
 
       // Open payment URL in new tab
-      window.open(data.payment_url, "_blank");
+      window.open(data.payment_url, "_self");
 
       return data.payment_reference;
     } catch (error) {
@@ -200,6 +203,7 @@ export function usePaymentFlow() {
       let booking: any;
       let amount: number;
       let metadata: Record<string, any>;
+      let agentId: string | null;
 
       if (type === "rental") {
         const { data: rentalData, error: rentalError } = await supabase
@@ -211,6 +215,7 @@ export function usePaymentFlow() {
         if (rentalError) throw rentalError;
         booking = rentalData;
         amount = booking.price || 0;
+        agentId = rentalData.agent_id;
         metadata = {
           payment_plan: booking.payment_plan,
           move_in_date: booking.move_in_date,
@@ -227,6 +232,7 @@ export function usePaymentFlow() {
         if (reservationError) throw reservationError;
         booking = reservationData;
         amount = booking.total || 0;
+        agentId = reservationData.agent_id;
         metadata = {
           from_date: booking.from_date,
           to_date: booking.to_date,
@@ -245,6 +251,7 @@ export function usePaymentFlow() {
         amount,
         propertyId: booking.property_id,
         metadata,
+        agentId: agentId || "",
       });
     } catch (error) {
       console.error("Payment retry failed:", error);

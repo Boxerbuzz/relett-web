@@ -1,11 +1,16 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { X, MapPin, Bed, Shower, Square, Star } from 'phosphor-react';
-import { getAmenityById } from '@/types/amenities';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { X, MapPin, Bed, Shower, Square, Star } from "phosphor-react";
+import { getAmenityById } from "@/types/amenities";
 
 interface Property {
   id: string;
@@ -26,7 +31,11 @@ interface PropertyComparisonProps {
   onClearAll: () => void;
 }
 
-export function PropertyComparison({ properties, onRemoveProperty, onClearAll }: PropertyComparisonProps) {
+export function PropertyComparison({
+  properties,
+  onRemoveProperty,
+  onClearAll,
+}: PropertyComparisonProps) {
   if (properties.length === 0) {
     return (
       <Card>
@@ -39,35 +48,37 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
     );
   }
 
-  const formatPrice = (price: Property['price']) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: price.currency || 'USD',
+  const formatPrice = (price: Property["price"]) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: price.currency || "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price.amount);
+    }).format(price.amount / 100);
   };
 
   const getAllAmenities = () => {
     const allAmenities = new Set<string>();
-    properties.forEach(property => {
-      property.amenities?.forEach(amenity => allAmenities.add(amenity));
+    properties.forEach((property) => {
+      property.amenities?.forEach((amenity) => allAmenities.add(amenity));
     });
     return Array.from(allAmenities);
   };
 
   const getAllFeatures = () => {
     const allFeatures = new Set<string>();
-    properties.forEach(property => {
-      property.features?.forEach(feature => allFeatures.add(feature));
+    properties.forEach((property) => {
+      property.features?.forEach((feature) => allFeatures.add(feature));
     });
     return Array.from(allFeatures);
   };
 
   const getPrimaryImage = (property: Property) => {
-    return property.property_images?.find(img => img.is_primary)?.url || 
-           property.property_images?.[0]?.url || 
-           '/placeholder.svg';
+    return (
+      property.property_images?.find((img) => img.is_primary)?.url ||
+      property.property_images?.[0]?.url ||
+      "/placeholder.svg"
+    );
   };
 
   return (
@@ -112,10 +123,14 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
 
                 {/* Basic Info */}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-lg line-clamp-2">{property.title}</h3>
+                  <h3 className="font-semibold text-lg line-clamp-2">
+                    {property.title}
+                  </h3>
                   <div className="flex items-center text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{property.location.city}, {property.location.state}</span>
+                    <span className="text-sm">
+                      {property.location.city}, {property.location.state}
+                    </span>
                   </div>
                   <div className="text-2xl font-bold text-primary">
                     {formatPrice(property.price)}
@@ -123,7 +138,9 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                   {property.ratings && (
                     <div className="flex items-center">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span className="text-sm">{property.ratings.toFixed(1)}</span>
+                      <span className="text-sm">
+                        {property.ratings.toFixed(1)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -136,15 +153,19 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div className="flex items-center">
                       <Bed className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{property.specification?.bedrooms || 'N/A'}</span>
+                      <span>{property.specification?.bedrooms || "N/A"}</span>
                     </div>
                     <div className="flex items-center">
                       <Shower className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{property.specification?.bathrooms || 'N/A'}</span>
+                      <span>{property.specification?.bathrooms || "N/A"}</span>
                     </div>
                     <div className="flex items-center">
                       <Square className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{property.specification?.sqft ? `${property.specification.sqft} ft²` : 'N/A'}</span>
+                      <span>
+                        {property.specification?.sqft
+                          ? `${property.specification.sqft} ft²`
+                          : "N/A"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -156,15 +177,26 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                   <h4 className="font-medium">Amenities</h4>
                   <div className="space-y-1">
                     {getAllAmenities().map((amenity) => (
-                      <div key={amenity} className="flex items-center justify-between text-sm">
+                      <div
+                        key={amenity}
+                        className="flex items-center justify-between text-sm"
+                      >
                         <span>{getAmenityById(amenity)?.name || amenity}</span>
-                        <span className={property.amenities?.includes(amenity) ? 'text-green-600' : 'text-red-600'}>
-                          {property.amenities?.includes(amenity) ? '✓' : '✗'}
+                        <span
+                          className={
+                            property.amenities?.includes(amenity)
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          {property.amenities?.includes(amenity) ? "✓" : "✗"}
                         </span>
                       </div>
                     ))}
                     {getAllAmenities().length === 0 && (
-                      <span className="text-muted-foreground text-sm">No amenities listed</span>
+                      <span className="text-muted-foreground text-sm">
+                        No amenities listed
+                      </span>
                     )}
                   </div>
                 </div>
@@ -176,15 +208,26 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                   <h4 className="font-medium">Features</h4>
                   <div className="space-y-1">
                     {getAllFeatures().map((feature) => (
-                      <div key={feature} className="flex items-center justify-between text-sm">
-                        <span>{feature}</span>
-                        <span className={property.features?.includes(feature) ? 'text-green-600' : 'text-red-600'}>
-                          {property.features?.includes(feature) ? '✓' : '✗'}
+                      <div
+                        key={feature}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span>{getAmenityById(feature)?.name || feature}</span>
+                        <span
+                          className={
+                            property.features?.includes(feature)
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          {property.features?.includes(feature) ? "✓" : "✗"}
                         </span>
                       </div>
                     ))}
                     {getAllFeatures().length === 0 && (
-                      <span className="text-muted-foreground text-sm">No features listed</span>
+                      <span className="text-muted-foreground text-sm">
+                        No features listed
+                      </span>
                     )}
                   </div>
                 </div>
@@ -194,7 +237,9 @@ export function PropertyComparison({ properties, onRemoveProperty, onClearAll }:
                 {/* Actions */}
                 <div className="space-y-2">
                   <Button className="w-full">View Details</Button>
-                  <Button variant="outline" className="w-full">Contact Agent</Button>
+                  <Button variant="outline" className="w-full">
+                    Contact Agent
+                  </Button>
                 </div>
               </div>
             ))}

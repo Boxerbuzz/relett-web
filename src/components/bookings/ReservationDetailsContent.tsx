@@ -7,15 +7,21 @@ import {
   DollarSign,
   MessageSquare,
   Clock,
+  ExternalLink,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ReservationDetailsContentProps {
   reservation: any;
+  agent?: { email: string; phone: string };
+  payment?: { status: string; link?: string };
   onStatusUpdate?: (id: string, status: string) => void;
 }
 
 export function ReservationDetailsContent({
   reservation,
+  agent,
+  payment,
   onStatusUpdate,
 }: ReservationDetailsContentProps) {
   const formatDate = (dateString: string) => {
@@ -82,131 +88,109 @@ export function ReservationDetailsContent({
     }
   };
 
+  function maskEmail(email: string) {
+    if (!email) return "";
+    const [user, domain] = email.split("@");
+    return user[0] + "***@" + domain;
+  }
+
+  function maskPhone(phone: string) {
+    if (!phone) return "";
+    return phone.slice(0, 3) + "****" + phone.slice(-3);
+  }
+
   return (
     <div className="space-y-6">
-      {/* Reservation Timeline */}
+      {/* At-a-glance summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Reservation Timeline</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Reservation Overview</CardTitle>
+            <Badge variant="outline">{reservation.status}</Badge>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="grid grid-cols-2 gap-4">
+            {/* Dates & Duration */}
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                Check-in
-              </label>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <p className="font-medium">
-                  {formatDate(reservation.from_date)}
-                </p>
-              </div>
+              <label>Check-in</label>
+              <div>{formatDate(reservation.from_date)}</div>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                Check-out
-              </label>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <p className="font-medium">{formatDate(reservation.to_date)}</p>
-              </div>
+              <label>Check-out</label>
+              <div>{formatDate(reservation.to_date)}</div>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                Duration
-              </label>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <p className="font-medium">{reservation.nights || 0} nights</p>
+              <label>Duration</label>
+              <div>{reservation.nights || 0} nights</div>
+            </div>
+            {/* Payment Status */}
+            <div>
+              <label>Payment Status</label>
+              <div>
+                <Badge
+                  variant={
+                    payment?.status === "paid" ? "default" : "destructive"
+                  }
+                >
+                  {payment?.status || "unpaid"}
+                </Badge>
+                {payment?.link && payment?.status !== "paid" && (
+                  <a
+                    href={payment.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-blue-600 underline flex items-center"
+                  >
+                    Pay Now <ExternalLink className="w-4 h-4 ml-1" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Guest Information */}
+      {/* Guest & Agent Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Guest Details</CardTitle>
+          <CardTitle>People</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">
-                Adults
-              </label>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <p className="font-medium">{reservation.adults || 0}</p>
-              </div>
+              <label>Guest</label>
+              <div>{reservation.guest_name || "N/A"}</div>
+              <div>{reservation.guest_email || "N/A"}</div>
             </div>
-            {reservation.children > 0 && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Children
-                </label>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <p className="font-medium">{reservation.children}</p>
-                </div>
-              </div>
-            )}
-            {reservation.infants > 0 && (
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Infants
-                </label>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <p className="font-medium">{reservation.infants}</p>
-                </div>
-              </div>
-            )}
+            <div>
+              <label>Agent in Charge</label>
+              <div>{agent ? maskEmail(agent.email) : "N/A"}</div>
+              <div>{agent ? maskPhone(agent.phone) : "N/A"}</div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Financial Information */}
-      {reservation.total && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Total Amount
-              </span>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <span className="text-lg font-bold">
-                  {formatCurrency(reservation.total)}
-                </span>
-              </div>
-            </div>
+      {/* Payment Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div>Total: {formatCurrency(reservation.total)}</div>
             {reservation.fee && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Service Fee
-                </span>
-                <span className="font-medium">
-                  {formatCurrency(reservation.fee)}
-                </span>
-              </div>
+              <div>Service Fee: {formatCurrency(reservation.fee)}</div>
             )}
             {reservation.caution_deposit && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Caution Deposit
-                </span>
-                <span className="font-medium">
-                  {formatCurrency(reservation.caution_deposit)}
-                </span>
+              <div>
+                Caution Deposit: {formatCurrency(reservation.caution_deposit)}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Special Requests */}
       {reservation.note && (
@@ -222,7 +206,7 @@ export function ReservationDetailsContent({
         </Card>
       )}
 
-      {/* Action Buttons */}
+      {/* Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>

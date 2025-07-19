@@ -4,7 +4,7 @@ import { AdvancedMarketplace } from "@/components/marketplace/AdvancedMarketplac
 
 const Marketplace = () => {
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div>
       <AdvancedMarketplace />
     </div>
   );

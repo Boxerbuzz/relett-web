@@ -14,8 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "./profile/UserAvatar";
 import { Badge } from "@/components/ui/badge";
-import { Bell, List, Gear, SignOut, User, Star } from "phosphor-react";
+import { Bell, List, Gear, SignOut, User, Star, SidebarSimple } from "phosphor-react";
 import { Link } from "react-router-dom";
+import { useRightPanel } from "@/contexts/RightPanelContext";
+import { RightPanelDemo } from "@/components/demo/RightPanelDemo";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -25,6 +27,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile();
   const [notificationCount] = useState(3); // Mock notification count
+  const { isOpen: isRightPanelOpen, open: openRightPanel, close: closeRightPanel } = useRightPanel();
 
   if (!user) return null;
 
@@ -57,6 +60,22 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
 
       {/* Right side - User menu and notifications */}
       <div className="flex items-center gap-3">
+        {/* Right Panel Toggle */}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => {
+            if (isRightPanelOpen) {
+              closeRightPanel();
+            } else {
+              openRightPanel(<RightPanelDemo />, "Property Details");
+            }
+          }}
+          className={isRightPanelOpen ? "bg-blue-50 text-blue-700" : ""}
+        >
+          <SidebarSimple size={20} />
+        </Button>
+
         {/* Notifications */}
         <Button variant="ghost" size="sm" className="relative">
           <Bell size={20} />

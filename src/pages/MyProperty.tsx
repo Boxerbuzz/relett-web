@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys, cacheConfig } from "@/lib/queryClient";
 import { PropertyDetailsDialog } from "@/components/dialogs/PropertyDetailsDialog";
+import { capitalize } from "@/lib/utils";
 
 interface Property {
   id: string;
@@ -271,7 +272,7 @@ const MyProperty = () => {
 
   // Otherwise, show the property list
   return (
-    <div className="space-y-4 md:space-y-6 container mx-auto px-4 py-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -368,7 +369,7 @@ const MyProperty = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
           {filteredProperties.map((property) => (
             <Card
               key={property.id}
@@ -429,13 +430,13 @@ const MyProperty = () => {
                     className={getStatusColor(property.status)}
                     variant="outline"
                   >
-                    {property.status}
+                    {capitalize(property.status)}
                   </Badge>
                   <Badge
                     className={getTypeColor(property.type)}
                     variant="outline"
                   >
-                    {property.type}
+                    {capitalize(property.type)}
                   </Badge>
                   {property.is_tokenized && (
                     <Badge
