@@ -167,7 +167,7 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
   const { error: updateError } = await supabaseClient
     .from("payments")
     .update({
-      status: "completed",
+      status: 'success',
       paid_at: new Date().toISOString(),
       metadata: {
         ...payment.metadata,
