@@ -1,25 +1,26 @@
 import { Badge } from "@/components/ui/badge";
 import { Inspection } from "@/hooks/useUserBookings";
-import { formatDate } from "@/lib/utils";
+import { capitalize, formatDate, formatDateTime } from "@/lib/utils";
 import {
   CalendarIcon,
   ClockIcon,
   MapPinIcon,
-  UserIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  NotSubsetOfIcon,
   NoteIcon,
+  XCircleIcon,
+  ArrowClockwiseIcon,
+  WarningIcon,
+  HashIcon,
+  CopyIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CancelInspectionDialog } from "./CancellnspectionDialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+  ReportDialog,
+  ReportType,
+  ReporterType,
+} from "../reports/ReportDialog";
+import { RescheduleInspectionDialog } from "./RescheduleInspectionDialog";
 
 interface Props {
   inspection: Inspection;
@@ -46,150 +47,185 @@ export function InspectionDetailsContent({
   onStatusUpdate,
 }: Props) {
   const property = inspection.property;
-  const agent = inspection.agent;
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const actions = getUserActions(inspection.status);
 
-  const handleCancel = () => {
-    // Call your cancel logic, pass cancelReason
+  const handleCancel = (cancelData: any) => {
     if (onStatusUpdate) onStatusUpdate(inspection.id, "cancelled");
-    setShowCancelDialog(false);
-    setCancelReason("");
+    // You can also save the cancellation details to your database
   };
 
-  const handleReport = () => {
-    // Open a report dialog or redirect to support
+  const handleReschedule = async (rescheduleData: any) => {
+    // Handle rescheduling logic here
+    console.log("Rescheduling inspection:", rescheduleData);
+    // You would typically update the inspection in your database
+    if (onStatusUpdate) onStatusUpdate(inspection.id, "rescheduled");
+  };
+
+  const handleReport = async (reportData: any) => {
+    // Handle report submission
+    console.log("Submitting report:", reportData);
+    // You would typically save the report to your database
   };
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-6 border p-2 rounded-xl mx-4 md:mx-0">
-        {/* Property Image */}
-        <div className="md:w-1/5 w-full flex-shrink-0">
-          <img
-            src={
-              property?.property_images?.find((img: any) => img.is_primary)
-                ?.url ||
-              property?.backdrop ||
-              "/placeholder.svg"
+      {/* Header with Status and Actions */}
+      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+        <div className="flex items-center gap-3">
+          <Badge
+            variant={
+              inspection.status === "confirmed"
+                ? "default"
+                : inspection.status === "pending"
+                ? "secondary"
+                : inspection.status === "completed"
+                ? "outline"
+                : "destructive"
             }
-            alt={property?.title}
-            className="w-full h-48 md:h-40 object-cover rounded-lg"
-          />
+            className="text-sm gap-x-1 cursor-pointer"
+          >
+            <HashIcon />
+            {inspection.id.slice(-8)}
+            <CopyIcon />
+          </Badge>
         </div>
 
-        {/* Details */}
-        <div className="flex-1 flex flex-col gap-4 justify-center">
-          {/* Property Info */}
-          <div>
-            <h2 className="text-2xl font-bold mb-1">{property?.title}</h2>
-            <div className="flex items-center text-gray-600 mb-2">
-              <MapPinIcon className="w-4 h-4 mr-1" />
-              <span>
-                {property?.location?.address || "Location not specified"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge>{property?.type}</Badge>
-              <Badge>{property?.category}</Badge>
-            </div>
-          </div>
-
-          {/* Inspection Info */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-4 text-gray-700">
-              <CalendarIcon className="w-4 h-4" />
-              <span>
-                {inspection.when
-                  ? formatDate(inspection.when || "")
-                  : "Date not set"}
-              </span>
-              <ClockIcon className="w-4 h-4" />
-              <span className="capitalize">{inspection.mode}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="border p-2 rounded-xl mx-4 md:mx-0 my-3">
-        {inspection.notes && (
-          <div className="text-gray-700 flex items-center text-sm">
-            <span className="font-medium mr-2">
-              <NoteIcon size={20} />
-            </span>{" "}
-            {inspection.notes}
-          </div>
-        )}
-      </div>
-      <div className="mx-4 md:mx-0 my-3">
-        {/* User Actions */}
+        {/* Action Buttons */}
         {actions.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="flex items-center gap-2">
             {actions.includes("cancel") && (
-              <>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowCancelDialog(true)}
-                >
-                  Cancel Inspection
-                </Button>
-                <Dialog
-                  open={showCancelDialog}
-                  onOpenChange={setShowCancelDialog}
-                >
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Cancel Inspection</DialogTitle>
-                    </DialogHeader>
-                    <div>
-                      <label className="block mb-2 text-sm font-medium">
-                        Reason for cancellation
-                      </label>
-                      <Textarea
-                        value={cancelReason}
-                        onChange={(e) => setCancelReason(e.target.value)}
-                        placeholder="Please provide a reason..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowCancelDialog(false)}
-                      >
-                        Close
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={handleCancel}
-                        disabled={!cancelReason.trim()}
-                      >
-                        Confirm Cancel
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCancelDialog(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <XCircleIcon className="w-4 h-4 mr-1" />
+                Cancel
+              </Button>
             )}
             {actions.includes("reschedule") && (
               <Button
-                variant="outline"
-                size="sm" /* onClick={handleReschedule} */
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowRescheduleDialog(true)}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
+                <ArrowClockwiseIcon className="w-4 h-4 mr-1" />
                 Reschedule
               </Button>
             )}
             {actions.includes("report") && (
-              <Button variant="outline" size="sm" /* onClick={handleReport} */>
-                Report Issue
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowReportDialog(true)}
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+              >
+                <WarningIcon className="w-4 h-4 mr-1" />
+                Report
               </Button>
             )}
           </div>
         )}
+      </div>
+
+      {/* Property Details Card */}
+      <div className="mx-4 md:mx-0">
+        <div className="bg-white border rounded-xl overflow-hidden mb-6">
+          <div className="flex flex-col md:flex-row">
+            {/* Property Image */}
+            <div className="md:w-1/4 w-full">
+              <img
+                src={
+                  property?.property_images?.find((img: any) => img.is_primary)
+                    ?.url ||
+                  property?.backdrop ||
+                  "/placeholder.svg"
+                }
+                alt={property?.title}
+                className="w-full h-40 md:h-full object-cover"
+              />
+            </div>
+
+            {/* Property Info */}
+            <div className="flex-1 p-3">
+              <h2 className="text-xl font-bold mb-3">{property?.title}</h2>
+              <div className="flex items-center text-gray-600 mb-2">
+                <MapPinIcon className="w-4 h-4 mr-2" />
+                <span className="text-sm">
+                  {property?.location?.address || "Location not specified"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline">
+                  {capitalize(property?.type || "")}
+                </Badge>
+                <Badge variant="outline">
+                  {capitalize(property?.category || "")}
+                </Badge>
+              </div>
+
+              {/* Inspection Details */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <CalendarIcon className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700">
+                    {inspection.when
+                      ? formatDateTime(inspection.when || "")
+                      : "Date not set"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <ClockIcon className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700 capitalize">
+                    {inspection.mode} Inspection
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Notes Section */}
+        {inspection.notes && (
+          <div className="bg-gray-50 border rounded-xl p-4 mb-6 flex items-start gap-2 mx-4 md:mx-0">
+            <NoteIcon size={20} className="text-gray-400 mt-1" />
+            <span className="text-gray-700 text-sm">{inspection.notes}</span>
+          </div>
+        )}
+
+        {/* Cancel Inspection Dialog */}
+        <CancelInspectionDialog
+          open={showCancelDialog}
+          onOpenChange={setShowCancelDialog}
+          onConfirm={handleCancel}
+          userId={inspection.agent_id}
+        />
+
+        {/* Reschedule Inspection Dialog */}
+        <RescheduleInspectionDialog
+          open={showRescheduleDialog}
+          onOpenChange={setShowRescheduleDialog}
+          onConfirm={handleReschedule}
+          currentInspection={inspection}
+        />
+
+        {/* Generic Report Dialog */}
+        <ReportDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          onConfirm={handleReport}
+          reportType="inspection"
+          reporterType="user"
+          targetId={inspection.id}
+          targetTitle={property?.title}
+        />
       </div>
     </>
   );

@@ -32,13 +32,13 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
       {/* Desktop Sidebar - Fixed positioning */}
-      <div className="hidden md:flex md:flex-shrink-0 md:fixed md:inset-y-0 md:z-40">
+      <div className="hidden lg:flex lg:flex-shrink-0 lg:fixed lg:inset-y-0 lg:z-40">
         <div className="flex flex-col w-80">
           <Sidebar />
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile/Tablet Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-80">
           <Sidebar onNavigate={() => setSidebarOpen(false)} />
@@ -46,9 +46,9 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
       </Sheet>
 
       {/* Main Content Area with proper spacing for fixed sidebar */}
-      <div className="flex-1 flex flex-col min-h-screen md:ml-80 min-w-0">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-80 min-w-0">
         {/* Header - Fixed positioning at top */}
-        <div className="fixed top-0 left-0 md:left-80 right-0 z-30 bg-white border-b border-gray-200 h-16">
+        <div className="fixed top-0 left-0 lg:left-80 right-0 z-30 bg-white border-b border-gray-200 h-16">
           <Navbar onToggleSidebar={() => setSidebarOpen(true)} />
         </div>
 

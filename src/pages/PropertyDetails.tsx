@@ -2,26 +2,13 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { usePropertyDetails } from "@/hooks/usePropertyDetails";
 import { usePropertyLikes } from "@/hooks/usePropertyLikes";
-import { PropertyDocumentViewer } from "@/components/property/PropertyDocumentViewer";
 import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { InvestNowDialog } from "@/components/dialogs/InvestNowDialog";
-import {
-  ArrowLeftIcon,
-  HeartIcon,
-  MapPinIcon,
-  EyeIcon,
-  CalendarIcon,
-  StarIcon,
-  ImagesIcon,
-  CurrencyDollarIcon,
-} from "@phosphor-icons/react";
+import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { Heart, Share } from "lucide-react";
 import { getAmenityById } from "@/types/amenities";
-import { Bed, Shower, Square, Phone, Envelope, User } from "phosphor-react";
 import {
   PropertyDetailSkeleton,
   PropertyDetailsNotFound,
@@ -29,8 +16,8 @@ import {
 import { InspectionSheet } from "@/components/property/sheets/InspectionSheet";
 import { ReservationSheet } from "@/components/property/sheets/ReservationSheet";
 import { OfferSheet } from "@/components/property/sheets/OfferSheet";
-import { Sheet, SheetTrigger } from "@/components/ui/sheet";
-import { capitalize, formatDate, formatDateTime } from "@/lib/utils";
+import { Sheet } from "@/components/ui/sheet";
+import { capitalize } from "@/lib/utils";
 import { EnhancedPropertyPricing } from "@/types/property";
 import RentalSheet from "@/components/property/sheets/RentalSheet";
 import { LocationAnalysis } from "@/components/property/LocationAnalysis";
@@ -43,10 +30,8 @@ import {
   useUserInspections,
 } from "@/hooks/useUserBookings";
 import { BookingDetails } from "@/components/bookings/BookingDetails";
-import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { ActiveBookingsSidebar } from "@/components/property/details/ActiveBookingsSidebar";
 import { AgentInfoCard } from "@/components/property/details/AgentInfoCard";
-import { InvestmentOpportunityCard } from "@/components/property/details/InvestmentOpportunityCard";
 import { QuickActionsCard } from "@/components/property/details/QuickActionsCard";
 import { ImageGallery } from "@/components/property/details/ImageGallery";
 import { PropertySummaryCard } from "@/components/property/details/PropertySummaryCard";

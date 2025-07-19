@@ -32,19 +32,19 @@ export default function UserBookings() {
   const {
     data: inspections = [],
     isLoading: inspectionsLoading,
-    error: inspectionsError,
+    error: _,
   } = useUserInspections(user?.id || "");
 
   const {
     data: rentals = [],
     isLoading: rentalsLoading,
-    error: rentalsError,
+    error: __,
   } = useUserRentals(user?.id || "");
 
   const {
     data: reservations = [],
     isLoading: reservationsLoading,
-    error: reservationsError,
+    error: ___,
   } = useUserReservations(user?.id || "");
 
   const updateStatusMutation = useUpdateBookingStatus();
@@ -132,7 +132,7 @@ export default function UserBookings() {
         <TabsList className="grid w-full grid-cols-4 h-auto gap-1">
           <TabsTrigger
             value="inspections"
-            className="flex flex-col items-center gap-1 py-2"
+            className="flex items-center gap-2 py-2"
           >
             <EyeIcon size={20} className="w-5 h-5" />
             <span className="text-xs hidden sm:inline">
@@ -141,7 +141,7 @@ export default function UserBookings() {
           </TabsTrigger>
           <TabsTrigger
             value="rentals"
-            className="flex flex-col items-center gap-1 py-2"
+            className="flex items-center gap-2 py-2"
           >
             <HouseIcon className="w-5 h-5" />
             <span className="text-xs hidden sm:inline">
@@ -150,7 +150,7 @@ export default function UserBookings() {
           </TabsTrigger>
           <TabsTrigger
             value="reservations"
-            className="flex flex-col items-center gap-1 py-2"
+            className="flex items-center gap-2 py-2"
           >
             <BuildingsIcon className="w-5 h-5" />
             <span className="text-xs hidden sm:inline">
@@ -159,7 +159,7 @@ export default function UserBookings() {
           </TabsTrigger>
           <TabsTrigger
             value="purchases"
-            className="flex flex-col items-center gap-1 py-2"
+            className="flex items-center gap-2 py-2"
           >
             <ShoppingCartIcon className="w-5 h-5" />
             <span className="text-xs hidden sm:inline">Purchases (0)</span>
@@ -168,11 +168,12 @@ export default function UserBookings() {
 
         <TabsContent value="inspections" className="space-y-4">
           {inspectionsLoading ? (
-            <>
+            <div className="gap-4">
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
-            </>
+              <BookingSkeleton />
+            </div>
           ) : inspections.length === 0 ? (
             <EmptyState
               icon={EyeIcon}
@@ -193,11 +194,12 @@ export default function UserBookings() {
 
         <TabsContent value="rentals" className="space-y-4">
           {rentalsLoading ? (
-            <>
+            <div className="gap-4">
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
-            </>
+              <BookingSkeleton />
+            </div>
           ) : rentals.length === 0 ? (
             <EmptyState
               icon={HouseIcon}
@@ -218,11 +220,12 @@ export default function UserBookings() {
 
         <TabsContent value="reservations" className="space-y-4">
           {reservationsLoading ? (
-            <>
+            <div className="gap-4">
               <BookingSkeleton />
               <BookingSkeleton />
               <BookingSkeleton />
-            </>
+              <BookingSkeleton />
+            </div>
           ) : reservations.length === 0 ? (
             <EmptyState
               icon={BuildingsIcon}

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const CANCELLATION_REASONS = [
   "Change of plans",
@@ -51,49 +52,57 @@ export function CancelInspectionDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cancel Inspection</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Cancel Inspection</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <div className="space-y-4 px-4 md:px-0">
           <div>
-            <label className="block mb-2 text-sm font-medium">
+            <Label className="text-sm font-medium">
               Reason for cancellation
-            </label>
-            <RadioGroup value={reason} onValueChange={setReason}>
+            </Label>
+            <RadioGroup
+              value={reason}
+              onValueChange={setReason}
+              className="mt-2"
+            >
               {CANCELLATION_REASONS.map((r) => (
-                <RadioGroupItem key={r} value={r} className="mb-1">
-                  {r}
-                </RadioGroupItem>
+                <div key={r} className="flex items-center space-x-2">
+                  <RadioGroupItem value={r} id={r} />
+                  <Label htmlFor={r} className="text-sm">
+                    {r}
+                  </Label>
+                </div>
               ))}
             </RadioGroup>
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium">
+            <Label className="text-sm font-medium">
               Additional note (optional)
-            </label>
+            </Label>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add any extra info..."
               rows={3}
+              className="mt-2"
             />
           </div>
-          <div className="flex gap-2 mt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirm}
-              disabled={!reason}
-            >
-              Confirm Cancel
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        <div className="flex gap-2 mt-4 px-4 pb-4 md:px-0 md:pb-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={!reason}
+          >
+            Confirm Cancel
+          </Button>
+        </div>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

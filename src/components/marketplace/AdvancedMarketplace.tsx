@@ -91,7 +91,7 @@ export function AdvancedMarketplace() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Property Marketplace</h1>
@@ -122,28 +122,28 @@ export function AdvancedMarketplace() {
         onValueChange={setActiveTab}
         className="w-full relative"
       >
-        <TabsList className="w-full flex  grid-cols-4 md:grid md:grid-cols-4 px-2 md:px-0">
-          <TabsTrigger value="search" className="items-center gap-2">
+        <TabsList className="w-full flex md:grid md:grid-cols-4 px-2 md:px-0">
+          <TabsTrigger value="search" className="flex items-center gap-2 flex-1 md:flex-none">
             <MagnifyingGlassIcon className="w-4 h-4" />
             <span className="hidden md:inline">Search & Browse</span>
           </TabsTrigger>
           <TabsTrigger
             value="tokenized"
-            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
+            className="flex items-center gap-2 flex-1 md:flex-none"
           >
             <CoinsIcon className="w-4 h-4" />
             <span className="hidden md:inline">Tokenized Properties</span>
           </TabsTrigger>
           <TabsTrigger
             value="groups"
-            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1"
+            className="flex items-center gap-2 flex-1 md:flex-none"
           >
             <UsersIcon className="w-4 h-4" />
             <span className="hidden md:inline">Investment Groups</span>
           </TabsTrigger>
           <TabsTrigger
             value="compare"
-            className="flex items-center gap-2 shrink-0 min-w-fit md:shrink md:min-w-0 md:flex-1 mr-1 md:mr-0"
+            className="flex items-center gap-2 flex-1 md:flex-none"
           >
             <GitDiffIcon className="w-4 h-4" />
             <span className="hidden md:inline">
@@ -174,7 +174,7 @@ export function AdvancedMarketplace() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                 {properties.map((property) => (
                   <PropertyCard
                     key={property.id}

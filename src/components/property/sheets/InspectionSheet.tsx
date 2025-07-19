@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -62,6 +63,7 @@ export function InspectionSheet({
 }: InspectionSheetProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -110,6 +112,9 @@ export function InspectionSheet({
 
       form.reset();
       onClose();
+      
+      // Navigate to bookings page after successful submission
+      navigate("/bookings");
     } catch (error) {
       console.error("Error submitting inspection request:", error);
       toast({

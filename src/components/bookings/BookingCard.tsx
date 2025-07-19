@@ -11,8 +11,12 @@ import {
   EyeIcon,
   HouseIcon,
   BuildingsIcon,
+  UsersIcon,
+  MoonIcon,
 } from "@phosphor-icons/react";
 import { BookingType } from "./BookingDetails";
+import { BookingStatusBadge } from "./BookingStatusBadge";
+import { formatDate, formatDateTime } from "@/lib/utils";
 
 type BookingCardProps = {
   booking: Inspection | Rental | Reservation;
@@ -24,24 +28,6 @@ type BookingCardProps = {
 };
 
 export function BookingCard(props: BookingCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "approved":
-      case "confirmed":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "rejected":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      case "completed":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "inspection":
@@ -54,26 +40,6 @@ export function BookingCard(props: BookingCardProps) {
         return <CalendarIcon className="w-4 h-4" />;
     }
   };
-
-  const formatDate = (dateString: string | null) =>
-    dateString
-      ? new Date(dateString).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "N/A";
-
-  const formatDateTime = (dateString: string | null) =>
-    dateString
-      ? new Date(dateString).toLocaleString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "N/A";
 
   const getPropertyImage = (property: PropertyItem | null) => {
     const primaryImage = property?.property_images?.find(
@@ -97,7 +63,7 @@ export function BookingCard(props: BookingCardProps) {
           <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-700">
             <div className="flex items-center">
               <CalendarIcon className="w-4 h-4 mr-1" />
-              {formatDateTime((booking as Inspection).when)}
+              {formatDateTime((booking as Inspection).when || "")}
             </div>
             <div className="flex items-center">
               <ClockIcon className="w-4 h-4 mr-1" />
@@ -109,25 +75,39 @@ export function BookingCard(props: BookingCardProps) {
         return (
           <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-700">
             <span>Payment: {(booking as Rental).payment_plan}</span>
-            <span>Move-in: {formatDate((booking as Rental).move_in_date)}</span>
+            <span>
+              Move-in: {formatDate((booking as Rental).move_in_date || "")}
+            </span>
           </div>
         );
       case "reservation":
         return (
           <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm text-gray-700">
-            <span>
-              Check-in: {formatDate((booking as Reservation).from_date)}
+            <span className="flex gap-x-1">
+              <div className="flex gap-x-1">
+                <CalendarIcon />
+              </div>
+              {formatDate((booking as Reservation).from_date || "")}
             </span>
-            <span>
-              Check-out: {formatDate((booking as Reservation).to_date)}
+            <span className="flex gap-x-1">
+              <div className="flex gap-x-1">
+                <CalendarIcon />
+              </div>
+              {formatDate((booking as Reservation).to_date || "")}
             </span>
-            <span>
-              Guests: {(booking as Reservation).adults} adults
+            <span className="flex gap-x-1">
+              <UsersIcon />
+              {(booking as Reservation).adults} Adults
               {(booking as Reservation).children
                 ? `, ${(booking as Reservation).children} children`
                 : ""}
             </span>
-            <span>Nights: {(booking as Reservation).nights || 0}</span>
+            <span className="flex gap-x-1">
+              <div className="flex gap-x-1">
+                <MoonIcon />
+              </div>
+              {(booking as Reservation).nights || 0} nights
+            </span>
           </div>
         );
       default:
@@ -157,13 +137,13 @@ export function BookingCard(props: BookingCardProps) {
       onClick={handleCardClick}
     >
       {/* Image section */}
-      <div className="flex-shrink-0 w-full sm:w-48 h-40 sm:h-auto relative m-3 rounded-medium">
+      <div className="flex-shrink-0 w-full sm:w-48 h-40 sm:h-auto relative rounded-medium p-3 sm:p-4">
         <img
           src={getPropertyImage(props.booking.property || null)}
           alt={props.booking.property?.title}
           className="object-cover w-full h-full rounded-md"
         />
-        <span className="absolute top-2 left-2 bg-white/80 rounded-full p-1 shadow-sm">
+        <span className="absolute top-5 left-5 bg-white/80 rounded-full p-1 shadow-sm">
           {getTypeIcon(props.type)}
         </span>
       </div>
@@ -188,25 +168,15 @@ export function BookingCard(props: BookingCardProps) {
           {props.type === "reservation" &&
             (props.booking as Reservation).total && (
               <p className="text-base sm:text-lg font-semibold text-primary mt-2">
-                Total: ₦{(props.booking as Reservation).total?.toLocaleString()}
+                ₦{(props.booking as Reservation).total?.toLocaleString()}
               </p>
             )}
         </div>
         <div className="flex items-center gap-2 mt-4">
-          <span
-            className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-              props.booking.status
-            )}`}
-          >
-            {props.booking.status}
-          </span>
+          <BookingStatusBadge status={props.booking.status} />
           {props.type === "rental" &&
             (props.booking as Rental).payment_status && (
-              <span
-                className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                  (props.booking as Rental).payment_status
-                )}`}
-              >
+              <span className={`px-2 py-1 rounded text-xs font-medium`}>
                 {(props.booking as Rental).payment_status}
               </span>
             )}

@@ -62,7 +62,7 @@ export function BookingStatusBadge({
         };
       case "awaiting_payment":
         return {
-          className: "",
+          className: "bg-teal-100 text-teal-800",
           icon: <CreditCardIcon className="w-3 h-3" />,
           text: "Awaiting Payment",
         };

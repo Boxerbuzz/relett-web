@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,6 +17,7 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
 import { formatDate } from "@/lib/utils";
+import { BookingStatusBadge } from "./BookingStatusBadge";
 
 export type BookingType = "rental" | "reservation" | "inspection";
 
@@ -42,25 +42,6 @@ export function BookingDetails({
   // Determine if current user is the agent or customer
   const isAgent = user?.id === bookingData.agent_id;
   const isCustomer = user?.id === bookingData.user_id;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "active":
-        return "bg-blue-100 text-blue-800";
-      case "rejected":
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      case "completed":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const renderContent = () => {
     switch (bookingType) {
@@ -104,9 +85,7 @@ export function BookingDetails({
                 Details
               </ResponsiveDialogTitle>
               <div className="flex items-center gap-2 mt-2">
-                <Badge className={getStatusColor(bookingData.status)}>
-                  {bookingData.status}
-                </Badge>
+                <BookingStatusBadge status={bookingData.status} />
                 <span className="text-sm text-muted-foreground">
                   Created {formatDate(bookingData.created_at)}
                 </span>

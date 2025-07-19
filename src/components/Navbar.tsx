@@ -44,13 +44,13 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className="md:hidden"
+          className="lg:hidden"
         >
           <List size={20} />
         </Button>
 
         {/* Desktop: Show page title or breadcrumb */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
         </div>
       </div>

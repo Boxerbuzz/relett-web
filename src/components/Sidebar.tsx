@@ -73,12 +73,14 @@ const mainNavigation = [
     href: "/services",
     icon: WrenchIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+    visible: false,
   },
   {
     name: "Map View",
     href: "/map",
     icon: MapPinIcon,
     roles: ["landowner", "verifier", "admin", "agent", "investor", "user"],
+    visible: false,
   },
   {
     name: "My Bookings",
@@ -118,6 +120,7 @@ const propertyNavigation = [
     href: "/tokens",
     icon: CoinsIcon,
     roles: ["landowner", "admin", "investor"],
+    visible: false,
   },
 ];
 
@@ -179,6 +182,8 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
   const filterNavigation = (items: typeof mainNavigation) => {
     return items.filter((item) => {
+      // Exclude if visible is explicitly false
+      if (item.visible === false) return false;
       if (hasRole("admin")) {
         return true;
       }
