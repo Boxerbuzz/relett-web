@@ -19,10 +19,15 @@ import {
   useUserRentals,
   useUserReservations,
   useUpdateBookingStatus,
+  Inspection,
+  Reservation,
+  Rental,
 } from "@/hooks/useUserBookings";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function UserBookings() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [selectedBookingType, setSelectedBookingType] =
     useState<BookingType>("inspection");
@@ -48,15 +53,17 @@ export default function UserBookings() {
 
   const updateStatusMutation = useUpdateBookingStatus();
 
-  const handleBookingClick = (booking: any, type: BookingType) => {
-    const userMetadata = (user as any)?.user_metadata || {};
+  const handleBookingClick = (
+    booking: Inspection | Reservation | Rental,
+    type: BookingType
+  ) => {
     const bookingWithUser = {
       ...booking,
       user: {
-        first_name: userMetadata.first_name || user?.email?.split("@")[0] || "",
-        last_name: userMetadata.last_name || "",
-        email: user?.email || "",
-        phone_number: userMetadata.phone_number || "",
+        first_name: profile?.first_name,
+        last_name: profile?.last_name || "",
+        email: profile?.email || "",
+        phone_number: profile?.phone || "",
       },
     };
     setSelectedBooking(bookingWithUser);
@@ -115,7 +122,6 @@ export default function UserBookings() {
       </CardContent>
     </Card>
   );
-
 
   return (
     <div className="">

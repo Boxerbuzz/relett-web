@@ -1,19 +1,16 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Calendar,
-  Users,
-  DollarSign,
-  MessageSquare,
-  Clock,
-  ExternalLink,
-} from "lucide-react";
+import { MessageSquare, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ReservationDetailsContentProps {
   reservation: any;
-  agent?: { email: string; phone: string };
+  agent?: {
+    email: string;
+    phone: string;
+    first_name: string;
+    last_name: string;
+  };
   payment?: { status: string; link?: string };
   onStatusUpdate?: (id: string, status: string) => void;
 }
