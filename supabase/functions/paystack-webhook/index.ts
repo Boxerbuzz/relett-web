@@ -1,9 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
+import {
+  createClient,
+  SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2.47.6";
 import { createHmac } from "node:crypto";
 import { timingSafeEqual } from "https://deno.land/std@0.190.0/crypto/timing_safe_equal.ts";
 import { systemLogger } from "../shared/system-logger.ts";
+import { Database } from "../types/database.types.ts";
 
 interface PaystackWebhookData {
   event: string;
@@ -57,7 +61,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabaseClient = createClient<Database>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
@@ -130,7 +134,7 @@ serve(async (req) => {
   }
 });
 
-async function handleChargeSuccess(supabaseClient: any, data: any) {
+async function handleChargeSuccess(supabaseClient: SupabaseClient, data: any) {
   const { reference, amount, currency, customer, status } = data;
 
   if (status !== "success") {
@@ -169,6 +173,7 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
     .update({
       status: "success",
       paid_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       metadata: {
         ...payment.metadata,
         paystack_transaction: data,
@@ -190,9 +195,9 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
   );
 
   // Process based on payment type
-  if (payment.related_type === "rentals") {
+  if (payment.related_type === "rental") {
     await processRentalPayment(supabaseClient, payment, data);
-  } else if (payment.related_type === "reservations") {
+  } else if (payment.related_type === "reservation") {
     await processReservationPayment(supabaseClient, payment, data);
   } else if (payment.related_type === "wallet_topup") {
     await processWalletTopup(supabaseClient, payment, data);
@@ -349,7 +354,7 @@ async function processRentalPayment(
 }
 
 async function processReservationPayment(
-  supabaseClient: any,
+  supabaseClient: SupabaseClient,
   payment: any,
   transactionData: any
 ) {
