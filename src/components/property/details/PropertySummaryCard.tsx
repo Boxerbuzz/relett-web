@@ -1,5 +1,14 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MapPinIcon, EyeIcon, HeartIcon, CalendarIcon, StarIcon, Bed, Shower, Square } from "@phosphor-icons/react";
+import {
+  MapPinIcon,
+  EyeIcon,
+  HeartIcon,
+  CalendarIcon,
+  StarIcon,
+  Bed,
+  Shower,
+  Square,
+} from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
 
 interface PropertySummaryCardProps {
@@ -8,7 +17,11 @@ interface PropertySummaryCardProps {
   capitalize: (str: string) => string;
 }
 
-export function PropertySummaryCard({ property, formatPrice, capitalize }: PropertySummaryCardProps) {
+export function PropertySummaryCard({
+  property,
+  formatPrice,
+  capitalize,
+}: PropertySummaryCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -20,9 +33,9 @@ export function PropertySummaryCard({ property, formatPrice, capitalize }: Prope
             <div className="flex items-center text-gray-600 mb-4">
               <MapPinIcon className="h-4 w-4 mr-2" />
               <span>
-                {property.location?.address ||
-                  `${property.location?.city || ""} ${property.location?.state || ""}`.trim() ||
-                  "Address not specified"}
+                {`${property.location?.city || ""} ${
+                  property.location?.state || ""
+                }`.trim() || "Address not specified"}
               </span>
             </div>
             <div className="flex gap-2">
@@ -109,4 +122,4 @@ export function PropertySummaryCard({ property, formatPrice, capitalize }: Prope
       </CardContent>
     </Card>
   );
-} 
+}

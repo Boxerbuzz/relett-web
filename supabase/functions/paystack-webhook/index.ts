@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
-import { createHmac } from "https://deno.land/std@0.190.0/node/crypto.ts";
+import { createHmac } from "node:crypto";
 import { timingSafeEqual } from "https://deno.land/std@0.190.0/crypto/timing_safe_equal.ts";
 import { systemLogger } from "../shared/system-logger.ts";
 
@@ -167,7 +167,7 @@ async function handleChargeSuccess(supabaseClient: any, data: any) {
   const { error: updateError } = await supabaseClient
     .from("payments")
     .update({
-      status: 'success',
+      status: "success",
       paid_at: new Date().toISOString(),
       metadata: {
         ...payment.metadata,
