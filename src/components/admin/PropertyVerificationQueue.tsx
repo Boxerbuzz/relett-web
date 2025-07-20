@@ -39,6 +39,7 @@ import {
 import { Json } from "@/types/database";
 import { PropertyMobileCard } from "./PropertyMobileCard";
 import { PropertyVerificationActions } from "@/components/verification/PropertyVerificationActions";
+import { capitalize } from "@/lib/utils";
 
 interface AdminProperty {
   id: string;
@@ -170,6 +171,63 @@ export function PropertyVerificationQueue() {
     setShowVerificationActions(true);
   };
 
+  const updateProperty = async (
+    propertyId: string,
+    updates: Partial<AdminProperty>
+  ) => {
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update(updates)
+        .eq("id", propertyId);
+
+      if (error) throw error;
+
+      setProperties(
+        properties.map((property) =>
+          property.id === propertyId ? { ...property, ...updates } : property
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Property updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating property:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update property",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteProperty = async (propertyId: string) => {
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({ is_deleted: true })
+        .eq("id", propertyId);
+
+      if (error) throw error;
+
+      setProperties(properties.filter((p) => p.id !== propertyId));
+
+      toast({
+        title: "Success",
+        description: "Property deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting property:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete property",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleVerificationInitiated = () => {
     setShowVerificationActions(false);
     setSelectedProperty(null);
@@ -230,7 +288,7 @@ export function PropertyVerificationQueue() {
           "bg-gray-100 text-gray-800"
         }
       >
-        {type}
+        {capitalize(type)}
       </Badge>
     );
   };
@@ -239,14 +297,18 @@ export function PropertyVerificationQueue() {
     if (!price || typeof price !== "object") return "N/A";
     const priceObj = price as any;
     if (!priceObj.amount) return "N/A";
-    return `${priceObj.currency || "₦"}${priceObj.amount.toLocaleString()}`;
+    return `${priceObj.currency || "₦"}${(
+      priceObj.amount / 100
+    ).toLocaleString()}`;
   };
 
   const getLocationCity = (location: Json) => {
     if (!location || typeof location !== "object")
       return "Location not specified";
     const locationObj = location as any;
-    return locationObj.city || "Location not specified";
+    return (
+      `${locationObj.city}, ${locationObj.state}` || "Location not specified"
+    );
   };
 
   const hasActiveVerificationTask = (property: AdminProperty) => {
@@ -409,9 +471,8 @@ export function PropertyVerificationQueue() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
-                        <EyeIcon className="h-4 w-4" />
-                      </Button>
+
+
                       {!hasActiveVerificationTask(property) &&
                         !property.is_verified && (
                           <Button

@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import { Inspection } from "@/hooks/useUserBookings";
-import { capitalize, formatDate, formatDateTime } from "@/lib/utils";
+import { Inspection } from "@/types/bookings";
+import { capitalize, formatDateTime } from "@/lib/utils";
 import {
   CalendarIcon,
   ClockIcon,
@@ -15,11 +15,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CancelInspectionDialog } from "./CancellnspectionDialog";
-import {
-  ReportDialog,
-  ReportType,
-  ReporterType,
-} from "../reports/ReportDialog";
+import { ReportDialog } from "../reports/ReportDialog";
 import { RescheduleInspectionDialog } from "./RescheduleInspectionDialog";
 
 interface Props {
@@ -75,26 +71,7 @@ export function InspectionDetailsContent({
   return (
     <>
       {/* Header with Status and Actions */}
-      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
-        <div className="flex items-center gap-3">
-          <Badge
-            variant={
-              inspection.status === "confirmed"
-                ? "default"
-                : inspection.status === "pending"
-                ? "secondary"
-                : inspection.status === "completed"
-                ? "outline"
-                : "destructive"
-            }
-            className="text-sm gap-x-1 cursor-pointer"
-          >
-            <HashIcon />
-            {inspection.id.slice(-8)}
-            <CopyIcon />
-          </Badge>
-        </div>
-
+      <div className="flex items-center justify-between mb-6 md:px-0">
         {/* Action Buttons */}
         {actions.length > 0 && (
           <div className="flex items-center gap-2">
@@ -136,7 +113,7 @@ export function InspectionDetailsContent({
       </div>
 
       {/* Property Details Card */}
-      <div className="mx-4 md:mx-0">
+      <div className="md:mx-0">
         <div className="bg-white border rounded-xl overflow-hidden mb-6">
           <div className="flex flex-col md:flex-row">
             {/* Property Image */}
@@ -194,7 +171,7 @@ export function InspectionDetailsContent({
 
         {/* Notes Section */}
         {inspection.notes && (
-          <div className="bg-gray-50 border rounded-xl p-4 mb-6 flex items-start gap-2 mx-4 md:mx-0">
+          <div className="bg-gray-50 border rounded-xl p-4 mb-6 flex items-start gap-2">
             <NoteIcon size={20} className="text-gray-400 mt-1" />
             <span className="text-gray-700 text-sm">{inspection.notes}</span>
           </div>

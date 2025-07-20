@@ -1,15 +1,20 @@
-
-import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Paperclip, Users, MoreVertical } from 'lucide-react';
-import { useRealtimeChat } from '@/hooks/useRealtimeChat';
-import { TypingIndicator } from '@/components/chat/TypingIndicator';
-import { useFileUpload } from '@/hooks/useFileUpload';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useRef, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Send, Paperclip, Users, MoreVertical } from "lucide-react";
+import { useRealtimeChat } from "@/hooks/useRealtimeChat";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
+import { useToast } from "@/hooks/use-toast";
 
 interface InvestmentGroupChatProps {
   conversationId: string;
@@ -17,18 +22,19 @@ interface InvestmentGroupChatProps {
   participantCount?: number;
 }
 
-export function InvestmentGroupChat({ 
-  conversationId, 
-  groupName, 
-  participantCount = 0 
+export function InvestmentGroupChat({
+  conversationId,
+  groupName,
+  participantCount = 0,
 }: InvestmentGroupChatProps) {
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  
-  const { messages, typingUsers, isLoading, sendMessage, updateTypingStatus } = useRealtimeChat(conversationId);
-  const { uploadFile, isUploading } = useFileUpload();
+
+  const { messages, typingUsers, isLoading, sendMessage, updateTypingStatus } =
+    useRealtimeChat(conversationId);
+  const { uploadFile, isUploading } = useSupabaseStorage();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,26 +42,26 @@ export function InvestmentGroupChat({
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
     const messageContent = newMessage.trim();
-    setNewMessage('');
+    setNewMessage("");
     setIsTyping(false);
 
     try {
       await sendMessage(messageContent);
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
     }
   };
 
   const handleTyping = (value: string) => {
     setNewMessage(value);
-    
+
     if (!isTyping && value.length > 0) {
       setIsTyping(true);
       updateTypingStatus();
@@ -77,40 +83,42 @@ export function InvestmentGroupChat({
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       const result = await uploadFile(file, {
-        bucket: 'chat-attachments',
-        path: `conversation-${conversationId}`,
+        bucket: "chat-attachments",
+        path: `conversation-${conversationId}`, // Now required parameter
         maxSize: 25 * 1024 * 1024, // 25MB limit for chat files
       });
 
-      await sendMessage(file.name, 'file', result.url);
-      
+      await sendMessage(file.name, "file", result.url);
+
       toast({
-        title: 'File shared',
+        title: "File shared",
         description: `${file.name} has been shared with the group.`,
       });
     } catch (error) {
-      console.error('File upload failed:', error);
+      console.error("File upload failed:", error);
     }
 
     // Reset input
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+    return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
   };
 
   if (isLoading) {
@@ -160,8 +168,8 @@ export function InvestmentGroupChat({
                 <Avatar className="h-8 w-8 flex-shrink-0">
                   <AvatarFallback className="text-xs">
                     {getInitials(
-                      message.sender?.first_name || '', 
-                      message.sender?.last_name || ''
+                      message.sender?.first_name || "",
+                      message.sender?.last_name || ""
                     )}
                   </AvatarFallback>
                 </Avatar>
@@ -173,19 +181,20 @@ export function InvestmentGroupChat({
                     <span className="text-xs text-muted-foreground">
                       {formatMessageTime(message.created_at)}
                     </span>
-                    {message.message_type !== 'text' && (
+                    {message.message_type !== "text" && (
                       <Badge variant="outline" className="text-xs">
                         {message.message_type}
                       </Badge>
                     )}
                   </div>
                   <div className="text-sm">
-                    {message.message_type === 'file' && message.attachment_url ? (
+                    {message.message_type === "file" &&
+                    message.attachment_url ? (
                       <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
                         <Paperclip className="h-4 w-4" />
-                        <a 
-                          href={message.attachment_url} 
-                          target="_blank" 
+                        <a
+                          href={message.attachment_url}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
@@ -212,26 +221,32 @@ export function InvestmentGroupChat({
             <Input
               value={newMessage}
               onChange={(e) => handleTyping(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Type your message..."
               disabled={isUploading}
             />
             <label>
               <input
+                aria-label="file"
                 type="file"
                 className="hidden"
                 onChange={handleFileUpload}
                 disabled={isUploading}
               />
-              <Button variant="outline" size="icon" disabled={isUploading} asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={isUploading}
+                asChild
+              >
                 <div>
                   <Paperclip className="h-4 w-4" />
                 </div>
               </Button>
             </label>
           </div>
-          <Button 
-            onClick={handleSendMessage} 
+          <Button
+            onClick={handleSendMessage}
             disabled={!newMessage.trim() || isUploading}
           >
             <Send className="h-4 w-4" />

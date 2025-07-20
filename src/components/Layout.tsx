@@ -55,7 +55,7 @@ export function Layout({ children, stripPadding = false }: LayoutProps) {
       <div className="flex-1 flex flex-col min-h-screen lg:ml-80 min-w-0">
         {/* Header - Fixed positioning at top */}
         <div className={cn(
-          "fixed top-0 left-0 lg:left-80 z-30 bg-white border-b border-gray-200 h-16",
+          "fixed top-0 left-0 right-0 lg:left-80 z-30 bg-white border-b border-gray-200 h-16",
           "transition-all duration-300 ease-in-out"
         )}>
           <Navbar onToggleSidebar={() => setSidebarOpen(true)} />

@@ -19,10 +19,8 @@ import {
   useUserRentals,
   useUserReservations,
   useUpdateBookingStatus,
-  Inspection,
-  Reservation,
-  Rental,
 } from "@/hooks/useUserBookings";
+import { Inspection, Reservation, Rental } from "@/types/bookings";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function UserBookings() {
@@ -68,7 +66,11 @@ export default function UserBookings() {
     };
     setSelectedBooking(bookingWithUser);
     setSelectedBookingType(type);
+
+    type BookingWithUser = typeof bookingWithUser;
   };
+
+  
 
   const handleCloseDetails = () => {
     setSelectedBooking(null);

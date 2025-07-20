@@ -31,45 +31,45 @@ export function BookingStatusBadge({
       case "confirmed":
         return {
           className: "bg-green-100 text-green-800",
-          icon: <CheckCircleIcon className="w-3 h-3" />,
+          icon: <CheckCircleIcon />,
           text: status.charAt(0).toUpperCase() + status.slice(1),
         };
       case "active":
         return {
           className: "bg-blue-100 text-blue-800",
-          icon: <CheckCircleIcon className="w-3 h-3" />,
+          icon: <CheckCircleIcon />,
           text: "Active",
         };
       case "completed":
         return {
           className: "bg-gray-100 text-gray-800",
-          icon: <CheckCircleIcon className="w-3 h-3" />,
+          icon: <CheckCircleIcon />,
           text: "Completed",
         };
       case "cancelled":
       case "canceled":
         return {
           className: "bg-gray-100 text-gray-800",
-          icon: <XCircleIcon className="w-3 h-3" />,
+          icon: <XCircleIcon />,
           text: "Cancelled",
         };
       case "rejected":
       case "failed":
         return {
           className: "bg-red-100 text-red-800",
-          icon: <WarningIcon className="w-3 h-3" />,
+          icon: <WarningIcon />,
           text: "Rejected",
         };
       case "awaiting_payment":
         return {
           className: "bg-teal-100 text-teal-800",
-          icon: <CreditCardIcon className="w-3 h-3" />,
+          icon: <CreditCardIcon />,
           text: "Awaiting Payment",
         };
       default:
         return {
           className: "bg-gray-100 text-gray-800",
-          icon: <ClockIcon className="w-3 h-3" />,
+          icon: <ClockIcon />,
           text: status,
         };
     }

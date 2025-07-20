@@ -166,6 +166,7 @@ serve(async (req) => {
         payment_url: paymentUrl,
         payment_reference: paymentReference,
         status: "awaiting_payment",
+        payment_id: payment.id,
       })
       .eq("id", bookingId);
 

@@ -32,9 +32,13 @@ import {
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
-  
+
   // Use optimized hooks for data fetching
-  const { stats, isLoading: statsLoading, error: statsError } = useAdminDashboardStats();
+  const {
+    stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useAdminDashboardStats();
   const { activities, isLoading: activitiesLoading } = useAdminRecentActivity();
 
   // Handle errors with toast
@@ -228,10 +232,30 @@ export function AdminDashboard() {
         >
           <ScrollArea className="w-full whitespace-nowrap">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
-              <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1.5">Overview</TabsTrigger>
-              <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
-              <TabsTrigger value="properties" className="text-xs sm:text-sm px-2 py-1.5">Properties</TabsTrigger>
-              <TabsTrigger value="verification-hub" className="text-xs sm:text-sm px-2 py-1.5">KYC & Roles</TabsTrigger>
+              <TabsTrigger
+                value="overview"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="users"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Users
+              </TabsTrigger>
+              <TabsTrigger
+                value="properties"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Properties
+              </TabsTrigger>
+              <TabsTrigger
+                value="verification-hub"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                KYC & Roles
+              </TabsTrigger>
             </TabsList>
           </ScrollArea>
 

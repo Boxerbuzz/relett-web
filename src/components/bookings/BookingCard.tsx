@@ -3,7 +3,7 @@ import type {
   Rental,
   Reservation,
   PropertyItem,
-} from "@/hooks/useUserBookings";
+} from "@/types/bookings";
 import {
   CalendarIcon,
   MapPinIcon,

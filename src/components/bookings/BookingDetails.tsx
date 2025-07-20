@@ -5,6 +5,8 @@ import {
   PhoneIcon,
   XIcon,
   EnvelopeIcon,
+  HashIcon,
+  CopyIcon,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth";
 import { RentalDetailsContent } from "./RentalDetailsContent";
@@ -18,6 +20,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { formatDate } from "@/lib/utils";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { Badge } from "../ui/badge";
 
 export type BookingType = "rental" | "reservation" | "inspection";
 
@@ -74,10 +77,10 @@ export function BookingDetails({
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
       <ResponsiveDialogContent
-        className="max-w-5xl w-full max-h-[80vh] overflow-y-auto"
+        className="max-w-5xl w-full md:max-h-[80vh] flex flex-col p-0"
         size="3xl"
       >
-        <ResponsiveDialogHeader className="space-y-4">
+        <ResponsiveDialogHeader className="space-y-4 sticky top-0 bg-background z-10 border-b flex-shrink-0 p-4 rounded-tl-md rounded-tr-md mb-0">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <ResponsiveDialogTitle className="text-xl font-bold">
@@ -85,24 +88,36 @@ export function BookingDetails({
                 Details
               </ResponsiveDialogTitle>
               <div className="flex items-center gap-2 mt-2">
-                <BookingStatusBadge status={bookingData.status} />
-                <span className="text-sm text-muted-foreground">
-                  Created {formatDate(bookingData.created_at)}
-                </span>
+                <BookingStatusBadge status={bookingData.status} size="sm" />
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant={
+                      bookingData.status === "confirmed"
+                        ? "default"
+                        : bookingData.status === "pending"
+                        ? "secondary"
+                        : bookingData.status === "completed"
+                        ? "outline"
+                        : "destructive"
+                    }
+                    className="text-xs gap-x-1 cursor-pointer"
+                  >
+                    <HashIcon />
+                    {bookingData.id.slice(-8)}
+                    <CopyIcon />
+                  </Badge>
+                </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="md:hidden"
-            >
+            <Button variant="ghost" size="sm" onClick={onClose} className="">
               <XIcon className="h-4 w-4" />
             </Button>
           </div>
+        </ResponsiveDialogHeader>
 
+        <div className="flex-1 overflow-y-auto px-5 py-4">
           {isCustomer && bookingData.agent && (
-            <Card>
+            <Card className="mb-6">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Agent Information</CardTitle>
               </CardHeader>
@@ -128,9 +143,9 @@ export function BookingDetails({
               </CardContent>
             </Card>
           )}
-        </ResponsiveDialogHeader>
 
-        <div className="mt-0">{renderContent()}</div>
+          {renderContent()}
+        </div>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );
