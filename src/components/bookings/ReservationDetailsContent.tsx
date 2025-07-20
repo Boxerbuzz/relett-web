@@ -1,11 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  ChatCenteredIcon,
   LinkSimpleIcon,
   MapPinIcon,
   CalendarIcon,
-  UsersIcon,
   CreditCardIcon,
   WarningIcon,
   CheckCircleIcon,
@@ -18,6 +16,11 @@ import {
   BabyIcon,
   BabyCarriageIcon,
   CopyIcon,
+  Calendar,
+  ChatCenteredDots,
+  ShareIcon,
+  ChatCenteredDotsIcon,
+  HeartIcon,
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { usePayment } from "@/hooks/usePayment";
@@ -106,11 +109,15 @@ export function ReservationDetailsContent({
       case "pending":
         return (
           <div className="flex gap-2">
-            <Button onClick={() => handleStatusUpdate("confirmed")} size="sm">
+            <Button
+              variant="ghost"
+              onClick={() => handleStatusUpdate("confirmed")}
+              size="sm"
+            >
               Confirm Reservation
             </Button>
             <Button
-              variant="destructive"
+              variant="ghost"
               onClick={() => handleStatusUpdate("cancelled")}
               size="sm"
             >
@@ -121,11 +128,15 @@ export function ReservationDetailsContent({
       case "confirmed":
         return (
           <div className="flex gap-2">
-            <Button onClick={() => handleStatusUpdate("active")} size="sm">
+            <Button
+              variant="ghost"
+              onClick={() => handleStatusUpdate("active")}
+              size="sm"
+            >
               Check-in Guest
             </Button>
             <Button
-              variant="destructive"
+              variant="ghost"
               onClick={() => handleStatusUpdate("cancelled")}
               size="sm"
             >
@@ -184,7 +195,7 @@ export function ReservationDetailsContent({
       {/* Property Information */}
       {payment?.property && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <MapPinIcon className="w-5 h-5" />
               Property Details
@@ -224,6 +235,29 @@ export function ReservationDetailsContent({
           </CardContent>
         </Card>
       )}
+
+      <div className="space-y-2">
+        <h4 className="font-medium">Quick Actions</h4>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {}}
+            className={"text-red-500 border-red-200"}
+          >
+            <HeartIcon size={16} className={"fill-current"} />
+          </Button>
+          <Button variant="outline" size="sm">
+            <ShareIcon size={16} />
+          </Button>
+          <Button variant="outline" size="sm">
+            <ChatCenteredDotsIcon size={16} />
+          </Button>
+          <Button variant="outline" size="sm">
+            <CalendarIcon size={16} />
+          </Button>
+        </div>
+      </div>
 
       {/* Payment Information */}
       <Card>

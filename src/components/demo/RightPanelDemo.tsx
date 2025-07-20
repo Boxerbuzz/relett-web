@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, Heart, Share, Eye, Calendar, ChatCenteredDots } from "phosphor-react";
+import {
+  Star,
+  Heart,
+  Share,
+  Eye,
+  Calendar,
+  ChatCenteredDots,
+} from "phosphor-react";
 
 export function RightPanelDemo() {
   const [liked, setLiked] = useState(false);
@@ -34,9 +41,9 @@ export function RightPanelDemo() {
               <span>4.8 (24 reviews)</span>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           <div className="space-y-2">
             <h4 className="font-medium">Quick Actions</h4>
             <div className="flex flex-wrap gap-2">
@@ -59,7 +66,7 @@ export function RightPanelDemo() {
               </Button>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <h4 className="font-medium">Details</h4>
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -81,10 +88,8 @@ export function RightPanelDemo() {
               </div>
             </div>
           </div>
-          
-          <Button className="w-full">
-            Schedule Viewing
-          </Button>
+
+          <Button className="w-full">Schedule Viewing</Button>
         </CardContent>
       </Card>
 
@@ -108,7 +113,7 @@ export function RightPanelDemo() {
               <span className="font-medium text-green-600">12% p.a.</span>
             </div>
           </div>
-          
+
           <Button className="w-full" variant="outline">
             Invest Now
           </Button>

@@ -35,11 +35,21 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   UserPlusIcon,
+  DotsThreeVerticalIcon,
+  StarIcon,
+  TrashIcon,
+  ChatCenteredIcon,
 } from "@phosphor-icons/react";
 import { Json } from "@/types/database";
 import { PropertyMobileCard } from "./PropertyMobileCard";
 import { PropertyVerificationActions } from "@/components/verification/PropertyVerificationActions";
 import { capitalize } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface AdminProperty {
   id: string;
@@ -471,8 +481,40 @@ export function PropertyVerificationQueue() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-
-
+                      {property.is_verified && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <DotsThreeVerticalIcon className="w-5 h-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                deleteProperty(property.id);
+                              }}
+                              className="flex items-center gap-2 text-red-600"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                              Delete Property
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {}}
+                              className="flex items-center gap-2"
+                            >
+                              <StarIcon className="w-4 h-4" />
+                              Mark as Featured
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled
+                              className="flex items-center gap-2 opacity-60"
+                            >
+                              <ChatCenteredIcon className="w-4 h-4" />
+                              Chat with Owner
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                       {!hasActiveVerificationTask(property) &&
                         !property.is_verified && (
                           <Button
