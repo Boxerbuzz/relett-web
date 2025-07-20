@@ -2,8 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   LinkSimpleIcon,
-  MapPinIcon,
-  CalendarIcon,
   CreditCardIcon,
   WarningIcon,
   CheckCircleIcon,
@@ -16,11 +14,22 @@ import {
   BabyIcon,
   BabyCarriageIcon,
   CopyIcon,
-  Calendar,
-  ChatCenteredDots,
   ShareIcon,
   ChatCenteredDotsIcon,
   HeartIcon,
+  CalendarIcon,
+  HouseIcon,
+  MapPinIcon,
+  WarehouseIcon,
+  RulerIcon,
+  BedIcon,
+  BathtubIcon,
+  CarIcon,
+  PiIcon,
+  StackIcon,
+  ChairIcon,
+  ToiletIcon,
+  LetterCirclePIcon,
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { usePayment } from "@/hooks/usePayment";
@@ -41,8 +50,6 @@ interface ReservationDetailsContentProps {
 
 export function ReservationDetailsContent({
   reservation,
-  agent,
-  onStatusUpdate,
 }: ReservationDetailsContentProps) {
   const { payment, loading, error, verifyPaymentStatus, retryPayment } =
     usePayment({
@@ -60,17 +67,20 @@ export function ReservationDetailsContent({
     });
   };
 
+  const formatPrice = (price: any) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: price.currency || "NGN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price.amount / 100);
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
     }).format(amount);
-  };
-
-  const handleStatusUpdate = (newStatus: string) => {
-    if (onStatusUpdate) {
-      onStatusUpdate(reservation.id, newStatus);
-    }
   };
 
   const handleVerifyPayment = async () => {
@@ -102,57 +112,6 @@ export function ReservationDetailsContent({
         {status}
       </Badge>
     );
-  };
-
-  const getActionButtons = () => {
-    switch (reservation.status) {
-      case "pending":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => handleStatusUpdate("confirmed")}
-              size="sm"
-            >
-              Confirm Reservation
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleStatusUpdate("cancelled")}
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        );
-      case "confirmed":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => handleStatusUpdate("active")}
-              size="sm"
-            >
-              Check-in Guest
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleStatusUpdate("cancelled")}
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-        );
-      case "active":
-        return (
-          <Button onClick={() => handleStatusUpdate("completed")} size="sm">
-            Check-out Guest
-          </Button>
-        );
-      default:
-        return null;
-    }
   };
 
   const maskReference = (reference: string) => {
@@ -194,46 +153,126 @@ export function ReservationDetailsContent({
     <div className="space-y-6">
       {/* Property Information */}
       {payment?.property && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MapPinIcon className="w-5 h-5" />
-              Property Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg">
-                  {payment.property.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {payment.property.location?.address ||
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          {/* Main Card Content */}
+          <div className="flex flex-col md:flex-row">
+            {/* Image */}
+            {payment.property?.backdrop && (
+              <div className="w-full md:w-80 h-64 md:h-56">
+                <img
+                  src={payment.property.backdrop}
+                  alt="Property"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 p-6 items-center justify-ChatCenteredDotsIcon">
+              {/* Title */}
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {payment.property?.title || "Untitled Property"}
+              </h3>
+
+              {/* Location */}
+              <div className="flex items-center gap-1 text-gray-600 mb-4">
+                <MapPinIcon className="w-4 h-4" />
+                <span className="text-sm">
+                  {payment.property?.location?.address ||
                     "Address not available"}
-                </p>
+                </span>
               </div>
 
-              {payment.property.location && (
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">City:</span>{" "}
-                    {payment.property.location.city || "N/A"}
+              {/* Price and Main Specs */}
+              <div className="flex flex-col flex-wrap gap-4 mb-4">
+                {/* Price */}
+                {payment.property?.price && (
+                  <div className="flex items-center gap-1">
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatPrice(payment.property.price)}
+                    </p>
+                    {payment.property.price?.term && (
+                      <p className="text-xs text-gray-500 font-semibold mt-1">
+                        /{capitalize(payment.property.price.term)}
+                      </p>
+                    )}
                   </div>
-                  <div>
-                    <span className="font-medium">State:</span>{" "}
-                    {payment.property.location.state || "N/A"}
-                  </div>
-                  {payment.property.location.landmark && (
-                    <div className="col-span-2">
-                      <span className="font-medium">Landmark:</span>{" "}
-                      {payment.property.location.landmark}
+                )}
+
+                {/* Main specs */}
+                {payment.property?.specification && (
+                  <div className="flex flex-wrap gap-4 mb-4">
+                    <div className="flex items-center gap-1 text-gray-700">
+                      <BedIcon className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        {payment.property.specification.bedrooms} Beds
+                      </span>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    <div className="flex items-center gap-1 text-gray-700">
+                      <BathtubIcon className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        {payment.property.specification.bathrooms} Baths
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-gray-700">
+                      <RulerIcon className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        {payment.property.specification.area}{" "}
+                        {payment.property.specification.area_unit}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200"></div>
+
+          {/* Additional Specifications */}
+          {payment.property?.specification && (
+            <div className="px-6 py-4">
+              <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <CarIcon className="w-4 h-4" />
+                  <span>{payment.property.specification.garages} Garage</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <LetterCirclePIcon className="w-4 h-4" />
+                  <span>{payment.property.specification.parking} Parking</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <StackIcon className="w-4 h-4" />
+                  <span>{payment.property.specification.floors} Floors</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <CalendarIcon className="w-4 h-4" />
+                  <span>Built {payment.property.specification.year_built}</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <ChairIcon className="w-4 h-4" />
+                  <span>
+                    {payment.property.specification.is_furnished
+                      ? "Furnished"
+                      : "Unfurnished"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <ToiletIcon className="w-4 h-4" />
+                  <span>{payment.property.specification.toilets} Toilets</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       <div className="space-y-2">

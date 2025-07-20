@@ -54,8 +54,8 @@ export interface PaymentWithRelatedEntity extends PaymentInfo {
     id: string;
     title: string | null;
     location: any; // Changed from address to location
-    specification: Json;
-    price: Json;
+    specification: any;
+    price: any;
     backdrop: string | null;
   } | null;
 }
@@ -207,7 +207,10 @@ export function usePayment(options: UsePaymentOptions = {}) {
           property:properties(
             id,
             title,
-            location
+            location,
+            backdrop,
+            specification,
+            price
           )
         `
         )
