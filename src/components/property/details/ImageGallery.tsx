@@ -25,14 +25,14 @@ export function ImageGallery({
 }: ImageGalleryProps) {
   const currentImage = images[currentImageIndex];
   return (
-    <Card className="relative rounded-lg overflow-hidden h-100">
+    <Card className="relative rounded-lg overflow-hidden">
       <CardContent className="p-0">
         {currentImage ? (
           <>
             <img
               src={currentImage.url}
-              alt={propertyTitle || "Property"}
-              className="w-full h-full object-cover"
+              alt={propertyTitle || "property-image"}
+              className="w-full object-cover"
             />
             {images.length > 1 && (
               <>
@@ -82,4 +82,4 @@ export function ImageGallery({
       </CardContent>
     </Card>
   );
-} 
+}
