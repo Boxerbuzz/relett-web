@@ -42,6 +42,7 @@ export interface PropertyDetails {
     file_url: string;
     status: string | null;
     verified_at: string | null;
+    file_size: number| null,
   }>;
   tokenized_property: {
     id: string;

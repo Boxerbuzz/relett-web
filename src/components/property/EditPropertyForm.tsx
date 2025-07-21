@@ -116,7 +116,7 @@ export function EditPropertyForm({ propertyId }: EditPropertyFormProps) {
           images: property.property_images?.map((img: any) => ({
             path: img.url,
             name: img.url.split('/').pop() || 'image',
-            size: 0,
+            size: img.size,
             category: img.category || "exterior",
             url: img.url,
             is_primary: img.is_primary,
@@ -127,6 +127,7 @@ export function EditPropertyForm({ propertyId }: EditPropertyFormProps) {
             url: doc.file_url,
             size: doc.file_size || 0,
             mime_type: doc.mime_type || '',
+            file_size: doc.file_size || 0,
           })) || [],
           max_guest: property.max_guest || 0,
           is_exclusive: property.is_exclusive || false,

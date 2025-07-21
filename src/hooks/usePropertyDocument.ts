@@ -247,7 +247,7 @@ export function usePropertyDocument() {
   ): Promise<PropertyDocument | null> => {
     setIsLoading(true);
 
-    console.log(status, 'logger');
+    console.log(status, 'logger', documentId);
     try {
       const { data: verifiedDocument, error } = await supabase
         .from("property_documents")

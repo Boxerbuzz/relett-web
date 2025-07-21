@@ -5220,6 +5220,16 @@ export type Database = {
         Args: { _user_id?: string }
         Returns: boolean
       }
+      reassign_verifier_for_property: {
+        Args: {
+          p_property_id: string
+          p_verifier_id: string
+          p_task_type?: string
+          p_priority?: string
+          p_deadline?: string
+        }
+        Returns: undefined
+      }
       register_user_device: {
         Args: {
           p_device_id: string

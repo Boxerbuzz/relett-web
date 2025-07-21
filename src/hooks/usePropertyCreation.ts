@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as z from "zod";
-import { useCreateVerificationTasks } from "./useCreateVerificationTask";
+import { useCreateVerificationTasks } from "./usePropertyVerificationTasks";
 
 export const propertySchema = z.object({
   id: z.string().uuid(),

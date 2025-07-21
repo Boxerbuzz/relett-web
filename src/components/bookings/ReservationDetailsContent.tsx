@@ -16,26 +16,46 @@ import {
   CopyIcon,
   ShareIcon,
   ChatCenteredDotsIcon,
-  HeartIcon,
   CalendarIcon,
-  HouseIcon,
   MapPinIcon,
-  WarehouseIcon,
   RulerIcon,
   BedIcon,
   BathtubIcon,
   CarIcon,
-  PiIcon,
   StackIcon,
   ChairIcon,
   ToiletIcon,
   LetterCirclePIcon,
+  PathIcon,
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { usePayment } from "@/hooks/usePayment";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { capitalize } from "@/lib/utils";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+  ResponsiveDialogCloseButton,
+} from "@/components/ui/responsive-dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { DateRange } from "react-day-picker";
+import { CoordinatesDirectionsButton } from "../ui/directions-button";
 
 interface ReservationDetailsContentProps {
   reservation: any;
@@ -48,6 +68,226 @@ interface ReservationDetailsContentProps {
   onStatusUpdate?: (id: string, status: string) => void;
 }
 
+// Minimal UI-only dialog components
+// --- Reschedule Reservation Dialog ---
+function RescheduleReservationDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
+  return (
+    <ResponsiveDialog open={open} onOpenChange={onClose}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Reschedule Reservation</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>New Check-in &amp; Check-out Dates</Label>
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={1}
+              className="w-full"
+            />
+          </div>
+        </div>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button type="button" disabled={!dateRange || !dateRange.from}>
+            Submit Reschedule
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
+  );
+}
+
+// --- Report Reservation Dialog ---
+function ReportReservationDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [details, setDetails] = useState("");
+
+  return (
+    <ResponsiveDialog open={open} onOpenChange={onClose}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Report an Issue</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>Reason</Label>
+            <RadioGroup
+              value={reason}
+              onValueChange={setReason}
+              className="space-y-2"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem
+                  value="property_misrepresented"
+                  id="report-reason-1"
+                />
+                <Label htmlFor="report-reason-1">Property Misrepresented</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem
+                  value="host_unresponsive"
+                  id="report-reason-2"
+                />
+                <Label htmlFor="report-reason-2">Host Unresponsive</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="payment_issue" id="report-reason-3" />
+                <Label htmlFor="report-reason-3">Payment Issue</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="other" id="report-reason-4" />
+                <Label htmlFor="report-reason-4">Other</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <div>
+            <Label>Details</Label>
+            <Textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="Describe the issue"
+              rows={4}
+            />
+          </div>
+        </div>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button type="button" disabled={!reason || !details}>
+            Submit Report
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
+  );
+}
+
+// --- Dispute Reservation Dialog ---
+function DisputeReservationDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [type, setType] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  }
+
+  return (
+    <ResponsiveDialog open={open} onOpenChange={onClose}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Open Dispute</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>Dispute Type</Label>
+            <RadioGroup
+              value={type}
+              onValueChange={setType}
+              className="space-y-2"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="refund" id="dispute-type-1" />
+                <Label htmlFor="dispute-type-1">Refund</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="service_issue" id="dispute-type-2" />
+                <Label htmlFor="dispute-type-2">Service Issue</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="other" id="dispute-type-3" />
+                <Label htmlFor="dispute-type-3">Other</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <div>
+            <Label>Explanation</Label>
+            <Textarea
+              value={explanation}
+              onChange={(e) => setExplanation(e.target.value)}
+              placeholder="Explain your dispute"
+              rows={4}
+            />
+          </div>
+          <div>
+            <Label>Upload Images</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+            />
+            {files.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {files.map((file, idx) => (
+                  <img
+                    key={idx}
+                    src={URL.createObjectURL(file)}
+                    alt={`dispute-upload-${idx}`}
+                    className="w-20 h-20 object-cover rounded border"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogCloseButton />
+          <Button type="button" disabled={!type || !explanation}>
+            Submit Dispute
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
+  );
+}
+
+function ScanQRCodeDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Scan QR Code</DialogTitle>
+        </DialogHeader>
+        <div>QR Code Scanner UI goes here.</div>
+        <DialogClose asChild>
+          <Button onClick={onClose}>Close</Button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ReservationDetailsContent({
   reservation,
 }: ReservationDetailsContentProps) {
@@ -58,6 +298,10 @@ export function ReservationDetailsContent({
       autoFetch: true,
     });
   const { toast } = useToast();
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [showDispute, setShowDispute] = useState(false);
+  const [showScanQR, setShowScanQR] = useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -278,22 +522,50 @@ export function ReservationDetailsContent({
       <div className="space-y-2">
         <h4 className="font-medium">Quick Actions</h4>
         <div className="flex flex-wrap gap-2">
-          <Button
+          <CoordinatesDirectionsButton
+            lat={reservation.property.location.coordinates.lat}
+            lng={reservation.property.location.coordinates.lng}
+            children
             variant="outline"
             size="sm"
-            onClick={() => {}}
-            className={"text-red-500 border-red-200"}
-          >
-            <HeartIcon size={16} className={"fill-current"} />
-          </Button>
+            icon={<PathIcon size={16} className={"fill-current"} />}
+          />
+
           <Button variant="outline" size="sm">
             <ShareIcon size={16} />
           </Button>
           <Button variant="outline" size="sm">
             <ChatCenteredDotsIcon size={16} />
           </Button>
-          <Button variant="outline" size="sm">
-            <CalendarIcon size={16} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReschedule(true)}
+          >
+            <CalendarIcon size={16} /> Reschedule
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReport(true)}
+          >
+            <WarningIcon size={16} /> Report
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDispute(true)}
+          >
+            <ChatCenteredDotsIcon size={16} /> Dispute
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowScanQR(true)}
+          >
+            {/* Use a QR code icon from your icon set, or a placeholder */}
+            <span className="inline-block w-4 h-4 bg-gray-300 rounded" /> Scan
+            QR
           </Button>
         </div>
       </div>
@@ -533,6 +805,24 @@ export function ReservationDetailsContent({
           </CardContent>
         </Card>
       )}
+
+      {/* Dialogs */}
+      <RescheduleReservationDialog
+        open={showReschedule}
+        onClose={() => setShowReschedule(false)}
+      />
+      <ReportReservationDialog
+        open={showReport}
+        onClose={() => setShowReport(false)}
+      />
+      <DisputeReservationDialog
+        open={showDispute}
+        onClose={() => setShowDispute(false)}
+      />
+      <ScanQRCodeDialog
+        open={showScanQR}
+        onClose={() => setShowScanQR(false)}
+      />
     </div>
   );
 }

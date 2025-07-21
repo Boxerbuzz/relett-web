@@ -9,10 +9,14 @@ interface PropertyDocumentsDetailsSectionProps {
     file_url: string;
     status: string | null;
     verified_at: string | null;
+    file_size: number | null;
   }>;
 }
 
-export function PropertyDocumentsDetailsSection({ propertyId, propertyDocuments }: PropertyDocumentsDetailsSectionProps) {
+export function PropertyDocumentsDetailsSection({
+  propertyId,
+  propertyDocuments,
+}: PropertyDocumentsDetailsSectionProps) {
   if (!propertyDocuments || propertyDocuments.length === 0) return null;
   return (
     <PropertyDocumentViewer
@@ -24,10 +28,10 @@ export function PropertyDocumentsDetailsSection({ propertyId, propertyDocuments 
         file_url: doc.file_url,
         status: doc.status,
         verified_at: doc.verified_at,
-        file_size: 0,
+        file_size: doc.file_size || 0,
         mime_type: "",
         created_at: new Date().toISOString(),
       }))}
     />
   );
-} 
+}

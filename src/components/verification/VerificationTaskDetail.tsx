@@ -30,8 +30,9 @@ import {
 import { VerificationTask } from "./types";
 import { capitalize } from "@/lib/utils";
 import { VerificationStatusBadge } from "./VerificationStatusBadge";
-import { useVerificationTaskDetailAction } from "@/hooks/useDocumentAndVerificationTask";
+import { useVerificationTaskDetailAction } from "@/hooks/usePropertyVerificationTasks";
 import { PropertyDocumentVerificationList } from "./PropertyDocumentVerificationList";
+import { useAuth } from "@/lib/auth";
 
 interface VerificationTaskDetailProps {
   task: VerificationTask;
@@ -55,6 +56,10 @@ export function VerificationTaskDetail({
   onBack,
   onTaskUpdated,
 }: VerificationTaskDetailProps) {
+  const { user } = useAuth();
+  const canEdit =
+    !!task.verifier_id && user?.id && user.id === task.verifier_id;
+
   const [verifierNotes, setVerifierNotes] = useState(task.verifier_notes || "");
   const [decision, setDecision] = useState<"approved" | "rejected" | "">("");
   const [decisionReason, setDecisionReason] = useState(
@@ -231,7 +236,10 @@ export function VerificationTaskDetail({
         </CardContent>
       </Card>
 
-      <PropertyDocumentVerificationList propertyId={task.property_id} />
+      <PropertyDocumentVerificationList
+        propertyId={task.property_id}
+        canEdit={canEdit || false}
+      />
 
       {/* Verification Checklist and Notes */}
       <div className="flex flex-col md:flex-row gap-4 md:items-stretch">
@@ -256,6 +264,7 @@ export function VerificationTaskDetail({
                     onCheckedChange={(checked) =>
                       handleChecklistChange(item.key, !!checked)
                     }
+                    disabled={!canEdit}
                   />
                   <label
                     htmlFor={item.key}
@@ -297,6 +306,7 @@ export function VerificationTaskDetail({
                 placeholder="Enter your verification notes here..."
                 rows={6}
                 className="resize-none flex-1"
+                disabled={!canEdit}
               />
             </CardContent>
           </Card>
@@ -318,6 +328,7 @@ export function VerificationTaskDetail({
               <Select
                 value={decision}
                 onValueChange={(value: any) => setDecision(value)}
+                disabled={!canEdit}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select your decision" />
@@ -357,7 +368,7 @@ export function VerificationTaskDetail({
               <Button
                 variant="outline"
                 onClick={saveProgress}
-                disabled={isUpdating}
+                disabled={isUpdating || !canEdit}
               >
                 <FloppyDiskIcon className="w-4 h-4 mr-2" />
                 {isUpdating ? "Saving..." : "Save Progress"}
@@ -365,7 +376,10 @@ export function VerificationTaskDetail({
               <Button
                 onClick={completeVerification}
                 disabled={
-                  isSubmitting || !allChecksPassed || !verifierNotes.trim()
+                  isSubmitting ||
+                  !allChecksPassed ||
+                  !verifierNotes.trim() ||
+                  !canEdit
                 }
                 className={
                   decision === "approved"
@@ -378,6 +392,11 @@ export function VerificationTaskDetail({
             </div>
           </CardContent>
         </Card>
+      )}
+      {!canEdit && (
+        <div className="p-4 bg-yellow-50 text-yellow-800 rounded">
+          You cannot edit this task. It must be assigned to you.
+        </div>
       )}
     </div>
   );

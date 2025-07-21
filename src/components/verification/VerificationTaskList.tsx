@@ -15,7 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { MagnifyingGlassIcon, ArchiveBoxIcon } from "@phosphor-icons/react";
 import { VerificationTask } from "./types";
 import { VerificationTaskItem } from "./VerificationTaskItem";
-import { useVerificationTasks } from "@/hooks/useDocumentAndVerificationTask";
+import {
+  useVerificationTaskActions,
+  useVerificationTasks,
+} from "@/hooks/usePropertyVerificationTasks";
 
 interface VerificationTaskListProps {
   onTaskSelect?: (task: VerificationTask) => void;
@@ -33,45 +36,18 @@ export function VerificationTaskList({
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assigningTask, setAssigningTask] = useState<string | null>(null);
   const { tasks, loading, refetch } = useVerificationTasks();
+  const { assignTaskToSelf } = useVerificationTaskActions();
+
+  const handleAssignTask = async (task: VerificationTask) => {
+    setAssigningTask(task.id);
+    const { success } = await assignTaskToSelf(task.id, task.property_id);
+    if (success) {
+      refetch();
+    }
+    setAssigningTask(null);
+  };
 
   const { toast } = useToast();
-
-  const assignTaskToSelf = async (taskId: string) => {
-    setAssigningTask(taskId);
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from("verification_tasks")
-        .update({
-          verifier_id: user.id,
-          status: "assigned",
-          assigned_at: new Date().toISOString(),
-        })
-        .eq("id", taskId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Task Assigned",
-        description: "The verification task has been assigned to you.",
-      });
-
-      refetch();
-    } catch (error) {
-      console.error("Error assigning task:", error);
-      toast({
-        title: "Error",
-        description: "Failed to assign task",
-        variant: "destructive",
-      });
-    } finally {
-      setAssigningTask(null);
-    }
-  };
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -144,7 +120,7 @@ export function VerificationTaskList({
               key={task.id}
               task={task}
               onClick={() => onTaskSelect?.(task)}
-              onAssignToSelf={() => assignTaskToSelf(task.id)}
+              onAssignToSelf={() => handleAssignTask(task)}
               assigning={assigningTask === task.id}
               showAssignButton={showAssignButton}
             />

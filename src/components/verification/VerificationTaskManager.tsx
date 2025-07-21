@@ -59,7 +59,7 @@ export function VerificationTaskManager() {
   if (selectedTask) {
     return (
       <VerificationTaskDetail
-        task={selectedTask as VerificationTask}
+        task={selectedTask}
         onBack={handleBack}
         onTaskUpdated={handleTaskUpdated}
       />

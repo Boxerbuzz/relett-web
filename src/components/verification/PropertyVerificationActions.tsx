@@ -1,22 +1,33 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { 
-  UserCheck, 
-  Clock, 
-  AlertTriangle,
-  Send,
-  Users
-} from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import {
+  UserCheckIcon,
+  WarningIcon,
+  PaperPlaneIcon,
+  UsersIcon,
+} from "@phosphor-icons/react";
+import { SpinnerIcon } from "@phosphor-icons/react";
 
 interface Property {
   id: string;
@@ -40,63 +51,65 @@ interface PropertyVerificationActionsProps {
   onVerificationInitiated?: () => void;
 }
 
-export function PropertyVerificationActions({ 
-  property, 
-  onVerificationInitiated 
+export function PropertyVerificationActions({
+  property,
+  onVerificationInitiated,
 }: PropertyVerificationActionsProps) {
-  const [selectedVerifier, setSelectedVerifier] = useState('');
-  const [priority, setPriority] = useState('medium');
-  const [notes, setNotes] = useState('');
-  const [deadline, setDeadline] = useState('');
+  const [selectedVerifier, setSelectedVerifier] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const [notes, setNotes] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [verifiers, setVerifiers] = useState<Verifier[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingVerifiers, setLoadingVerifiers] = useState(false);
   const { hasRole } = useUserRoles();
   const { toast } = useToast();
 
-  const canInitiateVerification = hasRole('admin') || hasRole('agent');
+  const canInitiateVerification = hasRole("admin") || hasRole("agent");
 
   const fetchVerifiers = async () => {
     setLoadingVerifiers(true);
     try {
       // Get users with verifier role from the users table where user_type = 'verifier'
       const { data: verifierUsers, error: verifiersError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, email, is_active')
-        .eq('user_type', 'verifier')
-        .eq('is_active', true);
+        .from("users")
+        .select("id, first_name, last_name, email, is_active")
+        .eq("user_type", "verifier")
+        .eq("is_active", true);
 
       if (verifiersError) throw verifiersError;
 
       // Also get users who have additional verifier roles from user_roles table
       const { data: additionalVerifiers, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'verifier')
-        .eq('is_active', true);
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "verifier")
+        .eq("is_active", true);
 
       if (rolesError) throw rolesError;
 
       // Get user details for additional verifiers
-      const additionalVerifierIds = additionalVerifiers?.map(role => role.user_id) || [];
-      
+      const additionalVerifierIds =
+        additionalVerifiers?.map((role) => role.user_id) || [];
+
       let additionalVerifierUsers: Verifier[] = [];
       if (additionalVerifierIds.length > 0) {
-        const { data: additionalUsers, error: additionalUsersError } = await supabase
-          .from('users')
-          .select('id, first_name, last_name, email, is_active')
-          .in('id', additionalVerifierIds)
-          .eq('is_active', true);
+        const { data: additionalUsers, error: additionalUsersError } =
+          await supabase
+            .from("users")
+            .select("id, first_name, last_name, email, is_active")
+            .in("id", additionalVerifierIds)
+            .eq("is_active", true);
 
         if (additionalUsersError) throw additionalUsersError;
-        additionalVerifierUsers = additionalUsers as Verifier[] || [];
+        additionalVerifierUsers = (additionalUsers as Verifier[]) || [];
       }
 
       // Combine both lists and remove duplicates
       const allVerifiers = [...(verifierUsers || [])];
-      
-      additionalVerifierUsers.forEach(user => {
-        const existingVerifier = allVerifiers.find(v => v.id === user.id);
+
+      additionalVerifierUsers.forEach((user) => {
+        const existingVerifier = allVerifiers.find((v) => v.id === user.id);
         if (!existingVerifier) {
           allVerifiers.push(user);
         }
@@ -104,11 +117,11 @@ export function PropertyVerificationActions({
 
       setVerifiers(allVerifiers as Verifier[]);
     } catch (error) {
-      console.error('Error fetching verifiers:', error);
+      console.error("Error fetching verifiers:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch available verifiers',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to fetch available verifiers",
+        variant: "destructive",
       });
     } finally {
       setLoadingVerifiers(false);
@@ -118,9 +131,9 @@ export function PropertyVerificationActions({
   const handleInitiateVerification = async () => {
     if (!selectedVerifier) {
       toast({
-        title: 'Verifier Required',
-        description: 'Please select a verifier to assign this task to.',
-        variant: 'destructive'
+        title: "Verifier Required",
+        description: "Please select a verifier to assign this task to.",
+        variant: "destructive",
       });
       return;
     }
@@ -129,12 +142,12 @@ export function PropertyVerificationActions({
     try {
       const deadlineDate = deadline ? new Date(deadline).toISOString() : null;
 
-      const { data, error } = await supabase.rpc('assign_verification_task', {
+      const { data, error } = await supabase.rpc("reassign_verifier_for_property", {
         p_property_id: property.id,
         p_verifier_id: selectedVerifier,
-        p_task_type: 'property_verification',
+        p_task_type: "property_verification",
         p_priority: priority,
-        p_deadline: deadlineDate || undefined
+        p_deadline: deadlineDate || undefined,
       });
 
       if (error) throw error;
@@ -142,32 +155,30 @@ export function PropertyVerificationActions({
       // Add notes to the verification task if provided
       if (notes.trim() && data) {
         await supabase
-          .from('verification_tasks')
+          .from("verification_tasks")
           .update({ verifier_notes: notes })
-          .eq('id', data);
+          .eq("id", data);
       }
 
-
-      
-
       toast({
-        title: 'Verification Initiated',
-        description: 'Property verification task has been assigned successfully.',
+        title: "Verification Initiated",
+        description:
+          "Property verification task has been assigned successfully.",
       });
 
       // Reset form
-      setSelectedVerifier('');
-      setPriority('medium');
-      setNotes('');
-      setDeadline('');
+      setSelectedVerifier("");
+      setPriority("medium");
+      setNotes("");
+      setDeadline("");
 
       onVerificationInitiated?.();
     } catch (error) {
-      console.error('Error initiating verification:', error);
+      console.error("Error initiating verification:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to initiate property verification',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to initiate property verification",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -178,8 +189,12 @@ export function PropertyVerificationActions({
     if (property.is_verified) {
       return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
     }
-    if (property.status === 'pending') {
-      return <Badge className="bg-yellow-100 text-yellow-800">Pending Verification</Badge>;
+    if (property.status === "pending") {
+      return (
+        <Badge className="bg-yellow-100 text-yellow-800">
+          Pending Verification
+        </Badge>
+      );
     }
     return <Badge variant="outline">Unverified</Badge>;
   };
@@ -188,7 +203,7 @@ export function PropertyVerificationActions({
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+          <WarningIcon className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
           <p className="text-gray-600">
             You don't have permission to initiate property verification.
           </p>
@@ -201,7 +216,7 @@ export function PropertyVerificationActions({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <UserCheck className="w-5 h-5" />
+          <UserCheckIcon className="w-5 h-5" />
           Property Verification
         </CardTitle>
         <CardDescription>
@@ -212,7 +227,9 @@ export function PropertyVerificationActions({
         {/* Property Status */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
-            <p className="font-medium">{property.title || 'Untitled Property'}</p>
+            <p className="font-medium">
+              {property.title || "Untitled Property"}
+            </p>
             <p className="text-sm text-gray-600">Current Status</p>
           </div>
           {getStatusBadge(property)}
@@ -222,7 +239,10 @@ export function PropertyVerificationActions({
         <div className="space-y-2">
           <label className="text-sm font-medium">Assign Verifier</label>
           <div className="flex gap-2">
-            <Select value={selectedVerifier} onValueChange={setSelectedVerifier}>
+            <Select
+              value={selectedVerifier}
+              onValueChange={setSelectedVerifier}
+            >
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Select a verifier" />
               </SelectTrigger>
@@ -230,9 +250,11 @@ export function PropertyVerificationActions({
                 {verifiers.map((verifier) => (
                   <SelectItem key={verifier.id} value={verifier.id}>
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
+                      <UsersIcon className="w-4 h-4" />
                       {verifier.first_name} {verifier.last_name}
-                      <span className="text-sm text-gray-500">({verifier.email})</span>
+                      <span className="text-sm text-gray-500">
+                        ({verifier.email})
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -243,7 +265,7 @@ export function PropertyVerificationActions({
               onClick={fetchVerifiers}
               disabled={loadingVerifiers}
             >
-              {loadingVerifiers ? 'Loading...' : 'Refresh'}
+              {loadingVerifiers ? "Loading..." : "Refresh"}
             </Button>
           </div>
         </div>
@@ -287,13 +309,15 @@ export function PropertyVerificationActions({
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            min={new Date().toISOString().split('T')[0]}
+            min={new Date().toISOString().split("T")[0]}
           />
         </div>
 
         {/* Notes */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Additional Notes (Optional)</label>
+          <label className="text-sm font-medium">
+            Additional Notes (Optional)
+          </label>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -308,8 +332,9 @@ export function PropertyVerificationActions({
           disabled={loading || !selectedVerifier}
           className="w-full"
         >
-          <Send className="w-4 h-4 mr-2" />
-          {loading ? 'Initiating...' : 'Initiate Verification'}
+          <PaperPlaneIcon className="w-4 h-4 mr-2" />
+          {loading ? "Assigning..." : "Assign Verification"}
+          {loading && <SpinnerIcon className="animate-spin" />}
         </Button>
       </CardContent>
     </Card>

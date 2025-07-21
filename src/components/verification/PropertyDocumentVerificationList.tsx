@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   useDocumentVerificationRequests,
   useUpdateDocumentVerificationRequest,
-} from "@/hooks/useDocumentAndVerificationTask";
+} from "@/hooks/usePropertyVerificationTasks";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -36,6 +36,7 @@ import { Badge } from "../ui/badge";
 
 interface PropertyDocumentVerificationListProps {
   propertyId: string;
+  canEdit?: boolean; // add this
 }
 
 interface VerificationDialogProps {
@@ -255,9 +256,7 @@ function VerificationDialog({
   );
 }
 
-export function PropertyDocumentVerificationList({
-  propertyId,
-}: PropertyDocumentVerificationListProps) {
+export function PropertyDocumentVerificationList({ propertyId, canEdit = true }: PropertyDocumentVerificationListProps) {
   const { requests, loading, error, refetch } =
     useDocumentVerificationRequests(propertyId);
   const { updateRequest } = useUpdateDocumentVerificationRequest();
@@ -307,11 +306,21 @@ export function PropertyDocumentVerificationList({
 
   return (
     <div className="space-y-4">
+      {!canEdit && (
+        <div className="p-2 bg-yellow-50 text-yellow-800 rounded mb-2">
+          You cannot review or verify documents for this task.
+        </div>
+      )}
       {requests.map((req) => (
         <div key={req.id}>
           <Card
-            onClick={() => setOpenDialogId(req.id)}
-            className="cursor-pointer hover:shadow-lg transition"
+            onClick={canEdit ? () => setOpenDialogId(req.id) : undefined}
+            className={
+              "transition " +
+              (canEdit
+                ? "cursor-pointer hover:shadow-lg"
+                : "cursor-not-allowed opacity-60")
+            }
           >
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-lg">
@@ -363,7 +372,7 @@ export function PropertyDocumentVerificationList({
             </CardContent>
           </Card>
           {/* Dialog rendered outside the Card, controlled by openDialogId */}
-          {openDialogId === req.id && (
+          {openDialogId === req.id && canEdit && (
             <VerificationDialog
               request={req}
               onUpdate={handleUpdateRequest}

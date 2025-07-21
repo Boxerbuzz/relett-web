@@ -34,9 +34,10 @@ export interface VerificationTask {
       first_name: string;
       last_name: string;
       email: string;
+      avatar: string;
     };
   };
-  users?: {
+  user?: {
     first_name: string;
     last_name: string;
     email: string;

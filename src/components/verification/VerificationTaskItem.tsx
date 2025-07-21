@@ -7,6 +7,7 @@ import {
   HouseIcon,
   UserIcon,
   DotsThreeVerticalIcon,
+  UserPlusIcon,
 } from "@phosphor-icons/react";
 import { capitalize } from "@/lib/utils";
 import { VerificationStatusBadge } from "./VerificationStatusBadge";
@@ -88,18 +89,18 @@ export function VerificationTaskItem({
                 </span>
               </div>
               {/* Assignee Info */}
-              {task.users && (
+              {task.user && (
                 <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                   <span className="font-medium">Assignee:</span>
-                  {task.users.avatar && (
+                  {task.user.avatar && (
                     <img
-                      src={task.users.avatar}
+                      src={task.user.avatar}
                       alt="Assignee Avatar"
                       className="w-5 h-5 rounded-full object-cover"
                     />
                   )}
                   <span>
-                    {task.users.first_name} {task.users.last_name}
+                    {task.user.first_name} {task.user.last_name}
                   </span>
                 </div>
               )}
@@ -135,7 +136,9 @@ export function VerificationTaskItem({
                         setMenuOpen(false);
                       }}
                       disabled={assigning}
+                      className="gap-x-2"
                     >
+                      <UserPlusIcon />
                       {assigning ? "Assigning..." : "Assign to Me"}
                     </DropdownMenuItem>
                   )}

@@ -270,15 +270,28 @@ export function PropertyVerificationQueue() {
     if (property.is_verified) {
       return <Badge className="bg-green-100 text-green-800">Verified</Badge>;
     }
+    
     if (property.verification_tasks && property.verification_tasks.length > 0) {
       const latestTask = property.verification_tasks[0];
-      return <Badge className="bg-blue-100 text-blue-800">Under Review</Badge>;
+      
+      console.log(latestTask, 'Taskss', `${property.id}`)
+      // Check the actual task status
+      switch (latestTask.status) {
+        case "pending":
+          return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        case "assigned":
+          return <Badge className="bg-blue-100 text-blue-800">In Review</Badge>;
+        case "completed":
+          return <Badge className="bg-green-100 text-green-800">Review Complete</Badge>;
+        case "rejected":
+          return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+        default:
+          return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>;
+      }
     }
+    
     if (property.status === "active") {
       return <Badge className="bg-blue-100 text-blue-800">Active</Badge>;
-    }
-    if (property.status === "pending") {
-      return <Badge variant="secondary">Pending</Badge>;
     }
     return <Badge variant="outline">Draft</Badge>;
   };
@@ -515,16 +528,15 @@ export function PropertyVerificationQueue() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
-                      {!hasActiveVerificationTask(property) &&
-                        !property.is_verified && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleInitiateVerification(property)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <UserPlusIcon className="h-4 w-4" />
-                          </Button>
-                        )}
+                      {!property.is_verified && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleInitiateVerification(property)}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <UserPlusIcon className="h-4 w-4" />
+                        </Button>
+                      )}
                       {!property.is_verified &&
                         !hasActiveVerificationTask(property) && (
                           <>
