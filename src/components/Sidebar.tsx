@@ -14,8 +14,7 @@ import {
   MapPinIcon,
   BellIcon,
   PlusIcon,
-  MagnifyingGlassIcon,
-  ChartBarIcon,
+  MapPinPlusIcon,
   EyeIcon,
   BuildingsIcon,
   UsersIcon,
@@ -27,6 +26,8 @@ import {
   WrenchIcon,
   StarIcon,
   ChartDonutIcon,
+  UserIcon,
+  HeadCircuitIcon
 } from "@phosphor-icons/react";
 import {
   Collapsible,
@@ -37,7 +38,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TreeDonationDialog } from "@/components/dialogs/TreeDonationDialog";
 import { useState } from "react";
-import { UserIcon } from "@phosphor-icons/react";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -239,9 +239,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         {/* Property Management Section */}
         {filteredPropertyNav.length > 0 && (
           <Collapsible open={propertiesOpen} onOpenChange={setPropertiesOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
               <span className="flex items-center">
-                <FileTextIcon size={16} className="mr-2" />
+                <MapPinPlusIcon size={20} className="mr-2 text-gray-700" />
                 Property Management
               </span>
               <CaretRightIcon
@@ -261,9 +261,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         {/* Agent Tools Section */}
         {filteredAgentNav.length > 0 && (
           <Collapsible open={agentToolsOpen} onOpenChange={setAgentToolsOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
               <span className="flex items-center">
-                <EyeIcon size={16} className="mr-2" />
+                <HeadCircuitIcon size={20} className="mr-2" />
                 Agent Tools
                 <Badge variant="secondary" className="ml-2 text-xs">
                   Pro
