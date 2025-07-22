@@ -5,9 +5,9 @@ import {
   HeartIcon,
   CalendarIcon,
   StarIcon,
-  Bed,
-  Shower,
-  Square,
+  BedIcon,
+  ShowerIcon,
+  SquareIcon,
 } from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
 
@@ -33,7 +33,7 @@ export function PropertySummaryCard({
             <div className="flex items-center text-gray-600 mb-4">
               <MapPinIcon className="h-4 w-4 mr-2" />
               <span>
-                {`${property.location?.city || ""} ${
+                {`${property.location?.address || ""}, ${
                   property.location?.state || ""
                 }`.trim() || "Address not specified"}
               </span>
@@ -64,7 +64,7 @@ export function PropertySummaryCard({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Bed className="w-5 h-5 mr-1" />
+              <BedIcon className="w-5 h-5 mr-1" />
               <span className="text-lg font-semibold">
                 {property.specification?.bedrooms || 0}
               </span>
@@ -73,7 +73,7 @@ export function PropertySummaryCard({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Shower className="w-5 h-5 mr-1" />
+              <ShowerIcon className="w-5 h-5 mr-1" />
               <span className="text-lg font-semibold">
                 {property.specification?.bathrooms || 0}
               </span>
@@ -82,7 +82,7 @@ export function PropertySummaryCard({
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Square className="w-5 h-5 mr-1" />
+              <SquareIcon className="w-5 h-5 mr-1" />
               <span className="text-lg font-semibold">
                 {property.specification?.area || "N/A"}
               </span>

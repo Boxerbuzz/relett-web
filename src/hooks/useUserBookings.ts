@@ -75,10 +75,15 @@ export function useUserRentals(userId: string) {
             id,
             title,
             location,
+            backdrop,
+            price,
+            type, 
+            category,
             property_images (
               url,
               is_primary
-            )
+            ),
+            specification
           ),
           agent:users!agent_id (
             id,
@@ -94,7 +99,19 @@ export function useUserRentals(userId: string) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map((item) => ({
+        ...item,
+        property: {
+          ...item.properties,
+          title: item.properties.title || "",
+          property_images: item.properties.property_images.map((img) => {
+            return {
+              url: img.url,
+              is_primary: img.is_primary || false,
+            };
+          }),
+        }, // <-- map to expected key
+      }));
     },
     enabled: !!userId,
   });

@@ -76,7 +76,7 @@ export function PaymentDialog({
       const paymentRef = await initializePayment({
         type,
         bookingId,
-        amount,
+        amount: amount / 100,
         currency,
         metadata,
         propertyId,
@@ -178,7 +178,7 @@ export function PaymentDialog({
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="text-sm text-gray-600">Total Amount</div>
             <div className="text-2xl font-bold text-primary">
-              {formatAmount(amount, currency)}
+              {formatAmount(amount / 100, currency)}
             </div>
           </div>
 

@@ -12,6 +12,7 @@ export const systemLogger = (step: string, details?: unknown) => {
       detailsStr = ` - ${JSON.stringify(details)}`;
     } catch (error) {
       // Handle circular references or other JSON.stringify errors
+      console.error("Error stringifying details:", error);
       detailsStr = ` - [Unable to serialize details: ${String(details)}]`;
     }
   }

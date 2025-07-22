@@ -32,6 +32,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { PropertyDetails } from "@/hooks/usePropertyDetails";
+import { PriceCalculationService } from "@/lib/services/PriceCalculationService";
 
 const formSchema = z.object({
   payment_plan: z.string().min(1, "Payment plan is required"),
@@ -94,20 +95,18 @@ const RentalSheet = ({
     setShowPaymentDialog(true);
   };
 
-  const calculateAmount = () => {
-    const basePrice = property?.price?.amount || 0;
-    const paymentPlan = form.watch("payment_plan");
-
-    switch (paymentPlan) {
-      case "monthly":
-        return basePrice;
-      case "quarterly":
-        return basePrice * 3;
-      case "annually":
-        return basePrice * 12;
-      default:
-        return basePrice;
-    }
+  // Replace calculateAmount with a function that uses PriceCalculationService
+  const calculateRentalBreakdown = () => {
+    const paymentPlan = form.watch("payment_plan") as
+      | "monthly"
+      | "quarterly"
+      | "annually";
+    if (!paymentPlan) return null;
+    return PriceCalculationService.calculateRentalPrice({
+      pricing: property.price,
+      paymentPlan,
+      moveInDate: form.watch("move_in_date") || "",
+    });
   };
   return (
     <>
@@ -182,22 +181,44 @@ const RentalSheet = ({
                   )}
                 />
 
-                {form.watch("payment_plan") && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm font-medium">Payment Amount</div>
-                    <div className="text-lg font-bold text-primary">
-                      ₦{calculateAmount().toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {form.watch("payment_plan")} payment
-                    </div>
-                  </div>
-                )}
+                {form.watch("payment_plan") &&
+                  (() => {
+                    const breakdown = calculateRentalBreakdown();
+                    if (!breakdown) return null;
+                    return (
+                      <div className="bg-gray-50 p-4 rounded-lg space-y-1">
+                        <div className="text-sm font-medium">
+                          Payment Breakdown
+                        </div>
+                        <div className="text-lg font-bold text-primary">
+                          ₦
+                          {(breakdown
+                            ? breakdown.totalAmount / 100
+                            : 0
+                          ).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-600 mb-2">
+                          {form.watch("payment_plan")} payment
+                        </div>
+                        <ul className="text-xs text-gray-700 space-y-1">
+                          {breakdown &&
+                            breakdown.breakdown.map((item, idx) => (
+                              <li key={idx} className="flex justify-between">
+                                <span>{item.description}</span>
+                                <span>
+                                  ₦{(item.amount / 100).toLocaleString()}
+                                </span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
               </form>
             </Form>
           </div>
 
-          <SheetFooter>
+          <SheetFooter className="mt-9">
             <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
               Pay & Submit Request
             </Button>
@@ -209,7 +230,10 @@ const RentalSheet = ({
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
         type="rental"
-        amount={calculateAmount()}
+        amount={(() => {
+          const calc = calculateRentalBreakdown();
+          return calc ? Math.round(calc.totalAmount) : 0;
+        })()}
         currency="NGN"
         propertyId={property?.id}
         propertyTitle={property?.title}

@@ -330,7 +330,7 @@ export function ReservationSheet({
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
         type="reservation"
-        amount={finalTotal}
+        amount={finalTotal * 100}
         agentId={property.agent?.id || ""}
         currency="NGN"
         propertyId={property?.id}

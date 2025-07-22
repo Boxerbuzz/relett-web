@@ -1,275 +1,507 @@
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// deno-lint-ignore-file no-explicit-any
+import { serve } from "std/http/server.ts";
 import {
   createTypedSupabaseClient,
-  handleSupabaseError,
   createSuccessResponse,
   createErrorResponse,
   createResponse,
   createCorsResponse,
 } from "../shared/supabase-client.ts";
+import { systemLogger } from "../shared/system-logger.ts";
 
-interface LocationAnalysisRequest {
-  propertyId: string;
-}
-
-interface PropertyLocation {
-  address?: string;
-  city?: string;
-  state?: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-}
-
-interface Property {
-  id: string;
-  title?: string;
-  price?: {
-    amount?: number;
-  };
-  location?: PropertyLocation;
-  type?: string;
-  category?: string;
-}
-
-interface AreaClassification {
-  type: string;
-  description: string;
-  characteristics: string[];
-}
-
-interface SecurityAssessment {
-  score: number;
-  factors: string[];
-  recommendations: string[];
-}
-
-interface Transportation {
-  score: number;
-  publicTransport: string;
-  trafficCondition: string;
-  infrastructure: string;
-}
-
-interface Infrastructure {
-  powerSupply: string;
-  water: string;
-  internet: string;
-  waste: string;
-}
-
-interface Amenities {
-  education: string[];
-  healthcare: string[];
-  shopping: string[];
-  entertainment: string[];
-}
-
-interface EconomicFactors {
-  employmentScore: number;
-  incomeLevel: string;
-  commercialActivity: string;
-}
-
-interface FutureDevelopment {
-  growthPotential: string;
-  plannedProjects: string[];
-  outlook: string;
-}
-
-interface Environmental {
-  airQuality: string;
-  noiseLevel: string;
-  greenSpaces: string;
-  floodRisk: string;
-}
-
-interface InvestmentOutlook {
-  appreciationPotential: string;
-  rentalDemand: string;
-  riskLevel: string;
-}
-
+// Types for better type safety
 interface LocationAnalysis {
-  areaClassification: AreaClassification;
-  securityAssessment: SecurityAssessment;
-  transportation: Transportation;
-  infrastructure: Infrastructure;
-  amenities: Amenities;
-  economicFactors: EconomicFactors;
-  futureDevelopment: FutureDevelopment;
-  environmental: Environmental;
-  investmentOutlook: InvestmentOutlook;
+  areaClassification: {
+    type: "Urban" | "Suburban" | "Rural";
+    description: string;
+    characteristics: string[];
+  };
+  securityAssessment: {
+    score: number;
+    factors: string[];
+    recommendations: string[];
+  };
+  transportation: {
+    score: number;
+    publicTransport: string;
+    trafficCondition: "Light" | "Moderate" | "Heavy";
+    infrastructure: "Good" | "Fair" | "Poor";
+  };
+  infrastructure: {
+    powerSupply: "Stable" | "Intermittent";
+    water: "Available" | "Limited";
+    internet: "Good" | "Fair" | "Poor";
+    waste: "Regular" | "Irregular";
+  };
+  amenities: {
+    education: string[];
+    healthcare: string[];
+    shopping: string[];
+    entertainment: string[];
+  };
+  economicFactors: {
+    employmentScore: number;
+    incomeLevel: "High" | "Middle" | "Low";
+    commercialActivity: "High" | "Moderate" | "Low";
+  };
+  futureDevelopment: {
+    growthPotential: "High" | "Moderate" | "Low";
+    plannedProjects: string[];
+    outlook: "Positive" | "Stable" | "Declining";
+  };
+  environmental: {
+    airQuality: "Good" | "Moderate" | "Poor";
+    noiseLevel: "Low" | "Moderate" | "High";
+    greenSpaces: "Abundant" | "Moderate" | "Limited";
+    floodRisk: "Low" | "Moderate" | "High";
+  };
+  investmentOutlook: {
+    appreciationPotential: "High" | "Moderate" | "Low";
+    rentalDemand: "High" | "Good" | "Low";
+    riskLevel: "Low" | "Medium" | "High";
+  };
   overallScore: number;
   summary: string;
 }
 
-interface LocationAnalysisResponse {
-  propertyId: string;
-  location: PropertyLocation;
-  analysis: LocationAnalysis;
-  metadata: {
-    aiModel: string;
-    analysisTimestamp: string;
-    nearbyPropertiesAnalyzed: number;
+// Configuration constants
+const CONFIG = {
+  AI_MODEL: "gpt-4o-mini", // More cost-effective for this use case
+  MAX_TOKENS: 2000,
+  TEMPERATURE: 0.3,
+  TIMEOUT_MS: 30000,
+  MAX_RETRIES: 2,
+  CACHE_DURATION_HOURS: 24,
+  NEARBY_PROPERTIES_LIMIT: 15,
+};
+
+// Cache for location analyses
+const analysisCache = new Map<string, { data: any; timestamp: number }>();
+
+// Helper function to create cache key
+function createCacheKey(propertyId: string, location: any): string {
+  return `${propertyId}_${location?.city || ""}_${location?.state || ""}`;
+}
+
+// Helper function to check cache
+function getCachedAnalysis(cacheKey: string): any | null {
+  const cached = analysisCache.get(cacheKey);
+  if (!cached) return null;
+
+  const now = Date.now();
+  const cacheAge = now - cached.timestamp;
+  const maxAge = CONFIG.CACHE_DURATION_HOURS * 60 * 60 * 1000;
+
+  if (cacheAge > maxAge) {
+    analysisCache.delete(cacheKey);
+    return null;
+  }
+
+  return cached.data;
+}
+
+// Helper function to cache analysis
+function cacheAnalysis(cacheKey: string, data: any): void {
+  analysisCache.set(cacheKey, {
+    data,
+    timestamp: Date.now(),
+  });
+}
+
+// Enhanced AI response parser with better validation
+function parseAIResponse(content: string): LocationAnalysis {
+  if (!content || typeof content !== "string") {
+    throw new Error("Invalid AI response content");
+  }
+
+  let cleanContent = content.trim();
+
+  // Remove various markdown formatting
+  if (cleanContent.startsWith("```json")) {
+    cleanContent = cleanContent
+      .replace(/^```json\s*/, "")
+      .replace(/\s*```$/, "");
+  } else if (cleanContent.startsWith("```")) {
+    cleanContent = cleanContent.replace(/^```\s*/, "").replace(/\s*```$/, "");
+  }
+
+  cleanContent = cleanContent.replace(/^`+|`+$/g, "");
+
+  try {
+    const parsed = JSON.parse(cleanContent);
+
+    // Comprehensive validation and fallbacks
+    const validatedAnalysis: LocationAnalysis = {
+      areaClassification: {
+        type: ["Urban", "Suburban", "Rural"].includes(
+          parsed.areaClassification?.type
+        )
+          ? parsed.areaClassification.type
+          : "Urban",
+        description:
+          parsed.areaClassification?.description || "Mixed-use urban area",
+        characteristics: Array.isArray(
+          parsed.areaClassification?.characteristics
+        )
+          ? parsed.areaClassification.characteristics.slice(0, 5)
+          : ["Moderate density", "Mixed development"],
+      },
+      securityAssessment: {
+        score: Math.min(
+          Math.max(Number(parsed.securityAssessment?.score) || 75, 0),
+          100
+        ),
+        factors: Array.isArray(parsed.securityAssessment?.factors)
+          ? parsed.securityAssessment.factors.slice(0, 5)
+          : ["Police presence", "Community watch"],
+        recommendations: Array.isArray(
+          parsed.securityAssessment?.recommendations
+        )
+          ? parsed.securityAssessment.recommendations.slice(0, 5)
+          : ["Install security systems", "Join neighborhood watch"],
+      },
+      transportation: {
+        score: Math.min(
+          Math.max(Number(parsed.transportation?.score) || 70, 0),
+          100
+        ),
+        publicTransport: parsed.transportation?.publicTransport || "Available",
+        trafficCondition: ["Light", "Moderate", "Heavy"].includes(
+          parsed.transportation?.trafficCondition
+        )
+          ? parsed.transportation.trafficCondition
+          : "Moderate",
+        infrastructure: ["Good", "Fair", "Poor"].includes(
+          parsed.transportation?.infrastructure
+        )
+          ? parsed.transportation.infrastructure
+          : "Good",
+      },
+      infrastructure: {
+        powerSupply: ["Stable", "Intermittent"].includes(
+          parsed.infrastructure?.powerSupply
+        )
+          ? parsed.infrastructure.powerSupply
+          : "Stable",
+        water: ["Available", "Limited"].includes(parsed.infrastructure?.water)
+          ? parsed.infrastructure.water
+          : "Available",
+        internet: ["Good", "Fair", "Poor"].includes(
+          parsed.infrastructure?.internet
+        )
+          ? parsed.infrastructure.internet
+          : "Good",
+        waste: ["Regular", "Irregular"].includes(parsed.infrastructure?.waste)
+          ? parsed.infrastructure.waste
+          : "Regular collection",
+      },
+      amenities: {
+        education: Array.isArray(parsed.amenities?.education)
+          ? parsed.amenities.education.slice(0, 5)
+          : ["Schools nearby"],
+        healthcare: Array.isArray(parsed.amenities?.healthcare)
+          ? parsed.amenities.healthcare.slice(0, 5)
+          : ["Clinic available"],
+        shopping: Array.isArray(parsed.amenities?.shopping)
+          ? parsed.amenities.shopping.slice(0, 5)
+          : ["Local markets"],
+        entertainment: Array.isArray(parsed.amenities?.entertainment)
+          ? parsed.amenities.entertainment.slice(0, 5)
+          : ["Recreation center"],
+      },
+      economicFactors: {
+        employmentScore: Math.min(
+          Math.max(Number(parsed.economicFactors?.employmentScore) || 70, 0),
+          100
+        ),
+        incomeLevel: ["High", "Middle", "Low"].includes(
+          parsed.economicFactors?.incomeLevel
+        )
+          ? parsed.economicFactors.incomeLevel
+          : "Middle",
+        commercialActivity: ["High", "Moderate", "Low"].includes(
+          parsed.economicFactors?.commercialActivity
+        )
+          ? parsed.economicFactors.commercialActivity
+          : "Moderate",
+      },
+      futureDevelopment: {
+        growthPotential: ["High", "Moderate", "Low"].includes(
+          parsed.futureDevelopment?.growthPotential
+        )
+          ? parsed.futureDevelopment.growthPotential
+          : "Moderate",
+        plannedProjects: Array.isArray(
+          parsed.futureDevelopment?.plannedProjects
+        )
+          ? parsed.futureDevelopment.plannedProjects.slice(0, 5)
+          : ["Road improvements"],
+        outlook: ["Positive", "Stable", "Declining"].includes(
+          parsed.futureDevelopment?.outlook
+        )
+          ? parsed.futureDevelopment.outlook
+          : "Stable",
+      },
+      environmental: {
+        airQuality: ["Good", "Moderate", "Poor"].includes(
+          parsed.environmental?.airQuality
+        )
+          ? parsed.environmental.airQuality
+          : "Moderate",
+        noiseLevel: ["Low", "Moderate", "High"].includes(
+          parsed.environmental?.noiseLevel
+        )
+          ? parsed.environmental.noiseLevel
+          : "Moderate",
+        greenSpaces: ["Abundant", "Moderate", "Limited"].includes(
+          parsed.environmental?.greenSpaces
+        )
+          ? parsed.environmental.greenSpaces
+          : "Limited",
+        floodRisk: ["Low", "Moderate", "High"].includes(
+          parsed.environmental?.floodRisk
+        )
+          ? parsed.environmental.floodRisk
+          : "Low",
+      },
+      investmentOutlook: {
+        appreciationPotential: ["High", "Moderate", "Low"].includes(
+          parsed.investmentOutlook?.appreciationPotential
+        )
+          ? parsed.investmentOutlook.appreciationPotential
+          : "Moderate",
+        rentalDemand: ["High", "Good", "Low"].includes(
+          parsed.investmentOutlook?.rentalDemand
+        )
+          ? parsed.investmentOutlook.rentalDemand
+          : "Good",
+        riskLevel: ["Low", "Medium", "High"].includes(
+          parsed.investmentOutlook?.riskLevel
+        )
+          ? parsed.investmentOutlook.riskLevel
+          : "Medium",
+      },
+      overallScore: Math.min(
+        Math.max(Number(parsed.overallScore) || 75, 0),
+        100
+      ),
+      summary:
+        parsed.summary ||
+        "Location analysis based on available data and market indicators.",
+    };
+
+    return validatedAnalysis;
+  } catch (parseError) {
+    systemLogger("Failed to parse AI response:", {
+      error: parseError,
+      content: cleanContent.substring(0, 200),
+    });
+    throw new Error("Failed to parse AI analysis response");
+  }
+}
+
+// Enhanced AI API call with retries and timeout
+async function callOpenAI(prompt: string, retries = 0): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: CONFIG.AI_MODEL,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert Nigerian real estate analyst and urban planner. Provide comprehensive, accurate location analysis based on Nigerian market conditions. Always respond with valid JSON only, no markdown formatting.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: CONFIG.TEMPERATURE,
+        max_tokens: CONFIG.MAX_TOKENS,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.choices?.[0]?.message?.content) {
+      throw new Error("Invalid response format from OpenAI");
+    }
+
+    return result.choices[0].message.content;
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    systemLogger(
+      "[AI] Request failed",
+      `AI request failed: ${errorMessage} (retries: ${retries})`
+    );
+
+    const errorName = error instanceof Error ? error.name : "UnknownError";
+
+    if (errorName === "AbortError") {
+      throw new Error("AI request timed out");
+    }
+
+    // Retry logic
+    if (retries < CONFIG.MAX_RETRIES && !errorMessage.includes("401")) {
+      systemLogger(
+        "[AI] Request failed, retrying...",
+        `AI request failed, retrying... (${retries + 1}/${CONFIG.MAX_RETRIES})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (retries + 1)));
+      return callOpenAI(prompt, retries + 1);
+    }
+
+    throw error;
+  }
+}
+
+// Generate fallback analysis
+function generateFallbackAnalysis(location: any): LocationAnalysis {
+  const { address, city, state } = location;
+
+  return {
+    areaClassification: {
+      type: "Urban",
+      description: `Mixed-use area in ${city}, ${state}`,
+      characteristics: [
+        "Moderate density development",
+        "Mixed residential and commercial",
+        "Established neighborhood",
+      ],
+    },
+    securityAssessment: {
+      score: 75,
+      factors: [
+        "Community presence",
+        "Street lighting available",
+        "Neighborhood watch potential",
+      ],
+      recommendations: [
+        "Install security systems",
+        "Join neighborhood watch",
+        "Improve lighting where needed",
+      ],
+    },
+    transportation: {
+      score: 70,
+      publicTransport: "Available",
+      trafficCondition: "Moderate",
+      infrastructure: "Good",
+    },
+    infrastructure: {
+      powerSupply: "Stable",
+      water: "Available",
+      internet: "Good",
+      waste: "Regular",
+    },
+    amenities: {
+      education: ["Local schools", "Educational facilities nearby"],
+      healthcare: ["Healthcare centers", "Medical facilities"],
+      shopping: ["Local markets", "Shopping areas"],
+      entertainment: ["Recreation facilities", "Community centers"],
+    },
+    economicFactors: {
+      employmentScore: 70,
+      incomeLevel: "Middle",
+      commercialActivity: "Moderate",
+    },
+    futureDevelopment: {
+      growthPotential: "Moderate",
+      plannedProjects: ["Infrastructure improvements", "Development projects"],
+      outlook: "Stable",
+    },
+    environmental: {
+      airQuality: "Moderate",
+      noiseLevel: "Moderate",
+      greenSpaces: "Limited",
+      floodRisk: "Low",
+    },
+    investmentOutlook: {
+      appreciationPotential: "Moderate",
+      rentalDemand: "Good",
+      riskLevel: "Medium",
+    },
+    overallScore: 75,
+    summary: `Location analysis for ${
+      address || city
+    }, ${state}. The area offers moderate investment potential with good basic amenities and infrastructure. Analysis based on general market conditions.`,
   };
 }
 
-// Helper function to clean and parse AI response
-function parseAIResponse(content: string): LocationAnalysis {
-  // Remove markdown code blocks if present
-  let cleanContent = content.trim();
-  
-  // Remove ```json and ``` if present
-  if (cleanContent.startsWith('```json')) {
-    cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-  } else if (cleanContent.startsWith('```')) {
-    cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-  }
-  
-  // Remove any remaining backticks
-  cleanContent = cleanContent.replace(/^`+|`+$/g, '');
-  
-  // Try to parse the cleaned content
-  try {
-    const parsed = JSON.parse(cleanContent);
-    
-    // Validate and provide fallbacks for required structure
-    return {
-      areaClassification: parsed.areaClassification || {
-        type: "Urban",
-        description: "Mixed-use urban area",
-        characteristics: ["Moderate density", "Mixed development"]
-      },
-      securityAssessment: parsed.securityAssessment || {
-        score: 75,
-        factors: ["Police presence", "Community watch"],
-        recommendations: ["Install security systems", "Join neighborhood watch"]
-      },
-      transportation: parsed.transportation || {
-        score: 70,
-        publicTransport: "Available",
-        trafficCondition: "Moderate",
-        infrastructure: "Good"
-      },
-      infrastructure: parsed.infrastructure || {
-        powerSupply: "Stable",
-        water: "Available",
-        internet: "Good",
-        waste: "Regular collection"
-      },
-      amenities: parsed.amenities || {
-        education: ["Schools nearby"],
-        healthcare: ["Clinic available"],
-        shopping: ["Local markets"],
-        entertainment: ["Recreation center"]
-      },
-      economicFactors: parsed.economicFactors || {
-        employmentScore: 70,
-        incomeLevel: "Middle class",
-        commercialActivity: "Moderate"
-      },
-      futureDevelopment: parsed.futureDevelopment || {
-        growthPotential: "Moderate",
-        plannedProjects: ["Road improvements"],
-        outlook: "Stable"
-      },
-      environmental: parsed.environmental || {
-        airQuality: "Moderate",
-        noiseLevel: "Moderate",
-        greenSpaces: "Limited",
-        floodRisk: "Low"
-      },
-      investmentOutlook: parsed.investmentOutlook || {
-        appreciationPotential: "Moderate",
-        rentalDemand: "Good",
-        riskLevel: "Medium"
-      },
-      overallScore: Number(parsed.overallScore) || 75,
-      summary: parsed.summary || "Location analysis based on available data and market indicators."
-    };
-  } catch (parseError) {
-    console.error('Failed to parse cleaned content:', cleanContent);
-    throw parseError;
-  }
-}
+// Create optimized AI prompt
+function createAIPrompt(location: any, nearbyProperties: any[]): string {
+  const { address, city, state, coordinates } = location;
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return createCorsResponse();
-  }
+  const nearbyPropertiesContext =
+    nearbyProperties?.length > 0
+      ? nearbyProperties
+          .slice(0, 10)
+          .map(
+            (p) =>
+              `- ${p.title}: ₦${
+                p.price?.amount
+                  ? (p.price.amount / 100).toLocaleString()
+                  : "N/A"
+              } (${p.type} - ${p.category})`
+          )
+          .join("\n")
+      : "Limited nearby property data available";
 
-  try {
-    const { propertyId }: LocationAnalysisRequest = await req.json();
+  return `
+Analyze this Nigerian property location comprehensively:
 
-    if (!propertyId) {
-      return createResponse(
-        createErrorResponse("Property ID is required"),
-        400
-      );
-    }
-
-    const supabase = createTypedSupabaseClient();
-
-    // Get property details
-    const { data: property, error: propertyError } = await supabase
-      .from("properties")
-      .select("*")
-      .eq("id", propertyId)
-      .single();
-
-    if (propertyError || !property) {
-      return createResponse(createErrorResponse("Property not found"), 404);
-    }
-
-    // Extract location information
-    const location = property.location as PropertyLocation;
-    const address = location?.address || "";
-    const city = location?.city || "";
-    const state = location?.state || "";
-    const coordinates = location?.coordinates;
-
-    // Get nearby properties for context
-    const { data: nearbyProperties } = await supabase
-      .from("properties")
-      .select("id, title, price, location, type, category")
-      .eq("location->>state", state)
-      .eq("location->>city", city)
-      .neq("id", propertyId)
-      .limit(20);
-
-    // Prepare comprehensive AI prompt for location analysis
-    const aiPrompt = `
-Analyze this Nigerian property location and provide comprehensive location intelligence:
-
-Property Location:
-- Address: ${address}
+PROPERTY LOCATION:
+- Address: ${address || "Not specified"}
 - City: ${city}
 - State: ${state}
-- Coordinates: ${coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"}
+- Coordinates: ${
+    coordinates ? `${coordinates.lat}, ${coordinates.lng}` : "Not available"
+  }
 
-Nearby Properties Context:
-${nearbyProperties?.slice(0, 10).map((p: any) => `
-- ${p.title}: ₦${p.price?.amount ? (p.price.amount / 100).toLocaleString() : 'N/A'} (${p.type} - ${p.category})
-`).join("") || "Limited nearby property data"}
+NEARBY PROPERTIES CONTEXT:
+${nearbyPropertiesContext}
 
-Provide a comprehensive location analysis in this exact JSON format:
+ANALYSIS REQUIREMENTS:
+1. Consider Nigerian market conditions, infrastructure challenges, and local factors
+2. Be realistic about security, power, water, and transportation in Nigerian context
+3. Factor in state-specific characteristics for ${state}
+4. Consider typical urban planning and development patterns in Nigeria
+
+Provide analysis in this exact JSON format (no markdown, pure JSON only):
 {
   "areaClassification": {
     "type": "Urban/Suburban/Rural",
-    "description": "Area description",
-    "characteristics": ["char1", "char2"]
+    "description": "Detailed area description",
+    "characteristics": ["char1", "char2", "char3"]
   },
   "securityAssessment": {
     "score": 75,
-    "factors": ["factor1", "factor2"],
-    "recommendations": ["rec1", "rec2"]
+    "factors": ["factor1", "factor2", "factor3"],
+    "recommendations": ["rec1", "rec2", "rec3"]
   },
   "transportation": {
     "score": 70,
-    "publicTransport": "Available/Limited",
+    "publicTransport": "Available/Limited/None",
     "trafficCondition": "Light/Moderate/Heavy",
     "infrastructure": "Good/Fair/Poor"
   },
@@ -307,109 +539,142 @@ Provide a comprehensive location analysis in this exact JSON format:
     "riskLevel": "Low/Medium/High"
   },
   "overallScore": 75,
-  "summary": "Overall location assessment summary"
+  "summary": "Comprehensive location assessment summary"
+}`;
 }
-`;
 
-    // Call OpenAI API
-    const openAIResponse = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert real estate analyst and urban planner with comprehensive knowledge of Nigerian cities, infrastructure, and property markets. Always respond with valid JSON only, no markdown formatting."
-            },
-            {
-              role: "user",
-              content: aiPrompt,
-            },
-          ],
-          temperature: 0.3,
-          max_tokens: 3000,
-        }),
-      }
-    );
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return createCorsResponse();
+  }
 
-    if (!openAIResponse.ok) {
-      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
+  try {
+    // Validate request body
+    let requestBody: any;
+    if (!req.body) {
+      return createResponse(
+        createErrorResponse("Request body is required"),
+        400
+      );
     }
-
-    const aiResult = await openAIResponse.json();
-    const aiContent = aiResult.choices[0].message.content;
-
-    // Parse AI response with better error handling
-    let analysis: LocationAnalysis;
     try {
-      analysis = parseAIResponse(aiContent);
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError);
-      console.error("AI content received:", aiContent);
-      
-      // Fallback analysis if parsing fails
-      analysis = {
-        areaClassification: {
-          type: "Urban",
-          description: `Mixed-use area in ${city}, ${state}`,
-          characteristics: ["Moderate density", "Mixed development", "Residential area"]
-        },
-        securityAssessment: {
-          score: 75,
-          factors: ["Community presence", "Street lighting", "Access control"],
-          recommendations: ["Install security systems", "Join neighborhood watch", "Improve lighting"]
-        },
-        transportation: {
-          score: 70,
-          publicTransport: "Available",
-          trafficCondition: "Moderate",
-          infrastructure: "Good"
-        },
-        infrastructure: {
-          powerSupply: "Stable",
-          water: "Available",
-          internet: "Good",
-          waste: "Regular collection"
-        },
-        amenities: {
-          education: ["Local schools", "Educational facilities"],
-          healthcare: ["Healthcare centers", "Medical facilities"],
-          shopping: ["Local markets", "Shopping areas"],
-          entertainment: ["Recreation facilities", "Community centers"]
-        },
-        economicFactors: {
-          employmentScore: 70,
-          incomeLevel: "Middle class",
-          commercialActivity: "Moderate"
-        },
-        futureDevelopment: {
-          growthPotential: "Moderate",
-          plannedProjects: ["Infrastructure improvements", "Development projects"],
-          outlook: "Stable"
-        },
-        environmental: {
-          airQuality: "Moderate",
-          noiseLevel: "Moderate",
-          greenSpaces: "Limited",
-          floodRisk: "Low"
-        },
-        investmentOutlook: {
-          appreciationPotential: "Moderate",
-          rentalDemand: "Good",
-          riskLevel: "Medium"
-        },
-        overallScore: 75,
-        summary: `Location analysis for ${address || city}, ${state}. The area offers moderate investment potential with good basic amenities and infrastructure.`
-      };
+      requestBody = await req.json();
+    } catch (error: any) {
+      systemLogger(
+        "[AI-ANALYSIS]",
+        `Invalid JSON in request body: ${error.message}`
+      );
+      return createResponse(
+        createErrorResponse("Invalid JSON in request body"),
+        400
+      );
     }
 
-    const response: LocationAnalysisResponse = {
+    const { propertyId } = requestBody;
+
+    if (!propertyId || typeof propertyId !== "string") {
+      return createResponse(
+        createErrorResponse("Valid property ID is required"),
+        400
+      );
+    }
+
+    const supabase = createTypedSupabaseClient();
+
+    // Get property details with better error handling
+    const { data: property, error: propertyError } = await supabase
+      .from("properties")
+      .select("id, title, location, type, category, price")
+      .eq("id", propertyId)
+      .single();
+
+    if (propertyError) {
+      systemLogger("[AI-ANALYSIS]", propertyError);
+      return createResponse(
+        createErrorResponse("Property not found or database error"),
+        404
+      );
+    }
+
+    if (!property) {
+      return createResponse(createErrorResponse("Property not found"), 404);
+    }
+
+    // Extract and validate location information
+    let location: any = property.location;
+    if (
+      !location ||
+      typeof location !== "object" ||
+      Array.isArray(location) ||
+      location === null
+    ) {
+      location = {};
+    }
+    const { address, city, state, coordinates } = location;
+
+    if (!city || !state) {
+      return createResponse(
+        createErrorResponse("Property location information is incomplete"),
+        400
+      );
+    }
+
+    // Check cache first
+    const cacheKey = createCacheKey(propertyId, location);
+    const cachedAnalysis = getCachedAnalysis(cacheKey);
+
+    if (cachedAnalysis) {
+      systemLogger(
+        "[AI-ANALYSIS]",
+        `Using cached analysis for property ${propertyId}`
+      );
+      return createResponse(
+        createSuccessResponse({
+          ...cachedAnalysis,
+          metadata: {
+            ...cachedAnalysis.metadata,
+            cached: true,
+            cacheAge: Date.now() - analysisCache.get(cacheKey)!.timestamp,
+          },
+        })
+      );
+    }
+
+    // Get nearby properties for context with optimized query
+    const { data: nearbyProperties, error: nearbyError } = await supabase
+      .from("properties")
+      .select("id, title, price, location, type, category")
+      .eq("location->>state", state)
+      .eq("location->>city", city)
+      .neq("id", propertyId)
+      .limit(CONFIG.NEARBY_PROPERTIES_LIMIT);
+
+    if (nearbyError) {
+      systemLogger("Failed to fetch nearby properties:", nearbyError);
+    }
+
+    let analysis: LocationAnalysis;
+
+    try {
+      // Attempt AI analysis
+      const aiPrompt = createAIPrompt(location, nearbyProperties || []);
+      const aiContent = await callOpenAI(aiPrompt);
+      analysis = parseAIResponse(aiContent);
+
+      systemLogger("[AI-ANALYSIS]", `${JSON.stringify(analysis, null, 2)}`);
+
+      systemLogger(`AI analysis completed for property ${propertyId}`);
+    } catch (aiError) {
+      console.error("AI analysis failed:", aiError);
+
+      // Use fallback analysis
+      analysis = generateFallbackAnalysis(location);
+      systemLogger(`Using fallback analysis for property ${propertyId}`);
+    }
+
+    // Prepare response
+    const response = {
       propertyId,
       location: {
         address,
@@ -419,15 +684,22 @@ Provide a comprehensive location analysis in this exact JSON format:
       },
       analysis,
       metadata: {
-        aiModel: "gpt-4o",
+        aiModel: CONFIG.AI_MODEL,
         analysisTimestamp: new Date().toISOString(),
         nearbyPropertiesAnalyzed: nearbyProperties?.length || 0,
+        cached: false,
       },
     };
 
+    // Cache the successful analysis
+    cacheAnalysis(cacheKey, response);
+
     return createResponse(createSuccessResponse(response));
   } catch (error) {
-    console.error("Error in location analysis:", error);
-    return createResponse(handleSupabaseError(error), 500);
+    systemLogger("Unexpected error in location analysis:", error);
+    return createResponse(
+      createErrorResponse("Internal server error during location analysis"),
+      500
+    );
   }
 });

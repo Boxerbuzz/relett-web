@@ -1,6 +1,10 @@
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import { BinocularsIcon, CalendarBlankIcon } from "@phosphor-icons/react";
+import {
+  BinocularsIcon,
+  CalendarBlankIcon,
+  HouseLineIcon,
+} from "@phosphor-icons/react";
 
 interface ActiveBookingsSidebarProps {
   activeRentals: any[];
@@ -35,14 +39,9 @@ export function ActiveBookingsSidebar({
           onClick={() => onBookingClick("rental", rental)}
         >
           <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-            <svg
-              width="18"
-              height="18"
-              fill="currentColor"
-              className="text-primary"
-            >
-              <use href="#icon-house" />
-            </svg>
+            <span className="text-primary inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+              <HouseLineIcon size={24} />
+            </span>
           </span>
           <div>
             <span className="text-sm font-medium">Rental</span>
@@ -60,7 +59,7 @@ export function ActiveBookingsSidebar({
           onClick={() => onBookingClick("reservation", reservation)}
         >
           <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-          <CalendarBlankIcon size={24} />
+            <CalendarBlankIcon size={24} />
           </span>
           <div>
             <span className="text-sm font-medium">Reservation</span>

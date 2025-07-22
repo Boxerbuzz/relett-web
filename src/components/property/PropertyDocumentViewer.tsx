@@ -43,53 +43,13 @@ interface PropertyDocumentViewerProps {
 }
 
 export function PropertyDocumentViewer({
-  propertyId,
-  landTitleId,
   documents: docs,
-  onDocumentUploaded,
-  onDocumentDeleted,
-  onDocumentUpdated,
-  reloadDocuments,
 }: PropertyDocumentViewerProps) {
   const [documents, setDocuments] = useState<PropertyDocument[]>(docs);
   const [loading, setLoading] = useState(false);
   const [selectedDocument, setSelectedDocument] =
     useState<PropertyDocument | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
-  const { toast } = useToast();
-
-  const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-
-      let query = supabase
-        .from("property_documents")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (propertyId) {
-        query = query.eq("property_id", propertyId);
-      }
-
-      if (landTitleId) {
-        query = query.eq("land_title_id", landTitleId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setDocuments((data as PropertyDocument[]) || []);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch property documents",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getDocumentIcon = (type: string, mimeType: string) => {
     if (mimeType.startsWith("image/")) {

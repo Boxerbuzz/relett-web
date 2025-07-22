@@ -37,75 +37,74 @@ export class PriceCalculationService {
    */
   static calculateRentalPrice(input: RentalCalculationInput): BookingCalculation {
     const { pricing, paymentPlan } = input;
-    
-    let baseAmount = pricing.amount;
-    let multiplier = 1;
-    
-    // Apply payment plan multiplier
-    switch (paymentPlan) {
-      case 'monthly':
-        multiplier = 1;
-        baseAmount = pricing.monthly_payment || pricing.amount;
+
+    // Normalize to monthly price based on the term
+    let monthlyPrice: number;
+    switch (pricing.term) {
+      case "year":
+        monthlyPrice = pricing.amount / 12;
         break;
-      case 'quarterly':
-        multiplier = 3;
-        baseAmount = pricing.monthly_payment || pricing.amount;
+      case "quarter":
+        monthlyPrice = pricing.amount / 3;
         break;
-      case 'annually':
-        multiplier = 12;
-        baseAmount = pricing.yearly_payment || (pricing.monthly_payment || pricing.amount);
+      case "month":
+        monthlyPrice = pricing.amount;
         break;
+      case "week":
+        monthlyPrice = (pricing.amount * 52) / 12; // 52 weeks in a year, divided by 12 months
+        break;
+      case "night":
+        monthlyPrice = (pricing.amount * 30); // 30 nights in a month
+        break;
+      default:
+        monthlyPrice = pricing.amount;
     }
-    
-    const totalBaseAmount = baseAmount * multiplier;
-    
-    // Apply service charge from pricing object
+
+    // Determine multiplier for the selected payment plan
+    let multiplier = 1;
+    let planLabel = "";
+    switch (paymentPlan) {
+      case "monthly":
+        multiplier = 1;
+        planLabel = "Monthly rent";
+        break;
+      case "quarterly":
+        multiplier = 3;
+        planLabel = "Quarterly rent";
+        break;
+      case "annually":
+        multiplier = 12;
+        planLabel = "Annual rent";
+        break;
+      default:
+        planLabel = "Rent";
+    }
+
+    const totalBaseAmount = Math.round(monthlyPrice * multiplier);
+
+    // Charges
     const serviceCharge = pricing.service_charge || 0;
-    
-    // Apply discount from pricing object
     const discountAmount = pricing.discount || 0;
-    
-    // Use deposit from pricing object
     const deposit = pricing.deposit || 0;
-    
+
     // Calculate final amount
     const subtotal = totalBaseAmount + serviceCharge - discountAmount;
-    const totalAmount = subtotal;
-    
+    const totalAmount = subtotal + deposit;
+
+    // Breakdown
     const breakdown = [
-      {
-        description: `${paymentPlan.charAt(0).toUpperCase() + paymentPlan.slice(1)} rent`,
-        amount: totalBaseAmount
-      }
+      { description: planLabel, amount: totalBaseAmount }
     ];
-    
-    if (serviceCharge > 0) {
-      breakdown.push({
-        description: 'Service charge',
-        amount: serviceCharge
-      });
-    }
-    
-    if (discountAmount > 0) {
-      breakdown.push({
-        description: 'Discount',
-        amount: -discountAmount
-      });
-    }
-    
-    if (deposit > 0) {
-      breakdown.push({
-        description: 'Security deposit',
-        amount: deposit
-      });
-    }
-    
+    if (serviceCharge > 0) breakdown.push({ description: "Service charge", amount: serviceCharge });
+    if (discountAmount > 0) breakdown.push({ description: "Discount", amount: -discountAmount });
+    if (deposit > 0) breakdown.push({ description: "Security deposit", amount: deposit });
+
     return {
       baseAmount: totalBaseAmount,
       serviceCharge,
       discount: discountAmount,
       deposit,
-      totalAmount: totalAmount + deposit,
+      totalAmount,
       currency: pricing.currency,
       breakdown
     };
