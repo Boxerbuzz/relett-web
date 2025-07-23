@@ -23,6 +23,7 @@ import {
   XCircleIcon,
   ClockIcon,
   PencilSimpleIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
 
@@ -151,8 +152,14 @@ const Profile = () => {
                   onClick={() => setIsEditingProfile(!isEditingProfile)}
                   className="flex items-center gap-2"
                 >
-                  <PencilSimpleIcon size={16} />
-                  {isEditingProfile ? "Cancel" : "Edit Profile"}
+                  {isEditingProfile ? (
+                    <XIcon size={16} />
+                  ) : (
+                    <PencilSimpleIcon size={16} />
+                  )}
+                  <span className="hidden md:inline">
+                    {isEditingProfile ? "Cancel" : "Edit Profile"}
+                  </span>
                 </Button>
               </div>
               <CardDescription>

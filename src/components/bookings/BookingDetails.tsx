@@ -77,10 +77,10 @@ export function BookingDetails({
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
       <ResponsiveDialogContent
-        className="max-w-5xl w-full md:max-h-[80vh] flex flex-col p-0"
+        className="max-w-5xl w-full md:max-h-[80vh] flex flex-col p-0 gap-y-0"
         size="3xl"
       >
-        <ResponsiveDialogHeader className="space-y-4 sticky top-0 bg-background z-10 border-b flex-shrink-0 p-4 rounded-tl-md rounded-tr-md mb-0">
+        <ResponsiveDialogHeader className="space-y-4 sticky top-0 bg-background z-10 border-b flex-shrink-0 p-4 rounded-tl-md rounded-tr-md">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <ResponsiveDialogTitle className="text-xl font-bold">

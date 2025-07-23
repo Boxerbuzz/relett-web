@@ -7,6 +7,7 @@ import {
   HouseIcon,
   BuildingsIcon,
   ShoppingCartIcon,
+  ArchiveBoxIcon,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -70,8 +71,6 @@ export default function UserBookings() {
     type BookingWithUser = typeof bookingWithUser;
   };
 
-  
-
   const handleCloseDetails = () => {
     setSelectedBooking(null);
   };
@@ -90,7 +89,7 @@ export default function UserBookings() {
   };
 
   const BookingSkeleton = () => (
-    <Card>
+    <Card className="mb-4">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Skeleton className="w-16 h-16 rounded-lg" />
@@ -181,7 +180,7 @@ export default function UserBookings() {
             </div>
           ) : inspections.length === 0 ? (
             <EmptyState
-              icon={EyeIcon}
+              icon={ArchiveBoxIcon}
               title="No inspections yet"
               description="You haven't requested any property inspections yet."
             />
@@ -207,7 +206,7 @@ export default function UserBookings() {
             </div>
           ) : rentals.length === 0 ? (
             <EmptyState
-              icon={HouseIcon}
+              icon={ArchiveBoxIcon}
               title="No rental requests"
               description="You haven't submitted any rental requests yet."
             />
@@ -233,7 +232,7 @@ export default function UserBookings() {
             </div>
           ) : reservations.length === 0 ? (
             <EmptyState
-              icon={BuildingsIcon}
+              icon={ArchiveBoxIcon}
               title="No reservations"
               description="You haven't made any property reservations yet."
             />
@@ -251,7 +250,7 @@ export default function UserBookings() {
 
         <TabsContent value="purchases" className="space-y-4">
           <EmptyState
-            icon={ShoppingCartIcon}
+            icon={ArchiveBoxIcon}
             title="Purchase history coming soon"
             description="Property purchase tracking will be available in future updates."
           />

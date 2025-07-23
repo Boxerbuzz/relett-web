@@ -1,16 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  CalendarIcon,
-  EyeIcon,
-  HouseIcon,
-  UsersIcon,
-} from "@phosphor-icons/react";
+import { BinocularsIcon, HouseLineIcon } from "@phosphor-icons/react";
 import { useAgentInspections } from "@/hooks/useAgentInspections";
 import { useAgentRentals } from "@/hooks/useAgentRentals";
 import { useAgentReservations } from "@/hooks/useAgentReservations";
 import { ActivityCalendar } from "@/components/agent/ActivityCalendar";
 import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
+import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
+import { formatDate } from "@/lib/utils";
 
 const AgentCalendar = () => {
   const { inspections, isLoading: inspectionsLoading } = useAgentInspections();
@@ -51,7 +48,6 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">
                   Total Activities
@@ -64,7 +60,6 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <EyeIcon className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Inspections</p>
                 <p className="text-2xl font-bold">
@@ -77,7 +72,6 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <HouseIcon className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Rentals</p>
                 <p className="text-2xl font-bold">
@@ -90,7 +84,6 @@ const AgentCalendar = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <UsersIcon className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-muted-foreground">Reservations</p>
                 <p className="text-2xl font-bold">
@@ -121,8 +114,7 @@ const AgentCalendar = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <EyeIcon className="h-5 w-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
                   Upcoming Inspections
                 </CardTitle>
               </CardHeader>
@@ -133,20 +125,27 @@ const AgentCalendar = () => {
                   .map((inspection) => (
                     <div
                       key={inspection.id}
-                      className="mb-3 p-3 border rounded-lg"
+                      className="mb-3 p-3 border rounded-lg flex gap-x-3"
                     >
-                      <h4 className="font-medium text-sm">
-                        {inspection.property?.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(inspection.when || "").toLocaleDateString()}{" "}
-                        at{" "}
-                        {new Date(inspection.when || "").toLocaleTimeString()}
-                      </p>
-                      <p className="text-xs">
-                        {inspection.user?.first_name}{" "}
-                        {inspection.user?.last_name}
-                      </p>
+                      <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                        <span className="text-primary inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                          <BinocularsIcon size={24} />
+                        </span>
+                      </span>
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          {inspection.property?.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(inspection.when || "").toLocaleDateString()}{" "}
+                          at{" "}
+                          {new Date(inspection.when || "").toLocaleTimeString()}
+                        </p>
+                        <p className="text-xs">
+                          {inspection.user?.first_name}{" "}
+                          {inspection.user?.last_name}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 {inspections.filter(
@@ -161,12 +160,11 @@ const AgentCalendar = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HouseIcon className="h-5 w-5 text-green-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
                   Upcoming Move-ins
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 {rentals
                   .filter(
                     (r) =>
@@ -174,19 +172,27 @@ const AgentCalendar = () => {
                   )
                   .slice(0, 5)
                   .map((rental) => (
-                    <div key={rental.id} className="mb-3 p-3 border rounded-lg">
-                      <h4 className="font-medium text-sm">
-                        {rental.property?.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Move-in:{" "}
-                        {new Date(
-                          rental.move_in_date || ""
-                        ).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs">
-                        {rental.user?.first_name} {rental.user?.last_name}
-                      </p>
+                    <div
+                      key={rental.id}
+                      className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer"
+                      onClick={() => {}}
+                    >
+                      <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                        <span className="text-primary inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                          <HouseLineIcon size={24} />
+                        </span>
+                      </span>
+                      <div>
+                        <span className="text-sm font-medium">
+                          {rental.property.title}
+                        </span>
+                        <BookingStatusBadge status={rental.status} size="sm" />
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {rental.move_in_date
+                          ? formatDate(rental.move_in_date)
+                          : "-"}
+                      </span>
                     </div>
                   ))}
                 {rentals.filter(
@@ -198,11 +204,9 @@ const AgentCalendar = () => {
                 )}
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UsersIcon className="h-5 w-5 text-purple-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
                   Upcoming Check-ins
                 </CardTitle>
               </CardHeader>
@@ -215,21 +219,28 @@ const AgentCalendar = () => {
                   .map((reservation) => (
                     <div
                       key={reservation.id}
-                      className="mb-3 p-3 border rounded-lg"
+                      className="mb-3 p-3 border rounded-lg flex gap-x-3"
                     >
-                      <h4 className="font-medium text-sm">
-                        {reservation.property?.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Check-in:{" "}
-                        {new Date(
-                          reservation.from_date || ""
-                        ).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs">
-                        {reservation.user?.first_name}{" "}
-                        {reservation.user?.last_name}
-                      </p>
+                      <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                        <span className="text-primary inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                          <BinocularsIcon size={24} />
+                        </span>
+                      </span>
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          {reservation.property?.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          Check-in:{" "}
+                          {new Date(
+                            reservation.from_date || ""
+                          ).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs">
+                          {reservation.user?.first_name}{" "}
+                          {reservation.user?.last_name}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 {reservations.filter(
