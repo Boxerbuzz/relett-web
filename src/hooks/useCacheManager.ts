@@ -9,7 +9,7 @@ export function useCacheManager() {
 
   const invalidateQueries = {
     // Properties
-    allProperties: () => queryClient.invalidateQueries({ queryKey: queryKeys.properties.all }),
+    allProperties: () => queryClient.invalidateQueries({ queryKey: queryKeys.properties.all() }),
     userProperties: (userId?: string) => {
       const targetUserId = userId || user?.id;
       if (targetUserId) {
@@ -142,7 +142,7 @@ export function useCacheManager() {
     },
     
     allProperties: () => {
-      queryClient.removeQueries({ queryKey: queryKeys.properties.all });
+      queryClient.removeQueries({ queryKey: queryKeys.properties.all() });
     },
 
     userData: (userId?: string) => {

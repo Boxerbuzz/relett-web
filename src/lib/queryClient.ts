@@ -1,29 +1,146 @@
+
 import { QueryClient } from "@tanstack/react-query";
 
-// Create optimized query client with smart caching
+// Cache configuration
+export const cacheConfig = {
+  // Standard caching for most data
+  standard: {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
+  },
+  // Long-term caching for static data
+  longTerm: {
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour (was cacheTime)
+  },
+  // Short-term caching for dynamic data
+  shortTerm: {
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes (was cacheTime)
+  },
+  // Real-time data (no caching)
+  realTime: {
+    staleTime: 0,
+    gcTime: 0,
+  },
+  // Alias for real-time
+  realtime: {
+    staleTime: 0,
+    gcTime: 0,
+  },
+  // Static data (long-term caching)
+  static: {
+    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+  },
+};
+
+// Query key factory for consistent key management
+export const queryKeys = {
+  // User-related queries
+  user: {
+    profile: (userId?: string) => ["user", "profile", userId],
+    inspections: (userId?: string) => ["user", "inspections", userId],
+    rentals: (userId?: string) => ["user", "rentals", userId],
+    reservations: (userId?: string) => ["user", "reservations", userId],
+    notifications: (userId: string) => ["user", "notifications", userId],
+    activities: (userId: string) => ["user", "activities", userId],
+    roles: (userId: string) => ["user", "roles", userId],
+  },
+
+  // Property-related queries
+  properties: {
+    all: () => ["properties"],
+    list: (filters?: Record<string, any>) => ["properties", "list", filters],
+    lists: () => ["properties", "lists"],
+    detail: (propertyId: string) => ["properties", "detail", propertyId],
+    search: (query: string, filters?: Record<string, any>) => [
+      "properties",
+      "search",
+      query,
+      filters,
+    ],
+    bookedDates: (propertyId: string) => ["properties", "bookedDates", propertyId],
+    userProperties: (userId: string) => ["properties", "user", userId],
+    featured: () => ["properties", "featured"],
+  },
+
+  // Admin-related queries
+  admin: {
+    users: () => ["admin", "users"],
+    properties: () => ["admin", "properties"],
+    kyc: () => ["admin", "kyc"],
+    analytics: () => ["admin", "analytics"],
+    roleRequests: () => ["admin", "roleRequests"],
+  },
+
+  // Investment-related queries
+  investments: {
+    portfolio: (userId: string) => ["investments", "portfolio", userId],
+    opportunities: () => ["investments", "opportunities"],
+    tokenized: () => ["investments", "tokenized"],
+  },
+
+  // Chat and messaging queries
+  chat: {
+    conversations: (userId: string) => ["chat", "conversations", userId],
+    messages: (conversationId: string) => ["chat", "messages", conversationId],
+  },
+
+  // Messaging queries
+  messaging: {
+    conversations: (userId: string) => ["messaging", "conversations", userId],
+    messages: (conversationId: string) => ["messaging", "messages", conversationId],
+  },
+
+  // Notifications
+  notifications: {
+    preferences: (userId: string) => ["notifications", "preferences", userId],
+    list: (userId: string) => ["notifications", "list", userId],
+  },
+
+  // Market data
+  market: {
+    data: () => ["market", "data"],
+    analytics: () => ["market", "analytics"],
+  },
+
+  // Verification
+  verification: {
+    tasks: (propertyId: string) => ["verification", "tasks", propertyId],
+    stats: () => ["verification", "stats"],
+    requests: () => ["verification", "requests"],
+    document_request: (requestId: string) => ["verification", "document_request", requestId],
+  },
+
+  // Roles and permissions
+  roles: {
+    requests: () => ["roles", "requests"],
+    user: (userId: string) => ["roles", "user", userId],
+  },
+
+  // Tokenization
+  tokenization: {
+    properties: () => ["tokenization", "properties"],
+    portfolio: () => ["tokenization", "portfolio"],
+  },
+};
+
+// Create and configure query client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Cache data for 5 minutes before considering it stale
-      staleTime: 5 * 60 * 1000, // 5 minutes
-
-      // Keep unused data in cache for 10 minutes (renamed from cacheTime)
-      gcTime: 10 * 60 * 1000, // 10 minutes
-
-      // Only retry once to avoid excessive network requests
-      retry: 1,
-
-      // Don't refetch on window focus for better UX
+      ...cacheConfig.standard,
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
       refetchOnWindowFocus: false,
-
-      // Don't refetch on mount if data is still fresh
-      refetchOnMount: false,
-
-      // Refetch on reconnect for data consistency
-      refetchOnReconnect: true,
-
-      // Enable background refetching
-      refetchInterval: false,
+      refetchOnMount: true,
     },
     mutations: {
       retry: 1,
@@ -31,157 +148,30 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Enhanced query key factories for consistent cache management
-export const queryKeys = {
-  // Properties
-  properties: {
-    all: ["properties"] as const,
-    lists: () => [...queryKeys.properties.all, "list"] as const,
-    list: (filters: Record<string, any>) =>
-      [...queryKeys.properties.lists(), filters] as const,
-    details: () => [...queryKeys.properties.all, "detail"] as const,
-    detail: (id: string) => [...queryKeys.properties.details(), id] as const,
-    search: (query: string) =>
-      [...queryKeys.properties.all, "search", query] as const,
-    userProperties: (userId: string) =>
-      [...queryKeys.properties.all, "user", userId] as const,
-    featured: () => [...queryKeys.properties.all, "featured"] as const,
+// Cache management utilities
+export const cacheUtils = {
+  // Invalidate all queries for a specific entity
+  invalidateEntity: (entity: string) => {
+    queryClient.invalidateQueries({ queryKey: [entity] });
   },
 
-  // User data with user-specific keys
-  user: {
-    all: ["user"] as const,
-    profile: (userId?: string) =>
-      userId
-        ? ([...queryKeys.user.all, "profile", userId] as const)
-        : ([...queryKeys.user.all, "profile"] as const),
-    preferences: (userId?: string) =>
-      userId
-        ? ([...queryKeys.user.all, "preferences", userId] as const)
-        : ([...queryKeys.user.all, "preferences"] as const),
-    notifications: (userId?: string) =>
-      userId
-        ? ([...queryKeys.user.all, "notifications", userId] as const)
-        : ([...queryKeys.user.all, "notifications"] as const),
-    activities: (userId: string) =>
-      [...queryKeys.user.all, "activities", userId] as const,
-    roles: (userId?: string) =>
-      userId
-        ? ([...queryKeys.user.all, "roles", userId] as const)
-        : ([...queryKeys.user.all, "roles"] as const),
-    inspections: (userId?: string) => ['user', 'inspections', userId],
-    rentals: (userId?: string) => ['user', 'rentals', userId],
-    reservations: (userId?: string) => ['user', 'reservations', userId],
+  // Clear all cache
+  clearAll: () => {
+    queryClient.clear();
   },
 
-  // Notifications
-  notifications: {
-    all: ["notifications"] as const,
-    lists: () => [...queryKeys.notifications.all, "list"] as const,
-    list: (userId: string) =>
-      [...queryKeys.notifications.lists(), userId] as const,
-    preferences: (userId: string) =>
-      [...queryKeys.notifications.all, "preferences", userId] as const,
+  // Remove specific query from cache
+  removeQuery: (queryKey: any[]) => {
+    queryClient.removeQueries({ queryKey });
   },
 
-  // Market data (longer cache time)
-  market: {
-    all: ["market"] as const,
-    analytics: () => [...queryKeys.market.all, "analytics"] as const,
-    insights: () => [...queryKeys.market.all, "insights"] as const,
+  // Get cached data
+  getQueryData: (queryKey: any[]) => {
+    return queryClient.getQueryData(queryKey);
   },
 
-  // Investment data
-  investments: {
-    all: ["investments"] as const,
-    portfolio: (userId?: string) =>
-      userId
-        ? ([...queryKeys.investments.all, "portfolio", userId] as const)
-        : ([...queryKeys.investments.all, "portfolio"] as const),
-    tracking: (userId?: string) =>
-      userId
-        ? ([...queryKeys.investments.all, "tracking", userId] as const)
-        : ([...queryKeys.investments.all, "tracking"] as const),
-    tokenized: (userId?: string) =>
-      userId
-        ? ([...queryKeys.investments.all, "tokenized", userId] as const)
-        : ([...queryKeys.investments.all, "tokenized"] as const),
-  },
-
-  // Conversations and messaging
-  messaging: {
-    all: ["messaging"] as const,
-    conversations: (userId: string) =>
-      [...queryKeys.messaging.all, "conversations", userId] as const,
-    messages: (conversationId: string) =>
-      [...queryKeys.messaging.all, "messages", conversationId] as const,
-  },
-
-  // Verification requests
-  verification: {
-    all: ["verification"] as const,
-    requests: () => [...queryKeys.verification.all, "requests"] as const,
-    detail: (id: string) =>
-      [...queryKeys.verification.all, "detail", id] as const,
-    stats: () => [...queryKeys.verification.all, "stats"] as const,
-    documents: () => [...queryKeys.verification.all, "documents"] as const,
-    tasks: () => [...queryKeys.verification.all, "tasks"] as const,
-    document_request: () =>
-      [...queryKeys.verification.all, "document_verification_request"] as const,
-  },
-
-  // Admin specific keys
-  admin: {
-    all: ["admin"] as const,
-    users: () => [...queryKeys.admin.all, "users"] as const,
-    properties: () => [...queryKeys.admin.all, "properties"] as const,
-    kyc: () => [...queryKeys.admin.all, "kyc"] as const,
-    roleRequests: () => [...queryKeys.admin.all, "role-requests"] as const,
-    analytics: () => [...queryKeys.admin.all, "analytics"] as const,
-  },
-};
-
-// Cache configuration by data type
-export const cacheConfig = {
-  // Frequently changing data (chat, notifications)
-  realtime: {
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 2 * 60 * 1000, // 2 minutes
-  },
-
-  // Standard data (properties, users)
-  standard: {
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  },
-
-  // Admin data (needs fresh data more often)
-  admin: {
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-  },
-
-  // Analytics data (less frequent updates)
-  analytics: {
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 20 * 60 * 1000, // 20 minutes
-  },
-
-  // Market data (stable data)
-  market: {
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
-  },
-
-  // Static/semi-static data
-  static: {
-    staleTime: 60 * 60 * 1000, // 1 hour
-    gcTime: 24 * 60 * 60 * 1000, // 24 hours
-  },
-
-  // Long-lived data
-  persistent: {
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
+  // Set cached data
+  setQueryData: (queryKey: any[], data: any) => {
+    queryClient.setQueryData(queryKey, data);
   },
 };

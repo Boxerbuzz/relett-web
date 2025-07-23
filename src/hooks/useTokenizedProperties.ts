@@ -59,7 +59,7 @@ export function useTokenizedProperties() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.investments.tokenized(user?.id),
+    queryKey: queryKeys.investments.tokenized(),
     queryFn: async () => {
       if (!user?.id) {
         console.log('No user ID available for tokenized properties query');

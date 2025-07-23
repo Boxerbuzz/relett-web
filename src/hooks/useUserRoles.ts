@@ -31,7 +31,7 @@ export function useUserRoles() {
     error: queryError,
     refetch
   } = useQuery({
-    queryKey: queryKeys.user.roles(user?.id),
+    queryKey: queryKeys.user.roles(user?.id || ''),
     queryFn: async (): Promise<UserRole[]> => {
       if (!user?.id) {
         console.log("No user ID available for roles query");

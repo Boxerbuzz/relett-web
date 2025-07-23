@@ -23,7 +23,7 @@ export function useRecentActivity() {
     isLoading: loading,
     refetch
   } = useQuery<ActivityItem[], Error>({
-    queryKey: queryKeys.user.notifications(), // Reusing notifications key for activities
+    queryKey: queryKeys.user.notifications(user?.id || ''), // Reusing notifications key for activities
     queryFn: async (): Promise<ActivityItem[]> => {
       if (!user?.id) return [];
 
