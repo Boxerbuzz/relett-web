@@ -66,9 +66,9 @@ export default function UserBookings() {
       },
     };
     setSelectedBooking(bookingWithUser);
-    setSelectedBookingType(type);
 
-    type BookingWithUser = typeof bookingWithUser;
+    console.log("Booking clicked:", bookingWithUser);
+    setSelectedBookingType(type);
   };
 
   const handleCloseDetails = () => {

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { CheckCircle, Circle } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface Step {
   description?: string;
   completed: boolean;
   current?: boolean;
+  icon?: React.ReactNode;
 }
 
 interface ProgressIndicatorProps {
@@ -27,7 +29,18 @@ export function ProgressIndicator({
         {steps.map((step, index) => (
           <div key={step.id} className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              {step.completed ? (
+              {step.icon ? (
+                React.cloneElement(step.icon as React.ReactElement<any>, {
+                  className: cn(
+                    'h-6 w-6',
+                    step.completed
+                      ? 'text-green-600'
+                      : step.current
+                      ? 'text-blue-600 fill-blue-100'
+                      : 'text-gray-300'
+                  )
+                })
+              ) : step.completed ? (
                 <CheckCircle className="h-6 w-6 text-green-600" />
               ) : (
                 <Circle className={cn(
@@ -61,7 +74,18 @@ export function ProgressIndicator({
       {steps.map((step, index) => (
         <div key={step.id} className="flex items-center">
           <div className="flex flex-col items-center">
-            {step.completed ? (
+            {step.icon ? (
+              React.cloneElement(step.icon as React.ReactElement<any>, {
+                className: cn(
+                  'h-8 w-8',
+                  step.completed
+                    ? 'text-green-600'
+                    : step.current
+                    ? 'text-blue-600 fill-blue-100'
+                    : 'text-gray-300'
+                )
+              })
+            ) : step.completed ? (
               <CheckCircle className="h-8 w-8 text-green-600" />
             ) : (
               <Circle className={cn(
