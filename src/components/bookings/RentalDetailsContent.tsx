@@ -13,7 +13,7 @@ import {
   RulerIcon,
   ArmchairIcon,
   LinkIcon,
-  CheckCircle,
+  CheckCircleIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,7 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
     },
     {
       label: "Completed",
-      icon: <CheckCircle size={16} />,
+      icon: <CheckCircleIcon size={16} />,
     },
   ];
   // Map rental.status to step index
@@ -289,7 +289,7 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
             </div>
             <div className="flex items-center gap-1 mb-1">
               <span className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 border border-gray-300">
-                <CheckCircle size={12} />
+                <CheckCircleIcon size={12} />
               </span>
               <span className="text-xs font-medium">Completed</span>
             </div>
