@@ -7,6 +7,8 @@ import { DateRange } from "react-day-picker";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { PaymentDialog } from "@/components/payment/PaymentDialog";
+import { useBookedDates } from "@/hooks/useBookedDates";
+import { generateDisabledDates, checkDateAvailability, formatDateRange } from "@/utils/dateUtils";
 import {
   Sheet,
   SheetContent,
@@ -31,8 +33,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "@phosphor-icons/react";
+import { CalendarIcon, AlertCircle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   adults: z.number().min(1, "At least 1 adult required"),
@@ -56,6 +59,10 @@ export function ReservationSheet({
   const { toast } = useToast();
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+
+  // Fetch booked dates for this property
+  const { data: bookedRanges = [], isLoading: loadingBookedDates } = useBookedDates(property?.id);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,6 +73,20 @@ export function ReservationSheet({
       note: "",
     },
   });
+
+  // Generate disabled dates from booked ranges
+  const disabledDates = generateDisabledDates(bookedRanges);
+
+  // Custom disabled function for calendar
+  const isDateDisabled = (date: Date) => {
+    // Disable past dates
+    if (date < new Date()) return true;
+    
+    // Disable booked dates
+    return disabledDates.some(disabledDate => 
+      date.getTime() === disabledDate.getTime()
+    );
+  };
 
   const calculateNights = () => {
     if (!dateRange?.from || !dateRange?.to) return 0;
@@ -87,6 +108,32 @@ export function ReservationSheet({
     return totalCost;
   };
 
+  const checkSelectedDateAvailability = async () => {
+    if (!dateRange?.from || !dateRange?.to) return false;
+
+    setIsCheckingAvailability(true);
+    
+    try {
+      const availability = checkDateAvailability(
+        { from: dateRange.from, to: dateRange.to },
+        bookedRanges
+      );
+
+      if (!availability.isAvailable) {
+        toast({
+          title: "Dates Not Available",
+          description: `Selected dates conflict with an existing booking. Please choose different dates.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return true;
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
       toast({
@@ -106,7 +153,6 @@ export function ReservationSheet({
       return;
     }
 
-    // Add the missing validation
     if (dateRange.from >= dateRange.to) {
       toast({
         title: "Invalid Date Range",
@@ -115,6 +161,10 @@ export function ReservationSheet({
       });
       return;
     }
+
+    // Check date availability before proceeding to payment
+    const isAvailable = await checkSelectedDateAvailability();
+    if (!isAvailable) return;
 
     // Show payment dialog with reservation metadata
     setShowPaymentDialog(true);
@@ -148,6 +198,14 @@ export function ReservationSheet({
             >
               <div className="space-y-4">
                 <FormLabel>Select Dates</FormLabel>
+                {loadingBookedDates && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Loading availability calendar...
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -156,6 +214,7 @@ export function ReservationSheet({
                         "w-full justify-start text-left font-normal",
                         !dateRange && "text-muted-foreground"
                       )}
+                      disabled={loadingBookedDates}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {dateRange?.from ? (
@@ -180,9 +239,14 @@ export function ReservationSheet({
                       selected={dateRange}
                       onSelect={setDateRange}
                       numberOfMonths={2}
-                      disabled={(date) => date < new Date()}
+                      disabled={isDateDisabled}
                       className={cn("p-3 pointer-events-auto")}
                     />
+                    {disabledDates.length > 0 && (
+                      <div className="p-3 border-t text-xs text-muted-foreground">
+                        Red dates are unavailable due to existing bookings
+                      </div>
+                    )}
                   </PopoverContent>
                 </Popover>
               </div>
@@ -317,8 +381,11 @@ export function ReservationSheet({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={nights === 0}>
-                  Pay & Reserve
+                <Button 
+                  type="submit" 
+                  disabled={nights === 0 || loadingBookedDates || isCheckingAvailability}
+                >
+                  {isCheckingAvailability ? "Checking..." : "Pay & Reserve"}
                 </Button>
               </div>
             </form>
