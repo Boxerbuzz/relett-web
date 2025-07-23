@@ -32,7 +32,7 @@ export function usePropertyAnalytics(propertyId?: string) {
   } = useQuery({
     queryKey: propertyId 
       ? [...queryKeys.properties.detail(propertyId), 'analytics']
-      : [...queryKeys.properties.all, 'analytics'],
+      : [...queryKeys.properties.all(), 'analytics'],
     queryFn: async (): Promise<PropertyAnalytics> => {
       // Get property stats
       let propertiesQuery = supabase

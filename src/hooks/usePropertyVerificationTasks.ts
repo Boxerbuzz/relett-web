@@ -63,7 +63,7 @@ export function useCreateVerificationTasks() {
     onSuccess: () => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({
-        queryKey: queryKeys.verification.tasks(),
+        queryKey: queryKeys.verification.tasks('all'),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.verification.requests(),
@@ -124,7 +124,7 @@ export function useDocumentVerificationRequests(propertyId: string) {
     error: queryError,
     refetch,
   } = useQuery({
-    queryKey: [...queryKeys.verification.document_request(), propertyId],
+    queryKey: [...queryKeys.verification.document_request('requests'), propertyId],
     queryFn: async (): Promise<VerificationRequest[]> => {
       const { data, error } = await supabase
         .from("document_verification_requests")
@@ -199,7 +199,7 @@ export function useUpdateDocumentVerificationRequest() {
 
       // Invalidate relevant queries
       queryClient.invalidateQueries({
-        queryKey: queryKeys.verification.document_request(),
+        queryKey: queryKeys.verification.document_request('requests'),
       });
 
       return { success: true };
@@ -226,7 +226,7 @@ export function useVerificationTasks() {
     error: queryError,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.verification.tasks(),
+    queryKey: queryKeys.verification.tasks('all'),
     queryFn: async (): Promise<VerificationTask[]> => {
       const { data, error } = await supabase
         .from("verification_tasks")
@@ -325,7 +325,7 @@ export function useVerificationTaskDetailAction({
       });
 
       queryClient.invalidateQueries({
-        queryKey: queryKeys.verification.tasks(),
+        queryKey: queryKeys.verification.tasks('all'),
       });
       onTaskUpdated();
     } catch (error) {
@@ -378,7 +378,7 @@ export function useVerificationTaskDetailAction({
       });
 
       queryClient.invalidateQueries({
-        queryKey: queryKeys.verification.tasks(),
+        queryKey: queryKeys.verification.tasks('all'),
       });
       onTaskUpdated();
       if (onBack) onBack();
