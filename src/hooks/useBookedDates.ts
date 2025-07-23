@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { queryKeys, cacheConfig } from "@/lib/queryClient";
 
 interface BookedDateRange {
-  from_date: string;
-  to_date: string;
+  from_date: string | null;
+  to_date: string | null;
   id: string;
 }
 

@@ -7,8 +7,8 @@ export interface DateRange {
 }
 
 export interface BookedDateRange {
-  from_date: string;
-  to_date: string;
+  from_date: string | null;
+  to_date: string | null;
   id: string;
 }
 
@@ -20,6 +20,9 @@ export function generateDisabledDates(bookedRanges: BookedDateRange[]): Date[] {
 
   bookedRanges.forEach((range) => {
     try {
+      // Skip ranges with null dates
+      if (!range.from_date || !range.to_date) return;
+      
       const fromDate = parseISO(range.from_date);
       const toDate = parseISO(range.to_date);
       
@@ -47,6 +50,9 @@ export function checkDateAvailability(
 ): { isAvailable: boolean; conflictingBooking?: BookedDateRange } {
   for (const booking of bookedRanges) {
     try {
+      // Skip bookings with null dates
+      if (!booking.from_date || !booking.to_date) continue;
+      
       const bookingStart = parseISO(booking.from_date);
       const bookingEnd = parseISO(booking.to_date);
 

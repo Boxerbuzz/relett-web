@@ -23,6 +23,16 @@ export const cacheConfig = {
     staleTime: 0,
     gcTime: 0,
   },
+  // Alias for real-time
+  realtime: {
+    staleTime: 0,
+    gcTime: 0,
+  },
+  // Static data (long-term caching)
+  static: {
+    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+  },
 };
 
 // Query key factory for consistent key management
@@ -33,12 +43,16 @@ export const queryKeys = {
     inspections: (userId?: string) => ["user", "inspections", userId],
     rentals: (userId?: string) => ["user", "rentals", userId],
     reservations: (userId?: string) => ["user", "reservations", userId],
+    notifications: (userId: string) => ["user", "notifications", userId],
+    activities: (userId: string) => ["user", "activities", userId],
+    roles: (userId: string) => ["user", "roles", userId],
   },
 
   // Property-related queries
   properties: {
     all: () => ["properties"],
     list: (filters?: Record<string, any>) => ["properties", "list", filters],
+    lists: () => ["properties", "lists"],
     detail: (propertyId: string) => ["properties", "detail", propertyId],
     search: (query: string, filters?: Record<string, any>) => [
       "properties",
@@ -47,6 +61,8 @@ export const queryKeys = {
       filters,
     ],
     bookedDates: (propertyId: string) => ["properties", "bookedDates", propertyId],
+    userProperties: (userId: string) => ["properties", "user", userId],
+    featured: () => ["properties", "featured"],
   },
 
   // Admin-related queries
@@ -54,18 +70,59 @@ export const queryKeys = {
     users: () => ["admin", "users"],
     properties: () => ["admin", "properties"],
     kyc: () => ["admin", "kyc"],
+    analytics: () => ["admin", "analytics"],
+    roleRequests: () => ["admin", "roleRequests"],
   },
 
   // Investment-related queries
   investments: {
     portfolio: (userId: string) => ["investments", "portfolio", userId],
     opportunities: () => ["investments", "opportunities"],
+    tokenized: () => ["investments", "tokenized"],
   },
 
   // Chat and messaging queries
   chat: {
     conversations: (userId: string) => ["chat", "conversations", userId],
     messages: (conversationId: string) => ["chat", "messages", conversationId],
+  },
+
+  // Messaging queries
+  messaging: {
+    conversations: (userId: string) => ["messaging", "conversations", userId],
+    messages: (conversationId: string) => ["messaging", "messages", conversationId],
+  },
+
+  // Notifications
+  notifications: {
+    preferences: (userId: string) => ["notifications", "preferences", userId],
+    list: (userId: string) => ["notifications", "list", userId],
+  },
+
+  // Market data
+  market: {
+    data: () => ["market", "data"],
+    analytics: () => ["market", "analytics"],
+  },
+
+  // Verification
+  verification: {
+    tasks: (propertyId: string) => ["verification", "tasks", propertyId],
+    stats: () => ["verification", "stats"],
+    requests: () => ["verification", "requests"],
+    document_request: (requestId: string) => ["verification", "document_request", requestId],
+  },
+
+  // Roles and permissions
+  roles: {
+    requests: () => ["roles", "requests"],
+    user: (userId: string) => ["roles", "user", userId],
+  },
+
+  // Tokenization
+  tokenization: {
+    properties: () => ["tokenization", "properties"],
+    portfolio: () => ["tokenization", "portfolio"],
   },
 };
 
