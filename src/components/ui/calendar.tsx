@@ -17,11 +17,13 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
+  variant = "single",
   formatters,
   components,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"];
+  variant?: "single" | "range";
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -29,7 +31,8 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-4 rounded-lg shadow-sm w-full",
+        "bg-background group/calendar p-4 rounded-lg shadow-sm",
+        variant === "range" ? "w-auto" : "w-full",
         className
       )}
       captionLayout={captionLayout}
@@ -40,7 +43,12 @@ function Calendar({
       }}
       classNames={{
         root: cn("w-full", defaultClassNames.root, classNames?.root),
-        months: cn("flex flex-col gap-6", defaultClassNames.months),
+        months: cn(
+          variant === "range" 
+            ? "flex flex-row gap-2 md:gap-4" 
+            : "flex flex-col gap-6",
+          defaultClassNames.months
+        ),
         month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
         nav: cn(
           "flex items-center gap-2 w-full justify-between",
