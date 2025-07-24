@@ -13,11 +13,43 @@ export const config = {
     accountId: '', // This will be configured via backend
     privateKey: '', // This will be configured via backend  
     contracts: {
-      propertyRegistry: '', // These need to be set after contract deployment
+      propertyRegistry: '', // These will be set after contract deployment
       propertyMarketplace: '',
       revenueDistributor: '',
     },
-    isConfigured: () => false, // Temporarily disabled until proper backend integration
+    isConfigured: () => {
+      return Boolean(
+        config.hedera.contracts.propertyRegistry && 
+        config.hedera.contracts.propertyMarketplace
+      );
+    },
+    async deployContracts() {
+      try {
+        const response = await fetch('/api/deploy-property-contracts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+          },
+          body: JSON.stringify({ network: this.network })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to deploy contracts');
+        }
+
+        const result = await response.json();
+        
+        // Update contract addresses
+        this.contracts.propertyRegistry = result.propertyRegistryAddress;
+        this.contracts.propertyMarketplace = result.propertyTokenAddress;
+        
+        return result;
+      } catch (error) {
+        console.error('Contract deployment failed:', error);
+        throw error;
+      }
+    }
   },
   currency: {
     default: 'NGN',

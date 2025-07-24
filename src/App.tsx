@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthProvider";
 import { PropertyContractProvider } from "@/contexts/PropertyContractContext";
+import { HashPackProvider } from "@/contexts/HashPackContext";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -65,7 +66,8 @@ function App() {
       <Router>
         <AuthProvider>
           <PropertyContractProvider>
-            <div className="min-h-screen bg-background">
+            <HashPackProvider>
+              <div className="min-h-screen bg-background">
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/auth" element={<Auth />} />
@@ -359,8 +361,9 @@ function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </div>
-            <Toaster />
+              </div>
+              <Toaster />
+            </HashPackProvider>
           </PropertyContractProvider>
         </AuthProvider>
       </Router>

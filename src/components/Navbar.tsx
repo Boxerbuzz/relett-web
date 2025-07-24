@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useHashPack } from "@/contexts/HashPackContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,8 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "./profile/UserAvatar";
+import { WalletAvatar } from "./wallet/WalletAvatar";
+import { HashPackConnectDialog } from "./wallet/HashPackConnectDialog";
 import { Badge } from "@/components/ui/badge";
-import { Bell, List, Gear, SignOut, User, Star } from "phosphor-react";
+import { Bell, List, Gear, SignOut, User, Star, Wallet } from "phosphor-react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -24,7 +27,9 @@ interface NavbarProps {
 export function Navbar({ onToggleSidebar }: NavbarProps) {
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile();
+  const { wallet, disconnectWallet } = useHashPack();
   const [notificationCount] = useState(0);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
 
   if (!user) return null;
 
@@ -74,10 +79,18 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 p-2">
-              <UserAvatar size="sm" />
+              {/* Dual Avatar System - Stacked */}
+              <div className="relative">
+                <UserAvatar size="sm" />
+                <div className="absolute -bottom-1 -right-1">
+                  <WalletAvatar size="sm" className="w-5 h-5 border-2 border-white" />
+                </div>
+              </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium">{userDisplayName}</p>
-                <p className="text-xs text-gray-500">{roleDisplayName}</p>
+                <p className="text-xs text-gray-500">
+                  {wallet?.isConnected ? `${roleDisplayName} • ${wallet.address.slice(0, 8)}...` : roleDisplayName}
+                </p>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -134,6 +147,30 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            
+            {/* Wallet Section */}
+            {wallet?.isConnected ? (
+              <DropdownMenuItem 
+                onClick={disconnectWallet}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Wallet size={16} />
+                Disconnect Wallet
+                <Badge variant="outline" className="ml-auto text-xs">
+                  Connected
+                </Badge>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem 
+                onClick={() => setShowWalletDialog(true)}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Wallet size={16} />
+                Connect Wallet
+              </DropdownMenuItem>
+            )}
+            
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut()}
               className="flex items-center gap-2 cursor-pointer text-red-600"
@@ -144,6 +181,12 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* HashPack Connect Dialog */}
+      <HashPackConnectDialog 
+        isOpen={showWalletDialog} 
+        onClose={() => setShowWalletDialog(false)} 
+      />
     </header>
   );
 }

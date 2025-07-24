@@ -1,1 +1,10 @@
 project_id = "wossuijahchhtjzphsgh"
+
+[functions.create-investment-poll]
+verify_jwt = true
+
+[functions.cast-poll-vote]
+verify_jwt = true
+
+[functions.get-hedera-balance]
+verify_jwt = true
