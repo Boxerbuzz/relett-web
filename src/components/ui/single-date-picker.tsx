@@ -6,7 +6,7 @@ import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Datepicker from "react-tailwindcss-datepicker";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -47,37 +47,13 @@ export function SingleDatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3">
-          <Datepicker
-            value={
-              date
-                ? {
-                    startDate: date,
-                    endDate: date,
-                  }
-                : null
-            }
-            onChange={(newValue) => {
-              onDateChange(
-                newValue?.startDate ? new Date(newValue.startDate) : undefined
-              );
-            }}
-            asSingle={true}
-            useRange={false}
-            displayFormat="MMM DD, YYYY"
-            showShortcuts={false}
-            showFooter={false}
-            primaryColor="blue"
-            configs={{
-              shortcuts: {},
-            }}
-            classNames={{
-              container: () => "relative",
-              input: () => "hidden",
-              toggleButton: () => "hidden",
-            }}
-          />
-        </div>
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={onDateChange}
+          disabled={disabled}
+          initialFocus
+        />
       </PopoverContent>
     </Popover>
   );
