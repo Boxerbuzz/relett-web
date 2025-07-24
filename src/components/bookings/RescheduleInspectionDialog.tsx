@@ -201,7 +201,7 @@ export function RescheduleInspectionDialog({
                           disabled={(date) =>
                             date < new Date() || date < new Date("1900-01-01")
                           }
-                          autoFocus
+                          initialFocus
                           className="w-full"
                         />
                       </PopoverContent>

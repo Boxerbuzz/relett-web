@@ -7,7 +7,7 @@ import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Datepicker from "react-tailwindcss-datepicker";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -58,43 +58,16 @@ export function RangeDatePicker({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 min-w-[600px]" align="start">
-        <div className="p-3">
-          <Datepicker
-            value={
-              dateRange?.from && dateRange?.to
-                ? {
-                    startDate: dateRange.from,
-                    endDate: dateRange.to,
-                  }
-                : null
-            }
-            onChange={(newValue) => {
-              onDateRangeChange(
-                newValue?.startDate && newValue?.endDate
-                  ? {
-                      from: new Date(newValue.startDate),
-                      to: new Date(newValue.endDate),
-                    }
-                  : undefined
-              );
-            }}
-            useRange={true}
-            asSingle={false}
-            displayFormat="MMM DD, YYYY"
-            showShortcuts={false}
-            showFooter={false}
-            primaryColor="blue"
-            configs={{
-              shortcuts: {},
-            }}
-            classNames={{
-              container: () => "relative",
-              input: () => "hidden",
-              toggleButton: () => "hidden",
-            }}
-          />
-        </div>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          initialFocus
+          mode="range"
+          defaultMonth={dateRange?.from}
+          selected={dateRange}
+          onSelect={onDateRangeChange}
+          numberOfMonths={2}
+          disabled={disabled}
+        />
       </PopoverContent>
     </Popover>
   );
