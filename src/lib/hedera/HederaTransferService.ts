@@ -15,14 +15,6 @@ export class HederaTransferService extends HederaClientCore {
     amount: number;
     fromPrivateKey: string;
   }) {
-    if (this.isMockMode()) {
-      console.log('Mock mode: HBAR transfer simulated');
-      return {
-        transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
-      };
-    }
-
     try {
       const fromAccount = AccountId.fromString(params.fromAccountId);
       const toAccount = AccountId.fromString(params.toAccountId);

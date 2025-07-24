@@ -23,14 +23,6 @@ export class HederaTokenService extends HederaClientCore {
     totalSupply: number,
     adminKeys?: string[]
   ): Promise<{ tokenId: string; transactionId: string }> {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Token creation simulated");
-      return {
-        tokenId: `0.0.${Math.floor(Math.random() * 1000000)}`,
-        transactionId: `mock_tx_${Date.now()}`,
-      };
-    }
-
     try {
       let tokenCreateTx = new TokenCreateTransaction()
         .setTokenName(name)
@@ -77,15 +69,6 @@ export class HederaTokenService extends HederaClientCore {
     memo?: string;
     maxSupply?: number;
   }) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: NFT creation simulated");
-      return {
-        tokenId: `0.0.${Math.floor(Math.random() * 1000000)}`,
-        transactionId: `mock_tx_${Date.now()}`,
-        status: "SUCCESS",
-      };
-    }
-
     try {
       const transaction = new TokenCreateTransaction()
         .setTokenName(params.name)
@@ -124,14 +107,6 @@ export class HederaTokenService extends HederaClientCore {
     tokenId: string,
     accountPrivateKey: string
   ) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Token association simulated");
-      return {
-        transactionId: `mock_tx_${Date.now()}`,
-        status: "SUCCESS",
-      };
-    }
-
     try {
       const accountKey = PrivateKey.fromStringECDSA(accountPrivateKey);
       const account = AccountId.fromString(accountId);
@@ -161,15 +136,6 @@ export class HederaTokenService extends HederaClientCore {
     amount: number,
     receiverAccountId?: string
   ) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Token minting simulated");
-      return {
-        transactionId: `mock_tx_${Date.now()}`,
-        status: "SUCCESS",
-        serialNumbers: [],
-      };
-    }
-
     try {
       const token = TokenId.fromString(tokenId);
 
@@ -198,14 +164,6 @@ export class HederaTokenService extends HederaClientCore {
     amount: number;
     fromPrivateKey: string;
   }) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Token transfer simulated");
-      return {
-        transactionId: `mock_tx_${Date.now()}`,
-        status: "SUCCESS",
-      };
-    }
-
     try {
       const token = TokenId.fromString(params.tokenId);
       const fromAccount = AccountId.fromString(params.fromAccountId);
@@ -232,22 +190,6 @@ export class HederaTokenService extends HederaClientCore {
   }
 
   async getTokenInfo(tokenId: string) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Token info retrieval simulated");
-      return {
-        tokenId: tokenId,
-        name: "Mock Token",
-        symbol: "MOCK",
-        decimals: 2,
-        totalSupply: "1000000",
-        treasury: "0.0.2",
-        adminKey: undefined,
-        supplyKey: undefined,
-        isDeleted: false,
-        tokenType: "FUNGIBLE_COMMON",
-      };
-    }
-
     try {
       const token = TokenId.fromString(tokenId);
       const query = new TokenInfoQuery().setTokenId(token);
@@ -272,14 +214,6 @@ export class HederaTokenService extends HederaClientCore {
   }
 
   async getAccountBalance(accountId: string) {
-    if (this.isMockMode()) {
-      console.log("Mock mode: Account balance retrieval simulated");
-      return {
-        hbarBalance: "100.0",
-        tokens: [],
-      };
-    }
-
     try {
       const account = AccountId.fromString(accountId);
       const query = new AccountBalanceQuery().setAccountId(account);
