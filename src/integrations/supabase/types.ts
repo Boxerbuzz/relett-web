@@ -1627,9 +1627,13 @@ export type Database = {
       investment_polls: {
         Row: {
           allow_vote_changes: boolean | null
+          auto_execute_on_success: boolean | null
+          buyout_deadline: string | null
+          buyout_price: number | null
           consensus_threshold: number | null
           created_at: string
           created_by: string
+          current_buyout_votes: number | null
           description: string | null
           ends_at: string
           hedera_consensus_timestamp: string | null
@@ -1638,6 +1642,7 @@ export type Database = {
           investment_group_id: string
           is_anonymous: boolean | null
           metadata: Json | null
+          min_buyout_percentage: number | null
           min_participation_percentage: number | null
           poll_type: string
           requires_consensus: boolean | null
@@ -1649,9 +1654,13 @@ export type Database = {
         }
         Insert: {
           allow_vote_changes?: boolean | null
+          auto_execute_on_success?: boolean | null
+          buyout_deadline?: string | null
+          buyout_price?: number | null
           consensus_threshold?: number | null
           created_at?: string
           created_by: string
+          current_buyout_votes?: number | null
           description?: string | null
           ends_at: string
           hedera_consensus_timestamp?: string | null
@@ -1660,6 +1669,7 @@ export type Database = {
           investment_group_id: string
           is_anonymous?: boolean | null
           metadata?: Json | null
+          min_buyout_percentage?: number | null
           min_participation_percentage?: number | null
           poll_type?: string
           requires_consensus?: boolean | null
@@ -1671,9 +1681,13 @@ export type Database = {
         }
         Update: {
           allow_vote_changes?: boolean | null
+          auto_execute_on_success?: boolean | null
+          buyout_deadline?: string | null
+          buyout_price?: number | null
           consensus_threshold?: number | null
           created_at?: string
           created_by?: string
+          current_buyout_votes?: number | null
           description?: string | null
           ends_at?: string
           hedera_consensus_timestamp?: string | null
@@ -1682,6 +1696,7 @@ export type Database = {
           investment_group_id?: string
           is_anonymous?: boolean | null
           metadata?: Json | null
+          min_buyout_percentage?: number | null
           min_participation_percentage?: number | null
           poll_type?: string
           requires_consensus?: boolean | null
