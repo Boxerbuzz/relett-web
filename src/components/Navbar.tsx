@@ -79,17 +79,20 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 p-2">
-              {/* Dual Avatar System - Stacked */}
-              <div className="relative">
-                <UserAvatar size="sm" />
-                <div className="absolute -top-0 -right-5">
-                  <WalletAvatar size="sm" className="w-8 h-8 border-2 border-white" />
-                </div>
+              {/* Dual Avatar System - Stacked Horizontally */}
+              <div className="flex flex-row items-center relative">
+                <UserAvatar size="sm" className="z-10" />
+                <WalletAvatar
+                  size="sm"
+                  className="w-8 h-8 border-2 border-white -ml-3 z-0" // -ml-3 for overlap
+                />
               </div>
               <div className="hidden text-left">
                 <p className="text-sm font-medium">{userDisplayName}</p>
                 <p className="text-xs text-gray-500">
-                  {wallet?.isConnected ? `${roleDisplayName} • ${wallet.address.slice(0, 8)}...` : roleDisplayName}
+                  {wallet?.isConnected
+                    ? `${roleDisplayName} • ${wallet.address.slice(0, 8)}...`
+                    : roleDisplayName}
                 </p>
               </div>
             </Button>
@@ -147,10 +150,10 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            
+
             {/* Wallet Section */}
             {wallet?.isConnected ? (
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={disconnectWallet}
                 className="flex items-center gap-2 cursor-pointer"
               >
@@ -161,7 +164,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 </Badge>
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => setShowWalletDialog(true)}
                 className="flex items-center gap-2 cursor-pointer"
               >
@@ -169,7 +172,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 Connect Wallet
               </DropdownMenuItem>
             )}
-            
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut()}
@@ -183,9 +186,9 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
       </div>
 
       {/* HashPack Connect Dialog */}
-      <HashPackConnectDialog 
-        isOpen={showWalletDialog} 
-        onClose={() => setShowWalletDialog(false)} 
+      <HashPackConnectDialog
+        isOpen={showWalletDialog}
+        onClose={() => setShowWalletDialog(false)}
       />
     </header>
   );
