@@ -82,11 +82,11 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               {/* Dual Avatar System - Stacked */}
               <div className="relative">
                 <UserAvatar size="sm" />
-                <div className="absolute -bottom-1 -right-1">
-                  <WalletAvatar size="sm" className="w-5 h-5 border-2 border-white" />
+                <div className="absolute -top-0 -right-5">
+                  <WalletAvatar size="sm" className="w-8 h-8 border-2 border-white" />
                 </div>
               </div>
-              <div className="hidden md:block text-left">
+              <div className="hidden text-left">
                 <p className="text-sm font-medium">{userDisplayName}</p>
                 <p className="text-xs text-gray-500">
                   {wallet?.isConnected ? `${roleDisplayName} • ${wallet.address.slice(0, 8)}...` : roleDisplayName}
