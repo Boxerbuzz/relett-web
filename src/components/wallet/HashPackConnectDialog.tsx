@@ -82,24 +82,53 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
           {step === 'connect' && (
             <>
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                <Wallet size={32} className="text-blue-600" />
+                <Wallet size={32} className={isAvailable ? "text-blue-600" : "text-gray-400"} />
               </div>
               <div className="text-center space-y-2">
-                <h3 className="font-medium">Ready to Connect</h3>
+                <h3 className="font-medium">
+                  {isAvailable ? 'Ready to Connect' : 'HashPack Not Detected'}
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Click below to connect your HashPack wallet and start using blockchain features.
+                  {isAvailable 
+                    ? 'Click below to connect your HashPack wallet and start using blockchain features.'
+                    : 'We\'re looking for your HashPack extension. Please wait or follow the steps below.'
+                  }
                 </p>
               </div>
+              
+              {!isAvailable && (
+                <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-yellow-800 font-medium">Troubleshooting Steps:</p>
+                  <ol className="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
+                    <li>Install HashPack from the Chrome Web Store</li>
+                    <li>Enable the extension in your browser</li>
+                    <li>Refresh this page</li>
+                    <li>Disable other wallet extensions temporarily</li>
+                  </ol>
+                  <div className="pt-2 border-t border-yellow-200">
+                    <a 
+                      href="https://chrome.google.com/webstore/detail/hashpack/gjagmgiddbbciopjhllkdnddhcglnemk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Install HashPack Extension →
+                    </a>
+                  </div>
+                </div>
+              )}
+              
               <Button 
                 onClick={handleConnect}
                 className="w-full"
                 disabled={!isAvailable}
               >
-                {isAvailable ? 'Connect HashPack' : 'HashPack Not Available'}
+                {isAvailable ? 'Connect HashPack' : 'Waiting for HashPack...'}
               </Button>
+              
               {!isAvailable && (
-                <p className="text-xs text-amber-600 text-center">
-                  Please install the HashPack browser extension first
+                <p className="text-xs text-center text-muted-foreground">
+                  Check browser console for detection logs
                 </p>
               )}
             </>
