@@ -39,17 +39,56 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [isAvailable, setIsAvailable] = useState(false);
 
   useEffect(() => {
-    // Check if HashPack is available
+    let retryCount = 0;
+    const maxRetries = 10;
+    const baseDelay = 500;
+    let timeoutId: NodeJS.Timeout;
+
+    // Check if HashPack is available with exponential backoff
     const checkHashPack = () => {
+      console.log(`Checking for HashPack... attempt ${retryCount + 1}`);
+      
       if (typeof window !== 'undefined' && window.hashpack) {
+        console.log('HashPack detected!', window.hashpack);
         setIsAvailable(true);
+        return;
+      }
+
+      if (retryCount < maxRetries) {
+        retryCount++;
+        const delay = baseDelay * Math.pow(1.5, retryCount - 1);
+        console.log(`HashPack not found, retrying in ${delay}ms...`);
+        
+        timeoutId = setTimeout(checkHashPack, delay);
       } else {
-        // Retry checking after a short delay (HashPack might still be loading)
-        setTimeout(checkHashPack, 1000);
+        console.warn('HashPack not detected after maximum retries. Please ensure HashPack extension is installed and enabled.');
+        setIsAvailable(false);
       }
     };
 
+    // Start checking immediately
     checkHashPack();
+
+    // Also listen for potential HashPack events
+    const handleHashPackReady = () => {
+      console.log('HashPack ready event received');
+      if (window.hashpack) {
+        setIsAvailable(true);
+      }
+    };
+
+    // Some extensions dispatch custom events when ready
+    window.addEventListener('hashpack-ready', handleHashPackReady);
+    window.addEventListener('load', checkHashPack);
+
+    // Cleanup function
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener('hashpack-ready', handleHashPackReady);
+      window.removeEventListener('load', checkHashPack);
+    };
   }, []);
 
   const connectWallet = async () => {
