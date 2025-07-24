@@ -52,7 +52,6 @@ export function BookingDetails({
         return (
           <RentalDetailsContent
             rental={bookingData}
-            onStatusUpdate={onStatusUpdate}
           />
         );
       case "reservation":

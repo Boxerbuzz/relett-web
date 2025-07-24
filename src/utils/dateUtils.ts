@@ -1,5 +1,5 @@
 
-import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
+import { format, isWithinInterval, parseISO, eachDayOfInterval, startOfDay } from "date-fns";
 
 export interface DateRange {
   from: Date;
@@ -32,7 +32,10 @@ export function generateDisabledDates(bookedRanges: BookedDateRange[]): Date[] {
         end: toDate,
       });
       
-      disabledDates.push(...datesInRange);
+      // Normalize all dates to start of day for consistent comparison
+      const normalizedDates = datesInRange.map(date => startOfDay(date));
+      
+      disabledDates.push(...normalizedDates);
     } catch (error) {
       console.error("Error parsing date range:", range, error);
     }
