@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, startOfDay, isSameDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -73,12 +73,12 @@ export function ReservationSheet({
 
   // Custom disabled function for calendar
   const isDateDisabled = (date: Date) => {
-    // Disable past dates
-    if (date < new Date()) return true;
+    // Disable past dates (compare start of day to avoid time issues)
+    if (startOfDay(date) < startOfDay(new Date())) return true;
     
-    // Disable booked dates
+    // Disable booked dates - use day comparison instead of exact time
     return disabledDates.some(disabledDate => 
-      date.getTime() === disabledDate.getTime()
+      isSameDay(date, disabledDate)
     );
   };
 
