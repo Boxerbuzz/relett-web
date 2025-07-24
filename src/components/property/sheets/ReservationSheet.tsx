@@ -27,14 +27,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { RangeDatePicker } from "@/components/ui/range-date-picker";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
@@ -206,49 +200,18 @@ export function ReservationSheet({
                     </AlertDescription>
                   </Alert>
                 )}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dateRange && "text-muted-foreground"
-                      )}
-                      disabled={loadingBookedDates}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateRange?.from ? (
-                        dateRange.to ? (
-                          <>
-                            {format(dateRange.from, "LLL dd, y")} -{" "}
-                            {format(dateRange.to, "LLL dd, y")}
-                          </>
-                        ) : (
-                          format(dateRange.from, "LLL dd, y")
-                        )
-                      ) : (
-                        <span>Pick your dates</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0" align="start">
-                    <Calendar
-                      autoFocus
-                      mode="range"
-                      defaultMonth={dateRange?.from}
-                      selected={dateRange}
-                      onSelect={setDateRange}
-                      numberOfMonths={2}
-                      disabled={isDateDisabled}
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                    {disabledDates.length > 0 && (
-                      <div className="p-3 border-t text-xs text-muted-foreground">
-                        Red dates are unavailable due to existing bookings
-                      </div>
-                    )}
-                  </PopoverContent>
-                </Popover>
+                <RangeDatePicker
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  disabled={isDateDisabled}
+                  placeholder="Pick your dates"
+                  isLoading={loadingBookedDates}
+                />
+                {disabledDates.length > 0 && (
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Red dates are unavailable due to existing bookings
+                  </div>
+                )}
               </div>
 
               {nights > 0 && (
