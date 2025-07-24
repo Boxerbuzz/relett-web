@@ -188,10 +188,22 @@ export const PollsList: React.FC<PollsListProps> = ({ investmentGroupId }) => {
               {buyoutPolls.map((poll) => {
                 const userVote = userVotes[poll.id];
                 
+                // Map database status to BuyoutPoll status
+                const mapStatus = (dbStatus: string): "active" | "passed" | "failed" | "expired" => {
+                  switch (dbStatus) {
+                    case 'active': return 'active';
+                    case 'closed': return 'expired';
+                    case 'draft': return 'active';
+                    case 'cancelled': return 'failed';
+                    default: return 'active';
+                  }
+                };
+                
                 // Create a buyout poll object with required properties
                 const buyoutPoll = {
                   ...poll,
                   description: poll.description || '',
+                  status: mapStatus(poll.status),
                   buyout_price: 100000,
                   min_buyout_percentage: 75,
                   current_buyout_votes: 0,
