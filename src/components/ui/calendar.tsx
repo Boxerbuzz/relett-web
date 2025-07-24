@@ -44,15 +44,18 @@ function Calendar({
       classNames={{
         root: cn("w-full", defaultClassNames.root, classNames?.root),
         months: cn(
+          "flex flex-col gap-4",
+          defaultClassNames.months
+        ),
+        month_grid: cn(
           variant === "range" 
-            ? "flex flex-row gap-2 md:gap-4" 
+            ? "flex flex-row gap-4" 
             : "flex flex-col gap-6",
           defaultClassNames.months
         ),
         month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
         nav: cn(
           "flex items-center gap-2 w-full justify-between mb-4",
-          variant === "range" && "px-4",
           defaultClassNames.nav
         ),
         button_previous: cn(
