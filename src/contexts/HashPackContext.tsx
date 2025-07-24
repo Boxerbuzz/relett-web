@@ -59,20 +59,42 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
 
     setIsConnecting(true);
     try {
-      // This is a mock implementation - actual HashPack integration would use their SDK
-      // For now, simulate connection
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Use the actual HashPack extension API
+      const hashPackAPI = window.hashpack!;
+      const connectionResult = await hashPackAPI.connectWallet();
       
-      const mockWallet: HashPackWallet = {
-        id: '1',
-        address: '0.0.123456',
+      const wallet: HashPackWallet = {
+        id: connectionResult.accountId,
+        address: connectionResult.accountId,
         name: 'HashPack Wallet',
-        network: 'Hedera Testnet',
-        balance: '250.45 HBAR',
+        network: connectionResult.network === 'testnet' ? 'Hedera Testnet' : 'Hedera Mainnet',
+        balance: 'Loading...', // Balance will be fetched separately
         isConnected: true
       };
 
-      setWallet(mockWallet);
+      setWallet(wallet);
+      
+      // Fetch balance using existing Hedera service
+      try {
+        const response = await fetch('https://wossuijahchhtjzphsgh.supabase.co/functions/v1/get-hedera-balance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+          },
+          body: JSON.stringify({ accountId: connectionResult.accountId })
+        });
+        
+        if (response.ok) {
+          const balanceData = await response.json();
+          setWallet(prev => prev ? {
+            ...prev,
+            balance: `${balanceData.balance} HBAR`
+          } : null);
+        }
+      } catch (balanceError) {
+        console.warn('Failed to fetch balance:', balanceError);
+      }
     } catch (error) {
       console.error('Failed to connect HashPack wallet:', error);
       throw error;
@@ -82,6 +104,9 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   };
 
   const disconnectWallet = () => {
+    if (window.hashpack) {
+      window.hashpack.disconnect();
+    }
     setWallet(null);
   };
 
