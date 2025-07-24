@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +43,9 @@ export function TokenizePropertyDialog({
   onOpenChange,
   property,
 }: TokenizePropertyDialogProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     totalTokens: "100000",
     pricePerToken: "25",
@@ -65,6 +70,63 @@ export function TokenizePropertyDialog({
 
   const nextStep = () => setStep(Math.min(step + 1, 4));
   const prevStep = () => setStep(Math.max(step - 1, 1));
+
+  const handleSubmit = async () => {
+    if (!user || !property) {
+      toast.error("User authentication or property data missing");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Call the tokenization edge function
+      const { data, error } = await supabase.functions.invoke('tokenize-property', {
+        body: {
+          propertyId: property.id,
+          tokenName: `${property.title} Token`,
+          tokenSymbol: `${property.title.substring(0, 3).toUpperCase()}T`,
+          totalSupply: parseInt(formData.totalTokens),
+          pricePerToken: parseFloat(formData.pricePerToken),
+          minimumInvestment: parseFloat(formData.minimumInvestment),
+          expectedROI: parseFloat(formData.expectedROI),
+          distributionFrequency: formData.distributionFrequency,
+          lockupPeriod: parseInt(formData.lockupPeriod),
+          description: formData.description,
+          riskLevel: formData.riskLevel,
+        }
+      });
+
+      if (error) {
+        console.error('Tokenization error:', error);
+        toast.error(`Tokenization failed: ${error.message}`);
+        return;
+      }
+
+      if (data?.success) {
+        toast.success("Property tokenization submitted successfully!");
+        onOpenChange(false);
+        // Reset form
+        setStep(1);
+        setFormData({
+          totalTokens: "100000",
+          pricePerToken: "25",
+          minimumInvestment: "100",
+          expectedROI: "12.5",
+          distributionFrequency: "quarterly",
+          lockupPeriod: "12",
+          description: "",
+          riskLevel: "medium",
+        });
+      } else {
+        toast.error(data?.message || "Tokenization failed");
+      }
+    } catch (error) {
+      console.error('Tokenization error:', error);
+      toast.error("An unexpected error occurred during tokenization");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderStep = () => {
     switch (step) {
@@ -372,7 +434,9 @@ export function TokenizePropertyDialog({
             </Button>
 
             {step === 4 ? (
-              <Button>Submit for Review</Button>
+              <Button onClick={handleSubmit} disabled={isLoading}>
+                {isLoading ? "Submitting..." : "Submit for Review"}
+              </Button>
             ) : (
               <Button onClick={nextStep}>Next</Button>
             )}
