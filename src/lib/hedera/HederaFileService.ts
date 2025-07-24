@@ -12,15 +12,6 @@ import { HederaClientCore } from './HederaClientCore';
 
 export class HederaFileService extends HederaClientCore {
   async createFile(content: Uint8Array | string, keys?: PrivateKey[]) {
-    if (this.isMockMode()) {
-      console.log('Mock mode: File creation simulated');
-      return {
-        fileId: `mock_file_${Date.now()}`,
-        transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
-      };
-    }
-
     try {
       const fileKeys = keys || [this.getOperatorKey()!];
       
@@ -48,14 +39,6 @@ export class HederaFileService extends HederaClientCore {
   }
 
   async appendToFile(fileId: string, content: Uint8Array | string) {
-    if (this.isMockMode()) {
-      console.log('Mock mode: File append simulated');
-      return {
-        transactionId: `mock_tx_${Date.now()}`,
-        status: 'SUCCESS',
-      };
-    }
-
     try {
       const file = FileId.fromString(fileId);
       
@@ -82,15 +65,6 @@ export class HederaFileService extends HederaClientCore {
   }
 
   async getFileContents(fileId: string) {
-    if (this.isMockMode()) {
-      console.log('Mock mode: File contents retrieval simulated');
-      const mockContent = new TextEncoder().encode('Mock file content');
-      return {
-        contents: mockContent,
-        contentsAsString: 'Mock file content'
-      };
-    }
-
     try {
       const file = FileId.fromString(fileId);
       const query = new FileContentsQuery().setFileId(file);
@@ -107,17 +81,6 @@ export class HederaFileService extends HederaClientCore {
   }
 
   async getFileInfo(fileId: string) {
-    if (this.isMockMode()) {
-      console.log('Mock mode: File info retrieval simulated');
-      return {
-        fileId: fileId,
-        size: '1024',
-        expirationTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        isDeleted: false,
-        keys: [],
-      };
-    }
-
     try {
       const file = FileId.fromString(fileId);
       const query = new FileInfoQuery().setFileId(file);

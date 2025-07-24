@@ -38,28 +38,7 @@ interface WalletProviderProps {
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-  const [wallets, setWallets] = useState<Wallet[]>([
-    // Mock wallets for demo
-    {
-      id: '1',
-      address: '0x742d35Cc6637C0532F72740C9c63A8f2De5c5e5A',
-      type: 'metamask',
-      name: 'MetaMask Wallet',
-      balance: '1.25 ETH',
-      network: 'Ethereum',
-      isConnected: false
-    },
-    {
-      id: '2',
-      address: '0x8ba1f109551bd432803012645hac136c5dc9c',
-      type: 'coinbase',
-      name: 'Coinbase Wallet',
-      balance: '0.85 ETH',
-      network: 'Ethereum',
-      isConnected: false
-    }
-  ]);
-  
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [connectedWallet, setConnectedWallet] = useState<Wallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 

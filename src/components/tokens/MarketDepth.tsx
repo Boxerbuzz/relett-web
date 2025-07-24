@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MarketOrder {
   price: number;
@@ -22,22 +23,10 @@ export function MarketDepth({ tokenizedPropertyId, currentPrice }: MarketDepthPr
   const [sellOrders, setSellOrders] = useState<MarketOrder[]>([]);
 
   useEffect(() => {
-    // Mock market depth data - in real implementation, this would come from database
-    const mockBuyOrders: MarketOrder[] = [
-      { price: currentPrice - 0.5, quantity: 100, total: 100 * (currentPrice - 0.5) },
-      { price: currentPrice - 1.0, quantity: 250, total: 250 * (currentPrice - 1.0) },
-      { price: currentPrice - 1.5, quantity: 150, total: 150 * (currentPrice - 1.5) },
-    ];
-
-    const mockSellOrders: MarketOrder[] = [
-      { price: currentPrice + 0.5, quantity: 80, total: 80 * (currentPrice + 0.5) },
-      { price: currentPrice + 1.0, quantity: 200, total: 200 * (currentPrice + 1.0) },
-      { price: currentPrice + 1.5, quantity: 120, total: 120 * (currentPrice + 1.5) },
-    ];
-
-    setBuyOrders(mockBuyOrders);
-    setSellOrders(mockSellOrders);
-  }, [currentPrice, tokenizedPropertyId]);
+    // For now, use empty arrays - market depth will be populated when trading functionality is implemented
+    setBuyOrders([]);
+    setSellOrders([]);
+  }, [tokenizedPropertyId]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

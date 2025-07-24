@@ -14,30 +14,30 @@ interface SentryUser {
   username?: string;
 }
 
-// Mock Sentry for development - replace with actual Sentry SDK in production
-class MockSentry {
+// Console-based error tracking for development
+class ConsoleErrorTracker {
   static init(config: SentryConfig) {
-    console.log('Sentry initialized with config:', config);
+    console.log('Error tracking initialized with config:', config);
   }
 
   static setUser(user: SentryUser) {
-    console.log('Sentry user set:', user);
+    console.log('User context set:', user);
   }
 
   static captureException(error: Error, context?: Record<string, any>) {
-    console.error('Sentry would capture:', error, context);
+    console.error('Error captured:', error, context);
   }
 
   static captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
-    console.log(`Sentry ${level}:`, message);
+    console[level](`Message captured:`, message);
   }
 
   static setTag(key: string, value: string) {
-    console.log(`Sentry tag: ${key} = ${value}`);
+    console.log(`Tag set: ${key} = ${value}`);
   }
 
   static setContext(key: string, context: Record<string, any>) {
-    console.log(`Sentry context: ${key}`, context);
+    console.log(`Context set: ${key}`, context);
   }
 
   static addBreadcrumb(breadcrumb: {
@@ -46,7 +46,7 @@ class MockSentry {
     level?: string;
     data?: Record<string, any>;
   }) {
-    console.log('Sentry breadcrumb:', breadcrumb);
+    console.log('Breadcrumb added:', breadcrumb);
   }
 }
 
@@ -54,43 +54,43 @@ export function useSentryMonitoring() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Initialize Sentry
-    MockSentry.init({
-      dsn: 'https://your-dsn@sentry.io/project-id',
+    // Initialize error tracking
+    ConsoleErrorTracker.init({
+      dsn: 'console-tracker',
       environment: process.env.NODE_ENV || 'development',
       release: '1.0.0'
     });
 
     // Set user context when available
     if (user) {
-      MockSentry.setUser({
+      ConsoleErrorTracker.setUser({
         id: user.id,
         email: user.email,
         username: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email
       });
 
-      MockSentry.setTag('user_type', user.user_type || user.role || 'unknown');
+      ConsoleErrorTracker.setTag('user_type', user.user_type || user.role || 'unknown');
     }
   }, [user]);
 
   const captureError = (error: Error, context?: Record<string, any>) => {
-    MockSentry.captureException(error, context);
+    ConsoleErrorTracker.captureException(error, context);
   };
 
   const captureMessage = (message: string, level: 'info' | 'warning' | 'error' = 'info') => {
-    MockSentry.captureMessage(message, level);
+    ConsoleErrorTracker.captureMessage(message, level);
   };
 
   const setTag = (key: string, value: string) => {
-    MockSentry.setTag(key, value);
+    ConsoleErrorTracker.setTag(key, value);
   };
 
   const setContext = (key: string, context: Record<string, any>) => {
-    MockSentry.setContext(key, context);
+    ConsoleErrorTracker.setContext(key, context);
   };
 
   const addBreadcrumb = (message: string, category?: string, data?: Record<string, any>) => {
-    MockSentry.addBreadcrumb({
+    ConsoleErrorTracker.addBreadcrumb({
       message,
       category,
       data,

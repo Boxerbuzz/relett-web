@@ -4,46 +4,31 @@ export class HederaClientCore {
   public client!: Client;
   private operatorId!: AccountId;
   private operatorKey: PrivateKey | null = null;
-  private mockMode: boolean = false;
 
   constructor() {
     const hederaNetwork = import.meta.env.VITE_HEDERA_NETWORK;
     const hederaAccountId = import.meta.env.VITE_HEDERA_ACCOUNT_ID;
     const hederaPrivateKey = import.meta.env.VITE_HEDERA_PRIVATE_KEY;
 
-    if (hederaNetwork && hederaAccountId && hederaPrivateKey) {
+    if (!hederaNetwork || !hederaAccountId || !hederaPrivateKey) {
+      throw new Error("Hedera credentials not found in environment variables. Please set VITE_HEDERA_NETWORK, VITE_HEDERA_ACCOUNT_ID, and VITE_HEDERA_PRIVATE_KEY.");
+    }
+
+    try {
       // Initialize with real credentials
       this.client = hederaNetwork === 'mainnet' ? Client.forMainnet() : Client.forTestnet();
       this.operatorId = AccountId.fromString(hederaAccountId);
-      
-      try {
-        this.operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
-        this.client.setOperator(this.operatorId, this.operatorKey);
-        this.mockMode = false;
-        console.log(`Hedera client initialized for ${hederaNetwork} with account ${hederaAccountId}`);
-      } catch (error) {
-        console.error("Failed to initialize Hedera client with provided credentials:", error);
-        this.initializeMockClient();
-      }
-    } else {
-      console.warn("Hedera credentials not found in environment variables. Initializing in mock mode.");
-      this.initializeMockClient();
+      this.operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
+      this.client.setOperator(this.operatorId, this.operatorKey);
+      console.log(`Hedera client initialized for ${hederaNetwork} with account ${hederaAccountId}`);
+    } catch (error) {
+      console.error("Failed to initialize Hedera client with provided credentials:", error);
+      throw error;
     }
   }
 
-  private initializeMockClient() {
-    this.client = Client.forTestnet();
-    this.operatorId = AccountId.fromString("0.0.2");
-    this.operatorKey = null;
-    this.mockMode = true;
-  }
-
-  public isMockMode(): boolean {
-    return this.mockMode;
-  }
-
   public getOperatorId(): AccountId {
-    return this.operatorId || AccountId.fromString("0.0.2");
+    return this.operatorId;
   }
 
   public getOperatorKey(): PrivateKey | null {
@@ -51,7 +36,7 @@ export class HederaClientCore {
   }
 
   public close() {
-    if (this.client && !this.isMockMode()) {
+    if (this.client) {
       this.client.close();
     }
   }
