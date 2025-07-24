@@ -124,6 +124,21 @@ function Calendar({
             />
           );
         },
+        Nav: variant === "range" ? ({ children, className, ...props }) => (
+          <div className={cn("flex items-center justify-between w-full mb-4", className)} {...props}>
+            {children}
+          </div>
+        ) : undefined,
+        Months: variant === "range" ? ({ children, className, ...props }) => (
+          <div className={cn("flex flex-row gap-4", className)} {...props}>
+            {children}
+          </div>
+        ) : undefined,
+        Month: variant === "range" ? ({ children, className, ...props }) => (
+          <div className={cn("flex flex-col flex-1", className)} {...props}>
+            {children}
+          </div>
+        ) : undefined,
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
             return (
