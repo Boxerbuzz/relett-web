@@ -67,7 +67,6 @@ export function RangeDatePicker({
           onSelect={onDateRangeChange}
           numberOfMonths={2}
           disabled={disabled}
-          variant="range"
           className="p-3 pointer-events-auto"
         />
       </PopoverContent>

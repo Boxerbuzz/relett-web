@@ -52,7 +52,6 @@ export function SingleDatePicker({
           selected={date}
           onSelect={onDateChange}
           disabled={disabled}
-          variant="single"
           initialFocus
           className="p-3 pointer-events-auto"
         />
