@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
-  DollarSign, 
+  CurrencyDollar, 
   Users, 
   Clock, 
   TrendUp, 
@@ -100,7 +100,7 @@ export function BuyoutVotingInterface({
       case 'active':
         return <Badge variant="default">Active</Badge>;
       case 'passed':
-        return <Badge variant="success">Passed</Badge>;
+        return <Badge variant="default">Passed</Badge>;
       case 'failed':
         return <Badge variant="destructive">Failed</Badge>;
       case 'expired':
@@ -116,7 +116,7 @@ export function BuyoutVotingInterface({
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <CurrencyDollar className="h-5 w-5" />
               {poll.title}
             </CardTitle>
             <CardDescription>{poll.description}</CardDescription>
@@ -129,7 +129,7 @@ export function BuyoutVotingInterface({
         {/* Buyout Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            <DollarSign className="h-5 w-5 text-primary" />
+            <CurrencyDollar className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm font-medium">Buyout Price</p>
               <p className="text-lg font-bold">${poll.buyout_price.toLocaleString()}</p>
