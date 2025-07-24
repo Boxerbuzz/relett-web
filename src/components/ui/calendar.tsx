@@ -51,7 +51,8 @@ function Calendar({
         ),
         month: cn("flex flex-col w-full gap-4", defaultClassNames.month),
         nav: cn(
-          "flex items-center gap-2 w-full justify-between",
+          "flex items-center gap-2 w-full justify-between mb-4",
+          variant === "range" && "px-4",
           defaultClassNames.nav
         ),
         button_previous: cn(
