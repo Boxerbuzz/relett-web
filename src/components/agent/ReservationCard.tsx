@@ -1,35 +1,45 @@
-
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Users, MoreHorizontal, Phone, Mail, DollarSign, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  UsersIcon,
+  DotsThreeIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  CurrencyDollarIcon,
+  CalendarIcon,
+  CalendarDotIcon,
+} from "@phosphor-icons/react";
+import { format } from "date-fns";
 
 interface ReservationCardProps {
   reservation: any;
   onUpdateStatus: (id: string, status: string) => void;
 }
 
-export function ReservationCard({ reservation, onUpdateStatus }: ReservationCardProps) {
+export function ReservationCard({
+  reservation,
+  onUpdateStatus,
+}: ReservationCardProps) {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed':
-      case 'active':
-        return 'default';
-      case 'pending':
-        return 'secondary';
-      case 'completed':
-        return 'outline';
-      case 'cancelled':
-        return 'destructive';
+      case "confirmed":
+      case "active":
+        return "default";
+      case "pending":
+        return "secondary";
+      case "completed":
+        return "outline";
+      case "cancelled":
+        return "destructive";
       default:
-        return 'secondary';
+        return "secondary";
     }
   };
 
@@ -45,31 +55,42 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-purple-600" />
+            <UsersIcon className="h-5 w-5 text-purple-600" />
             <div>
-              <h3 className="font-semibold">{reservation.property?.title || 'Property Reservation'}</h3>
+              <h3 className="font-semibold">
+                {reservation.property?.title || "Property Reservation"}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                {reservation.property?.location?.address || 'Location not specified'}
+                {reservation.property?.location?.address ||
+                  "Location not specified"}
               </p>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
+                <DotsThreeIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onUpdateStatus(reservation.id, 'confirmed')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(reservation.id, "confirmed")}
+              >
                 Confirm
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onUpdateStatus(reservation.id, 'active')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(reservation.id, "active")}
+              >
                 Check In
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onUpdateStatus(reservation.id, 'completed')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(reservation.id, "completed")}
+              >
                 Complete
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onUpdateStatus(reservation.id, 'cancelled')}>
+              <DropdownMenuItem
+                onClick={() => onUpdateStatus(reservation.id, "cancelled")}
+              >
                 Cancel
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -82,7 +103,7 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
             {reservation.status}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {getTotalGuests()} guest{getTotalGuests() !== 1 ? 's' : ''}
+            {getTotalGuests()} guest{getTotalGuests() !== 1 ? "s" : ""}
           </span>
         </div>
 
@@ -91,8 +112,8 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Check-in</p>
               <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-3 w-3" />
-                <span>{format(new Date(reservation.from_date), 'MMM d')}</span>
+                <CalendarDotIcon className="h-3 w-3" />
+                <span>{format(new Date(reservation.from_date), "MMM d")}</span>
               </div>
             </div>
           )}
@@ -100,8 +121,8 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Check-out</p>
               <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-3 w-3" />
-                <span>{format(new Date(reservation.to_date), 'MMM d')}</span>
+                <CalendarIcon className="h-3 w-3" />
+                <span>{format(new Date(reservation.to_date), "MMM d")}</span>
               </div>
             </div>
           )}
@@ -109,11 +130,12 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
 
         {reservation.total && (
           <div className="flex items-center gap-2 text-sm font-medium">
-            <DollarSign className="h-4 w-4" />
+            <CurrencyDollarIcon className="h-4 w-4" />
             <span>₦{reservation.total.toLocaleString()}</span>
             {reservation.nights && (
               <span className="text-muted-foreground">
-                ({reservation.nights} night{reservation.nights !== 1 ? 's' : ''})
+                ({reservation.nights} night{reservation.nights !== 1 ? "s" : ""}
+                )
               </span>
             )}
           </div>
@@ -128,13 +150,13 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
               </p>
               {reservation.user.email && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-3 w-3" />
+                  <EnvelopeIcon className="h-3 w-3" />
                   <span>{reservation.user.email}</span>
                 </div>
               )}
               {reservation.user.phone && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Phone className="h-3 w-3" />
+                  <PhoneIcon className="h-3 w-3" />
                   <span>{reservation.user.phone}</span>
                 </div>
               )}
@@ -151,11 +173,11 @@ export function ReservationCard({ reservation, onUpdateStatus }: ReservationCard
 
         <div className="flex gap-2 pt-2">
           <Button size="sm" variant="outline" className="flex-1">
-            <Phone className="h-3 w-3 mr-1" />
+            <PhoneIcon className="h-3 w-3 mr-1" />
             Call
           </Button>
           <Button size="sm" variant="outline" className="flex-1">
-            <Mail className="h-3 w-3 mr-1" />
+            <EnvelopeIcon className="h-3 w-3 mr-1" />
             Email
           </Button>
         </div>

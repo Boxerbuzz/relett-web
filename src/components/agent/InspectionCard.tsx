@@ -11,7 +11,6 @@ import {
   DotsThreeIcon,
   PhoneIcon,
   EnvelopeIcon,
-  MapPinIcon,
   CalendarIcon,
 } from "@phosphor-icons/react";
 import { format } from "date-fns";

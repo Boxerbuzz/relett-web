@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BinocularsIcon, HouseLineIcon } from "@phosphor-icons/react";
+import { BinocularsIcon, CalendarBlankIcon, HouseLineIcon } from "@phosphor-icons/react";
 import { useAgentInspections } from "@/hooks/useAgentInspections";
 import { useAgentRentals } from "@/hooks/useAgentRentals";
 import { useAgentReservations } from "@/hooks/useAgentReservations";
@@ -223,7 +223,7 @@ const AgentCalendar = () => {
                     >
                       <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
                         <span className="text-primary inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                          <BinocularsIcon size={24} />
+                          <CalendarBlankIcon size={24} />
                         </span>
                       </span>
                       <div>

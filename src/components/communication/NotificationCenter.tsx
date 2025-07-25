@@ -222,9 +222,9 @@ export function NotificationCenter() {
             >
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-start gap-3 md:gap-4">
-                  <div className="mt-1 flex-shrink-0">
-                    {getNotificationIcon(notification.type)}
-                  </div>
+                  <div className="mt-1 flex-shrink-0 rounded-full w-9 h-9 flex items-center justify-center bg-muted">
+  {getNotificationIcon(notification.type)}
+</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                       <div className="min-w-0">
