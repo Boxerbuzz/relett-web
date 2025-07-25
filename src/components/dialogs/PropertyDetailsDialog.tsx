@@ -457,35 +457,35 @@ export function PropertyDetailsDialog({
           <div className="lg:col-span-2">
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-4 h-auto gap-1">
-  <TabsTrigger
-    value="overview"
-    className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-col items-center justify-center gap-1"
-  >
-    <HouseIcon className="h-5 w-5" />
-    <span className="hidden sm:inline">Overview</span>
-  </TabsTrigger>
-  <TabsTrigger
-    value="investment"
-    className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-col items-center justify-center gap-1"
-  >
-    <CoinsIcon className="h-5 w-5" />
-    <span className="hidden sm:inline">Investment</span>
-  </TabsTrigger>
-  <TabsTrigger
-    value="documents"
-    className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-col items-center justify-center gap-1"
-  >
-    <ArchiveBoxIcon className="h-5 w-5" />
-    <span className="hidden sm:inline">Documents</span>
-  </TabsTrigger>
-  <TabsTrigger
-    value="location"
-    className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-col items-center justify-center gap-1"
-  >
-    <MapPinIcon className="h-5 w-5" />
-    <span className="hidden sm:inline">Location</span>
-  </TabsTrigger>
-</TabsList>
+                <TabsTrigger
+                  value="overview"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-row items-center justify-center gap-2"
+                >
+                  <HouseIcon className="h-5 w-5" />
+                  <span className="hidden sm:inline">Overview</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="investment"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-row items-center justify-center gap-2"
+                >
+                  <CoinsIcon className="h-5 w-5" />
+                  <span className="hidden sm:inline">Investment</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="documents"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-row items-center justify-center gap-2"
+                >
+                  <ArchiveBoxIcon className="h-5 w-5" />
+                  <span className="hidden sm:inline">Documents</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="location"
+                  className="text-xs sm:text-sm px-1 sm:px-3 py-1.5 flex flex-row items-center justify-center gap-2"
+                >
+                  <MapPinIcon className="h-5 w-5" />
+                  <span className="hidden sm:inline">Location</span>
+                </TabsTrigger>
+              </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">
                 {/* Description */}
