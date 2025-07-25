@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AccountTypeSelect } from "./AccountTypeSelect";
 import { User, Envelope, Lock, Eye, EyeSlash, Phone } from "phosphor-react";
-import { Loader } from "lucide-react";
+import { SpinnerIcon } from "@phosphor-icons/react";
 
 const signUpSchema = z
   .object({
@@ -287,7 +287,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
                 Creating account...
               </>
             ) : (

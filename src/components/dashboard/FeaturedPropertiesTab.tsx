@@ -10,7 +10,7 @@ import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Eye, Heart, MapPin, Building, Star } from "lucide-react";
+import { EyeIcon, HeartIcon, MapPinIcon, BuildingIcon, StarIcon } from "@phosphor-icons/react";
 import { useFeaturedProperties } from "@/hooks/useFeaturedProperties";
 
 interface PropertyWithTokenization {
@@ -190,14 +190,14 @@ function FeaturedPropertyCard({ property, onView }: any) {
         <h3 className="font-semibold text-lg mb-2 line-clamp-2">{property.title}</h3>
         
         <div className="flex items-center text-gray-600 mb-2">
-          <MapPin className="h-4 w-4 mr-1" />
+          <MapPinIcon className="h-4 w-4 mr-1" />
           <span className="text-sm">{property.location}</span>
         </div>
         
         <div className="flex items-center justify-between mb-3">
           <span className="text-xl font-bold text-primary">{property.price}</span>
           <div className="flex items-center text-gray-500 text-sm">
-            <Eye className="h-4 w-4 mr-1" />
+            <EyeIcon className="h-4 w-4 mr-1" />
             {property.views}
           </div>
         </div>

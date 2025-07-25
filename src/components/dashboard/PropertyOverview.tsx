@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Eye, MoreHorizontal, Plus } from 'lucide-react';
+import { MapPinIcon, EyeIcon, DotsThreeIcon, PlusIcon } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -75,7 +75,7 @@ export function PropertyOverview() {
             <CardDescription>Manage and track your property assets</CardDescription>
           </div>
           <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
+            <PlusIcon className="w-4 h-4 mr-2" />
             Add Property
           </Button>
         </div>
@@ -93,7 +93,7 @@ export function PropertyOverview() {
               <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-blue-600" />
+                    <MapPinIcon className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">{property.title}</h4>
@@ -116,10 +116,10 @@ export function PropertyOverview() {
                     <p className="text-sm text-gray-500">Est. value</p>
                   </div>
                   <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4" />
+                    <EyeIcon className="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="w-4 h-4" />
+                    <DotsThreeIcon className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

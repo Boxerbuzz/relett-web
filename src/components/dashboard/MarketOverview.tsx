@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, BarChart3, DollarSign } from 'lucide-react';
+import { TrendUpIcon, TrendDownIcon, ChartBarIcon, CurrencyDollarIcon } from '@phosphor-icons/react';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -150,11 +150,11 @@ export function MarketOverview() {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp className="h-4 w-4 text-green-600" />;
+        return <TrendUpIcon className="h-4 w-4 text-green-600" />;
       case 'down':
-        return <TrendingDown className="h-4 w-4 text-red-600" />;
+        return <TrendDownIcon className="h-4 w-4 text-red-600" />;
       default:
-        return <BarChart3 className="h-4 w-4 text-gray-600" />;
+        return <ChartBarIcon className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -220,7 +220,7 @@ export function MarketOverview() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-600" />
+            <TrendUpIcon className="h-5 w-5 text-green-600" />
             Top Performing Properties
           </CardTitle>
           <CardDescription>
@@ -239,7 +239,7 @@ export function MarketOverview() {
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900">{property.name}</h4>
                     <p className="text-sm text-gray-600 flex items-center">
-                      <DollarSign className="h-3 w-3 mr-1" />
+                      <CurrencyDollarIcon className="h-3 w-3 mr-1" />
                       {property.location}
                     </p>
                   </div>

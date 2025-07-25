@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GoogleLogo, GithubLogo, TwitterLogo } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -54,7 +54,7 @@ export function SocialAuthButtons() {
         disabled={loadingProvider !== null}
       >
         {loadingProvider === 'google' ? (
-          <Loader className="h-4 w-4 animate-spin" />
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
         ) : (
           <GoogleLogo className="h-4 w-4" />
         )}
@@ -69,7 +69,7 @@ export function SocialAuthButtons() {
         disabled={loadingProvider !== null}
       >
         {loadingProvider === 'github' ? (
-          <Loader className="h-4 w-4 animate-spin" />
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
         ) : (
           <GithubLogo className="h-4 w-4" />
         )}
@@ -84,7 +84,7 @@ export function SocialAuthButtons() {
         disabled={loadingProvider !== null}
       >
         {loadingProvider === 'twitter' ? (
-          <Loader className="h-4 w-4 animate-spin" />
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
         ) : (
           <TwitterLogo className="h-4 w-4" />
         )}

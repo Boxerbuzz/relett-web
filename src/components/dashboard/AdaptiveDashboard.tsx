@@ -9,20 +9,20 @@ import { useNavigate } from "react-router-dom";
 import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
 import { useUserDashboardStats } from "@/hooks/useUserDashboardStats";
 import { 
-  Building, 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Shield, 
-  FileText,
-  Activity,
-  MessageSquare,
-  Star,
-  Eye,
-  Calendar,
+  BuildingIcon, 
+  UsersIcon, 
+  CurrencyDollarIcon, 
+  TrendUpIcon, 
+  ShieldIcon, 
+  FileTextIcon,
+  ActivityIcon,
+  ChatCircleIcon,
+  StarIcon,
+  EyeIcon,
+  CalendarIcon,
   PlusIcon,
-  BarChart3
-} from "lucide-react";
+  ChartBarIcon
+} from "@phosphor-icons/react";
 
 interface DashboardSection {
   id: string;
@@ -46,7 +46,7 @@ export function AdaptiveDashboard() {
       id: "overview",
       title: "Overview",
       description: "Your dashboard overview",
-      icon: Activity,
+      icon: ActivityIcon,
       content: <UserOverviewSection />,
       roles: ["user", "landowner", "verifier", "agent", "admin"]
     },
@@ -54,7 +54,7 @@ export function AdaptiveDashboard() {
       id: "investments",
       title: "My Investments",
       description: "Track your portfolio performance",
-      icon: TrendingUp,
+      icon: TrendUpIcon,
       content: <InvestmentSection />,
       roles: ["user", "landowner", "agent"]
     },
@@ -62,7 +62,7 @@ export function AdaptiveDashboard() {
       id: "properties",
       title: "My Properties",
       description: "Manage your property listings",
-      icon: Building,
+      icon: BuildingIcon,
       content: <PropertiesSection />,
       roles: ["landowner"]
     },
@@ -70,7 +70,7 @@ export function AdaptiveDashboard() {
       id: "verification",
       title: "Verification Queue",
       description: "Review pending property verifications",
-      icon: Shield,
+      icon: ShieldIcon,
       content: <VerificationSection />,
       roles: ["verifier", "admin"]
     },
@@ -78,7 +78,7 @@ export function AdaptiveDashboard() {
       id: "clients",
       title: "Client Management",
       description: "Manage your clients and leads",
-      icon: Users,
+      icon: UsersIcon,
       content: <ClientSection />,
       roles: ["agent"]
     },
@@ -86,7 +86,7 @@ export function AdaptiveDashboard() {
       id: "admin",
       title: "System Administration",
       description: "Platform management and oversight",
-      icon: Shield,
+      icon: ShieldIcon,
       content: <AdminSection />,
       roles: ["admin"]
     }
@@ -149,15 +149,15 @@ function UserOverviewSection() {
   
   // Show different stats based on user role
   const stats = user?.role === 'admin' ? [
-    { label: "Total Users", value: adminStats.totalUsers.toString(), icon: Users },
-    { label: "Total Properties", value: adminStats.totalProperties.toString(), icon: Building },
-    { label: "Pending Verifications", value: adminStats.pendingVerifications.toString(), icon: Shield },
-    { label: "Monthly Revenue", value: `$${adminStats.monthlyRevenue.toFixed(2)}`, icon: DollarSign }
+    { label: "Total Users", value: adminStats.totalUsers.toString(), icon: UsersIcon },
+    { label: "Total Properties", value: adminStats.totalProperties.toString(), icon: BuildingIcon },
+    { label: "Pending Verifications", value: adminStats.pendingVerifications.toString(), icon: ShieldIcon },
+    { label: "Monthly Revenue", value: `$${adminStats.monthlyRevenue.toFixed(2)}`, icon: CurrencyDollarIcon }
   ] : [
-    { label: "My Properties", value: userStats.ownedProperties.toString(), icon: Building },
-    { label: "Investment Value", value: `$${userStats.totalInvestmentValue.toFixed(2)}`, icon: DollarSign },
-    { label: "Token Holdings", value: userStats.totalInvestments.toString(), icon: TrendingUp },
-    { label: "Inspections Made", value: userStats.bookingsMade.toString(), icon: Calendar }
+    { label: "My Properties", value: userStats.ownedProperties.toString(), icon: BuildingIcon },
+    { label: "Investment Value", value: `$${userStats.totalInvestmentValue.toFixed(2)}`, icon: CurrencyDollarIcon },
+    { label: "Token Holdings", value: userStats.totalInvestments.toString(), icon: TrendUpIcon },
+    { label: "Inspections Made", value: userStats.bookingsMade.toString(), icon: CalendarIcon }
   ];
 
   const isLoading = user?.role === 'admin' ? adminLoading : userLoading;
@@ -213,7 +213,7 @@ function UserOverviewSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/marketplace")}
         >
-          <Building className="w-6 h-6" />
+          <BuildingIcon className="w-6 h-6" />
           Browse Properties
         </Button>
         <Button 
@@ -221,7 +221,7 @@ function UserOverviewSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/investment")}
         >
-          <BarChart3 className="w-6 h-6" />
+          <ChartBarIcon className="w-6 h-6" />
           View Investments
         </Button>
         <Button 
@@ -229,7 +229,7 @@ function UserOverviewSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/bookings")}
         >
-          <Calendar className="w-6 h-6" />
+          <CalendarIcon className="w-6 h-6" />
           My Bookings
         </Button>
       </div>
@@ -241,7 +241,7 @@ function InvestmentSection() {
   return (
     <div className="space-y-4">
       <div className="text-center py-8">
-        <TrendingUp className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <TrendUpIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Investment Portfolio</h3>
         <p className="text-muted-foreground mb-4">Track your tokenized property investments</p>
         <Button onClick={() => window.location.href = '/investment'}>
@@ -256,7 +256,7 @@ function PropertiesSection() {
   return (
     <div className="space-y-4">
       <div className="text-center py-8">
-        <Building className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <BuildingIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Property Management</h3>
         <p className="text-muted-foreground mb-4">List and manage your properties</p>
         <Button onClick={() => window.location.href = '/properties'}>
@@ -272,7 +272,7 @@ function VerificationSection() {
   return (
     <div className="space-y-4">
       <div className="text-center py-8">
-        <Shield className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <ShieldIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Verification Queue</h3>
         <p className="text-muted-foreground mb-4">Review pending property verifications</p>
         <Button onClick={() => window.location.href = '/verification'}>
@@ -287,7 +287,7 @@ function ClientSection() {
   return (
     <div className="space-y-4">
       <div className="text-center py-8">
-        <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <UsersIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Client Management</h3>
         <p className="text-muted-foreground mb-4">Manage your clients and leads</p>
         <Button onClick={() => window.location.href = '/clients'}>
@@ -303,12 +303,12 @@ function AdminSection() {
   const { stats } = useAdminDashboardStats();
   
   const adminStats = [
-    { label: "Total Users", value: stats.totalUsers, icon: Users },
-    { label: "Pending Verifications", value: stats.pendingVerifications, icon: Shield },
-    { label: "Active Tokens", value: stats.activeTokens, icon: Activity },
-    { label: "Pending Documents", value: stats.pendingDocuments, icon: FileText },
-    { label: "Contact Messages", value: stats.contactsCount, icon: MessageSquare },
-    { label: "Waitlist Count", value: stats.waitlistCount, icon: Star }
+    { label: "Total Users", value: stats.totalUsers, icon: UsersIcon },
+    { label: "Pending Verifications", value: stats.pendingVerifications, icon: ShieldIcon },
+    { label: "Active Tokens", value: stats.activeTokens, icon: ActivityIcon },
+    { label: "Pending Documents", value: stats.pendingDocuments, icon: FileTextIcon },
+    { label: "Contact Messages", value: stats.contactsCount, icon: ChatCircleIcon },
+    { label: "Waitlist Count", value: stats.waitlistCount, icon: StarIcon }
   ];
 
   return (
@@ -335,7 +335,7 @@ function AdminSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/admin")}
         >
-          <Shield className="w-6 h-6" />
+          <ShieldIcon className="w-6 h-6" />
           Admin Hub
         </Button>
         <Button 
@@ -343,7 +343,7 @@ function AdminSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/verification")}
         >
-          <FileText className="w-6 h-6" />
+          <FileTextIcon className="w-6 h-6" />
           Verification Queue
         </Button>
         <Button 
@@ -351,7 +351,7 @@ function AdminSection() {
           className="h-20 flex flex-col gap-2"
           onClick={() => navigate("/analytics")}
         >
-          <BarChart3 className="w-6 h-6" />
+          <ChartBarIcon className="w-6 h-6" />
           Analytics
         </Button>
       </div>

@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
 import { Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { SpinnerIcon } from '@phosphor-icons/react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -139,7 +139,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
               </>
             ) : (

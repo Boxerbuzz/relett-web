@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendUpIcon, TrendDownIcon } from '@phosphor-icons/react';
 
 const marketData = [
   {
@@ -49,9 +49,9 @@ export function MarketInsights() {
                   item.isPositive ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {item.isPositive ? (
-                    <TrendingUp className="w-3 h-3 mr-1" />
+                    <TrendUpIcon className="w-3 h-3 mr-1" />
                   ) : (
-                    <TrendingDown className="w-3 h-3 mr-1" />
+                    <TrendDownIcon className="w-3 h-3 mr-1" />
                   )}
                   {item.change}
                 </div>
