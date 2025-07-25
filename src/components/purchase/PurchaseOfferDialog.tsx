@@ -65,7 +65,7 @@ export function PurchaseOfferDialog({ isOpen, onClose, property }: PurchaseOffer
       setLoading(true);
 
       const { error } = await supabase
-        .from('purchase_offers')
+        .from('purchase_offers' as any)
         .insert({
           property_id: property.id,
           buyer_id: user.id,
@@ -73,8 +73,7 @@ export function PurchaseOfferDialog({ isOpen, onClose, property }: PurchaseOffer
           message: data.message,
           financing_type: data.financing_type,
           deposit_amount: data.deposit_amount,
-          closing_date: data.closing_date,
-          status: 'pending'
+          closing_date: data.closing_date
         });
 
       if (error) throw error;
@@ -86,7 +85,12 @@ export function PurchaseOfferDialog({ isOpen, onClose, property }: PurchaseOffer
           user_id: property.id, // This should be the property owner's ID
           title: 'New Purchase Offer',
           message: `You received a purchase offer of $${data.offer_amount.toLocaleString()} for ${property.title}`,
-          type: 'offer_received'
+          type: 'general',
+          metadata: {
+            notification_subtype: 'offer_received',
+            property_id: property.id,
+            offer_amount: data.offer_amount
+          }
         });
 
       toast({
