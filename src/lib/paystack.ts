@@ -113,27 +113,32 @@ export class PaystackService {
 
   async verifyTransaction(reference: string): Promise<PaystackResponse> {
     try {
-      // This would typically be done on the backend for security
-      // For now, we'll use a mock response
-      console.log('Verifying transaction:', reference);
+      // Use the verify-payment-status edge function for real verification
+      const response = await fetch(`https://wossuijahchhtjzphsgh.supabase.co/functions/v1/verify-payment-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`
+        },
+        body: JSON.stringify({ reference })
+      });
+
+      const result = await response.json();
       
-      // In a real implementation, this would call your backend
-      // which would verify with Paystack's API
+      if (!response.ok) {
+        throw new Error(result.error || 'Verification failed');
+      }
+
       return {
-        status: true,
-        message: 'Transaction verified successfully',
-        data: {
-          reference,
-          status: 'success',
-          amount: 0,
-          currency: this.config.currency
-        }
+        status: result.success,
+        message: result.success ? 'Transaction verified successfully' : 'Transaction verification failed',
+        data: result.payment
       };
     } catch (error) {
       console.error('Transaction verification failed:', error);
       return {
         status: false,
-        message: 'Transaction verification failed'
+        message: error instanceof Error ? error.message : 'Transaction verification failed'
       };
     }
   }

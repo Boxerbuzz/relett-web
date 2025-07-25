@@ -1,13 +1,5 @@
 
-import { HederaClient } from './hedera';
-import { config } from './config';
-import { 
-  ContractCallQuery, 
-  ContractExecuteTransaction, 
-  ContractFunctionParameters,
-  ContractId,
-  Hbar
-} from '@hashgraph/sdk';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface PropertyTokenData {
   propertyId: string;
@@ -22,218 +14,97 @@ export interface PropertyTokenData {
 }
 
 export class PropertyContracts {
-  private hederaClient: HederaClient;
-
   constructor() {
-    this.hederaClient = new HederaClient();
-    
-    if (!config.hedera.isConfigured()) {
-      console.warn('Hedera contracts not fully configured. Some functionality may not work.');
-    }
+    // Edge functions handle all Hedera operations now
   }
 
   // Register a new property in the registry
   async registerProperty(propertyData: PropertyTokenData) {
-    try {
-      // Use backend Edge Function for blockchain operations
-      const response = await fetch(`${config.supabase.url}/functions/v1/register-property-blockchain`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.supabase.anonKey}`,
-        },
-        body: JSON.stringify(propertyData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      return {
-        success: result.success,
-        transactionId: result.transactionId,
-        status: result.status
-      };
-    } catch (error) {
-      console.error('Error registering property:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('register-property-blockchain', {
+      body: propertyData
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Verify a property (only authorized verifiers)
   async verifyProperty(propertyId: string) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
-      
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(300000)
-        .setFunction("verifyProperty", 
-          new ContractFunctionParameters().addString(propertyId)
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
-      return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
-      };
-    } catch (error) {
-      console.error('Error verifying property:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('verify-property-blockchain', {
+      body: { propertyId }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Get property information
   async getProperty(propertyId: string) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.propertyRegistry);
-      
-      const query = new ContractCallQuery()
-        .setContractId(contractId)
-        .setGas(100000)
-        .setFunction("getProperty", 
-          new ContractFunctionParameters().addString(propertyId)
-        );
-
-      const result = await query.execute(this.hederaClient.client);
-      
-      // Parse the result based on your contract's return structure
-      return result;
-    } catch (error) {
-      console.error('Error getting property:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('get-property-blockchain', {
+      body: { propertyId }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Create a marketplace listing
   async createListing(propertyId: string, price: number, tokenAmount: number) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.propertyMarketplace);
-      
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(500000)
-        .setFunction("createListing", 
-          new ContractFunctionParameters()
-            .addString(propertyId)
-            .addUint256(price)
-            .addUint256(tokenAmount)
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
-      return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
-      };
-    } catch (error) {
-      console.error('Error creating listing:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('create-marketplace-listing', {
+      body: { propertyId, price, tokenAmount }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Purchase tokens from marketplace
   async purchaseTokens(listingId: string, amount: number) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.propertyMarketplace);
-      
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(800000)
-        .setPayableAmount(Hbar.fromTinybars(amount))
-        .setFunction("purchaseTokens", 
-          new ContractFunctionParameters().addString(listingId)
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
-      return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
-      };
-    } catch (error) {
-      console.error('Error purchasing tokens:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('purchase-marketplace-tokens', {
+      body: { listingId, amount }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Distribute revenue to token holders
   async distributeRevenue(propertyId: string, amount: number, source: string) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.revenueDistributor);
-      
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(1000000)
-        .setPayableAmount(Hbar.fromTinybars(amount))
-        .setFunction("createDistribution", 
-          new ContractFunctionParameters()
-            .addString(propertyId)
-            .addString(source)
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
-      return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
-      };
-    } catch (error) {
-      console.error('Error distributing revenue:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('distribute-revenue', {
+      body: { propertyId, amount, source }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Claim revenue distribution
   async claimRevenue(distributionId: string) {
-    try {
-      const contractId = ContractId.fromString(config.hedera.contracts.revenueDistributor);
-      
-      const transaction = new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(500000)
-        .setFunction("claimRevenue", 
-          new ContractFunctionParameters().addUint256(parseInt(distributionId))
-        );
-
-      const response = await transaction.execute(this.hederaClient.client);
-      const receipt = await response.getReceipt(this.hederaClient.client);
-
-      return {
-        success: true,
-        transactionId: response.transactionId.toString(),
-        status: receipt.status.toString()
-      };
-    } catch (error) {
-      console.error('Error claiming revenue:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('claim-revenue', {
+      body: { distributionId }
+    });
+    
+    if (error) throw error;
+    return data;
   }
 
   // Check if contracts are properly configured
   isConfigured(): boolean {
-    return config.hedera.isConfigured();
+    return true; // Edge functions handle configuration
   }
 
   // Get contract addresses for display
   getContractAddresses() {
-    return config.hedera.contracts;
+    return {
+      propertyRegistry: import.meta.env.VITE_PROPERTY_REGISTRY_CONTRACT,
+      propertyMarketplace: import.meta.env.VITE_PROPERTY_MARKETPLACE_CONTRACT,
+      revenueDistributor: import.meta.env.VITE_REVENUE_DISTRIBUTOR_CONTRACT
+    };
   }
 
-  // Close the Hedera client connection
+  // Close connection (no-op for edge functions)
   close() {
-    this.hederaClient.close();
+    // No client to close
   }
 }
 

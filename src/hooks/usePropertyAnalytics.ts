@@ -67,11 +67,28 @@ export function usePropertyAnalytics(propertyId?: string) {
           favorites: p.favorites || 0,
         }));
 
-      // Mock trend data (in real implementation, you'd get this from audit_trails)
-      const viewsTrend = Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        views: Math.floor(Math.random() * 100) + 50,
-      }));
+      // Get real views trend from audit_trails
+      const { data: viewsData } = await supabase
+        .from('audit_trails')
+        .select('created_at, new_values')
+        .eq('action', 'view')
+        .eq('resource_type', 'property')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: true });
+
+      const viewsTrend = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        const dayViews = viewsData?.filter(v => 
+          v.created_at.startsWith(dateStr)
+        ).length || 0;
+
+        return {
+          date: dateStr,
+          views: dayViews,
+        };
+      });
 
       return {
         totalViews,

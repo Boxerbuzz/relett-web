@@ -117,13 +117,7 @@ export class PaymentService {
           params.paystackReference
         );
       } else {
-        // Fallback to mock payment for other methods
-        paymentSuccess = await this.processPaymentWithProvider({
-          amount: totalAmount,
-          currency: "NGN",
-          paymentMethodId: params.paymentMethodId,
-          reference: payment.reference,
-        });
+        throw new Error("Payment reference is required for Paystack transactions");
       }
 
       if (!paymentSuccess) {
@@ -187,15 +181,17 @@ export class PaymentService {
 
   private async verifyPaystackPayment(reference: string): Promise<boolean> {
     try {
-      // In a real implementation, this would call the Paystack verification endpoint
-      // through a secure backend endpoint
-      console.log("Verifying Paystack payment:", reference);
+      // Use the verify-payment edge function for real Paystack verification
+      const { data, error } = await supabase.functions.invoke('verify-payment', {
+        body: { reference }
+      });
 
-      // For now, simulate success
-      // In production, you'd call your backend which would verify with:
-      // GET https://api.paystack.co/transaction/verify/{reference}
+      if (error) {
+        console.error("Payment verification error:", error);
+        return false;
+      }
 
-      return true;
+      return data?.success === true;
     } catch (error) {
       console.error("Paystack verification failed:", error);
       return false;
@@ -370,21 +366,6 @@ export class PaymentService {
     ];
   }
 
-  private async processPaymentWithProvider(params: {
-    amount: number;
-    currency: string;
-    paymentMethodId: string;
-    reference: string;
-  }): Promise<boolean> {
-    // Mock payment processing for non-Paystack methods
-    console.log("Processing payment:", params);
-
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock success (90% success rate for demo)
-    return Math.random() > 0.1;
-  }
 
   private async processWithdrawalWithProvider(params: {
     amount: number;

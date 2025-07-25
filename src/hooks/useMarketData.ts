@@ -49,15 +49,45 @@ export function useMarketData() {
         ? properties.reduce((sum, p) => sum + (typeof p.price === 'number' ? p.price : 0), 0) / properties.length 
         : 0;
 
-      // Calculate price change (mock data - in reality you'd compare with historical data)
-      const priceChange = Math.random() * 10 - 5; // Random between -5% and +5%
+      // Calculate price change from audit_trails (view transactions)
+      const { data: recentTransactions } = await supabase
+        .from('audit_trails')
+        .select('new_values, created_at')
+        .eq('resource_type', 'property')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
 
-      // Mock market trends (last 30 days)
-      const marketTrends = Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        averagePrice: averagePrice + (Math.random() * 100000 - 50000),
-        volume: Math.floor(Math.random() * 20) + 5,
-      }));
+      // Calculate actual market trends from transaction data
+      const marketTrends = Array.from({ length: 30 }, (_, i) => {
+        const date = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Get transactions for this day
+        const dayTransactions = recentTransactions?.filter(t => 
+          t.created_at.startsWith(dateStr)
+        ) || [];
+        
+        const dayVolume = dayTransactions.length;
+        const dayAveragePrice = dayTransactions.length > 0 
+          ? dayTransactions.reduce((sum, t) => {
+              const price = t.new_values && typeof t.new_values === 'object' && 'price' in t.new_values 
+                ? Number(t.new_values.price) || averagePrice 
+                : averagePrice;
+              return sum + price;
+            }, 0) / dayTransactions.length
+          : averagePrice;
+
+        return {
+          date: dateStr,
+          averagePrice: dayAveragePrice,
+          volume: dayVolume,
+        };
+      });
+
+      // Calculate price change (current vs 30 days ago)
+      const oldPrice = marketTrends[0]?.averagePrice || averagePrice;
+      const currentPrice = marketTrends[marketTrends.length - 1]?.averagePrice || averagePrice;
+      const priceChange = oldPrice > 0 ? ((currentPrice - oldPrice) / oldPrice) * 100 : 0;
 
       // Group by location - safely handle location object
       const locationGroups = (properties || []).reduce((acc, property) => {
@@ -102,13 +132,31 @@ export function useMarketData() {
         count: data.count,
       }));
 
+      // Get real volume and sales data from existing tables 
+      // Use tokenized_properties and token_holdings for investment data
+      const { data: investments } = await supabase
+        .from('token_holdings')
+        .select('total_investment, created_at')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+      const totalVolume = investments?.reduce((sum, inv) => sum + (inv.total_investment || 0), 0) || 0;
+      
+      // Count reservations as sales
+      const { data: reservations } = await supabase
+        .from('reservations')
+        .select('id, status')
+        .eq('status', 'confirmed')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      
+      const soldThisMonth = reservations?.length || 0;
+
       return {
         totalProperties,
         averagePrice,
         priceChange,
-        totalVolume: totalProperties * 0.1, // Mock volume
+        totalVolume,
         activeListings: totalProperties,
-        soldThisMonth: Math.floor(totalProperties * 0.05), // Mock sold count
+        soldThisMonth,
         marketTrends,
         priceByLocation,
         propertyTypes,
