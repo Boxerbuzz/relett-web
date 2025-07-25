@@ -1,12 +1,14 @@
 
-// Legacy trading service - maintained for backward compatibility
-// New implementations should use the services in /lib/services/
+// Updated trading service - now uses the new TradingService
+// This file provides backward compatibility for existing imports
 
-import { LegacyTradingService } from './services/LegacyTradingService';
+import { TradingService } from './services/TradingService';
+import { TradeRequest, TradeValidation } from './services/TradeValidationService';
 
 // Re-export types and service for backward compatibility
-export type { TradeRequest, TradeResult } from './services/LegacyTradingService';
-export { LegacyTradingService as TradingService };
+export type { TradeRequest, TradeValidation };
+export type TradeResult = { success: boolean; transactionId?: string; error?: string };
+export { TradingService };
 
 // Create default instance for immediate use
-export const tradingService = new LegacyTradingService();
+export const tradingService = new TradingService();

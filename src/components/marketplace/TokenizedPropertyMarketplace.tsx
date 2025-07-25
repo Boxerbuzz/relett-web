@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BuyTokenDialog } from "@/components/dialogs/BuyTokenDialog";
+import { TradeDialog } from "@/components/tokens/TradeDialog";
 import { Coins, Calendar, MapPin, Target, Shield } from "phosphor-react";
 
 interface TokenizedProperty {
@@ -353,7 +353,7 @@ export function TokenizedPropertyMarketplace() {
       </Tabs>
 
       {selectedProperty && (
-        <BuyTokenDialog
+        <TradeDialog
           open={showBuyDialog}
           onOpenChange={(open) => {
             setShowBuyDialog(open);

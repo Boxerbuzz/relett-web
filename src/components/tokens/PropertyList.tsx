@@ -14,7 +14,7 @@ import {
   Coins,
   ArrowUpDown
 } from 'lucide-react';
-import { EnhancedTradeDialog } from './EnhancedTradeDialog';
+import { TradeDialog } from './TradeDialog';
 import { TokenProperty } from '@/types/tokens';
 
 interface PropertyListProps {
@@ -154,7 +154,7 @@ export function PropertyList({
       </div>
 
       {selectedProperty && (
-        <EnhancedTradeDialog
+        <TradeDialog
           isOpen={showTradeDialog}
           onClose={() => {
             setShowTradeDialog(false);
