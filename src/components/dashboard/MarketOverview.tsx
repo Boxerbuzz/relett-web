@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, BarChart3, DollarSign } from 'lucide-react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MarketData {
@@ -24,6 +25,7 @@ export function MarketOverview() {
   const [marketData, setMarketData] = useState<MarketData[]>([]);
   const [topProperties, setTopProperties] = useState<TopProperty[]>([]);
   const [loading, setLoading] = useState(true);
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     fetchMarketData();
@@ -139,7 +141,7 @@ export function MarketOverview() {
       setMarketData(formattedMarketData);
       setTopProperties(topPerformingProperties);
     } catch (error) {
-      console.error('Error fetching market data:', error);
+      handleError(error, 'Failed to fetch market data');
     } finally {
       setLoading(false);
     }

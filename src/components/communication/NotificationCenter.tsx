@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { NotificationDeliveryStatus } from "@/components/notifications/NotificationDeliveryStatus";
 import { NotificationTester } from "@/components/notifications/NotificationTester";
 import { NotificationsSkeleton } from "@/components/ui/notifications-skeleton";
@@ -38,6 +39,7 @@ export function NotificationCenter() {
     useState<string>("");
   const { toast } = useToast();
   const { hasRole } = useUserRoles();
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     fetchNotifications();
@@ -61,7 +63,7 @@ export function NotificationCenter() {
       if (error) throw error;
       setNotifications(data as Notification[] || []);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      handleError(error, 'Failed to fetch notifications');
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +111,7 @@ export function NotificationCenter() {
         )
       );
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      handleError(error, 'Failed to mark notification as read');
     }
   };
 
@@ -136,7 +138,7 @@ export function NotificationCenter() {
         title: "All notifications marked as read",
       });
     } catch (error) {
-      console.error("Error marking all as read:", error);
+      handleError(error, 'Failed to mark all notifications as read');
     }
   };
 
