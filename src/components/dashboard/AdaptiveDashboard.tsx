@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
+import { useUserDashboardStats } from "@/hooks/useUserDashboardStats";
 import { 
   Building, 
   Users, 
@@ -141,13 +143,46 @@ export function AdaptiveDashboard() {
 // Section Components
 function UserOverviewSection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { stats: userStats, isLoading: userLoading } = useUserDashboardStats();
+  const { stats: adminStats, isLoading: adminLoading } = useAdminDashboardStats();
   
-  const stats = [
-    { label: "Total Investments", value: "$12,500", icon: DollarSign, change: "+12%" },
-    { label: "Properties Viewed", value: "24", icon: Eye },
-    { label: "Bookings Made", value: "3", icon: Calendar },
-    { label: "Portfolio ROI", value: "8.2%", icon: TrendingUp, change: "+2.1%" }
+  // Show different stats based on user role
+  const stats = user?.role === 'admin' ? [
+    { label: "Total Users", value: adminStats.totalUsers.toString(), icon: Users },
+    { label: "Total Properties", value: adminStats.totalProperties.toString(), icon: Building },
+    { label: "Pending Verifications", value: adminStats.pendingVerifications.toString(), icon: Shield },
+    { label: "Monthly Revenue", value: `$${adminStats.monthlyRevenue.toFixed(2)}`, icon: DollarSign }
+  ] : [
+    { label: "My Properties", value: userStats.ownedProperties.toString(), icon: Building },
+    { label: "Investment Value", value: `$${userStats.totalInvestmentValue.toFixed(2)}`, icon: DollarSign },
+    { label: "Token Holdings", value: userStats.totalInvestments.toString(), icon: TrendingUp },
+    { label: "Inspections Made", value: userStats.bookingsMade.toString(), icon: Calendar }
   ];
+
+  const isLoading = user?.role === 'admin' ? adminLoading : userLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((index) => (
+            <Card key={index}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                    <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-8 w-8 bg-muted animate-pulse rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -159,8 +194,10 @@ function UserOverviewSection() {
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  {stat.change && (
-                    <p className="text-sm text-green-600">{stat.change}</p>
+                  {user?.role !== 'admin' && userStats.portfolioROI !== 0 && stat.label === "Token Holdings" && (
+                    <p className={`text-sm ${userStats.portfolioROI > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {userStats.portfolioROI > 0 ? '+' : ''}{userStats.portfolioROI.toFixed(2)}% ROI
+                    </p>
                   )}
                 </div>
                 <stat.icon className="w-8 h-8 text-muted-foreground" />
@@ -262,14 +299,60 @@ function ClientSection() {
 }
 
 function AdminSection() {
+  const navigate = useNavigate();
+  const { stats } = useAdminDashboardStats();
+  
+  const adminStats = [
+    { label: "Total Users", value: stats.totalUsers, icon: Users },
+    { label: "Pending Verifications", value: stats.pendingVerifications, icon: Shield },
+    { label: "Active Tokens", value: stats.activeTokens, icon: Activity },
+    { label: "Pending Documents", value: stats.pendingDocuments, icon: FileText },
+    { label: "Contact Messages", value: stats.contactsCount, icon: MessageSquare },
+    { label: "Waitlist Count", value: stats.waitlistCount, icon: Star }
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <Shield className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">System Administration</h3>
-        <p className="text-muted-foreground mb-4">Platform management and oversight</p>
-        <Button onClick={() => window.location.href = '/admin'}>
-          Access Admin Panel
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {adminStats.map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+                <stat.icon className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Button 
+          variant="outline" 
+          className="h-20 flex flex-col gap-2"
+          onClick={() => navigate("/admin")}
+        >
+          <Shield className="w-6 h-6" />
+          Admin Hub
+        </Button>
+        <Button 
+          variant="outline" 
+          className="h-20 flex flex-col gap-2"
+          onClick={() => navigate("/verification")}
+        >
+          <FileText className="w-6 h-6" />
+          Verification Queue
+        </Button>
+        <Button 
+          variant="outline" 
+          className="h-20 flex flex-col gap-2"
+          onClick={() => navigate("/analytics")}
+        >
+          <BarChart3 className="w-6 h-6" />
+          Analytics
         </Button>
       </div>
     </div>
