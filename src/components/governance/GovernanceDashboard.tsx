@@ -40,12 +40,12 @@ interface Poll {
   consensus_threshold: number;
   allow_vote_changes: boolean;
   is_anonymous: boolean;
-  hedera_topic_id?: string;
-  hedera_consensus_timestamp?: string;
+  hedera_topic_id?: string | null;
+  hedera_consensus_timestamp?: string | null;
   metadata: any;
-  buyout_price?: number;
-  min_buyout_percentage?: number;
-  current_buyout_votes?: number;
+  buyout_price?: number | null;
+  min_buyout_percentage?: number | null;
+  current_buyout_votes?: number | null;
 }
 
 interface VotingPower {

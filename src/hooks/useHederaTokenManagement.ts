@@ -163,7 +163,8 @@ export const useHederaTokenManagement = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // Note: Using type assertion since marketplace_listings table exists but types may be outdated
+      const { error } = await (supabase as any)
         .from('marketplace_listings')
         .insert({
           tokenized_property_id: params.tokenizedPropertyId,
