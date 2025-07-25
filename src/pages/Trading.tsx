@@ -16,7 +16,7 @@ import { useAuth } from '@/lib/auth';
 // Lazy load heavy components for performance
 const OrderBookInterface = lazy(() => import('@/components/trading/OrderBookInterface').then(module => ({ default: module.OrderBookInterface })));
 const MarketDepth = lazy(() => import('@/components/tokens/MarketDepth').then(module => ({ default: module.MarketDepth })));
-const PortfolioAnalyticsDashboard = lazy(() => import('@/components/analytics/PortfolioAnalyticsDashboard').then(module => ({ default: module.PortfolioAnalyticsDashboard })));
+const AnalyticsDashboard = lazy(() => import('@/components/analytics/AnalyticsDashboard').then(module => ({ default: module.AnalyticsDashboard })));
 
 const Trading = () => {
   const { user } = useAuth();
@@ -96,7 +96,7 @@ const Trading = () => {
 
         <TabsContent value="analytics">
           <Suspense fallback={<TokenPortfolioSkeleton />}>
-            <PortfolioAnalyticsDashboard />
+            <AnalyticsDashboard defaultScope="portfolio" showScopeSelector={false} />
           </Suspense>
         </TabsContent>
 

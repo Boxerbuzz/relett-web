@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
 
-// Lazy load analytics components for performance
-const PortfolioAnalyticsDashboard = lazy(() => import('@/components/analytics/PortfolioAnalyticsDashboard').then(module => ({ default: module.PortfolioAnalyticsDashboard })));
+// Lazy load unified analytics dashboard
+const AnalyticsDashboard = lazy(() => import('@/components/analytics/AnalyticsDashboard').then(module => ({ default: module.AnalyticsDashboard })));
 
 const Analytics = () => {
   return (
@@ -40,7 +40,7 @@ const Analytics = () => {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<TokenPortfolioSkeleton />}>
-              <PortfolioAnalyticsDashboard />
+              <AnalyticsDashboard />
             </Suspense>
           </CardContent>
         </Card>

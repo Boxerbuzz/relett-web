@@ -19,7 +19,7 @@ import { usePollNotifications } from '@/hooks/usePollNotifications';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
 
 // Lazy load analytics for performance
-const PortfolioAnalyticsDashboard = lazy(() => import('@/components/analytics/PortfolioAnalyticsDashboard').then(module => ({ default: module.PortfolioAnalyticsDashboard })));
+const AnalyticsDashboard = lazy(() => import('@/components/analytics/AnalyticsDashboard').then(module => ({ default: module.AnalyticsDashboard })));
 
 const Investment = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
@@ -102,7 +102,7 @@ const Investment = () => {
 
         <TabsContent value="analytics">
           <Suspense fallback={<TokenPortfolioSkeleton />}>
-            <PortfolioAnalyticsDashboard />
+            <AnalyticsDashboard defaultScope="portfolio" showScopeSelector={false} />
           </Suspense>
         </TabsContent>
       </Tabs>

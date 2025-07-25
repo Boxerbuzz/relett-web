@@ -1,8 +1,8 @@
 
-import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
+import { AdaptiveDashboard } from "@/components/dashboard/AdaptiveDashboard";
 
 const Admin = () => {
-  return <AdminDashboard />;
+  return <AdaptiveDashboard />;
 };
 
 export default Admin;
