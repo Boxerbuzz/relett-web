@@ -61,9 +61,9 @@ export function NotificationCenter() {
         .limit(50);
 
       if (error) throw error;
-      setNotifications(data as Notification[] || []);
+      setNotifications((data as Notification[]) || []);
     } catch (error) {
-      handleError(error, 'Failed to fetch notifications');
+      handleError(error, "Failed to fetch notifications");
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +111,7 @@ export function NotificationCenter() {
         )
       );
     } catch (error) {
-      handleError(error, 'Failed to mark notification as read');
+      handleError(error, "Failed to mark notification as read");
     }
   };
 
@@ -138,7 +138,7 @@ export function NotificationCenter() {
         title: "All notifications marked as read",
       });
     } catch (error) {
-      handleError(error, 'Failed to mark all notifications as read');
+      handleError(error, "Failed to mark all notifications as read");
     }
   };
 
@@ -225,8 +225,8 @@ export function NotificationCenter() {
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className="mt-1 flex-shrink-0 rounded-full w-9 h-9 flex items-center justify-center bg-muted">
-  {getNotificationIcon(notification.type)}
-</div>
+                    {getNotificationIcon(notification.type)}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                       <div className="min-w-0">
@@ -248,20 +248,22 @@ export function NotificationCenter() {
                             New
                           </Badge>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setSelectedNotificationId(
-                              selectedNotificationId === notification.id
-                                ? ""
-                                : notification.id
-                            )
-                          }
-                          className="text-xs"
-                        >
-                          Status
-                        </Button>
+                        {hasRole("admin") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setSelectedNotificationId(
+                                selectedNotificationId === notification.id
+                                  ? ""
+                                  : notification.id
+                              )
+                            }
+                            className="text-xs"
+                          >
+                            Status
+                          </Button>
+                        )}
                         {!notification.is_read && (
                           <Button
                             variant="ghost"

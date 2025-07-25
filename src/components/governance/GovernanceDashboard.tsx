@@ -580,6 +580,7 @@ export function GovernanceDashboard() {
               <div>
                 <Label>Property</Label>
                 <select 
+                  aria-label="Property" 
                   value={selectedProperty} 
                   onChange={(e) => setSelectedProperty(e.target.value)}
                   className="w-full mt-1 p-2 border rounded-md"
@@ -611,6 +612,7 @@ export function GovernanceDashboard() {
               <div>
                 <Label>Poll Type</Label>
                 <select 
+                  aria-label="Poll Type"
                   value={newPoll.poll_type} 
                   onChange={(e) => setNewPoll(prev => ({ ...prev, poll_type: e.target.value }))}
                   className="w-full mt-1 p-2 border rounded-md"
