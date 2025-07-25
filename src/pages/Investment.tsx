@@ -14,8 +14,12 @@ import {
   TrendingUp,
   Vote
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { usePollNotifications } from '@/hooks/usePollNotifications';
+import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
+
+// Lazy load analytics for performance
+const PortfolioAnalyticsDashboard = lazy(() => import('@/components/analytics/PortfolioAnalyticsDashboard').then(module => ({ default: module.PortfolioAnalyticsDashboard })));
 
 const Investment = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
@@ -97,11 +101,9 @@ const Investment = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <div className="text-center py-16 text-gray-500">
-            <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">Advanced Analytics Coming Soon</h3>
-            <p>Comprehensive investment analytics and insights will be available soon</p>
-          </div>
+          <Suspense fallback={<TokenPortfolioSkeleton />}>
+            <PortfolioAnalyticsDashboard />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

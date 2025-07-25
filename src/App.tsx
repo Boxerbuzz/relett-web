@@ -43,6 +43,8 @@ import Settings from "./pages/Settings";
 import Services from "./pages/Services";
 import ServiceCategory from "./pages/ServiceCategory";
 import FavoritesPage from "./pages/FavoritesPage";
+import Trading from "./pages/Trading";
+import Analytics from "./pages/Analytics";
 import DataFlow from "./pages/DataFlow";
 import DatabaseSchema from "./pages/DatabaseSchema";
 import DatabaseDocumentation from "./pages/DatabaseDocumentation";
@@ -322,6 +324,26 @@ function App() {
                     <Layout>
                       <ProtectedRoute>
                         <FavoritesPage />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/trading"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Trading />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Analytics />
                       </ProtectedRoute>
                     </Layout>
                   }

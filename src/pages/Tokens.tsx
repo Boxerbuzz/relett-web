@@ -9,14 +9,18 @@ import { PaymentHistoryView } from '@/components/tokens/PaymentHistoryView';
 import { TokensHeader } from '@/components/tokens/TokensHeader';
 import { AIAssistantView } from '@/components/tokens/AIAssistantView';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
+import { Button } from '@/components/ui/button';
 import { useTokenizedProperties } from '@/hooks/useTokenizedProperties';
 import { useInvestmentPortfolio } from '@/hooks/useInvestmentPortfolio';
 import { useTokensView } from '@/hooks/useTokensView';
 import { useAuth } from '@/lib/auth';
 import { transformTokenizedProperties } from '@/utils/tokenDataTransformer';
+import { TrendingUp, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Tokens = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { tokenizedProperties, totalPortfolioValue, totalROI, loading: tokenizedLoading, refetch: refetchTokenizedProperties } = useTokenizedProperties();
   const { portfolio, loading: portfolioLoading, refetch: refetchPortfolio } = useInvestmentPortfolio();
   
@@ -109,6 +113,26 @@ const Tokens = () => {
         propertyCount={tokenizedProperties.length}
         activeChatCount={activeChatCount}
       />
+
+      {/* Quick Access Navigation */}
+      <div className="flex gap-3 mb-6">
+        <Button 
+          onClick={() => navigate('/trading')}
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <BarChart3 className="w-4 h-4" />
+          Advanced Trading
+        </Button>
+        <Button 
+          onClick={() => navigate('/analytics')}
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <TrendingUp className="w-4 h-4" />
+          Portfolio Analytics
+        </Button>
+      </div>
 
       <PropertyList 
         properties={transformedProperties}
