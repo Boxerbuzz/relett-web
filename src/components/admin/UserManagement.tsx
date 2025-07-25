@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, UserCheck, UserX } from 'lucide-react';
 import { UserMobileCard } from './UserMobileCard';
@@ -47,6 +48,7 @@ export function UserManagement() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     fetchUsers();
@@ -63,12 +65,7 @@ export function UserManagement() {
       if (error) throw error;
       setUsers(data as User[] || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch users',
-        variant: 'destructive'
-      });
+      handleError(error, 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -94,12 +91,7 @@ export function UserManagement() {
         description: `User ${!currentStatus ? 'activated' : 'deactivated'} successfully`
       });
     } catch (error) {
-      console.error('Error updating user status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update user status',
-        variant: 'destructive'
-      });
+      handleError(error, 'Failed to update user status');
     }
   };
 

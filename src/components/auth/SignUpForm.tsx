@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/lib/auth";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +43,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp } = useAuth();
+  const { handleError } = useErrorHandler();
 
   const {
     register,
@@ -72,7 +74,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
         data.lastName,
       );
     } catch (error) {
-      console.error("Sign up error:", error);
+      handleError(error, 'Failed to create account');
     } finally {
       setIsSubmitting(false);
     }

@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
@@ -39,11 +41,25 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
   const onSubmit = async (data: OTPForm) => {
     try {
       setLoading(true);
-      // TODO: Implement OTP verification with Supabase
-      console.log('Verifying OTP:', data.otp, 'for email:', email);
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: data.otp,
+        type: 'email'
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email verified successfully!",
+        description: "Welcome to the platform."
+      });
       onSuccess();
-    } catch (error) {
-      console.error('OTP verification error:', error);
+    } catch (error: any) {
+      toast({
+        title: "Verification failed",
+        description: error.message || "Invalid verification code. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -57,11 +73,23 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
   const resendOTP = async () => {
     try {
       setResendLoading(true);
-      // TODO: Implement resend OTP
-      console.log('Resending OTP to:', email);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    } catch (error) {
-      console.error('Resend OTP error:', error);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Code sent",
+        description: "A new verification code has been sent to your email."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to resend code",
+        description: error.message || "Please try again later.",
+        variant: "destructive"
+      });
     } finally {
       setResendLoading(false);
     }

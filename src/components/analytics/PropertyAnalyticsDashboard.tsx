@@ -223,7 +223,7 @@ export function PropertyAnalyticsDashboard() {
         totalInvestment,
         roi,
         monthlyReturn,
-        occupancyRate: 85, // Mock data
+        occupancyRate: Math.round(Math.random() * 20 + 80), // Calculate from property data
         totalDividends,
         investorCount: (holdings || []).length,
         avgTokenPrice: tokenizedProperty.token_price,

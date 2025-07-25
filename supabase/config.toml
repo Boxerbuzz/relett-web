@@ -8,3 +8,24 @@ verify_jwt = true
 
 [functions.get-hedera-balance]
 verify_jwt = true
+
+[functions.associate-hedera-token]
+verify_jwt = true
+
+[functions.buy-marketplace-tokens]
+verify_jwt = true
+
+[functions.check-token-association]
+verify_jwt = true
+
+[functions.transfer-hedera-tokens]
+verify_jwt = true
+
+[functions.create-marketplace-listing]
+verify_jwt = true
+
+[functions.distribute-hedera-revenue]
+verify_jwt = true
+
+[functions.register-property-blockchain]
+verify_jwt = true

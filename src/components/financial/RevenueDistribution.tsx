@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import type { TokenizedProperty } from "@/types/preferences";
 
 interface RevenueDistribution {
@@ -41,6 +42,7 @@ export function RevenueDistribution() {
     sourceDescription: "",
   });
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   useEffect(() => {
     fetchData();
@@ -122,12 +124,7 @@ export function RevenueDistribution() {
       setProperties(transformedProperties);
       setDistributions(transformedDistributions);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load revenue distribution data.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to load revenue distribution data');
     } finally {
       setIsLoading(false);
     }
@@ -190,8 +187,9 @@ export function RevenueDistribution() {
           },
         });
 
-      if (notificationError)
-        console.error("Error creating notification:", notificationError);
+      if (notificationError) {
+        handleError(notificationError, 'Failed to create notification');
+      }
 
       // Reset form
       setDistributionData({
@@ -207,12 +205,7 @@ export function RevenueDistribution() {
         description: `Revenue distribution of $${totalRevenue} has been processed.`,
       });
     } catch (error) {
-      console.error("Error creating distribution:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create revenue distribution.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to create revenue distribution');
     } finally {
       setIsCreating(false);
     }
