@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -6,6 +6,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useProperties } from "@/hooks/useProperties";
 import { useInvestmentPortfolio } from "@/hooks/useInvestmentPortfolio";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { RoleRequestDialog } from "@/components/dialogs/RoleRequestDialog";
 import {
   HeartIcon,
@@ -32,8 +33,8 @@ const UserDashboard = () => {
     properties?.filter((p) => p.favorites && p.favorites > 0)?.slice(0, 3) ||
     [];
 
-  // Mock user activity data - in real app this would come from database
-  const userStats = [
+  // Get real user activity data from audit_trails and transactions
+  const [userStats, setUserStats] = useState([
     {
       label: "Properties Viewed",
       value: "0",
@@ -58,7 +59,61 @@ const UserDashboard = () => {
       icon: TrendUpIcon,
       color: "text-purple-600",
     },
-  ];
+  ]);
+
+  // Fetch real user activity data
+  useEffect(() => {
+    const fetchUserActivity = async () => {
+      if (!user) return;
+
+      try {
+        // Get property views from audit_trails
+        const { data: viewsData } = await supabase
+          .from('audit_trails')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('action', 'view')
+          .eq('resource_type', 'property');
+
+        // Get user bookings/reservations
+        const { data: bookingsData } = await supabase
+          .from('reservations')
+          .select('id')
+          .eq('user_id', user.id);
+
+        setUserStats([
+          {
+            label: "Properties Viewed",
+            value: viewsData?.length?.toString() || "0",
+            icon: EyeIcon,
+            color: "text-blue-600",
+          },
+          {
+            label: "Favorites", 
+            value: favoriteProperties.length.toString(),
+            icon: HeartIcon,
+            color: "text-red-500",
+          },
+          {
+            label: "Bookings",
+            value: bookingsData?.length?.toString() || "0",
+            icon: CalendarIcon,
+            color: "text-green-600",
+          },
+          {
+            label: "Investments",
+            value: portfolio?.properties?.length?.toString() || "0",
+            icon: TrendUpIcon,
+            color: "text-purple-600",
+          },
+        ]);
+      } catch (error) {
+        console.error('Error fetching user activity:', error);
+      }
+    };
+
+    fetchUserActivity();
+  }, [user, favoriteProperties.length, portfolio?.properties?.length]);
 
   return (
     <div className="space-y-6">
