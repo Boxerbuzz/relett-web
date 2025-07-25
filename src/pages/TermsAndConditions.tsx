@@ -7,7 +7,8 @@ import {
   Shield, Scale, Users, Home, Coins, FileText, AlertTriangle, ArrowLeft, 
   Twitter, Facebook, Instagram, Linkedin, Mail, Phone, MapPin, Clock,
   Gavel, DollarSign, Building, Key, Lock, Eye, UserCheck, Banknote,
-  Calendar, Handshake, TrendingUp, Globe, Zap, CreditCard, Settings
+  Calendar, Handshake, TrendingUp, Globe, Zap, CreditCard, Settings,
+  CheckCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -76,21 +77,23 @@ const TermsAndConditions = () => {
           <Card>
             <CardContent className="p-4">
               <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-              <ScrollArea className="h-40">
-                <div className="grid grid-cols-2 gap-2">
+              <ScrollArea className="h-56">
+                <div className="flex flex-col gap-2">
                   {tableOfContents.map((item) => {
                     const Icon = item.icon;
                     return (
                       <button
                         key={item.id}
                         onClick={() => scrollToSection(item.id)}
-                        className={`flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors text-left ${
-                          activeSection === item.id 
-                            ? "bg-blue-50 text-blue-700" 
-                            : "text-gray-700 hover:bg-gray-50"
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-left text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:z-10 border border-transparent ${
+                          activeSection === item.id
+                            ? "bg-blue-50 text-blue-700 border-blue-500" 
+                            : "text-gray-700 hover:bg-gray-100"
                         }`}
+                        tabIndex={0}
+                        aria-current={activeSection === item.id ? "page" : undefined}
                       >
-                        <Icon className="h-3 w-3 flex-shrink-0" />
+                        <Icon className="h-5 w-5 flex-shrink-0" />
                         <span className="truncate">{item.title}</span>
                       </button>
                     );
@@ -144,22 +147,24 @@ const TermsAndConditions = () => {
                     <Scale className="h-6 w-6 text-blue-600" />
                     <h2 className="text-2xl font-bold">Acceptance of Terms</h2>
                   </div>
-                  <div className="prose max-w-none">
+                  <div className="prose max-w-none space-y-6">
                     <p className="text-lg text-gray-700 leading-relaxed mb-6">
                       Welcome to Relett, a comprehensive property tokenization and real estate investment platform. 
                       By accessing or using our services, you agree to be bound by these Terms and Conditions.
                     </p>
-                    <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-6">
-                      <h3 className="font-semibold text-blue-900 mb-3">Important Notice</h3>
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-6 shadow-sm">
+                      <h3 className="font-semibold text-blue-900 mb-3 text-lg flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-blue-500" /> Important Notice
+                      </h3>
                       <p className="text-blue-800 mb-3">
                         These terms constitute a legally binding agreement between you and Relett Limited. 
                         Please read them carefully before using our platform.
                       </p>
                       <ul className="space-y-2 text-blue-700">
-                        <li>• By creating an account, you confirm you are at least 18 years old</li>
-                        <li>• You have the legal capacity to enter into binding agreements</li>
-                        <li>• You will comply with all applicable laws and regulations</li>
-                        <li>• You understand the risks associated with real estate investment</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> By creating an account, you confirm you are at least 18 years old</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> You have the legal capacity to enter into binding agreements</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> You will comply with all applicable laws and regulations</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> You understand the risks associated with real estate investment</li>
                       </ul>
                     </div>
                     <p className="text-gray-700">

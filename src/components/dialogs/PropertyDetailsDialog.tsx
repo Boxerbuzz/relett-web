@@ -11,26 +11,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import {
-  MapPin,
-  TrendUp,
-  Heart,
-  Share,
-  Star,
-  Calendar,
-  House,
-  Ruler,
-  Users,
-  Car,
-  Spinner,
-  ArrowLeft,
-  Coins,
-  PencilCircle,
-} from "phosphor-react";
+  MapPinIcon,
+  TrendUpIcon,
+  HeartIcon,
+  ShareIcon,
+  StarIcon,
+  CalendarIcon,
+  HouseIcon,
+  RulerIcon,
+  UsersIcon,
+  CarIcon,
+  SpinnerIcon,
+  ArrowLeftIcon,
+  CoinsIcon,
+  PencilCircleIcon,
+  ArchiveBoxIcon,
+} from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 import { DocumentUpload } from "@/components/property/DocumentUpload";
-import { ArchiveBoxIcon } from "@phosphor-icons/react";
 import { capitalize } from "@/lib/utils";
 import { usePropertyDocument } from "@/hooks/usePropertyDocument";
 
@@ -199,37 +199,37 @@ export function PropertyDetailsDialog({
         {
           label: "Property Type",
           value: property.category || property.type || "N/A",
-          icon: House,
+          icon: HouseIcon,
           id: "type",
         },
         {
           label: "Size",
           value: property.sqrft || "N/A",
-          icon: Ruler,
+          icon: RulerIcon,
           id: "size",
         },
         {
           label: "Condition",
           value: property.condition || "Good",
-          icon: Star,
+          icon: StarIcon,
           id: "condition",
         },
         {
           label: "Year Built",
           value: property.year_built || "N/A",
-          icon: Calendar,
+          icon: CalendarIcon,
           id: "year_built",
         },
         {
           label: "Max Guests",
           value: property.max_guest?.toString() || "0",
-          icon: Users,
+          icon: UsersIcon,
           id: "max_guest",
         },
         {
           label: "Garages",
           value: property.garages?.toString() || "0",
-          icon: Car,
+          icon: CarIcon,
           id: "garages",
         },
       ]
@@ -271,12 +271,12 @@ export function PropertyDetailsDialog({
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon size={16} className="mr-2" />
             Back to Properties
           </Button>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Spinner className="h-8 w-8 animate-spin" />
+          <SpinnerIcon className="h-8 w-8 animate-spin" />
         </div>
       </div>
     );
@@ -287,7 +287,7 @@ export function PropertyDetailsDialog({
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon size={16} className="mr-2" />
             Back to Properties
           </Button>
         </div>
@@ -308,7 +308,7 @@ export function PropertyDetailsDialog({
         {/* Header with Back Button */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon size={16} className="mr-2" />
             Back to Properties
           </Button>
           <div className="flex gap-1">
@@ -330,7 +330,7 @@ export function PropertyDetailsDialog({
             {property.title}
           </h1>
           <div className="flex items-center gap-2 text-gray-600">
-            <MapPin size={16} />
+            <MapPinIcon size={16} />
             <span className="text-sm">{getLocationString()}</span>
           </div>
         </div>
@@ -352,7 +352,7 @@ export function PropertyDetailsDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <Star size={16} className="text-yellow-500" />
+                  <StarIcon size={16} className="text-yellow-500" />
                   <span className="text-sm font-medium">
                     {(property.ratings || 0).toFixed(1)}
                   </span>
@@ -365,11 +365,11 @@ export function PropertyDetailsDialog({
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1">
-                  <Heart size={16} className="mr-2" />
+                  <HeartIcon size={16} className="mr-2" />
                   Save
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1">
-                  <Share size={16} className="mr-2" />
+                  <ShareIcon size={16} className="mr-2" />
                   Share
                 </Button>
               </div>
@@ -383,7 +383,7 @@ export function PropertyDetailsDialog({
                     className="flex-1"
                     onClick={() => setShowEditDialog(true)}
                   >
-                    <PencilCircle size={16} className="mr-2" />
+                    <PencilCircleIcon size={16} className="mr-2" />
                     Edit Property
                   </Button>
 
@@ -393,7 +393,7 @@ export function PropertyDetailsDialog({
                       className="flex-1"
                       onClick={() => handleTokenizeProperty()}
                     >
-                      <Coins size={16} className="mr-2" />
+                      <CoinsIcon size={16} className="mr-2" />
                       Tokenize
                     </Button>
                   )}
@@ -545,7 +545,7 @@ export function PropertyDetailsDialog({
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <TrendUp
+                            <TrendUpIcon
                               size={16}
                               className="text-green-600 mr-1"
                             />

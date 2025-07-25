@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Plus,
-  MagnifyingGlass,
-  MapPin,
-  DotsThreeVertical,
-  Heart,
-  Share,
-} from "phosphor-react";
+  PlusIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  DotsThreeVerticalIcon,
+  HeartIcon,
+  ShareIcon,
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
 import { BlockchainStatusBadge } from "@/components/property/BlockchainStatusBadge";
@@ -283,7 +283,7 @@ const MyProperty = () => {
         </div>
         <Link to="/add-property">
           <Button className="w-full sm:w-auto">
-            <Plus size={16} className="mr-2" />
+            <PlusIcon size={16} className="mr-2" />
             Add Property
           </Button>
         </Link>
@@ -294,7 +294,7 @@ const MyProperty = () => {
         <CardContent className="p-4">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <MagnifyingGlass
+              <MagnifyingGlassIcon
                 size={20}
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
               />
@@ -362,7 +362,7 @@ const MyProperty = () => {
             </p>
             <Link to="/add-property">
               <Button>
-                <Plus size={16} className="mr-2" />
+                <PlusIcon size={16} className="mr-2" />
                 Add Property
               </Button>
             </Link>
@@ -388,21 +388,21 @@ const MyProperty = () => {
                     size="icon"
                     className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
-                    <Heart size={14} />
+                    <HeartIcon  size={14} />
                   </Button>
                   <Button
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
-                    <Share size={14} />
+                    <ShareIcon size={14} />
                   </Button>
                   <Button
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
-                    <DotsThreeVertical size={14} />
+                    <DotsThreeVerticalIcon size={14} />
                   </Button>
                 </div>
               </div>
@@ -411,7 +411,7 @@ const MyProperty = () => {
                   {property.title}
                 </CardTitle>
                 <div className="flex items-center text-sm text-gray-500">
-                  <MapPin size={14} className="mr-1 flex-shrink-0" />
+                  <MapPinIcon size={14} className="mr-1 flex-shrink-0" />
                   <span className="truncate">
                     {getLocationString(property.location)}
                   </span>
