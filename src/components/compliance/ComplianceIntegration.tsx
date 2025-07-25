@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Shield, AlertTriangle, CheckCircle, Clock, Search, FileText, Users, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ComplianceCheck {
   id: string;
@@ -34,8 +35,8 @@ interface AuditTrail {
   resource_id: string;
   created_at: string;
   flagged: boolean;
-  risk_score?: number;
-  flag_reason?: string;
+  risk_score?: number | null;
+  flag_reason?: string | null;
 }
 
 interface KYCValidation {
@@ -84,7 +85,7 @@ export function ComplianceIntegration() {
         risk_score: check.risk_score,
         created_at: check.created_at,
         updated_at: check.created_at,
-        alerts: check.alerts || [],
+        alerts: Array.isArray(check.alerts) ? check.alerts : [],
         review_notes: check.review_notes
       }));
 
