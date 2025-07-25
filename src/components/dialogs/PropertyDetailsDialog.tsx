@@ -11,26 +11,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import {
-  MapPinIcon,
-  TrendUpIcon,
-  HeartIcon,
-  ShareIcon,
-  StarIcon,
-  CalendarIcon,
-  HouseIcon,
-  RulerIcon,
-  UsersIcon,
-  CarIcon,
-  SpinnerIcon,
-  ArrowLeftIcon,
-  CoinsIcon,
-  PencilCircleIcon,
-  ArchiveBoxIcon,
-} from "@phosphor-icons/react";
+  MapPin,
+  TrendUp,
+  Heart,
+  Share,
+  Star,
+  Calendar,
+  House,
+  Ruler,
+  Users,
+  Car,
+  Spinner,
+  ArrowLeft,
+  Coins,
+  PencilCircle,
+} from "phosphor-react";
 import { getAmenityById } from "@/types/amenities";
 import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
 import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 import { DocumentUpload } from "@/components/property/DocumentUpload";
+import { PropertyBlockchainRegistration } from "@/components/hedera/PropertyBlockchainRegistration";
+import { BlockchainStatusBadge } from "@/components/property/BlockchainStatusBadge";
+import { ArchiveBoxIcon } from "@phosphor-icons/react";
 import { capitalize } from "@/lib/utils";
 import { usePropertyDocument } from "@/hooks/usePropertyDocument";
 
@@ -46,6 +48,7 @@ interface PropertyData {
   is_tokenized: boolean | null;
   is_featured: boolean | null;
   backdrop: string | null;
+  blockchain_transaction_id?: string | null;
   description?: string | null;
   condition?: string | null;
   year_built?: string | null;
@@ -99,6 +102,7 @@ export function PropertyDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
   const { createDocument, updateDocument, deleteDocument } =
     usePropertyDocument();
   const { toast } = useToast();
@@ -194,42 +198,63 @@ export function PropertyDetailsDialog({
     setShowTokenizeDialog(true);
   };
 
+  const handleBlockchainRegistration = () => {
+    if (!property) return;
+    setShowBlockchainDialog(true);
+  };
+
+  const handleBlockchainRegistrationComplete = () => {
+    setShowBlockchainDialog(false);
+    fetchPropertyDetails(); // Refresh property data
+  };
+
+  // Check if blockchain registration button should be shown
+  const showBlockchainButton = property?.user_id === user?.id && 
+                              property?.is_verified && 
+                              !property?.blockchain_transaction_id;
+  
+  // Check if tokenization button should be shown
+  const showTokenizeButton = property?.user_id === user?.id && 
+                            property?.is_verified && 
+                            property?.blockchain_transaction_id && 
+                            !property?.is_tokenized;
+
   const keySpecs = property
     ? [
         {
           label: "Property Type",
           value: property.category || property.type || "N/A",
-          icon: HouseIcon,
+          icon: House,
           id: "type",
         },
         {
           label: "Size",
           value: property.sqrft || "N/A",
-          icon: RulerIcon,
+          icon: Ruler,
           id: "size",
         },
         {
           label: "Condition",
           value: property.condition || "Good",
-          icon: StarIcon,
+          icon: Star,
           id: "condition",
         },
         {
           label: "Year Built",
           value: property.year_built || "N/A",
-          icon: CalendarIcon,
+          icon: Calendar,
           id: "year_built",
         },
         {
           label: "Max Guests",
           value: property.max_guest?.toString() || "0",
-          icon: UsersIcon,
+          icon: Users,
           id: "max_guest",
         },
         {
           label: "Garages",
           value: property.garages?.toString() || "0",
-          icon: CarIcon,
+          icon: Car,
           id: "garages",
         },
       ]
@@ -271,12 +296,12 @@ export function PropertyDetailsDialog({
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeftIcon size={16} className="mr-2" />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Properties
           </Button>
         </div>
         <div className="flex items-center justify-center py-12">
-          <SpinnerIcon className="h-8 w-8 animate-spin" />
+          <Spinner className="h-8 w-8 animate-spin" />
         </div>
       </div>
     );
@@ -287,7 +312,7 @@ export function PropertyDetailsDialog({
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeftIcon size={16} className="mr-2" />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Properties
           </Button>
         </div>
@@ -308,8 +333,8 @@ export function PropertyDetailsDialog({
         {/* Header with Back Button */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeftIcon size={16} className="mr-2" />
-            Back
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Properties
           </Button>
           <div className="flex gap-1">
             {property.is_featured && (
@@ -321,6 +346,11 @@ export function PropertyDetailsDialog({
             {property.is_tokenized && (
               <Badge className="bg-blue-500">Tokenized</Badge>
             )}
+            <BlockchainStatusBadge 
+              isRegistered={!!property.blockchain_transaction_id}
+              transactionId={property.blockchain_transaction_id}
+              size="sm"
+            />
           </div>
         </div>
 
@@ -330,7 +360,7 @@ export function PropertyDetailsDialog({
             {property.title}
           </h1>
           <div className="flex items-center gap-2 text-gray-600">
-            <MapPinIcon size={16} />
+            <MapPin size={16} />
             <span className="text-sm">{getLocationString()}</span>
           </div>
         </div>
@@ -352,7 +382,7 @@ export function PropertyDetailsDialog({
             <div className="space-y-3">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <StarIcon size={16} className="text-yellow-500" />
+                  <Star size={16} className="text-yellow-500" />
                   <span className="text-sm font-medium">
                     {(property.ratings || 0).toFixed(1)}
                   </span>
@@ -365,37 +395,55 @@ export function PropertyDetailsDialog({
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1">
-                  <HeartIcon size={16} className="mr-2" />
+                  <Heart size={16} className="mr-2" />
                   Save
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1">
-                  <ShareIcon size={16} className="mr-2" />
+                  <Share size={16} className="mr-2" />
                   Share
                 </Button>
               </div>
 
               {/* Property Owner Actions */}
               {property.user_id === user?.id && (
-                <div className="flex gap-2">
+                <div className="space-y-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="w-full"
                     onClick={() => setShowEditDialog(true)}
                   >
-                    <PencilCircleIcon size={16} className="mr-2" />
+                    <PencilCircle size={16} className="mr-2" />
                     Edit Property
                   </Button>
 
-                  {!property.is_tokenized && property.is_verified && (
+                  {property.is_verified && !property.blockchain_transaction_id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={handleBlockchainRegistration}
+                    >
+                      <TrendUp size={16} className="mr-2" />
+                      Register on Blockchain
+                    </Button>
+                  )}
+
+                  {showTokenizeButton && (
                     <Button
                       size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() => handleTokenizeProperty()}
                     >
-                      <CoinsIcon size={16} className="mr-2" />
-                      Tokenize
+                      <Coins size={16} className="mr-2" />
+                      Tokenize Property
                     </Button>
+                  )}
+
+                  {!property.is_verified && (
+                    <div className="text-xs text-gray-500 text-center p-2 bg-gray-50 rounded">
+                      Property must be verified before blockchain registration
+                    </div>
                   )}
                 </div>
               )}
@@ -545,7 +593,7 @@ export function PropertyDetailsDialog({
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <TrendUpIcon
+                            <TrendUp
                               size={16}
                               className="text-green-600 mr-1"
                             />
@@ -646,6 +694,34 @@ export function PropertyDetailsDialog({
         propertyId={propertyId}
         onPropertyUpdated={fetchPropertyDetails}
       />
+
+      {/* Blockchain Registration Dialog */}
+      {property && showBlockchainDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-semibold mb-4">Register Property on Blockchain</h2>
+            <PropertyBlockchainRegistration
+              propertyData={{
+                id: property.id,
+                title: property.title || "",
+                type: property.category || property.type || "",
+                location: property.location,
+                price: property.price,
+              }}
+              onRegistrationComplete={handleBlockchainRegistrationComplete}
+              onRegistrationSkip={() => setShowBlockchainDialog(false)}
+            />
+            <div className="flex justify-end mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowBlockchainDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
