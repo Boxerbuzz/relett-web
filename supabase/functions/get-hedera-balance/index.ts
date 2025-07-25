@@ -1,113 +1,137 @@
-
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import {
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { 
   Client,
   AccountId,
+  PrivateKey,
   AccountBalanceQuery
-} from "https://esm.sh/@hashgraph/sdk@2.65.1";
+} from "npm:@hashgraph/sdk@^2.65.1"
 import { 
   createSuccessResponse, 
-  createErrorResponse,
+  createErrorResponse, 
   createResponse,
   createCorsResponse,
   verifyUser 
-} from '../shared/supabase-client.ts';
+} from "../shared/supabase-client.ts"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface BalanceRequest {
-  accountId: string;
+  accountId: string
 }
 
 interface TokenBalance {
-  tokenId: string;
-  balance: string;
+  tokenId: string
+  balance: string
 }
 
 interface BalanceResponse {
-  balance: number;
-  tokens: TokenBalance[];
-  accountId: string;
-  message?: string;
+  accountId: string
+  hbarBalance: string
+  tokenBalances: TokenBalance[]
 }
 
 serve(async (req) => {
+  console.log('Get Hedera Balance function called')
+  
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return createCorsResponse();
+    return createCorsResponse()
   }
 
-  let client: Client | null = null;
-
   try {
-    const authHeader = req.headers.get('Authorization')!;
-    const userResult = await verifyUser(authHeader);
-    
-    if (!userResult.success) {
-      return createResponse(userResult, 401);
+    // Verify user authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return createResponse(createErrorResponse('Authorization header missing'), 401)
     }
 
-    const { accountId }: BalanceRequest = await req.json();
+    const userResult = await verifyUser(authHeader)
+    if ('error' in userResult) {
+      return createResponse(userResult, 401)
+    }
+
+    console.log('User authenticated successfully')
+
+    // Parse request body
+    const body: BalanceRequest = await req.json()
+    const { accountId } = body
 
     if (!accountId) {
-      return createResponse(createErrorResponse('Missing account ID'), 400);
+      return createResponse(createErrorResponse('Account ID is required'), 400)
     }
 
-    // Get Hedera credentials
-    const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID');
-    const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY');
+    console.log('Fetching balance for account:', accountId)
 
-    if (!hederaAccountId || !hederaPrivateKey) {
-      console.error('Hedera credentials not configured');
-      return createResponse(createErrorResponse('Hedera balance service not configured'), 500);
+    // Get Hedera credentials from environment
+    const hederaNetwork = Deno.env.get('HEDERA_NETWORK') || 'testnet'
+    const operatorAccountId = Deno.env.get('HEDERA_ACCOUNT_ID')
+    const operatorPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY')
+
+    if (!operatorAccountId || !operatorPrivateKey) {
+      return createResponse(createErrorResponse('Hedera credentials not configured'), 500)
+    }
+
+    // Initialize Hedera client
+    let client: Client
+    try {
+      client = hederaNetwork === 'mainnet' ? Client.forMainnet() : Client.forTestnet()
+      client.setOperator(
+        AccountId.fromString(operatorAccountId),
+        PrivateKey.fromStringECDSA(operatorPrivateKey)
+      )
+      console.log('Hedera client initialized')
+    } catch (error) {
+      console.error('Failed to initialize Hedera client:', error)
+      return createResponse(createErrorResponse('Failed to initialize Hedera client'), 500)
     }
 
     try {
-      // Initialize Hedera client
-      client = Client.forTestnet();
+      // Query account balance
+      const balanceQuery = new AccountBalanceQuery()
+        .setAccountId(AccountId.fromString(accountId))
+
+      const balance = await balanceQuery.execute(client)
       
-      const account = AccountId.fromString(accountId);
-      
-      // Get account balance
-      const balance = await new AccountBalanceQuery()
-        .setAccountId(account)
-        .execute(client);
-      
-      // Convert token balances to array
-      const tokenBalances: TokenBalance[] = [];
+      console.log('Balance query completed')
+
+      // Format HBAR balance
+      const hbarBalance = balance.hbars.toString()
+
+      // Format token balances
+      const tokenBalances: TokenBalance[] = []
       if (balance.tokens) {
-        Object.entries(balance.tokens).forEach(([tokenId, amount]) => {
+        for (const [tokenId, amount] of balance.tokens.entries()) {
           tokenBalances.push({
             tokenId: tokenId.toString(),
-            balance: amount.toString(),
-          });
-        });
+            balance: amount.toString()
+          })
+        }
       }
-      
+
       const response: BalanceResponse = {
-        balance: parseFloat(balance.hbars.toString()),
-        tokens: tokenBalances,
-        accountId: account.toString()
-      };
+        accountId,
+        hbarBalance,
+        tokenBalances
+      }
 
-      return createResponse(createSuccessResponse(response));
+      console.log('Balance response:', response)
 
-    } catch (hederaError) {
-      console.error('Hedera balance query error:', hederaError);
-      
-      const errorMessage = hederaError instanceof Error ? hederaError.message : String(hederaError);
-      return createResponse(createErrorResponse('Failed to get account balance', errorMessage), 500);
+      return createResponse(createSuccessResponse(response, 'Balance retrieved successfully'))
+
+    } catch (error) {
+      console.error('Balance query failed:', error)
+      return createResponse(createErrorResponse(`Failed to get account balance: ${error.message}`), 500)
+    } finally {
+      if (client) {
+        client.close()
+      }
     }
 
   } catch (error) {
-    console.error('Balance query error:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return createResponse(createErrorResponse('Internal server error', errorMessage), 500);
-  } finally {
-    // Ensure Hedera client is always closed
-    if (client) {
-      try {
-        client.close();
-      } catch (closeError) {
-        console.error('Error closing Hedera client:', closeError);
-      }
-    }
+    console.error('Unexpected error:', error)
+    return createResponse(createErrorResponse('Internal server error'), 500)
   }
-});
+})
