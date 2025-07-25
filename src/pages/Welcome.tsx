@@ -29,6 +29,119 @@ const Welcome = () => {
 
   const featuresStatus = {
     working: [
+      // Core Infrastructure (Phase 1)
+      {
+        name: "Hedera Blockchain Integration",
+        icon: ShieldCheckIcon,
+        path: "/tokens",
+      },
+      {
+        name: "Property Tokenization Engine",
+        icon: CurrencyDollarIcon,
+        path: "/tokens",
+      },
+      {
+        name: "Token Management System",
+        icon: BuildingsIcon,
+        path: "/tokens",
+      },
+      {
+        name: "Smart Contract Integration",
+        icon: ShieldCheckIcon,
+        path: "/tokens",
+      },
+      
+      // Investment & Portfolio (Phase 2)
+      {
+        name: "Investment Portfolio Dashboard",
+        icon: ChartBarIcon,
+        path: "/investment",
+      },
+      {
+        name: "Investment Groups Management",
+        icon: UserIcon,
+        path: "/investment",
+      },
+      {
+        name: "Revenue Distribution System",
+        icon: CurrencyDollarIcon,
+        path: "/investment",
+      },
+      {
+        name: "Portfolio Analytics",
+        icon: ChartBarIcon,
+        path: "/investment",
+      },
+      
+      // Trading & Marketplace (Phase 3)
+      {
+        name: "Token Trading Platform",
+        icon: CurrencyDollarIcon,
+        path: "/marketplace",
+      },
+      {
+        name: "Order Book Interface",
+        icon: ChartBarIcon,
+        path: "/marketplace",
+      },
+      {
+        name: "Trading Analytics",
+        icon: InfoIcon,
+        path: "/analytics",
+      },
+      
+      // Governance & Compliance (Phase 4)
+      {
+        name: "Governance Voting System",
+        icon: ShieldCheckIcon,
+        path: "/investment",
+      },
+      {
+        name: "Compliance Integration",
+        icon: FileTextIcon,
+        path: "/profile",
+      },
+      {
+        name: "KYC/AML Verification",
+        icon: UserIcon,
+        path: "/profile",
+      },
+      
+      // Production Features (Phase 5)
+      {
+        name: "Security Validation",
+        icon: ShieldCheckIcon,
+        path: "/",
+      },
+      {
+        name: "Error Handling System",
+        icon: WarningIcon,
+        path: "/",
+      },
+      {
+        name: "Transaction Logging",
+        icon: FileTextIcon,
+        path: "/",
+      },
+      {
+        name: "User Documentation",
+        icon: InfoIcon,
+        path: "/welcome",
+      },
+      
+      // Advanced Features (Phase 6)
+      {
+        name: "Mobile Optimization",
+        icon: HouseIcon,
+        path: "/",
+      },
+      {
+        name: "Push Notifications",
+        icon: BellIcon,
+        path: "/",
+      },
+      
+      // Original Core Features
       {
         name: "User Authentication & Profiles",
         icon: UserIcon,
@@ -40,46 +153,29 @@ const Welcome = () => {
         path: "/marketplace",
       },
       {
-        name: "Property Search & Filtering",
-        icon: MapPinIcon,
-        path: "/marketplace",
-      },
-      {
-        name: "Investment Tracking",
-        icon: CurrencyDollarIcon,
-        path: "/tokens",
-      },
-      {
         name: "Admin Dashboard",
         icon: ChartBarIcon,
         path: "/admin",
         roles: ["admin"],
       },
-      { name: "Messaging System", icon: BellIcon, path: "/messaging" },
       {
         name: "Property Verification",
         icon: ShieldCheckIcon,
         path: "/verification",
         roles: ["verifier", "admin"],
       },
-      {
-        name: "Role Management",
-        icon: UserIcon,
-        path: "/admin",
-        roles: ["admin"],
-      },
     ],
     inProgress: [
-      { name: "Property Tokenization", icon: CurrencyDollarIcon },
-      { name: "Investment Processing", icon: ChartBarIcon },
-      { name: "KYC Verification UI", icon: FileTextIcon },
-      { name: "Payment Integration", icon: CurrencyDollarIcon },
+      { name: "Advanced Portfolio Analytics", icon: ChartBarIcon },
+      { name: "External Market Data Integration", icon: InfoIcon },
+      { name: "Property Valuation APIs", icon: BuildingsIcon },
+      { name: "Cross-chain Compatibility", icon: ShieldCheckIcon },
     ],
     planned: [
-      { name: "Mobile App", icon: HouseIcon },
-      { name: "Advanced Analytics", icon: ChartBarIcon },
-      { name: "AI Property Valuation", icon: BuildingsIcon },
-      { name: "Blockchain Integration", icon: ShieldCheckIcon },
+      { name: "DeFi Protocol Integration", icon: CurrencyDollarIcon },
+      { name: "AI-Powered Property Insights", icon: BuildingsIcon },
+      { name: "Multi-signature Governance", icon: UserIcon },
+      { name: "Automated Compliance Reporting", icon: FileTextIcon },
     ],
   };
 
