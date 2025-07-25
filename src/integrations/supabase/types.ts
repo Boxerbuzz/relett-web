@@ -1268,6 +1268,56 @@ export type Database = {
         }
         Relationships: []
       }
+      hedera_tokens: {
+        Row: {
+          created_at: string
+          decimals: number | null
+          hedera_token_id: string
+          id: string
+          metadata: Json | null
+          token_name: string
+          token_symbol: string
+          tokenized_property_id: string | null
+          total_supply: number
+          treasury_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decimals?: number | null
+          hedera_token_id: string
+          id?: string
+          metadata?: Json | null
+          token_name: string
+          token_symbol: string
+          tokenized_property_id?: string | null
+          total_supply: number
+          treasury_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decimals?: number | null
+          hedera_token_id?: string
+          id?: string
+          metadata?: Json | null
+          token_name?: string
+          token_symbol?: string
+          tokenized_property_id?: string | null
+          total_supply?: number
+          treasury_account_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hedera_tokens_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       identity_audit_logs: {
         Row: {
           action: string
@@ -2059,6 +2109,59 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_listings: {
+        Row: {
+          buyer_id: string | null
+          created_at: string
+          id: string
+          price_per_token: number
+          seller_id: string
+          sold_at: string | null
+          status: string
+          token_amount: number
+          tokenized_property_id: string
+          total_price: number
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          price_per_token: number
+          seller_id: string
+          sold_at?: string | null
+          status?: string
+          token_amount: number
+          tokenized_property_id: string
+          total_price: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          price_per_token?: number
+          seller_id?: string
+          sold_at?: string | null
+          status?: string
+          token_amount?: number
+          tokenized_property_id?: string
+          total_price?: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_marketplace_tokenized_property"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_attachments: {
         Row: {
           created_at: string
@@ -2697,6 +2800,20 @@ export type Database = {
           voting_power?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_poll_votes_poll"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "investment_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_poll_votes_poll"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "poll_results"
+            referencedColumns: ["poll_id"]
+          },
           {
             foreignKeyName: "poll_votes_poll_id_fkey"
             columns: ["poll_id"]
@@ -3382,6 +3499,69 @@ export type Database = {
           },
         ]
       }
+      purchase_offers: {
+        Row: {
+          buyer_id: string
+          closing_date: string
+          created_at: string
+          deposit_amount: number
+          financing_type: string
+          id: string
+          message: string | null
+          offer_amount: number
+          property_id: string
+          responded_at: string | null
+          response_message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          closing_date: string
+          created_at?: string
+          deposit_amount?: number
+          financing_type: string
+          id?: string
+          message?: string | null
+          offer_amount: number
+          property_id: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          closing_date?: string
+          created_at?: string
+          deposit_amount?: number
+          financing_type?: string
+          id?: string
+          message?: string | null
+          offer_amount?: number
+          property_id?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_offers_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_offers_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rentals: {
         Row: {
           agent_id: string | null
@@ -3991,6 +4171,39 @@ export type Database = {
         }
         Relationships: []
       }
+      token_associations: {
+        Row: {
+          associated_at: string
+          created_at: string
+          hedera_account_id: string
+          hedera_token_id: string
+          id: string
+          status: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          associated_at?: string
+          created_at?: string
+          hedera_account_id: string
+          hedera_token_id: string
+          id?: string
+          status: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          associated_at?: string
+          created_at?: string
+          hedera_account_id?: string
+          hedera_token_id?: string
+          id?: string
+          status?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       token_holdings: {
         Row: {
           acquisition_date: string
@@ -4241,6 +4454,71 @@ export type Database = {
           transaction_type?: string
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          buyer_id: string | null
+          created_at: string
+          currency: string
+          external_transaction_id: string | null
+          hedera_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          price_per_token: number
+          seller_id: string | null
+          status: string
+          token_amount: number
+          tokenized_property_id: string
+          total_amount: number
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          price_per_token: number
+          seller_id?: string | null
+          status?: string
+          token_amount: number
+          tokenized_property_id: string
+          total_amount: number
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string
+          external_transaction_id?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          price_per_token?: number
+          seller_id?: string | null
+          status?: string
+          token_amount?: number
+          tokenized_property_id?: string
+          total_amount?: number
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_transactions_tokenized_property"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tree_donations: {
         Row: {
@@ -5311,6 +5589,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_token_holdings_after_sale: {
+        Args: {
+          p_seller_id: string
+          p_buyer_id: string
+          p_tokenized_property_id: string
+          p_token_amount: number
+          p_total_price: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       activity_type: "reservation" | "rental" | "inspection" | "investment"
@@ -5367,6 +5655,7 @@ export type Database = {
         | "chat"
         | "property_updates"
         | "verification_updates"
+        | "offer_received"
       token_type: "erc20" | "erc721" | "hts_fungible" | "hts_nft"
       tokenization_status:
         | "draft"
@@ -5570,6 +5859,7 @@ export const Constants = {
         "chat",
         "property_updates",
         "verification_updates",
+        "offer_received",
       ],
       token_type: ["erc20", "erc721", "hts_fungible", "hts_nft"],
       tokenization_status: [
