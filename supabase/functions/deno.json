@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "deno.ns"],
+    "strict": true,
+    "noImplicitAny": false
+  },
+  "importMap": "./import_map.json",
+  "fmt": {
+    "files": {
+      "include": ["**/*.ts", "**/*.js"]
+    }
+  }
+} 

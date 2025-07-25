@@ -1,0 +1,10 @@
+{
+    "name": "user-created-webhook",
+    "verify_jwt": false,
+    "webhook": {
+        "url": "https://api.vercel.com/v1/integrations/webhook/user-created-webhook",
+        "events": [
+            "user.created"
+        ]
+    }
+}
