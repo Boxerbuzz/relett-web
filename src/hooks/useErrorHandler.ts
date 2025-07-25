@@ -1,5 +1,7 @@
 import { toast } from '@/hooks/use-toast';
 import { useSentryMonitoring } from './useSentryMonitoring';
+import { useEnhancedErrorHandler } from './useEnhancedErrorHandler';
+import { SecurityValidator } from '@/lib/security/SecurityValidator';
 
 export function useErrorHandler() {
   const { captureError } = useSentryMonitoring();
