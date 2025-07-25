@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Wallet } from 'phosphor-react';
 import { Loader } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export function WalletAuthButton() {
   const [loading, setLoading] = useState(false);
@@ -12,13 +14,31 @@ export function WalletAuthButton() {
   const handleWalletAuth = async () => {
     try {
       setLoading(true);
-      console.log('Authenticating with wallet');
-      // TODO: Implement wallet authentication (MetaMask, WalletConnect, etc.)
       
-      // Simulate loading for demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    } catch (error) {
-      console.error('Wallet auth error:', error);
+      // Check if HashPack is available
+      if (!window.hashpack) {
+        throw new Error('HashPack wallet not detected. Please install the HashPack extension.');
+      }
+      
+      // Connect to HashPack
+      const result = await window.hashpack.connectWallet();
+      
+      if (result.accountId) {
+        // Create user session with wallet data
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) throw error;
+        
+        toast({
+          title: "Wallet connected successfully!",
+          description: `Connected account: ${result.accountId}`
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Wallet connection failed",
+        description: error.message || "Failed to connect wallet. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

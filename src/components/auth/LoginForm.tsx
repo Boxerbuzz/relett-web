@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +31,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
+  const { handleAuthError } = useErrorHandler();
   
   const {
     register,
@@ -43,8 +45,8 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
     try {
       setIsSubmitting(true);
       await signIn(data.email, data.password);
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      handleAuthError(error);
     } finally {
       setIsSubmitting(false);
     }
