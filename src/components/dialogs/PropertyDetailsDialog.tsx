@@ -309,7 +309,7 @@ export function PropertyDetailsDialog({
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeftIcon size={16} className="mr-2" />
-            Back to Properties
+            Back
           </Button>
           <div className="flex gap-1">
             {property.is_featured && (
