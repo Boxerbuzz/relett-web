@@ -99,7 +99,7 @@ const UserDashboard = () => {
                   <p className="text-sm text-gray-600">{stat.label}</p>
                   <p className="text-2xl font-bold">{stat.value}</p>
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                {/* <stat.icon className={`h-8 w-8 ${stat.color}`} /> */}
               </div>
             </CardContent>
           </Card>
