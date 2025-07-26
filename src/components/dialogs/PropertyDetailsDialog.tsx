@@ -33,6 +33,7 @@ import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 import { DocumentUpload } from "@/components/property/DocumentUpload";
 import { capitalize } from "@/lib/utils";
 import { usePropertyDocument } from "@/hooks/usePropertyDocument";
+import { PropertyBlockchainRegistration } from "../hedera/PropertyBlockchainRegistration";
 
 interface PropertyData {
   id: string;
@@ -99,6 +100,7 @@ export function PropertyDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
   const { createDocument, updateDocument, deleteDocument } =
     usePropertyDocument();
   const { toast } = useToast();
@@ -300,6 +302,16 @@ export function PropertyDetailsDialog({
         </div>
       </div>
     );
+  }
+
+  function handleBlockchainRegistrationComplete(transactionId: string): void {
+    setShowBlockchainDialog(false);
+    fetchPropertyDetails();
+    toast({
+      title: "Property Registered on Blockchain",
+      description:
+        "Your property has been successfully registered on the blockchain.",
+    });
   }
 
   return (
@@ -646,6 +658,36 @@ export function PropertyDetailsDialog({
         propertyId={propertyId}
         onPropertyUpdated={fetchPropertyDetails}
       />
+
+      {/* Blockchain Registration Dialog */}
+      {property && showBlockchainDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-semibold mb-4">
+              Register Property on Blockchain
+            </h2>
+            <PropertyBlockchainRegistration
+              propertyData={{
+                id: property.id,
+                title: property.title || "",
+                type: property.category || property.type || "",
+                location: property.location,
+                price: property.price,
+              }}
+              onRegistrationComplete={handleBlockchainRegistrationComplete}
+              onRegistrationSkip={() => setShowBlockchainDialog(false)}
+            />
+            <div className="flex justify-end mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowBlockchainDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
