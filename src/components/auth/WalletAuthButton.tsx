@@ -3,43 +3,25 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { WalletIcon , SpinnerIcon} from '@phosphor-icons/react';
+import { WalletIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useHashPack } from '@/contexts/HashPackContext';
 
 export function WalletAuthButton() {
   const [loading, setLoading] = useState(false);
+  const { connectWallet, isAvailable, wallet } = useHashPack();
 
   const handleWalletAuth = async () => {
     try {
       setLoading(true);
       
-      // Use Hedera Wallet Connect SDK
-      const { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod, HederaChainId } = await import('@hashgraph/hedera-wallet-connect');
-      const { LedgerId } = await import('@hashgraph/sdk');
-      
-      const appMetadata = {
-        name: 'Property Tokenization Platform',
-        description: 'Tokenize and trade real estate properties on Hedera',
-        icons: [window.location.origin + '/favicon.ico'],
-        url: window.location.origin
-      };
-      
-      const projectId = "demo"; // Replace with your WalletConnect project ID
-      
-      const dAppConnector = new DAppConnector(
-        appMetadata,
-        LedgerId.TESTNET,
-        projectId,
-        Object.values(HederaJsonRpcMethod),
-        [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
-        [HederaChainId.Testnet, HederaChainId.Mainnet],
-      );
-      
-      await dAppConnector.init({ logger: 'error' });
-      
-      // Open modal to connect to wallet
-      await dAppConnector.openModal();
+      if (!isAvailable) {
+        throw new Error('HashPack extension not found. Please install HashPack from the Chrome Web Store.');
+      }
+
+      // Connect to HashPack wallet
+      await connectWallet();
       
       // Create user session with wallet data
       const { error } = await supabase.auth.signInAnonymously();
@@ -47,7 +29,7 @@ export function WalletAuthButton() {
       
       toast({
         title: "Wallet connected successfully!",
-        description: "Connected to Hedera wallet"
+        description: "Connected to HashPack wallet"
       });
     } catch (error: any) {
       toast({
@@ -60,13 +42,27 @@ export function WalletAuthButton() {
     }
   };
 
+  if (wallet?.isConnected) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full border-green-300 bg-green-50 hover:bg-green-100"
+        disabled
+      >
+        <WalletIcon className="mr-2 h-4 w-4" />
+        Wallet Connected
+      </Button>
+    );
+  }
+
   return (
     <Button
       type="button"
       variant="outline"
       onClick={handleWalletAuth}
       className="w-full border-gray-300 hover:bg-gray-50"
-      disabled={loading}
+      disabled={loading || !isAvailable}
     >
       {loading ? (
         <>
@@ -76,7 +72,7 @@ export function WalletAuthButton() {
       ) : (
         <>
           <WalletIcon className="mr-2 h-4 w-4" />
-          Connect Wallet
+          {isAvailable ? 'Connect HashPack' : 'Install HashPack'}
         </>
       )}
     </Button>
