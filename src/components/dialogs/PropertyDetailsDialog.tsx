@@ -46,6 +46,7 @@ interface PropertyData {
   is_verified: boolean | null;
   is_tokenized: boolean | null;
   is_featured: boolean | null;
+  is_blockchain_registered: boolean | null;
   backdrop: string | null;
   description?: string | null;
   condition?: string | null;
@@ -399,7 +400,18 @@ export function PropertyDetailsDialog({
                     Edit Property
                   </Button>
 
-                  {!property.is_tokenized && property.is_verified && (
+                  {property.is_verified && !property.is_blockchain_registered && (
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowBlockchainDialog(true)}
+                    >
+                      <CoinsIcon size={16} className="mr-2" />
+                      Register on Blockchain
+                    </Button>
+                  )}
+
+                  {property.is_blockchain_registered && !property.is_tokenized && (
                     <Button
                       size="sm"
                       className="flex-1"

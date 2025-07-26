@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { DualCurrencyDisplay } from "@/components/ui/currency-display";
 import {
   CoinsIcon,
   FileTextIcon,
@@ -154,7 +155,7 @@ export function TokenizePropertyDialog({
                 />
               </div>
               <div>
-                <Label htmlFor="pricePerToken">Price per Token (USD)</Label>
+                <Label htmlFor="pricePerToken">Price per Token</Label>
                 <Input
                   id="pricePerToken"
                   type="number"
@@ -164,12 +165,21 @@ export function TokenizePropertyDialog({
                     handleInputChange("pricePerToken", e.target.value)
                   }
                 />
+                {formData.pricePerToken && (
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    <DualCurrencyDisplay 
+                      amount={parseFloat(formData.pricePerToken) || 0}
+                      primaryCurrency="USD"
+                      size="sm"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
             <div>
               <Label htmlFor="minimumInvestment">
-                Minimum Investment (USD)
+                Minimum Investment
               </Label>
               <Input
                 id="minimumInvestment"
@@ -179,31 +189,33 @@ export function TokenizePropertyDialog({
                   handleInputChange("minimumInvestment", e.target.value)
                 }
               />
+              {formData.minimumInvestment && (
+                <div className="mt-1 text-sm text-muted-foreground">
+                  <DualCurrencyDisplay 
+                    amount={parseFloat(formData.minimumInvestment) || 0}
+                    primaryCurrency="USD"
+                    size="sm"
+                  />
+                </div>
+              )}
             </div>
 
-            <Card className="bg-blue-50">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-600">Total Value:</p>
-                    <p className="font-semibold">
-                      $
-                      {(
-                        parseInt(formData.totalTokens) *
-                        parseFloat(formData.pricePerToken)
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Min. Tokens:</p>
-                    <p className="font-semibold">
-                      {Math.ceil(
-                        parseFloat(formData.minimumInvestment) /
-                          parseFloat(formData.pricePerToken)
-                      )}{" "}
-                      tokens
-                    </p>
-                  </div>
+            <Card className="bg-muted/30">
+              <CardHeader>
+                <CardTitle className="text-base">Projected Total Value</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <DualCurrencyDisplay 
+                  amount={(parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0)}
+                  primaryCurrency="USD"
+                  size="lg"
+                  className="font-bold text-primary"
+                />
+                <div className="text-sm text-muted-foreground">
+                  <p>Min. Tokens: {Math.ceil(
+                    (parseFloat(formData.minimumInvestment) || 0) /
+                      (parseFloat(formData.pricePerToken) || 1)
+                  )} tokens</p>
                 </div>
               </CardContent>
             </Card>
@@ -231,6 +243,7 @@ export function TokenizePropertyDialog({
                 <Input
                   id="lockupPeriod"
                   type="number"
+                  min="4"
                   value={formData.lockupPeriod}
                   onChange={(e) =>
                     handleInputChange("lockupPeriod", e.target.value)
@@ -337,7 +350,12 @@ export function TokenizePropertyDialog({
                   </div>
                   <div>
                     <p className="text-gray-600">Price per Token:</p>
-                    <p className="font-semibold">${formData.pricePerToken}</p>
+                    <DualCurrencyDisplay 
+                      amount={parseFloat(formData.pricePerToken) || 0}
+                      primaryCurrency="USD"
+                      size="sm"
+                      className="font-semibold"
+                    />
                   </div>
                   <div>
                     <p className="text-gray-600">Expected ROI:</p>

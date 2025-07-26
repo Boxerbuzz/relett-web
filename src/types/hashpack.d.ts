@@ -1,37 +1,51 @@
+// HashPack browser extension types based on official documentation
 declare global {
   interface Window {
-    // HashPack can be in either of these locations
-    hashpack?: HashPackAPI;
-    hedera?: {
-      hashpack: HashPackAPI;
+    hashpack?: {
+      connectToExtension: () => Promise<{ 
+        success: boolean; 
+        message?: string; 
+      }>;
+      requestAccountId: () => Promise<{
+        success: boolean;
+        accountId?: string;
+        network?: string;
+        message?: string;
+      }>;
+      getAccountBalance: (accountId: string) => Promise<{
+        success: boolean;
+        balance?: string;
+        message?: string;
+      }>;
+      requestAdditionalAccountId: () => Promise<{
+        success: boolean;
+        accountId?: string;
+        message?: string;
+      }>;
+      signAndSendTransaction: (data: any) => Promise<{
+        success: boolean;
+        receipt?: any;
+        message?: string;
+      }>;
+      disconnect: () => Promise<{ success: boolean }>;
+      isExtensionRequired: boolean;
     };
   }
 }
 
-interface HashPackAPI {
-  // Connect to the wallet
-  connectWallet: () => Promise<{
-    accountId: string;
-    accountPubKey: string;
-    network: 'mainnet' | 'testnet' | 'previewnet' | string;
-    error?: string;
-  }>;
-  
-  // Disconnect the wallet
-  disconnect: () => void;
-  
-  // Check if connected
-  isConnected: () => boolean;
-  
-  // Get account info if already connected
-  getAccountInfo?: () => Promise<{
-    accountId: string;
-    network: string;
-  }>;
-  
-  // Event listeners
-  on?: (event: string, callback: (data: any) => void) => void;
-  off?: (event: string, callback: (data: any) => void) => void;
+export interface HashPackWallet {
+  id: string;
+  address: string;
+  name: string;
+  network: string;
+  balance?: string;
+  isConnected: boolean;
 }
 
-export {};
+export interface HashPackContextType {
+  wallet: HashPackWallet | null;
+  isConnecting: boolean;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
+  isAvailable: boolean;
+}

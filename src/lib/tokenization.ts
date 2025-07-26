@@ -181,7 +181,7 @@ export class PropertyTokenizationService {
           hedera_token_id: tokenResult.tokenId,
           status: "minted",
           metadata: {
-            ...property.metadata,
+            ...((property.metadata as object) || {}),
             creation_transaction: tokenResult.transactionId,
             hedera_created_at: new Date().toISOString(),
             awaiting_approval: false,

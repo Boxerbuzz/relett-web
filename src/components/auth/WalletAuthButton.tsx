@@ -3,35 +3,34 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { WalletIcon , SpinnerIcon} from '@phosphor-icons/react';
+import { WalletIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useHashPack } from '@/contexts/HashPackContext';
 
 export function WalletAuthButton() {
   const [loading, setLoading] = useState(false);
+  const { connectWallet, isAvailable, wallet } = useHashPack();
 
   const handleWalletAuth = async () => {
     try {
       setLoading(true);
       
-      // Check if HashPack is available
-      if (!window.hashpack) {
-        throw new Error('HashPack wallet not detected. Please install the HashPack extension.');
+      if (!isAvailable) {
+        throw new Error('HashPack extension not found. Please install HashPack from the Chrome Web Store.');
       }
+
+      // Connect to HashPack wallet
+      await connectWallet();
       
-      // Connect to HashPack
-      const result = await window.hashpack.connectWallet();
+      // Create user session with wallet data
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
       
-      if (result.accountId) {
-        // Create user session with wallet data
-        const { error } = await supabase.auth.signInAnonymously();
-        if (error) throw error;
-        
-        toast({
-          title: "Wallet connected successfully!",
-          description: `Connected account: ${result.accountId}`
-        });
-      }
+      toast({
+        title: "Wallet connected successfully!",
+        description: "Connected to HashPack wallet"
+      });
     } catch (error: any) {
       toast({
         title: "Wallet connection failed",
@@ -43,13 +42,27 @@ export function WalletAuthButton() {
     }
   };
 
+  if (wallet?.isConnected) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full border-green-300 bg-green-50 hover:bg-green-100"
+        disabled
+      >
+        <WalletIcon className="mr-2 h-4 w-4" />
+        Wallet Connected
+      </Button>
+    );
+  }
+
   return (
     <Button
       type="button"
       variant="outline"
       onClick={handleWalletAuth}
       className="w-full border-gray-300 hover:bg-gray-50"
-      disabled={loading}
+      disabled={loading || !isAvailable}
     >
       {loading ? (
         <>
@@ -59,7 +72,7 @@ export function WalletAuthButton() {
       ) : (
         <>
           <WalletIcon className="mr-2 h-4 w-4" />
-          Connect Wallet
+          {isAvailable ? 'Connect HashPack' : 'Install HashPack'}
         </>
       )}
     </Button>

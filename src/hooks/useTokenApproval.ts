@@ -26,14 +26,41 @@ export const useTokenApproval = () => {
 
   const fetchPendingApprovals = async (): Promise<PendingToken[]> => {
     try {
-      const { data, error } = await supabase.rpc('get_pending_token_approvals');
+      // Query tokenized_properties directly since the RPC function doesn't exist yet
+      const { data, error } = await supabase
+        .from('tokenized_properties')
+        .select(`
+          id,
+          token_name,
+          token_symbol,
+          total_value_usd,
+          total_supply,
+          status,
+          created_at
+        `)
+        .in('status', ['pending_approval', 'draft']);
       
       if (error) {
         console.error('Error fetching pending approvals:', error);
         throw error;
       }
 
-      return data || [];
+      // Transform the data to match the expected interface
+      const transformedData: PendingToken[] = (data || []).map(item => ({
+        id: item.id,
+        token_name: item.token_name || '',
+        token_symbol: item.token_symbol || '',
+        total_value_usd: item.total_value_usd || 0,
+        total_supply: item.total_supply?.toString() || '0',
+        status: item.status || '',
+        created_at: item.created_at || '',
+        property_title: 'N/A',
+        property_location: 'N/A',
+        owner_name: 'N/A',
+        owner_email: 'N/A'
+      }));
+
+      return transformedData;
     } catch (error) {
       console.error('Failed to fetch pending approvals:', error);
       toast({
@@ -61,12 +88,15 @@ export const useTokenApproval = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('update_tokenized_property_status', {
-        p_tokenized_property_id: tokenId,
-        p_new_status: newStatus,
-        p_admin_notes: adminNotes,
-        p_admin_id: user.id
-      });
+      // Update tokenized_properties directly since the RPC function doesn't exist yet
+      const { data, error } = await supabase
+        .from('tokenized_properties')
+        .update({ 
+          status: newStatus as any,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tokenId)
+        .select();
 
       if (error) {
         console.error('Error updating token status:', error);

@@ -1,4 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DualCurrencyDisplay } from "@/components/ui/currency-display";
 
 interface InvestmentOpportunityCardProps {
   tokenizedProperty: {
@@ -20,7 +21,12 @@ export function InvestmentOpportunityCard({ tokenizedProperty }: InvestmentOppor
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600">Token Price</p>
-            <p className="font-bold">${tokenizedProperty.token_price}</p>
+            <DualCurrencyDisplay 
+              amount={tokenizedProperty.token_price}
+              primaryCurrency="USD"
+              size="md"
+              className="font-bold"
+            />
           </div>
           <div>
             <p className="text-sm text-gray-600">Expected ROI</p>
@@ -28,7 +34,12 @@ export function InvestmentOpportunityCard({ tokenizedProperty }: InvestmentOppor
           </div>
           <div>
             <p className="text-sm text-gray-600">Min Investment</p>
-            <p className="font-bold">${tokenizedProperty.minimum_investment}</p>
+            <DualCurrencyDisplay 
+              amount={tokenizedProperty.minimum_investment}
+              primaryCurrency="USD"
+              size="md"
+              className="font-bold"
+            />
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Supply</p>

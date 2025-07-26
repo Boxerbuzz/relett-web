@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { DualCurrencyDisplay, CurrencyDisplay } from "@/components/ui/currency-display";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import {
@@ -159,9 +160,12 @@ export function InvestNowDialog({
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Token Price:</span>
-              <span className="font-semibold">
-                ${tokenizedProperty.token_price}
-              </span>
+              <DualCurrencyDisplay 
+                amount={tokenizedProperty.token_price}
+                primaryCurrency="USD"
+                size="sm"
+                className="font-semibold"
+              />
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Expected ROI:</span>
@@ -175,9 +179,12 @@ export function InvestNowDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Min Investment:</span>
-              <span className="font-semibold">
-                ${tokenizedProperty.minimum_investment}
-              </span>
+              <DualCurrencyDisplay 
+                amount={tokenizedProperty.minimum_investment}
+                primaryCurrency="USD"
+                size="sm"
+                className="font-semibold"
+              />
             </div>
           </div>
 
@@ -206,9 +213,11 @@ export function InvestNowDialog({
               </div>
               <div className="flex justify-between">
                 <span>Estimated annual returns:</span>
-                <span className="font-semibold text-green-600">
-                  ${estimatedReturns.toFixed(2)}
-                </span>
+                <CurrencyDisplay 
+                  amount={estimatedReturns}
+                  primaryCurrency="USD"
+                  className="font-semibold text-green-600"
+                />
               </div>
             </div>
           </div>
