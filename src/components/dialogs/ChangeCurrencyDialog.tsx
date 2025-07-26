@@ -45,8 +45,17 @@ export function ChangeCurrencyDialog({
   const [selectedCurrency, setSelectedCurrency] = useState(currentCurrency);
 
   const handleSave = () => {
-    // TODO: Implement currency change logic
-    console.log("Changing currency to:", selectedCurrency);
+    // Store user's preferred currency in localStorage
+    localStorage.setItem('preferredCurrency', selectedCurrency);
+    
+    // Trigger a storage event to notify other components
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'preferredCurrency',
+      newValue: selectedCurrency,
+      oldValue: currentCurrency
+    }));
+    
+    console.log("Currency changed to:", selectedCurrency);
     onOpenChange(false);
   };
 

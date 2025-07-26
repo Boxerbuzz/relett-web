@@ -13,12 +13,30 @@ export function formatCurrency(
   amount: number,
   currency: string = "NGN"
 ): string {
-  return new Intl.NumberFormat("en-NG", {
+  const locale = currency === "USD" ? "en-US" : "en-NG";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: currency === "USD" ? 2 : 0,
   }).format(amount);
+}
+
+export function formatDualCurrency(
+  amount: number,
+  primaryCurrency: string = "NGN",
+  convertedAmount?: number,
+  separator: string = " ⟷ "
+): string {
+  const secondaryCurrency = primaryCurrency === "USD" ? "NGN" : "USD";
+  const primary = formatCurrency(amount, primaryCurrency);
+  
+  if (convertedAmount === undefined) {
+    return `${primary}${separator}...`;
+  }
+  
+  const secondary = formatCurrency(convertedAmount, secondaryCurrency);
+  return `${primary}${separator}${secondary}`;
 }
 
 export function formatNumber(amount: number): string {
