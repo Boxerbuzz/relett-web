@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { DualCurrencyDisplay } from "@/components/ui/currency-display";
+
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import {
