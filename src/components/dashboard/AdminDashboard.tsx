@@ -1,106 +1,83 @@
+"use client";
 
-import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
-import { AdminPropertyManagement } from "@/components/admin/AdminPropertyManagement";
-import { TokenApprovalManagement } from "@/components/admin/TokenApprovalManagement";
-import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { PropertyVerificationQueue } from "@/components/admin/PropertyVerificationQueue";
+import { AdminVerificationHub } from "@/components/admin/AdminVerificationHub";
+import { useToast } from "@/hooks/use-toast";
+import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
+import { useAdminRecentActivity } from "@/hooks/useAdminRecentActivity";
+import { Link } from "react-router-dom";
 import {
   UsersIcon,
-  HomeIcon,
-  CoinsIcon,
-  TrendingUpIcon,
-  DollarSignIcon,
-  AlertTriangleIcon,
+  ShieldIcon,
+  HouseIcon,
+  CurrencyDollarIcon,
+  ActivityIcon,
+  EnvelopeIcon,
+  ArrowRightIcon,
+  FileTextIcon,
 } from "@phosphor-icons/react";
 
-interface DashboardStats {
-  totalUsers: number;
-  totalProperties: number;
-  pendingTokenApprovals: number;
-  totalTokenValue: number;
-  pendingVerifications: number;
-}
-
 export function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalProperties: 0,
-    pendingTokenApprovals: 0,
-    totalTokenValue: 0,
-    pendingVerifications: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
+  // Use optimized hooks for data fetching
+  const {
+    stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useAdminDashboardStats();
+  const { activities, isLoading: activitiesLoading } = useAdminRecentActivity();
 
-  const fetchDashboardStats = async () => {
-    try {
-      // Get total users count
-      const { count: usersCount } = await supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true });
+  // Handle errors with toast
+  if (statsError) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch dashboard statistics",
+      variant: "destructive",
+    });
+  }
 
-      // Get total properties count
-      const { count: propertiesCount } = await supabase
-        .from('properties')
-        .select('*', { count: 'exact', head: true });
-
-      // Get pending token approvals
-      const { data: pendingTokens } = await supabase.rpc('get_pending_token_approvals');
-      
-      // Get total token value
-      const { data: tokenValues } = await supabase
-        .from('tokenized_properties')
-        .select('total_value_usd')
-        .in('status', ['minted', 'active']);
-
-      const totalValue = tokenValues?.reduce((sum, token) => sum + (token.total_value_usd || 0), 0) || 0;
-
-      // Get pending verifications
-      const { count: pendingVerifications } = await supabase
-        .from('identity_verifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('verification_status', 'pending');
-
-      setStats({
-        totalUsers: usersCount || 0,
-        totalProperties: propertiesCount || 0,
-        pendingTokenApprovals: pendingTokens?.length || 0,
-        totalTokenValue: totalValue,
-        pendingVerifications: pendingVerifications || 0,
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    } finally {
-      setLoading(false);
+  const handleVerificationReview = (type: string) => {
+    switch (type) {
+      case "identity":
+        setActiveTab("verification-hub");
+        break;
+      case "documents":
+        setActiveTab("verification-hub");
+        break;
+      case "properties":
+        setActiveTab("properties");
+        break;
+      default:
+        setActiveTab("verification-hub");
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="space-y-6 w-full max-w-full">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage users, properties, and token approvals
+        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p className="text-gray-600">
+          Manage users, properties, and system operations
         </p>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -108,117 +85,278 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.totalUsers.toLocaleString()}
+              {statsLoading ? "..." : stats.totalUsers}
             </div>
+            <p className="text-xs text-muted-foreground">Platform users</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Properties</CardTitle>
-            <HomeIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">
+              Pending Verifications
+            </CardTitle>
+            <ShieldIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.totalProperties.toLocaleString()}
+              {statsLoading ? "..." : stats.pendingVerifications}
             </div>
+            <p className="text-xs text-muted-foreground">Requires attention</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Tokens</CardTitle>
-            <div className="flex items-center gap-2">
-              <CoinsIcon className="h-4 w-4 text-muted-foreground" />
-              {stats.pendingTokenApprovals > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  {stats.pendingTokenApprovals}
-                </Badge>
-              )}
-            </div>
+            <CardTitle className="text-sm font-medium">
+              Total Properties
+            </CardTitle>
+            <HouseIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : stats.pendingTokenApprovals}
+              {statsLoading ? "..." : stats.totalProperties}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting approval
-            </p>
+            <p className="text-xs text-muted-foreground">Listed properties</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Token Value</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">
+              Monthly Revenue
+            </CardTitle>
+            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? "..." : formatCurrency(stats.totalTokenValue)}
+              ₦{statsLoading ? "..." : stats.monthlyRevenue.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Total tokenized value
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verifications</CardTitle>
-            <div className="flex items-center gap-2">
-              <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
-              {stats.pendingVerifications > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {stats.pendingVerifications}
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : stats.pendingVerifications}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Pending review
-            </p>
+            <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Management Tabs */}
-      <Tabs defaultValue="tokens" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="tokens" className="flex items-center gap-2">
-            <CoinsIcon className="w-4 h-4" />
-            Token Management
-            {stats.pendingTokenApprovals > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs">
-                {stats.pendingTokenApprovals}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <UsersIcon className="w-4 h-4" />
-            User Management
-          </TabsTrigger>
-          <TabsTrigger value="properties" className="flex items-center gap-2">
-            <HomeIcon className="w-4 h-4" />
-            Property Management
-          </TabsTrigger>
-        </TabsList>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("verification-hub")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              KYC & Role Management
+            </CardTitle>
+            <FileTextIcon  className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.pendingVerifications}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Pending reviews
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="tokens" className="space-y-4">
-          <TokenApprovalManagement />
-        </TabsContent>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("users")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              User Management
+            </CardTitle>
+            <UsersIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats.totalUsers}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Manage all users
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="users" className="space-y-4">
-          <AdminUserManagement />
-        </TabsContent>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setActiveTab("properties")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Property Verification
+            </CardTitle>
+            <ShieldIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {statsLoading ? "..." : stats.pendingDocuments}
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              Pending reviews
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="properties" className="space-y-4">
-          <AdminPropertyManagement />
-        </TabsContent>
-      </Tabs>
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Link to="/admin/contacts">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Contact Messages
+              </CardTitle>
+              <EnvelopeIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {statsLoading ? "..." : stats.contactsCount}
+              </div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                Unread messages
+                <ArrowRightIcon className="ml-2 h-3 w-3" />
+              </p>
+            </CardContent>
+          </Link>
+        </Card>
+      </div>
+
+      {/* Main Content Tabs */}
+      <div className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6 w-full"
+        >
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+              <TabsTrigger
+                value="overview"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="users"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Users
+              </TabsTrigger>
+              <TabsTrigger
+                value="properties"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Properties
+              </TabsTrigger>
+              <TabsTrigger
+                value="verification-hub"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                KYC & Roles
+              </TabsTrigger>
+            </TabsList>
+          </ScrollArea>
+
+          <div className="w-full">
+            <TabsContent value="overview" className="space-y-6 w-full">
+              {/* System Health */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ActivityIcon className="h-5 w-5" />
+                    System Health
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">API Status</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Healthy
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">Database</span>
+                      <Badge className="bg-green-100 text-green-800">
+                        Connected
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm font-medium">Storage</span>
+                      <Badge className="bg-yellow-100 text-yellow-800">
+                        85% Used
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    Latest system activities and user actions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {activitiesLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, index) => (
+                        <div key={index} className="animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {activities.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between py-2 border-b last:border-0"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {activity.action}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {activity.user}
+                            </p>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                            {activity.time}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="users" className="space-y-6 w-full">
+              <div className="w-full">
+                <UserManagement />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="properties" className="space-y-6 w-full">
+              <div className="w-full">
+                <PropertyVerificationQueue />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="verification-hub" className="space-y-6 w-full">
+              <div className="w-full">
+                <AdminVerificationHub />
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 }
