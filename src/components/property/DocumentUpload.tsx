@@ -33,6 +33,7 @@ interface UploadedDocument {
   name: string;
   type: string;
   url: string;
+  path: string;
   size: number;
   uploadedAt: string;
   required?: boolean;
@@ -123,6 +124,7 @@ export function DocumentUpload({
         hash: await calculateFileHash(file),
         type: docType,
         url: result.url,
+        path: result.path,
         size: file.size,
         uploadedAt: new Date().toISOString(),
         required: requiredTypes.includes(docType),

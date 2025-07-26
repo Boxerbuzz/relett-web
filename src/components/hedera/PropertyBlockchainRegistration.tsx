@@ -67,6 +67,17 @@ export function PropertyBlockchainRegistration({
       // Get comprehensive property data including documents
       const propertyDetails = await fetchPropertyDetails(propertyData.id);
       
+      // Validate that documents with hashes exist
+      if (propertyDetails.documentHashes.length === 0) {
+        toast({
+          title: 'No Documents Found',
+          description: 'Property documents with valid hashes are required for blockchain registration.',
+          variant: 'destructive'
+        });
+        setIsRegistering(false);
+        return;
+      }
+      
       const blockchainData: PropertyBlockchainData = {
         propertyId: propertyData.id,
         title: propertyData.title,
@@ -135,12 +146,14 @@ export function PropertyBlockchainRegistration({
       .eq('id', propertyId)
       .single();
 
-    const documentHashes = (documents || []).map(doc => ({
-      documentId: doc.id,
-      documentType: doc.document_type || '',
-      documentName: doc.document_name || '',
-      hash: doc.document_hash || ''
-    }));
+    const documentHashes = (documents || [])
+      .filter(doc => doc.document_hash && doc.document_hash.trim() !== '')
+      .map(doc => ({
+        documentId: doc.id,
+        documentType: doc.document_type || '',
+        documentName: doc.document_name || '',
+        hash: doc.document_hash || ''
+      }));
 
     const legalInfo = {
       landTitleId: undefined,

@@ -103,10 +103,11 @@ export const propertySchema = z.object({
         ]),
         name: z.string().min(1, "Document filename is required"),
         url: z.string().url("Invalid document URL"),
-        id: z.string().optional(), // Add this since your data has it
-        size: z.number().optional(), // Add this since your data has it
-        uploadedAt: z.string().optional(), // Add this since your data has it
-        required: z.boolean().optional(), // Add this since your data has it
+        path: z.string().optional(),
+        id: z.string().optional(),
+        size: z.number().optional(),
+        uploadedAt: z.string().optional(),
+        required: z.boolean().optional(),
         hash: z.string().optional(),
         mime_type: z.string().optional(),
       })
@@ -160,9 +161,10 @@ export function usePropertyCreation() {
         document_name: doc.name || "",
         document_type: doc.type || "",
         file_url: doc.url || "",
+        file_path: doc.path || "",
         mime_type: doc.mime_type || "",
         file_size: doc.size || 0,
-        document_hash: doc.hash || "", // This needs to be a valid hash
+        document_hash: doc.hash || "",
         status: "pending" as const,
       }));
 

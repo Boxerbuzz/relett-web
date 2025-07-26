@@ -58,7 +58,7 @@ interface PropertyRegistrationRequest {
   features: string[];
   amenities: string[];
   tags: string[];
-  documentHashes: {
+  documentHashes?: {
     documentId: string;
     documentType: string;
     documentName: string;
@@ -145,8 +145,8 @@ serve(async (req) => {
         tags: propertyData.tags,
         
         // Document Integrity
-        documentHashes: propertyData.documentHashes,
-        documentCount: propertyData.documentHashes.length,
+        documentHashes: propertyData.documentHashes || [],
+        documentCount: propertyData.documentHashes?.length || 0,
         
         // Legal Information
         legalInfo: propertyData.legalInfo,
