@@ -162,9 +162,8 @@ export function InvestNowDialog({
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Token Price:</span>
-              <DualCurrencyDisplay 
+              <CurrencyExchangeWidget 
                 amount={tokenizedProperty.token_price}
-                primaryCurrency="USD"
                 size="sm"
                 className="font-semibold"
               />
@@ -181,9 +180,8 @@ export function InvestNowDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Min Investment:</span>
-              <DualCurrencyDisplay 
+              <CurrencyExchangeWidget 
                 amount={tokenizedProperty.minimum_investment}
-                primaryCurrency="USD"
                 size="sm"
                 className="font-semibold"
               />

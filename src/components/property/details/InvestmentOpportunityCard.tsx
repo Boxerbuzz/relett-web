@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { DualCurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 
 interface InvestmentOpportunityCardProps {
   tokenizedProperty: {
@@ -21,11 +21,10 @@ export function InvestmentOpportunityCard({ tokenizedProperty }: InvestmentOppor
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600">Token Price</p>
-            <DualCurrencyDisplay 
+            <CurrencyExchangeWidget 
               amount={tokenizedProperty.token_price}
-              primaryCurrency="USD"
-              size="md"
-              className="font-bold"
+              size="sm"
+              className="font-medium"
             />
           </div>
           <div>
@@ -34,11 +33,10 @@ export function InvestmentOpportunityCard({ tokenizedProperty }: InvestmentOppor
           </div>
           <div>
             <p className="text-sm text-gray-600">Min Investment</p>
-            <DualCurrencyDisplay 
+            <CurrencyExchangeWidget 
               amount={tokenizedProperty.minimum_investment}
-              primaryCurrency="USD"
-              size="md"
-              className="font-bold"
+              size="sm"
+              className="font-medium"
             />
           </div>
           <div>

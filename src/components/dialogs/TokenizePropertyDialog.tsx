@@ -166,9 +166,8 @@ export function TokenizePropertyDialog({
                 />
                 {formData.pricePerToken && (
                   <div className="mt-1 text-sm text-muted-foreground">
-                    <DualCurrencyDisplay 
+                    <CurrencyExchangeWidget 
                       amount={parseFloat(formData.pricePerToken) || 0}
-                      primaryCurrency="USD"
                       size="sm"
                     />
                   </div>
@@ -188,9 +187,8 @@ export function TokenizePropertyDialog({
               />
               {formData.minimumInvestment && (
                 <div className="mt-1 text-sm text-muted-foreground">
-                  <DualCurrencyDisplay 
+                  <CurrencyExchangeWidget 
                     amount={parseFloat(formData.minimumInvestment) || 0}
-                    primaryCurrency="USD"
                     size="sm"
                   />
                 </div>
@@ -202,11 +200,10 @@ export function TokenizePropertyDialog({
                 <CardTitle className="text-base">Projected Total Value</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <DualCurrencyDisplay 
+                <CurrencyExchangeWidget 
                   amount={(parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0)}
-                  primaryCurrency="USD"
                   size="lg"
-                  className="font-bold text-primary"
+                  className="font-bold text-primary justify-center"
                 />
                 <div className="text-sm text-muted-foreground">
                   <p>Min. Tokens: {Math.ceil(
@@ -353,9 +350,8 @@ export function TokenizePropertyDialog({
                   </div>
                   <div>
                     <p className="text-gray-600">Price per Token:</p>
-                    <DualCurrencyDisplay 
+                    <CurrencyExchangeWidget 
                       amount={parseFloat(formData.pricePerToken) || 0}
-                      primaryCurrency="USD"
                       size="sm"
                       className="font-semibold"
                     />
