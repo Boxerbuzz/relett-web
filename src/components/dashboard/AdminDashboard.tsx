@@ -28,6 +28,8 @@ import {
   ArrowRightIcon,
   FileTextIcon,
 } from "@phosphor-icons/react";
+import { TokenApprovalTab } from "@/components/admin/TokenApprovalTab";
+import { Coins } from "lucide-react";
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -231,30 +233,41 @@ export function AdminDashboard() {
           className="space-y-6 w-full"
         >
           <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto gap-1">
               <TabsTrigger
                 value="overview"
-                className="text-xs sm:text-sm px-2 py-1.5"
+                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
               >
-                Overview
+                <ActivityIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Overview</span>
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="text-xs sm:text-sm px-2 py-1.5"
+                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
               >
-                Users
+                <UsersIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Users</span>
               </TabsTrigger>
               <TabsTrigger
                 value="properties"
-                className="text-xs sm:text-sm px-2 py-1.5"
+                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
               >
-                Properties
+                <HouseIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Properties</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="tokens"
+                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+              >
+                <Coins className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Tokens</span>
               </TabsTrigger>
               <TabsTrigger
                 value="verification-hub"
-                className="text-xs sm:text-sm px-2 py-1.5"
+                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
               >
-                KYC & Roles
+                <ShieldIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">KYC & Roles</span>
               </TabsTrigger>
             </TabsList>
           </ScrollArea>
@@ -346,6 +359,12 @@ export function AdminDashboard() {
             <TabsContent value="properties" className="space-y-6 w-full">
               <div className="w-full">
                 <PropertyVerificationQueue />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tokens" className="space-y-6 w-full">
+              <div className="w-full">
+                <TokenApprovalTab />
               </div>
             </TabsContent>
 
