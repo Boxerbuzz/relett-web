@@ -86,7 +86,7 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Investment Groups</h2>
+          <h2 className="text-2xl font-bold">Groups</h2>
           <p className="text-gray-600">Join or create investment groups for property investments</p>
         </div>
         <InvestmentGroupCreator onGroupCreated={refetch} />

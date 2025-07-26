@@ -39,104 +39,126 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [isAvailable, setIsAvailable] = useState(false);
 
   useEffect(() => {
-    let retryCount = 0;
-    const maxRetries = 10;
-    const baseDelay = 500;
-    let timeoutId: NodeJS.Timeout;
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') return;
 
-    // Check if HashPack is available with exponential backoff
+    // Check if the extension is already injected
     const checkHashPack = () => {
-      console.log(`Checking for HashPack... attempt ${retryCount + 1}`);
+      console.log('Checking for HashPack extension...');
       
-      if (typeof window !== 'undefined' && window.hashpack) {
-        console.log('HashPack detected!', window.hashpack);
+      // Check for both window.hashpack and window.hedera
+      const hashpack = (window as any).hashpack || (window as any).hedera?.hashpack;
+      
+      if (hashpack) {
+        console.log('HashPack detected!', hashpack);
+        // Save the reference to the extension
+        (window as any).hashpack = hashpack;
         setIsAvailable(true);
-        return;
+        return true;
       }
-
-      if (retryCount < maxRetries) {
-        retryCount++;
-        const delay = baseDelay * Math.pow(1.5, retryCount - 1);
-        console.log(`HashPack not found, retrying in ${delay}ms...`);
-        
-        timeoutId = setTimeout(checkHashPack, delay);
-      } else {
-        console.warn('HashPack not detected after maximum retries. Please ensure HashPack extension is installed and enabled.');
-        setIsAvailable(false);
-      }
+      
+      console.log('HashPack not detected');
+      setIsAvailable(false);
+      return false;
     };
 
-    // Start checking immediately
-    checkHashPack();
+    // Initial check
+    const isAvailable = checkHashPack();
+    
+    // If not available, set up a mutation observer to detect when the extension injects itself
+    if (!isAvailable) {
+      const observer = new MutationObserver((mutations, obs) => {
+        if (checkHashPack()) {
+          obs.disconnect(); // Stop observing once found
+        }
+      });
 
-    // Also listen for potential HashPack events
-    const handleHashPackReady = () => {
-      console.log('HashPack ready event received');
-      if (window.hashpack) {
-        setIsAvailable(true);
-      }
-    };
+      // Start observing the document with the configured parameters
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+      });
 
-    // Some extensions dispatch custom events when ready
-    window.addEventListener('hashpack-ready', handleHashPackReady);
-    window.addEventListener('load', checkHashPack);
+      // Also check on window load as a fallback
+      const handleLoad = () => {
+        checkHashPack();
+        window.removeEventListener('load', handleLoad);
+      };
+      window.addEventListener('load', handleLoad);
 
-    // Cleanup function
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      window.removeEventListener('hashpack-ready', handleHashPackReady);
-      window.removeEventListener('load', checkHashPack);
-    };
+      // Cleanup
+      return () => {
+        observer.disconnect();
+        window.removeEventListener('load', handleLoad);
+      };
+    }
   }, []);
 
-  const connectWallet = async () => {
-    if (!isAvailable) {
-      throw new Error('HashPack wallet is not available. Please install the HashPack extension.');
+  const connectWallet = async (): Promise<void> => {
+    // Get the HashPack API reference
+    const hashpack = (window as any).hashpack || (window as any).hedera?.hashpack;
+    
+    if (!hashpack) {
+      const error = 'HashPack wallet is not available. Please install the HashPack extension and refresh the page.';
+      console.error(error);
+      throw new Error(error);
     }
 
     setIsConnecting(true);
     try {
-      // Use the actual HashPack extension API
-      const hashPackAPI = window.hashpack!;
-      const connectionResult = await hashPackAPI.connectWallet();
+      // Use the HashPack API
+      console.log('Attempting to connect to HashPack...');
+      const connectionResult = await hashpack.connectWallet();
+      console.log('Connection result:', connectionResult);
+      
+      if (!connectionResult?.accountId) {
+        throw new Error('Failed to connect: No account ID returned');
+      }
       
       const wallet: HashPackWallet = {
         id: connectionResult.accountId,
         address: connectionResult.accountId,
         name: 'HashPack Wallet',
         network: connectionResult.network === 'testnet' ? 'Hedera Testnet' : 'Hedera Mainnet',
-        balance: 'Loading...', // Balance will be fetched separately
+        balance: 'Loading...',
         isConnected: true
       };
 
       setWallet(wallet);
       
-      // Fetch balance using existing Hedera service
-      try {
-        const response = await fetch('https://wossuijahchhtjzphsgh.supabase.co/functions/v1/get-hedera-balance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
-          },
-          body: JSON.stringify({ accountId: connectionResult.accountId })
-        });
-        
-        if (response.ok) {
-          const balanceData = await response.json();
-          setWallet(prev => prev ? {
-            ...prev,
-            balance: `${balanceData.balance} HBAR`
-          } : null);
+      // Try to fetch balance if we have a valid account ID and token
+      const token = localStorage.getItem('sb-access-token');
+      if (token) {
+        try {
+          const response = await fetch('https://wossuijahchhtjzphsgh.supabase.co/functions/v1/get-hedera-balance', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ accountId: connectionResult.accountId })
+          });
+          
+          if (response.ok) {
+            const balanceData = await response.json();
+            setWallet(prev => prev ? {
+              ...prev,
+              balance: `${balanceData.balance} HBAR`
+            } : null);
+          }
+        } catch (balanceError) {
+          console.warn('Failed to fetch balance:', balanceError);
         }
-      } catch (balanceError) {
-        console.warn('Failed to fetch balance:', balanceError);
       }
     } catch (error) {
       console.error('Failed to connect HashPack wallet:', error);
-      throw error;
+      throw new Error(
+        error instanceof Error 
+          ? error.message 
+          : 'Failed to connect to HashPack. Please make sure the extension is installed and you are logged in.'
+      );
     } finally {
       setIsConnecting(false);
     }

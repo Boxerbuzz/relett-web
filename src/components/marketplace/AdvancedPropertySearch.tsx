@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Search, Filter, X, Coins } from "lucide-react";
+import { MagnifyingGlassIcon, SpinnerIcon } from "@phosphor-icons/react";
 
 interface SearchFilters {
   query: string;
@@ -197,7 +198,11 @@ export function AdvancedPropertySearch({
               Clear All
             </Button>
             <Button onClick={handleSearch} disabled={loading}>
-              {loading ? "Searching..." : "Search Properties"}
+              <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
+              <span className="hidden md:inline md:mr-0 mr-2">
+                {loading ? "Searching..." : "Search Properties"}
+              </span>
+              {loading && <SpinnerIcon className="w-4 h-4 animate-spin" />}
             </Button>
           </div>
         </div>
@@ -397,6 +402,5 @@ export function AdvancedPropertySearch({
     </Card>
   );
 }
-
 
 //So we have agent_interactions, agent_performance_metrics, learning_patterns, property_views, saved_searches, smart_contracts, user_devices, user_behaviour_profiles

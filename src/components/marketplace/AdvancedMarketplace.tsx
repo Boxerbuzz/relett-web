@@ -29,7 +29,7 @@ import {
 } from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
 import { EnhancedPropertyPricing } from "@/types/property";
-import { capitalize } from "@/lib/utils";
+import { capitalize, cn } from "@/lib/utils";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { Button } from "@/components/ui/button";
 
@@ -95,7 +95,7 @@ export function AdvancedMarketplace() {
     <div className="space-y-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Property Marketplace</h1>
+          <h1 className="text-3xl font-bold">Marketplace</h1>
           <p className="text-gray-600">
             Discover, compare, and invest in properties
           </p>
@@ -109,11 +109,13 @@ export function AdvancedMarketplace() {
           )}
           <Button variant="outline" size="sm" onClick={toggleFullscreen}>
             {isFullscreen ? (
-              <CornersInIcon className="h-4 w-4 mr-2" />
+              <CornersInIcon className={cn("h-4 w-4", "md:mr-2")} />
             ) : (
-              <FrameCornersIcon className="h-4 w-4 mr-2" />
+              <FrameCornersIcon className={cn("h-4 w-4", "md:mr-2")} />
             )}
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            <span className="hidden md:inline">
+              {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </span>
           </Button>
         </div>
       </div>
