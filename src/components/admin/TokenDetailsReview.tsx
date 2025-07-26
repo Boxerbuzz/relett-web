@@ -18,8 +18,8 @@ import {
   CoinsIcon,
   MapPinIcon,
   CalendarIcon,
-  DollarSignIcon,
-  TrendingUpIcon,
+  CurrencyDollar,
+  TrendUp,
   CheckCircle,
   XCircle,
   Clock
