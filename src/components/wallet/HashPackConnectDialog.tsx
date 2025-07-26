@@ -11,8 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Wallet, CheckCircle } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { WalletIcon, CheckCircleIcon, SpinnerIcon} from '@phosphor-icons/react';
 
 interface HashPackConnectDialogProps {
   isOpen: boolean;
@@ -70,7 +69,7 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wallet size={24} />
+            <WalletIcon size={24} />
             Connect HashPack Wallet
           </DialogTitle>
           <DialogDescription>
@@ -82,7 +81,7 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
           {step === 'connect' && (
             <>
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                <Wallet size={32} className={isAvailable ? "text-blue-600" : "text-gray-400"} />
+                <WalletIcon size={32} className={isAvailable ? "text-blue-600" : "text-gray-400"} />
               </div>
               <div className="text-center space-y-2">
                 <h3 className="font-medium">
@@ -137,7 +136,7 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
           {step === 'connecting' && (
             <>
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                <Loader size={32} className="text-blue-600 animate-spin" />
+                <SpinnerIcon size={32} className="text-blue-600 animate-spin" />
               </div>
               <div className="text-center space-y-2">
                 <h3 className="font-medium">Connecting...</h3>
@@ -151,7 +150,7 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
           {step === 'success' && (
             <>
               <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
-                <CheckCircle size={32} className="text-green-600" />
+                <CheckCircleIcon size={32} className="text-green-600" />
               </div>
               <div className="text-center space-y-2">
                 <h3 className="font-medium text-green-600">Connected!</h3>

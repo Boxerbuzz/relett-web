@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { PlusIcon, FileTextIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 export function WelcomeCard() {
@@ -40,7 +40,7 @@ export function WelcomeCard() {
                 size="sm"
                 className="w-full sm:w-auto"
               >
-                <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+                <PlusIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                 {userRole === "landowner" ? "Add Property" : "Start Review"}
               </Button>
               <Button
@@ -48,7 +48,7 @@ export function WelcomeCard() {
                 size="sm"
                 className="w-full sm:w-auto text-blue-600 border-white hover:bg-white"
               >
-                <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
+                <FileTextIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                 View Guide
               </Button>
             </div>

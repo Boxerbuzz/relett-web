@@ -8,10 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, MapPin } from 'lucide-react';
+import { SpinnerIcon, MapPinIcon } from '@phosphor-icons/react';
 
 interface EditPropertyDialogProps {
   open: boolean;
@@ -207,7 +206,7 @@ export function EditPropertyDialog({ open, onOpenChange, propertyId, onPropertyU
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <SpinnerIcon className="h-8 w-8 animate-spin" />
           </div>
         </DialogContent>
       </Dialog>
@@ -336,7 +335,7 @@ export function EditPropertyDialog({ open, onOpenChange, propertyId, onPropertyU
           <Card>
             <CardContent className="p-4 space-y-4">
               <h3 className="font-semibold flex items-center gap-2">
-                <MapPin size={16} />
+                <MapPinIcon size={16} />
                 Location
               </h3>
               
@@ -420,7 +419,7 @@ export function EditPropertyDialog({ open, onOpenChange, propertyId, onPropertyU
               Cancel
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {saving && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
               Update Property
             </Button>
           </div>

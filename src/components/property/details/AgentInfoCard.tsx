@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Phone, Envelope, User, ChatCircleDots } from "phosphor-react";
+import { PhoneIcon, EnvelopeIcon, UserIcon, ChatCircleDotsIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useConversations } from "@/hooks/useConversations";
@@ -58,7 +58,7 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
                 className="w-12 h-12 rounded-full"
               />
             ) : (
-              <User className="w-6 h-6 text-gray-500" />
+              <UserIcon className="w-6 h-6 text-gray-500" />
             )}
           </div>
           <div>
@@ -71,13 +71,13 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
         <div className="space-y-3">
           {agent.phone && (
             <div className="flex items-center">
-              <Phone className="w-4 h-4 mr-3 text-gray-500" />
+              <PhoneIcon className="w-4 h-4 mr-3 text-gray-500" />
               <span className="text-sm">{maskPhone(agent.phone)}</span>
             </div>
           )}
           {agent.email && (
             <div className="flex items-center">
-              <Envelope className="w-4 h-4 mr-3 text-gray-500" />
+              <EnvelopeIcon className="w-4 h-4 mr-3 text-gray-500" />
               <span className="text-sm">{maskEmail(agent.email)}</span>
             </div>
           )}
@@ -88,7 +88,7 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
           onClick={handleContactAgent}
           disabled={loading}
         >
-          <ChatCircleDots className="w-5 h-5" />
+          <ChatCircleDotsIcon className="w-5 h-5" />
           {loading ? "Starting..." : "Contact Agent"}
         </Button>
       </CardContent>

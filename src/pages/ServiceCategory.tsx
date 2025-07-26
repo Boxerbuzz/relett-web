@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Star, MapPin, Phone, Envelope } from 'phosphor-react';
-import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeftIcon, StarIcon, PhoneIcon, EnvelopeIcon } from '@phosphor-icons/react';
 
 interface ServiceProvider {
   id: string;
@@ -125,7 +124,7 @@ export default function ServiceCategory() {
           <div className="flex items-center mb-4">
             <Link to="/services">
               <Button variant="ghost" size="sm" className="mr-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Back to Services
               </Button>
             </Link>
@@ -193,7 +192,7 @@ function ProviderCard({ provider }: { provider: ServiceProvider }) {
         
         <div className="flex items-center space-x-4 mb-4">
           <div className="flex items-center">
-            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+            <StarIcon className="h-4 w-4 text-yellow-400 fill-current" />
             <span className="ml-1 text-sm font-medium">{provider.rating}</span>
             <span className="ml-1 text-sm text-gray-500">({provider.review_count})</span>
           </div>
@@ -205,13 +204,13 @@ function ProviderCard({ provider }: { provider: ServiceProvider }) {
         <div className="space-y-2 mb-4">
           {provider.contact_phone && (
             <div className="flex items-center text-sm text-gray-600">
-              <Phone className="h-4 w-4 mr-2" />
+              <PhoneIcon className="h-4 w-4 mr-2" />
               {provider.contact_phone}
             </div>
           )}
           {provider.contact_email && (
             <div className="flex items-center text-sm text-gray-600">
-              <Envelope className="h-4 w-4 mr-2" />
+              <EnvelopeIcon className="h-4 w-4 mr-2" />
               {provider.contact_email}
             </div>
           )}

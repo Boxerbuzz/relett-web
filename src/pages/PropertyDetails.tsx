@@ -6,8 +6,7 @@ import { usePropertyDetails } from "@/hooks/usePropertyDetails";
 import { usePropertyLikes } from "@/hooks/usePropertyLikes";
 import { PropertyReviews } from "@/components/property/PropertyReviews";
 import { InvestNowDialog } from "@/components/dialogs/InvestNowDialog";
-import { ArrowLeftIcon } from "@phosphor-icons/react";
-import { Heart, Share } from "lucide-react";
+import { ArrowLeftIcon, HeartIcon, ShareIcon } from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
 import {
   PropertyDetailSkeleton,
@@ -234,9 +233,10 @@ const PropertyDetails = () => {
                   disabled={likesLoading}
                   className="flex items-center gap-2"
                 >
-                  <Heart
+                  <HeartIcon
                     size={16}
-                    className={isLiked ? "fill-red-500 text-red-500" : ""}
+                    weight={isLiked ? "fill" : "regular"}
+                    className={isLiked ? "text-red-500" : ""}
                   />
                   {likeCount > 0 && (
                     <span className="text-sm">{likeCount}</span>
@@ -244,7 +244,7 @@ const PropertyDetails = () => {
                   Save
                 </Button>
                 <Button variant="outline" onClick={handleShare}>
-                  <Share size={16} className="mr-2" />
+                  <ShareIcon size={16} className="mr-2" />
                   Share
                 </Button>
               </div>

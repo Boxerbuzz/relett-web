@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Star,
-  Heart,
-  Share,
-  Eye,
-  Calendar,
-  ChatCenteredDots,
-} from "phosphor-react";
+  StarIcon,
+  HeartIcon,
+  ShareIcon,
+  EyeIcon,
+  CalendarIcon,
+  ChatCenteredDotsIcon,
+} from "@phosphor-icons/react";
 
 export function RightPanelDemo() {
   const [liked, setLiked] = useState(false);
@@ -33,11 +33,11 @@ export function RightPanelDemo() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-1">
-              <Eye size={16} className="text-gray-500" />
+              <EyeIcon size={16} className="text-gray-500" />
               <span>1,234 views</span>
             </div>
             <div className="flex items-center gap-1">
-              <Star size={16} className="text-yellow-500" />
+              <StarIcon size={16} className="text-yellow-500" />
               <span>4.8 (24 reviews)</span>
             </div>
           </div>
@@ -53,16 +53,16 @@ export function RightPanelDemo() {
                 onClick={() => setLiked(!liked)}
                 className={liked ? "text-red-500 border-red-200" : ""}
               >
-                <Heart size={16} className={liked ? "fill-current" : ""} />
+                <HeartIcon size={16} className={liked ? "fill-current" : ""} />
               </Button>
               <Button variant="outline" size="sm">
-                <Share size={16} />
+                <ShareIcon size={16} />
               </Button>
               <Button variant="outline" size="sm">
-                <ChatCenteredDots size={16} />
+                <ChatCenteredDotsIcon size={16} />
               </Button>
               <Button variant="outline" size="sm">
-                <Calendar size={16} />
+                <CalendarIcon size={16} />
               </Button>
             </div>
           </div>

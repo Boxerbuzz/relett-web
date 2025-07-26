@@ -12,7 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Minus, Plus, TreePine, MapPin, Clock, Leaf } from "lucide-react";
+import {
+  MinusIcon,
+  PlusIcon,
+  TreeIcon,
+  MapPinIcon,
+  ClockIcon,
+  LeafIcon,
+} from "@phosphor-icons/react";
 import { useTreeDonation, Tree } from "@/hooks/useTreeDonation";
 import {
   Carousel,
@@ -70,7 +77,7 @@ export function TreeDonationDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <TreePine className="w-5 h-5 text-green-600" />
+            <TreeIcon className="w-5 h-5 text-green-600" />
             Plant a Tree, Save the Planet
           </DialogTitle>
         </DialogHeader>
@@ -148,15 +155,15 @@ export function TreeDonationDialog({
                   {/* Tree Stats */}
                   <div className="flex flex-col gap-y-4 text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="w-4 h-4" />
+                      <MapPinIcon className="w-4 h-4" />
                       <span className="truncate">{selectedTree.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Leaf className="w-4 h-4" />
+                      <LeafIcon className="w-4 h-4" />
                       <span>{selectedTree.carbon_offset_kg}kg CO₂/year</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Clock className="w-4 h-4" />
+                      <ClockIcon className="w-4 h-4" />
                       <span>
                         {selectedTree.growth_time_years} years to mature
                       </span>
@@ -204,7 +211,7 @@ export function TreeDonationDialog({
                           onClick={() => handleQuantityChange(quantity - 1)}
                           disabled={quantity <= 1}
                         >
-                          <Minus size={14} />
+                          <MinusIcon size={14} />
                         </Button>
                         <Input
                           id="quantity"
@@ -222,7 +229,7 @@ export function TreeDonationDialog({
                           className="h-10 w-10"
                           onClick={() => handleQuantityChange(quantity + 1)}
                         >
-                          <Plus size={14} />
+                          <PlusIcon size={14} />
                         </Button>
                       </div>
                     </div>
@@ -282,7 +289,7 @@ export function TreeDonationDialog({
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col justify-center items-center text-center py-8">
-                    <TreePine className="w-12 h-12 text-gray-400 mb-4" />
+                    <TreeIcon className="w-12 h-12 text-gray-400 mb-4" />
                     <h3 className="font-semibold text-lg mb-2">
                       Select a Tree to Plant
                     </h3>

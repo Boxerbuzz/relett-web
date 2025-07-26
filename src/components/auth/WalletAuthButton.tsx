@@ -3,8 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Wallet } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { WalletIcon , SpinnerIcon} from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -54,12 +53,12 @@ export function WalletAuthButton() {
     >
       {loading ? (
         <>
-          <Loader className="mr-2 h-4 w-4 animate-spin" />
+          <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
           Connecting...
         </>
       ) : (
         <>
-          <Wallet className="mr-2 h-4 w-4" />
+          <WalletIcon className="mr-2 h-4 w-4" />
           Connect Wallet
         </>
       )}

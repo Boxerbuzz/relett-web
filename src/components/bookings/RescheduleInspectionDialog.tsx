@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({

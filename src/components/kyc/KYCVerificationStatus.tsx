@@ -9,6 +9,7 @@ import {
   FileTextIcon,
 } from "@phosphor-icons/react";
 import { VerificationStatus } from "@/types/database";
+import { capitalize } from "@/lib/utils";
 
 interface KYCVerificationStatusProps {
   status: VerificationStatus;
@@ -95,7 +96,7 @@ export function KYCVerificationStatus({
                     : "bg-gray-100 text-gray-800"
                 }
               >
-                {status === "unverified" ? "Not Started" : status}
+                {status === "unverified" ? "Not Started" : capitalize(status)}
               </Badge>
             </div>
             <p className={`text-sm ${statusInfo.textColor} mb-4`}>

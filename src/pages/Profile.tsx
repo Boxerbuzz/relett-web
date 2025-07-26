@@ -26,6 +26,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
+import { capitalize } from "@/lib/utils";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -134,7 +135,7 @@ const Profile = () => {
                       )}
                       variant="outline"
                     >
-                      {userData.verificationStatus}
+                      {capitalize(userData.verificationStatus)}
                     </Badge>
                     {userData.isActive && (
                       <Badge

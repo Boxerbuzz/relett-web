@@ -15,7 +15,7 @@ import { useInvestmentPortfolio } from '@/hooks/useInvestmentPortfolio';
 import { useTokensView } from '@/hooks/useTokensView';
 import { useAuth } from '@/lib/auth';
 import { transformTokenizedProperties } from '@/utils/tokenDataTransformer';
-import { TrendingUp, BarChart3 } from 'lucide-react';
+import { TrendUpIcon, ChartBarIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 
 const Tokens = () => {
@@ -121,7 +121,7 @@ const Tokens = () => {
           className="flex items-center gap-2"
           variant="outline"
         >
-          <BarChart3 className="w-4 h-4" />
+          <ChartBarIcon className="w-4 h-4" />
           Advanced Trading
         </Button>
         <Button 
@@ -129,7 +129,7 @@ const Tokens = () => {
           className="flex items-center gap-2"
           variant="outline"
         >
-          <TrendingUp className="w-4 h-4" />
+          <TrendUpIcon className="w-4 h-4" />
           Portfolio Analytics
         </Button>
       </div>

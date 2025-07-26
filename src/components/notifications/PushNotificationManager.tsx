@@ -1,20 +1,26 @@
-
-import { useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Bell, BellOff, Smartphone, CheckCircle } from 'lucide-react';
-import { useOneSignalNotifications } from '@/hooks/useOneSignalNotifications';
-import { useAuth } from '@/lib/auth';
+import { useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  BellIcon,
+  BellSlashIcon,
+  DeviceMobileIcon,
+  CheckCircleIcon,
+} from "@phosphor-icons/react";
+import { useOneSignalNotifications } from "@/hooks/useOneSignalNotifications";
+import { useAuth } from "@/lib/auth";
 
 export function PushNotificationManager() {
   const { user } = useAuth();
-  const { 
-    isInitialized, 
-    playerId, 
-    subscribeUser, 
-    unsubscribeUser 
-  } = useOneSignalNotifications();
+  const { isInitialized, playerId, subscribeUser, unsubscribeUser } =
+    useOneSignalNotifications();
 
   useEffect(() => {
     // Auto-subscribe authenticated users
@@ -38,7 +44,7 @@ export function PushNotificationManager() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5 text-gray-400 animate-pulse" />
+            <DeviceMobileIcon className="h-5 w-5 text-gray-400 animate-pulse" />
             Initializing Notifications...
           </CardTitle>
           <CardDescription>
@@ -54,26 +60,30 @@ export function PushNotificationManager() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
+            <DeviceMobileIcon className="h-5 w-5" />
             Push Notifications
           </div>
-          <Badge variant={playerId ? 'default' : 'secondary'}>
-            {playerId ? 'Enabled' : 'Disabled'}
+          <Badge variant={playerId ? "default" : "secondary"}>
+            {playerId ? "Enabled" : "Disabled"}
           </Badge>
         </CardTitle>
         <CardDescription>
-          Stay updated with real-time notifications about your properties and investments
+          Stay updated with real-time notifications about your properties and
+          investments
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {playerId ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
               <div>
-                <div className="font-medium text-green-900">Notifications Enabled</div>
+                <div className="font-medium text-green-900">
+                  Notifications Enabled
+                </div>
                 <div className="text-sm text-green-700">
-                  You'll receive notifications for property updates, investments, and more
+                  You'll receive notifications for property updates,
+                  investments, and more
                 </div>
               </div>
             </div>
@@ -104,30 +114,28 @@ export function PushNotificationManager() {
               </ul>
             </div>
 
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleUnsubscribe}
               className="w-full"
             >
-              <BellOff className="h-4 w-4 mr-2" />
+              <BellSlashIcon className="h-4 w-4 mr-2" />
               Disable Notifications
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="text-center py-6">
-              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <BellIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Enable Push Notifications</h3>
               <p className="text-gray-600 mb-4">
-                Get instant notifications about your properties, investments, and important updates
+                Get instant notifications about your properties, investments,
+                and important updates
               </p>
             </div>
 
-            <Button 
-              onClick={handleSubscribe}
-              className="w-full"
-            >
-              <Bell className="h-4 w-4 mr-2" />
+            <Button onClick={handleSubscribe} className="w-full">
+              <BellIcon className="h-4 w-4 mr-2" />
               Enable Notifications
             </Button>
           </div>
@@ -135,8 +143,8 @@ export function PushNotificationManager() {
 
         <div className="text-xs text-gray-500 pt-4 border-t">
           <p>
-            Notifications are sent securely and you can disable them at any time. 
-            We respect your privacy and only send relevant updates.
+            Notifications are sent securely and you can disable them at any
+            time. We respect your privacy and only send relevant updates.
           </p>
         </div>
       </CardContent>

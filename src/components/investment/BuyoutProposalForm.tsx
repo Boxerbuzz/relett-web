@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarIcon, CurrencyDollar, Users, Clock } from 'phosphor-react';
+import { CalendarIcon, CurrencyDollarIcon, UsersIcon, ClockIcon } from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -116,7 +116,7 @@ export function BuyoutProposalForm({
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <CurrencyDollar className="h-5 w-5" />
+          <CurrencyDollarIcon className="h-5 w-5" />
           Create Buyout Proposal
         </CardTitle>
         <CardDescription>
@@ -190,7 +190,7 @@ export function BuyoutProposalForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
+                      <UsersIcon className="h-4 w-4" />
                       Required Approval (%)
                     </FormLabel>
                     <FormControl>
@@ -217,7 +217,7 @@ export function BuyoutProposalForm({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <ClockIcon className="h-4 w-4" />
                     Voting Deadline
                   </FormLabel>
                   <Popover>

@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/lib/auth";
-import { PaperPlaneTilt } from "phosphor-react";
 import { formatDistanceToNow } from "date-fns";
-import { ChatIcon } from "@phosphor-icons/react";
+import { ChatIcon, PaperPlaneTiltIcon } from "@phosphor-icons/react";
 
 interface ChatAreaProps {
   conversationId: string | null;
@@ -104,7 +103,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
               className="flex-1"
             />
             <Button type="submit" disabled={sending || !newMessage.trim()}>
-              <PaperPlaneTilt className="h-4 w-4" />
+              <PaperPlaneTiltIcon className="h-4 w-4" />
             </Button>
           </form>
         </CardContent>

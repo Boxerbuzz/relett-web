@@ -10,10 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AccountTypeSelect } from "./AccountTypeSelect";
-import { User, Envelope, Lock, Eye, EyeSlash, Phone } from "phosphor-react";
-import { Loader } from "lucide-react";
-
+import {
+  UserIcon,
+  EnvelopeIcon,
+  LockIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  PhoneIcon,
+  SpinnerIcon
+} from "@phosphor-icons/react";
 const signUpSchema = z
   .object({
     firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -71,10 +76,10 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
         data.password,
         data.role,
         data.firstName,
-        data.lastName,
+        data.lastName
       );
     } catch (error) {
-      handleError(error, 'Failed to create account');
+      handleError(error, "Failed to create account");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +99,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               First Name
             </Label>
             <div className="relative mt-1">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <UserIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="firstName"
                 placeholder="Enter your first name"
@@ -104,7 +109,9 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               />
             </div>
             {errors.firstName && (
-              <p className="text-sm text-red-600 mt-1">{errors.firstName.message}</p>
+              <p className="text-sm text-red-600 mt-1">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
@@ -113,7 +120,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               Last Name
             </Label>
             <div className="relative mt-1">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <UserIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="lastName"
                 placeholder="Enter your last name"
@@ -134,7 +141,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               Email Address
             </Label>
             <div className="relative mt-1">
-              <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <EnvelopeIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="email"
                 type="email"
@@ -156,7 +163,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               Phone Number (Optional)
             </Label>
             <div className="relative mt-1">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <PhoneIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="phone"
                 type="tel"
@@ -178,7 +185,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               Password
             </Label>
             <div className="relative mt-1">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <LockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -194,9 +201,9 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 disabled={isSubmitting}
               >
                 {showPassword ? (
-                  <EyeSlash className="h-4 w-4" />
+                  <EyeSlashIcon className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <EyeIcon className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -212,7 +219,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
               Confirm Password
             </Label>
             <div className="relative mt-1">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <LockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
@@ -228,9 +235,9 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
                 disabled={isSubmitting}
               >
                 {showConfirmPassword ? (
-                  <EyeSlash className="h-4 w-4" />
+                  <EyeSlashIcon className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <EyeIcon className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -287,7 +294,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
                 Creating account...
               </>
             ) : (

@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import { 
-  Plus, 
-  Upload, 
-  Coins, 
-  FileText,
-  Shield,
-  Eye
-} from 'lucide-react';
+  PlusIcon, 
+  UploadIcon, 
+  CoinsIcon, 
+  FileTextIcon,
+  ShieldIcon,
+  EyeIcon
+} from '@phosphor-icons/react';
 
 export function QuickActions() {
   const { user } = useAuth();
@@ -18,21 +18,21 @@ export function QuickActions() {
     {
       title: 'Add Land Record',
       description: 'Register a new property',
-      icon: <Plus className="h-4 w-4" />,
+      icon: <PlusIcon className="h-4 w-4" />,
       action: () => console.log('Add land record'),
       variant: 'default' as const
     },
     {
       title: 'Upload Documents',
       description: 'Add supporting documents',
-      icon: <Upload className="h-4 w-4" />,
+      icon: <UploadIcon className="h-4 w-4" />,
       action: () => console.log('Upload documents'),
       variant: 'outline' as const
     },
     {
       title: 'Create Token',
       description: 'Tokenize verified land',
-      icon: <Coins className="h-4 w-4" />,
+      icon: <CoinsIcon className="h-4 w-4" />,
       action: () => console.log('Create token'),
       variant: 'outline' as const
     }
@@ -42,21 +42,21 @@ export function QuickActions() {
     {
       title: 'Review Records',
       description: 'Verify pending submissions',
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileTextIcon className="h-4 w-4" />,
       action: () => console.log('Review records'),
       variant: 'default' as const
     },
     {
       title: 'Sign Documents',
       description: 'Digitally sign verified records',
-      icon: <Shield className="h-4 w-4" />,
+      icon: <ShieldIcon className="h-4 w-4" />,
       action: () => console.log('Sign documents'),
       variant: 'outline' as const
     },
     {
       title: 'View History',
       description: 'Check verification history',
-      icon: <Eye className="h-4 w-4" />,
+      icon: <EyeIcon className="h-4 w-4" />,
       action: () => console.log('View history'),
       variant: 'outline' as const
     }

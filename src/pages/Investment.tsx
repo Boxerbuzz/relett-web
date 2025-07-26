@@ -8,12 +8,12 @@ import { RevenueDistributionCalculator } from '@/components/investment/RevenueDi
 import { PollsList } from '@/components/investment/polling/PollsList';
 import { Badge } from '@/components/ui/badge';
 import { 
-  BarChart3, 
-  Users, 
-  Calculator, 
-  TrendingUp,
-  Vote
-} from 'lucide-react';
+  ChartLineIcon, 
+  UsersIcon, 
+  CalculatorIcon, 
+  TrendUpIcon,
+} from '@phosphor-icons/react';
+import { Vote } from 'lucide-react';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { usePollNotifications } from '@/hooks/usePollNotifications';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
@@ -46,7 +46,7 @@ const Investment = () => {
           <p className="text-gray-600">Manage your property investments and revenue distributions</p>
         </div>
         <Badge className="bg-green-100 text-green-800">
-          <TrendingUp className="w-4 h-4 mr-1" />
+          <TrendUpIcon className="w-4 h-4 mr-1" />
           Investment Hub
         </Badge>
       </div>
@@ -54,11 +54,11 @@ const Investment = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto gap-1 overflow-x-auto">
           <TabsTrigger value="portfolio" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
+            <ChartLineIcon className="w-4 h-4" />
             Portfolio
           </TabsTrigger>
           <TabsTrigger value="groups" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
+            <UsersIcon className="w-4 h-4" />
             Investment Groups
           </TabsTrigger>
           <TabsTrigger value="polls" className="flex items-center gap-2">
@@ -67,11 +67,11 @@ const Investment = () => {
             {selectedGroupId && <Badge variant="secondary" className="ml-1">Active</Badge>}
           </TabsTrigger>
           <TabsTrigger value="distributions" className="flex items-center gap-2">
-            <Calculator className="w-4 h-4" />
+            <CalculatorIcon className="w-4 h-4" />
             Revenue Distribution
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
+            <TrendUpIcon className="w-4 h-4" />
             Analytics
           </TabsTrigger>
         </TabsList>

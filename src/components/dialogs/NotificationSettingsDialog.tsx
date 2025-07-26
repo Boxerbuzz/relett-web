@@ -1,15 +1,38 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Bell, Mail, Smartphone, MessageSquare, AlertTriangle, Calendar, CreditCard, Home, Moon, Clock } from 'lucide-react';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import {
+  BellIcon,
+  EnvelopeIcon,
+  DeviceMobileIcon,
+  ChatCenteredIcon,
+  WarningIcon,
+  CalendarIcon,
+  CreditCardIcon,
+  HouseIcon,
+  MoonIcon,
+  ClockIcon,
+} from "@phosphor-icons/react";
+import { UserMobileCard } from "../admin/UserMobileCard";
 
 interface NotificationSettingsDialogProps {
   open: boolean;
@@ -22,153 +45,162 @@ interface NotificationTypeSettings {
   priority: string;
 }
 
-export function NotificationSettingsDialog({ open, onOpenChange }: NotificationSettingsDialogProps) {
+export function NotificationSettingsDialog({
+  open,
+  onOpenChange,
+}: NotificationSettingsDialogProps) {
   const [settings, setSettings] = useState({
     // Notification Channels
     pushNotifications: true,
     emailNotifications: true,
     smsNotifications: false,
     inAppNotifications: true,
-    
+
     // Notification Types with Priority Levels
     rentalNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'medium'
+      channels: ["push", "in_app"],
+      priority: "medium",
     } as NotificationTypeSettings,
     generalNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'low'
+      channels: ["push", "in_app"],
+      priority: "low",
     } as NotificationTypeSettings,
     paymentNotifications: {
       enabled: true,
-      channels: ['push', 'in_app', 'email'],
-      priority: 'high'
+      channels: ["push", "in_app", "email"],
+      priority: "high",
     } as NotificationTypeSettings,
     inspectionNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'medium'
+      channels: ["push", "in_app"],
+      priority: "medium",
     } as NotificationTypeSettings,
     reservationNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'medium'
+      channels: ["push", "in_app"],
+      priority: "medium",
     } as NotificationTypeSettings,
     propertyNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'medium'
+      channels: ["push", "in_app"],
+      priority: "medium",
     } as NotificationTypeSettings,
     verificationNotifications: {
       enabled: true,
-      channels: ['push', 'in_app', 'email'],
-      priority: 'high'
+      channels: ["push", "in_app", "email"],
+      priority: "high",
     } as NotificationTypeSettings,
     tokenizationNotifications: {
       enabled: true,
-      channels: ['push', 'in_app'],
-      priority: 'medium'
+      channels: ["push", "in_app"],
+      priority: "medium",
     } as NotificationTypeSettings,
-    
+
     // Digest Settings
     digestEnabled: false,
-    digestFrequency: 'weekly',
+    digestFrequency: "weekly",
     digestTypes: [] as string[],
-    
+
     // Do Not Disturb
     doNotDisturb: false,
-    quietHoursStart: '22:00',
-    quietHoursEnd: '08:00',
-    
+    quietHoursStart: "22:00",
+    quietHoursEnd: "08:00",
+
     // Global Settings
-    notificationsEnabled: true
+    notificationsEnabled: true,
   });
 
   const updateSetting = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const updateNotificationType = (type: string, field: string, value: any) => {
-    setSettings(prev => {
-      const currentSettings = prev[type as keyof typeof prev] as NotificationTypeSettings;
+    setSettings((prev) => {
+      const currentSettings = prev[
+        type as keyof typeof prev
+      ] as NotificationTypeSettings;
       return {
         ...prev,
         [type]: {
           ...currentSettings,
-          [field]: value
-        }
+          [field]: value,
+        },
       };
     });
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-orange-100 text-orange-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-orange-100 text-orange-800";
+      case "low":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const notificationTypes = [
     {
-      key: 'rentalNotifications',
-      title: 'Rental Notifications',
-      description: 'Rental requests, approvals, and updates',
-      icon: Home,
-      settings: settings.rentalNotifications
+      key: "rentalNotifications",
+      title: "Rental Notifications",
+      description: "Rental requests, approvals, and updates",
+      icon: HouseIcon,
+      settings: settings.rentalNotifications,
     },
     {
-      key: 'paymentNotifications',
-      title: 'Payment Notifications',
-      description: 'Payment confirmations, failures, and reminders',
-      icon: CreditCard,
-      settings: settings.paymentNotifications
+      key: "paymentNotifications",
+      title: "Payment Notifications",
+      description: "Payment confirmations, failures, and reminders",
+      icon: CreditCardIcon,
+      settings: settings.paymentNotifications,
     },
     {
-      key: 'inspectionNotifications',
-      title: 'Inspection Notifications',
-      description: 'Inspection scheduling and results',
-      icon: Calendar,
-      settings: settings.inspectionNotifications
+      key: "inspectionNotifications",
+      title: "Inspection Notifications",
+      description: "Inspection scheduling and results",
+      icon: CalendarIcon,
+      settings: settings.inspectionNotifications,
     },
     {
-      key: 'reservationNotifications',
-      title: 'Reservation Notifications',
-      description: 'Booking confirmations and updates',
-      icon: Calendar,
-      settings: settings.reservationNotifications
+      key: "reservationNotifications",
+      title: "Reservation Notifications",
+      description: "Booking confirmations and updates",
+      icon: CalendarIcon,
+      settings: settings.reservationNotifications,
     },
     {
-      key: 'verificationNotifications',
-      title: 'Verification Notifications',
-      description: 'Property verification status updates',
-      icon: AlertTriangle,
-      settings: settings.verificationNotifications
+      key: "verificationNotifications",
+      title: "Verification Notifications",
+      description: "Property verification status updates",
+      icon: WarningIcon,
+      settings: settings.verificationNotifications,
     },
     {
-      key: 'tokenizationNotifications',
-      title: 'Tokenization Notifications',
-      description: 'Token creation and trading updates',
-      icon: Bell,
-      settings: settings.tokenizationNotifications
+      key: "tokenizationNotifications",
+      title: "Tokenization Notifications",
+      description: "Token creation and trading updates",
+      icon: BellIcon,
+      settings: settings.tokenizationNotifications,
     },
     {
-      key: 'propertyNotifications',
-      title: 'Property Updates',
-      description: 'Property value changes and market updates',
-      icon: Home,
-      settings: settings.propertyNotifications
+      key: "propertyNotifications",
+      title: "Property Updates",
+      description: "Property value changes and market updates",
+      icon: HouseIcon,
+      settings: settings.propertyNotifications,
     },
     {
-      key: 'generalNotifications',
-      title: 'General Notifications',
-      description: 'Platform updates and announcements',
-      icon: Bell,
-      settings: settings.generalNotifications
-    }
+      key: "generalNotifications",
+      title: "General Notifications",
+      description: "Platform updates and announcements",
+      icon: BellIcon,
+      settings: settings.generalNotifications,
+    },
   ];
 
   return (
@@ -176,17 +208,37 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Bell size={20} />
+            <BellIcon size={20} />
             Notification Settings
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="channels" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
-            <TabsTrigger value="channels" className="text-xs sm:text-sm px-2 py-1.5">Channels</TabsTrigger>
-            <TabsTrigger value="types" className="text-xs sm:text-sm px-2 py-1.5">Types</TabsTrigger>
-            <TabsTrigger value="digest" className="text-xs sm:text-sm px-2 py-1.5">Digest</TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs sm:text-sm px-2 py-1.5">Schedule</TabsTrigger>
+            <TabsTrigger
+              value="channels"
+              className="text-xs sm:text-sm px-2 py-1.5"
+            >
+              Channels
+            </TabsTrigger>
+            <TabsTrigger
+              value="types"
+              className="text-xs sm:text-sm px-2 py-1.5"
+            >
+              Types
+            </TabsTrigger>
+            <TabsTrigger
+              value="digest"
+              className="text-xs sm:text-sm px-2 py-1.5"
+            >
+              Digest
+            </TabsTrigger>
+            <TabsTrigger
+              value="schedule"
+              className="text-xs sm:text-sm px-2 py-1.5"
+            >
+              Schedule
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="channels" className="space-y-6">
@@ -194,19 +246,25 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell size={18} />
+                  <BellIcon size={18} />
                   Global Notification Settings
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-base">Enable All Notifications</Label>
-                    <p className="text-sm text-gray-600">Master switch for all notifications</p>
+                    <Label className="text-base">
+                      Enable All Notifications
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      Master switch for all notifications
+                    </p>
                   </div>
                   <Switch
                     checked={settings.notificationsEnabled}
-                    onCheckedChange={(checked) => updateSetting('notificationsEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("notificationsEnabled", checked)
+                    }
                   />
                 </div>
               </CardContent>
@@ -220,60 +278,76 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Bell size={18} />
+                    <BellIcon size={18} />
                     <div>
                       <Label>Push Notifications</Label>
-                      <p className="text-sm text-gray-600">Receive notifications on your device</p>
+                      <p className="text-sm text-gray-600">
+                        Receive notifications on your device
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={settings.pushNotifications}
-                    onCheckedChange={(checked) => updateSetting('pushNotifications', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("pushNotifications", checked)
+                    }
                     disabled={!settings.notificationsEnabled}
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Mail size={18} />
+                    <EnvelopeIcon size={18} />
                     <div>
                       <Label>Email Notifications</Label>
-                      <p className="text-sm text-gray-600">Receive updates via email</p>
+                      <p className="text-sm text-gray-600">
+                        Receive updates via email
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={settings.emailNotifications}
-                    onCheckedChange={(checked) => updateSetting('emailNotifications', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("emailNotifications", checked)
+                    }
                     disabled={!settings.notificationsEnabled}
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Smartphone size={18} />
+                    <DeviceMobileIcon size={18} />
                     <div>
                       <Label>SMS Notifications</Label>
-                      <p className="text-sm text-gray-600">Receive text messages for urgent updates</p>
+                      <p className="text-sm text-gray-600">
+                        Receive text messages for urgent updates
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={settings.smsNotifications}
-                    onCheckedChange={(checked) => updateSetting('smsNotifications', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("smsNotifications", checked)
+                    }
                     disabled={!settings.notificationsEnabled}
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <MessageSquare size={18} />
+                    <ChatCenteredIcon size={18} />
                     <div>
                       <Label>In-App Notifications</Label>
-                      <p className="text-sm text-gray-600">Show notifications within the app</p>
+                      <p className="text-sm text-gray-600">
+                        Show notifications within the app
+                      </p>
                     </div>
                   </div>
                   <Switch
                     checked={settings.inAppNotifications}
-                    onCheckedChange={(checked) => updateSetting('inAppNotifications', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("inAppNotifications", checked)
+                    }
                     disabled={!settings.notificationsEnabled}
                   />
                 </div>
@@ -291,16 +365,23 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                       <div>
                         <div className="flex items-center gap-2">
                           <Label className="text-base">{type.title}</Label>
-                          <Badge className={getPriorityColor(type.settings.priority)} variant="outline">
+                          <Badge
+                            className={getPriorityColor(type.settings.priority)}
+                            variant="outline"
+                          >
                             {type.settings.priority} priority
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600">{type.description}</p>
+                        <p className="text-sm text-gray-600">
+                          {type.description}
+                        </p>
                       </div>
                     </div>
                     <Switch
                       checked={type.settings.enabled}
-                      onCheckedChange={(checked) => updateNotificationType(type.key, 'enabled', checked)}
+                      onCheckedChange={(checked) =>
+                        updateNotificationType(type.key, "enabled", checked)
+                      }
                       disabled={!settings.notificationsEnabled}
                     />
                   </div>
@@ -309,9 +390,11 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                     <div className="ml-8 space-y-3">
                       <div>
                         <Label className="text-sm">Priority Level</Label>
-                        <Select 
-                          value={type.settings.priority} 
-                          onValueChange={(value) => updateNotificationType(type.key, 'priority', value)}
+                        <Select
+                          value={type.settings.priority}
+                          onValueChange={(value) =>
+                            updateNotificationType(type.key, "priority", value)
+                          }
                         >
                           <SelectTrigger className="w-32">
                             <SelectValue />
@@ -327,19 +410,30 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                       <div>
                         <Label className="text-sm">Delivery Channels</Label>
                         <div className="flex gap-2 mt-1">
-                          {['push', 'email', 'sms', 'in_app'].map((channel) => (
+                          {["push", "email", "sms", "in_app"].map((channel) => (
                             <Badge
                               key={channel}
-                              variant={type.settings.channels.includes(channel) ? "default" : "outline"}
+                              variant={
+                                type.settings.channels.includes(channel)
+                                  ? "default"
+                                  : "outline"
+                              }
                               className="cursor-pointer"
                               onClick={() => {
-                                const newChannels = type.settings.channels.includes(channel)
-                                  ? type.settings.channels.filter((c: string) => c !== channel)
-                                  : [...type.settings.channels, channel];
-                                updateNotificationType(type.key, 'channels', newChannels);
+                                const newChannels =
+                                  type.settings.channels.includes(channel)
+                                    ? type.settings.channels.filter(
+                                        (c: string) => c !== channel
+                                      )
+                                    : [...type.settings.channels, channel];
+                                updateNotificationType(
+                                  type.key,
+                                  "channels",
+                                  newChannels
+                                );
                               }}
                             >
-                              {channel.replace('_', ' ')}
+                              {channel.replace("_", " ")}
                             </Badge>
                           ))}
                         </div>
@@ -360,11 +454,15 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base">Enable Digest</Label>
-                    <p className="text-sm text-gray-600">Receive bundled notifications instead of individual ones</p>
+                    <p className="text-sm text-gray-600">
+                      Receive bundled notifications instead of individual ones
+                    </p>
                   </div>
                   <Switch
                     checked={settings.digestEnabled}
-                    onCheckedChange={(checked) => updateSetting('digestEnabled', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("digestEnabled", checked)
+                    }
                   />
                 </div>
 
@@ -372,7 +470,12 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                   <div className="space-y-4">
                     <div>
                       <Label>Digest Frequency</Label>
-                      <Select value={settings.digestFrequency} onValueChange={(value) => updateSetting('digestFrequency', value)}>
+                      <Select
+                        value={settings.digestFrequency}
+                        onValueChange={(value) =>
+                          updateSetting("digestFrequency", value)
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -388,7 +491,10 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                       <Label>Include in Digest</Label>
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         {notificationTypes.map((type) => (
-                          <div key={type.key} className="flex items-center space-x-2">
+                          <div
+                            key={type.key}
+                            className="flex items-center space-x-2"
+                          >
                             <input
                               title={type.title}
                               type="checkbox"
@@ -397,11 +503,18 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                               onChange={(e) => {
                                 const newTypes = e.target.checked
                                   ? [...settings.digestTypes, type.key]
-                                  : settings.digestTypes.filter((t: string) => t !== type.key);
-                                updateSetting('digestTypes', newTypes);
+                                  : settings.digestTypes.filter(
+                                      (t: string) => t !== type.key
+                                    );
+                                updateSetting("digestTypes", newTypes);
                               }}
                             />
-                            <Label htmlFor={`digest-${type.key}`} className="text-sm">{type.title}</Label>
+                            <Label
+                              htmlFor={`digest-${type.key}`}
+                              className="text-sm"
+                            >
+                              {type.title}
+                            </Label>
                           </div>
                         ))}
                       </div>
@@ -416,7 +529,7 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Moon size={18} />
+                  <MoonIcon size={18} />
                   Do Not Disturb
                 </CardTitle>
               </CardHeader>
@@ -424,11 +537,15 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base">Enable Do Not Disturb</Label>
-                    <p className="text-sm text-gray-600">Pause notifications during specified hours</p>
+                    <p className="text-sm text-gray-600">
+                      Pause notifications during specified hours
+                    </p>
                   </div>
                   <Switch
                     checked={settings.doNotDisturb}
-                    onCheckedChange={(checked) => updateSetting('doNotDisturb', checked)}
+                    onCheckedChange={(checked) =>
+                      updateSetting("doNotDisturb", checked)
+                    }
                   />
                 </div>
 
@@ -437,15 +554,23 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                     <div>
                       <Label>Quiet Hours Start</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Clock size={16} />
-                        <Select value={settings.quietHoursStart} onValueChange={(value) => updateSetting('quietHoursStart', value)}>
+                        <ClockIcon size={16} />
+                        <Select
+                          value={settings.quietHoursStart}
+                          onValueChange={(value) =>
+                            updateSetting("quietHoursStart", value)
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {Array.from({ length: 24 }, (_, i) => (
-                              <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                                {`${i.toString().padStart(2, '0')}:00`}
+                              <SelectItem
+                                key={i}
+                                value={`${i.toString().padStart(2, "0")}:00`}
+                              >
+                                {`${i.toString().padStart(2, "0")}:00`}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -456,15 +581,23 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
                     <div>
                       <Label>Quiet Hours End</Label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Clock size={16} />
-                        <Select value={settings.quietHoursEnd} onValueChange={(value) => updateSetting('quietHoursEnd', value)}>
+                        <ClockIcon size={16} />
+                        <Select
+                          value={settings.quietHoursEnd}
+                          onValueChange={(value) =>
+                            updateSetting("quietHoursEnd", value)
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {Array.from({ length: 24 }, (_, i) => (
-                              <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                                {`${i.toString().padStart(2, '0')}:00`}
+                              <SelectItem
+                                key={i}
+                                value={`${i.toString().padStart(2, "0")}:00`}
+                              >
+                                {`${i.toString().padStart(2, "0")}:00`}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -480,12 +613,14 @@ export function NotificationSettingsDialog({ open, onOpenChange }: NotificationS
 
         {/* Action Buttons */}
         <div className="flex gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1"
+          >
             Cancel
           </Button>
-          <Button className="flex-1">
-            Save Settings
-          </Button>
+          <Button className="flex-1">Save Settings</Button>
         </div>
       </DialogContent>
     </Dialog>

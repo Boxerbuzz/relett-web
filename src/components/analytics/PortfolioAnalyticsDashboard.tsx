@@ -5,19 +5,16 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePortfolioAnalytics } from '@/hooks/usePortfolioAnalytics';
 import { 
-  TrendingUp, 
-  TrendingDown, 
-  PieChart, 
-  BarChart3, 
-  Target,
-  AlertTriangle,
-  CheckCircle,
-  Info,
-  DollarSign,
-  Percent,
-  Shield,
-  Activity
-} from 'lucide-react';
+  TrendUpIcon,
+  TrendDownIcon,
+  TargetIcon,
+  WarningIcon,
+  CheckCircleIcon,
+  InfoIcon,
+  CurrencyDollarIcon,
+  ShieldIcon,
+  ActivityIcon
+} from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import {
   LineChart,
@@ -30,8 +27,6 @@ import {
   PieChart as RechartsPieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar
 } from 'recharts';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', '#8884d8', '#82ca9d', '#ffc658'];
@@ -75,7 +70,7 @@ export function PortfolioAnalyticsDashboard() {
                 <p className="text-sm font-medium text-muted-foreground">Total Value</p>
                 <p className="text-2xl font-bold">${metrics.totalValue.toLocaleString()}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
+              <CurrencyDollarIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -93,9 +88,9 @@ export function PortfolioAnalyticsDashboard() {
                 </p>
               </div>
               {metrics.totalROIPercentage >= 0 ? (
-                <TrendingUp className="h-8 w-8 text-green-600" />
+                <TrendUpIcon className="h-8 w-8 text-green-600" />
               ) : (
-                <TrendingDown className="h-8 w-8 text-red-600" />
+                <TrendDownIcon className="h-8 w-8 text-red-600" />
               )}
             </div>
           </CardContent>
@@ -108,7 +103,7 @@ export function PortfolioAnalyticsDashboard() {
                 <p className="text-sm font-medium text-muted-foreground">Sharpe Ratio</p>
                 <p className="text-2xl font-bold">{metrics.sharpeRatio.toFixed(2)}</p>
               </div>
-              <Target className="h-8 w-8 text-muted-foreground" />
+              <TargetIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -120,7 +115,7 @@ export function PortfolioAnalyticsDashboard() {
                 <p className="text-sm font-medium text-muted-foreground">Diversification</p>
                 <p className="text-2xl font-bold">{metrics.diversificationScore.toFixed(0)}%</p>
               </div>
-              <Shield className="h-8 w-8 text-muted-foreground" />
+              <ShieldIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -131,7 +126,7 @@ export function PortfolioAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
+              <ActivityIcon className="w-5 h-5" />
               Portfolio Insights
             </CardTitle>
           </CardHeader>
@@ -139,9 +134,9 @@ export function PortfolioAnalyticsDashboard() {
             <div className="space-y-3">
               {recommendations.map((rec, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  {rec.type === 'warning' && <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />}
-                  {rec.type === 'success' && <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />}
-                  {rec.type === 'info' && <Info className="w-5 h-5 text-blue-600 mt-0.5" />}
+                  {rec.type === 'warning' && <WarningIcon className="w-5 h-5 text-yellow-600 mt-0.5" />}
+                  {rec.type === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-600 mt-0.5" />}
+                  {rec.type === 'info' && <InfoIcon className="w-5 h-5 text-blue-600 mt-0.5" />}
                   <p className="text-sm">{rec.message}</p>
                 </div>
               ))}

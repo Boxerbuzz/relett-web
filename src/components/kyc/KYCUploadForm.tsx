@@ -25,6 +25,7 @@ import {
   CloudArrowUpIcon,
 } from "@phosphor-icons/react";
 import { VerificationStatus } from "@/types/database";
+import { capitalize } from "@/lib/utils";
 
 export function KYCUploadForm() {
   const { user, refreshUserData } = useAuth();
@@ -307,7 +308,7 @@ export function KYCUploadForm() {
                         doc.verification_status
                       )}`}
                     >
-                      {doc.verification_status}
+                      {capitalize(doc.verification_status)}
                     </span>
                     {(doc.verification_status === "rejected" ||
                       verificationStatus !== "verified") && (

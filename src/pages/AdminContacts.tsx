@@ -43,7 +43,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
-import { Envelope, Phone, Eye, ArrowLeft } from "phosphor-react";
+import { EnvelopeIcon, PhoneIcon, EyeIcon, ArrowLeftIcon } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 interface Contact {
@@ -198,7 +198,7 @@ export default function AdminContacts() {
       <div className="spacing-y-4">
         <Link to="/admin">
           <Button variant="ghost" size="sm">
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon size={16} className="mr-2" />
             Back to Admin
           </Button>
         </Link>
@@ -249,7 +249,7 @@ export default function AdminContacts() {
                               size="sm"
                               onClick={() => setSelectedContact(contact)}
                             >
-                              <Eye size={16} className="mr-1" />
+                              <EyeIcon size={16} className="mr-1" />
                               View
                             </Button>
                           </DialogTrigger>
@@ -305,14 +305,14 @@ export default function AdminContacts() {
                                       <SelectContent>
                                         <SelectItem value="email">
                                           <div className="flex items-center gap-2">
-                                            <Envelope size={16} />
+                                            <EnvelopeIcon size={16} />
                                             Email
                                           </div>
                                         </SelectItem>
                                         {contact.phone_number && (
                                           <SelectItem value="sms">
                                             <div className="flex items-center gap-2">
-                                              <Phone size={16} />
+                                              <PhoneIcon size={16} />
                                               SMS
                                             </div>
                                           </SelectItem>
@@ -342,12 +342,12 @@ export default function AdminContacts() {
                                     ) : (
                                       <>
                                         {responseMethod === "email" ? (
-                                          <Envelope
+                                          <EnvelopeIcon
                                             size={16}
                                             className="mr-2"
                                           />
                                         ) : (
-                                          <Phone size={16} className="mr-2" />
+                                          <PhoneIcon size={16} className="mr-2" />
                                         )}
                                         Send{" "}
                                         {responseMethod === "email"

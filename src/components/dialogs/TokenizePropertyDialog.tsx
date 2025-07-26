@@ -18,7 +18,12 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Coins, FileText, Calculator, Eye } from "phosphor-react";
+import {
+  CoinsIcon,
+  FileTextIcon,
+  CalculatorIcon,
+  EyeIcon,
+} from "@phosphor-icons/react";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -58,10 +63,10 @@ export function TokenizePropertyDialog({
   });
 
   const steps = [
-    { title: "Token Configuration", icon: Coins },
-    { title: "Financial Terms", icon: Calculator },
-    { title: "Legal & Documentation", icon: FileText },
-    { title: "Review & Submit", icon: Eye },
+    { title: "Token Configuration", icon: CoinsIcon },
+    { title: "Financial Terms", icon: CalculatorIcon },
+    { title: "Legal & Documentation", icon: FileTextIcon },
+    { title: "Review & Submit", icon: EyeIcon },
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -80,24 +85,27 @@ export function TokenizePropertyDialog({
     setIsLoading(true);
     try {
       // Call the tokenization edge function
-      const { data, error } = await supabase.functions.invoke('tokenize-property', {
-        body: {
-          propertyId: property.id,
-          tokenName: `${property.title} Token`,
-          tokenSymbol: `${property.title.substring(0, 3).toUpperCase()}T`,
-          totalSupply: parseInt(formData.totalTokens),
-          pricePerToken: parseFloat(formData.pricePerToken),
-          minimumInvestment: parseFloat(formData.minimumInvestment),
-          expectedROI: parseFloat(formData.expectedROI),
-          distributionFrequency: formData.distributionFrequency,
-          lockupPeriod: parseInt(formData.lockupPeriod),
-          description: formData.description,
-          riskLevel: formData.riskLevel,
+      const { data, error } = await supabase.functions.invoke(
+        "tokenize-property",
+        {
+          body: {
+            propertyId: property.id,
+            tokenName: `${property.title} Token`,
+            tokenSymbol: `${property.title.substring(0, 3).toUpperCase()}T`,
+            totalSupply: parseInt(formData.totalTokens),
+            pricePerToken: parseFloat(formData.pricePerToken),
+            minimumInvestment: parseFloat(formData.minimumInvestment),
+            expectedROI: parseFloat(formData.expectedROI),
+            distributionFrequency: formData.distributionFrequency,
+            lockupPeriod: parseInt(formData.lockupPeriod),
+            description: formData.description,
+            riskLevel: formData.riskLevel,
+          },
         }
-      });
+      );
 
       if (error) {
-        console.error('Tokenization error:', error);
+        console.error("Tokenization error:", error);
         toast.error(`Tokenization failed: ${error.message}`);
         return;
       }
@@ -121,7 +129,7 @@ export function TokenizePropertyDialog({
         toast.error(data?.message || "Tokenization failed");
       }
     } catch (error) {
-      console.error('Tokenization error:', error);
+      console.error("Tokenization error:", error);
       toast.error("An unexpected error occurred during tokenization");
     } finally {
       setIsLoading(false);
@@ -368,7 +376,7 @@ export function TokenizePropertyDialog({
         <div className="flex-shrink-0 space-y-4">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle className="flex items-center gap-2">
-              <Coins size={20} />
+              <CoinsIcon size={20} />
               Tokenize Property
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>

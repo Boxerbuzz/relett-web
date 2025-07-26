@@ -1,16 +1,21 @@
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { MoreHorizontal, Eye, Edit, Trash2, Shield, Ban } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DotsThreeIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+  ShieldIcon,
+} from "@phosphor-icons/react";
 
 interface User {
   id: string;
@@ -29,35 +34,38 @@ interface UserActionsDropdownProps {
   onUserUpdated: () => void;
 }
 
-export function UserActionsDropdown({ user, onUserUpdated }: UserActionsDropdownProps) {
+export function UserActionsDropdown({
+  user,
+  onUserUpdated,
+}: UserActionsDropdownProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleViewUser = () => {
     // Navigate to user profile or details page
-    window.open(`/admin/users/${user.id}`, '_blank');
+    window.open(`/admin/users/${user.id}`, "_blank");
   };
 
   const handleResetPassword = async () => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
+        type: "recovery",
         email: user.email,
       });
 
       if (error) throw error;
 
       toast({
-        title: 'Password Reset Sent',
+        title: "Password Reset Sent",
         description: `Password reset link sent to ${user.email}`,
       });
     } catch (error) {
-      console.error('Error sending password reset:', error);
+      console.error("Error sending password reset:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to send password reset email',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to send password reset email",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -65,7 +73,11 @@ export function UserActionsDropdown({ user, onUserUpdated }: UserActionsDropdown
   };
 
   const handleDeleteUser = async () => {
-    if (!confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${user.first_name} ${user.last_name}?`
+      )
+    ) {
       return;
     }
 
@@ -76,17 +88,17 @@ export function UserActionsDropdown({ user, onUserUpdated }: UserActionsDropdown
       if (error) throw error;
 
       toast({
-        title: 'User Deleted',
-        description: 'User has been permanently deleted',
+        title: "User Deleted",
+        description: "User has been permanently deleted",
       });
-      
+
       onUserUpdated();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete user',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -97,24 +109,24 @@ export function UserActionsDropdown({ user, onUserUpdated }: UserActionsDropdown
     try {
       setIsLoading(true);
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update({ is_verified: true })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
       toast({
-        title: 'User Verified',
-        description: 'User has been manually verified',
+        title: "User Verified",
+        description: "User has been manually verified",
       });
-      
+
       onUserUpdated();
     } catch (error) {
-      console.error('Error verifying user:', error);
+      console.error("Error verifying user:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to verify user',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to verify user",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -125,34 +137,34 @@ export function UserActionsDropdown({ user, onUserUpdated }: UserActionsDropdown
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" disabled={isLoading}>
-          <MoreHorizontal className="h-4 w-4" />
+          <DotsThreeIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={handleViewUser}>
-          <Eye className="mr-2 h-4 w-4" />
+          <EyeIcon className="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        
+
         {!user.is_verified && (
           <DropdownMenuItem onClick={handleVerifyUser}>
-            <Shield className="mr-2 h-4 w-4" />
+            <ShieldIcon className="mr-2 h-4 w-4" />
             Verify User
           </DropdownMenuItem>
         )}
-        
+
         <DropdownMenuItem onClick={handleResetPassword}>
-          <Edit className="mr-2 h-4 w-4" />
+          <PencilIcon className="mr-2 h-4 w-4" />
           Reset Password
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           onClick={handleDeleteUser}
           className="text-red-600 focus:text-red-600"
         >
-          <Trash2 className="mr-2 h-4 w-4" />
+          <TrashIcon className="mr-2 h-4 w-4" />
           Delete User
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -12,8 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { WalletAuthButton } from './WalletAuthButton';
-import { Envelope, Lock, Eye, EyeSlash } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { EnvelopeIcon, LockIcon, EyeIcon, EyeSlashIcon, SpinnerIcon } from '@phosphor-icons/react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -80,7 +79,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
           <div>
             <Label htmlFor="email" className="text-gray-700">Email Address</Label>
             <div className="relative mt-1">
-              <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <EnvelopeIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="email"
                 type="email"
@@ -98,7 +97,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
           <div>
             <Label htmlFor="password" className="text-gray-700">Password</Label>
             <div className="relative mt-1">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <LockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
@@ -113,7 +112,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
                 className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                 disabled={isSubmitting}
               >
-                {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
@@ -139,7 +138,7 @@ export function LoginForm({ onToggleMode, onForgotPassword }: LoginFormProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
               </>
             ) : (

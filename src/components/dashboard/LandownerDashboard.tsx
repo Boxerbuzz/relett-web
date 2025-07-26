@@ -14,16 +14,16 @@ import { StatsCard } from "./StatsCard";
 import { useProperties } from "@/hooks/useProperties";
 import { useTokenizedProperties } from "@/hooks/useTokenizedProperties";
 import {
-  MapPin,
-  DollarSign,
-  Shield,
-  Coins,
-  Plus,
-  FileText,
-  TrendingUp,
-  Eye,
-  Loader2,
-} from "lucide-react";
+  MapPinIcon,
+  CurrencyDollarIcon,
+  ShieldIcon,
+  CoinsIcon,
+  PlusIcon,
+  FileTextIcon,
+  TrendUpIcon,
+  EyeIcon,
+  SpinnerIcon,
+} from "@phosphor-icons/react";
 import { formatCurrency } from "@/lib/utils";
 
 export function LandownerDashboard() {
@@ -38,7 +38,7 @@ export function LandownerDashboard() {
   if (propertiesLoading || tokensLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <SpinnerIcon className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading dashboard...</span>
       </div>
     );
@@ -51,7 +51,7 @@ export function LandownerDashboard() {
     {
       title: "Total Properties",
       value: properties.length.toString(),
-      icon: <MapPin className="h-4 w-4" />,
+      icon: <MapPinIcon className="h-4 w-4" />,
       description: `${verifiedProperties.length} verified, ${
         properties.length - verifiedProperties.length
       } pending`,
@@ -61,19 +61,19 @@ export function LandownerDashboard() {
     {
       title: "Verified Properties",
       value: verifiedProperties.length.toString(),
-      icon: <Shield className="h-4 w-4" />,
+      icon: <ShieldIcon className="h-4 w-4" />,
       description: "Ready for tokenization",
     },
     {
       title: "Active Tokens",
       value: tokenizedPropertiesCount.length.toString(),
-      icon: <Coins className="h-4 w-4" />,
+      icon: <CoinsIcon className="h-4 w-4" />,
       description: `${tokenizedPropertiesCount.length} tokenized properties`,
     },
     {
       title: "Portfolio Value",
       value: `₦${(totalPortfolioValue / 1000).toFixed(1)}K`,
-      icon: <DollarSign className="h-4 w-4" />,
+      icon: <CurrencyDollarIcon className="h-4 w-4" />,
       description: "Based on current market value",
       trend: totalROI > 0 ? { value: totalROI, isPositive: true } : undefined,
     },
@@ -90,15 +90,15 @@ export function LandownerDashboard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
+              <PlusIcon className="h-4 w-4" />
               Add New Property
             </Button>
             <Button variant="outline" className="flex items-center gap-2">
-              <Coins className="h-4 w-4" />
+              <CoinsIcon className="h-4 w-4" />
               Tokenize Property
             </Button>
             <Button variant="outline" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+              <FileTextIcon className="h-4 w-4" />
               Upload Documents
             </Button>
           </div>
@@ -122,12 +122,12 @@ export function LandownerDashboard() {
           <div className="space-y-4">
             {properties.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <MapPin className="mx-auto h-12 w-12 mb-4" />
+                <MapPinIcon className="mx-auto h-12 w-12 mb-4" />
                 <p>
                   No properties found. Add your first property to get started!
                 </p>
                 <Button className="mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <PlusIcon className="h-4 w-4 mr-2" />
                   Add Property
                 </Button>
               </div>
@@ -171,7 +171,7 @@ export function LandownerDashboard() {
                       </Badge>
                     )}
                     <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
+                      <EyeIcon className="h-4 w-4 mr-1" />
                       View
                     </Button>
                   </div>
@@ -224,7 +224,7 @@ export function LandownerDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Overall ROI</span>
                 <div className="flex items-center gap-1 text-green-600">
-                  <TrendingUp className="h-4 w-4" />
+                  <TrendUpIcon className="h-4 w-4" />
                   <span className="font-bold">+{totalROI.toFixed(1)}%</span>
                 </div>
               </div>

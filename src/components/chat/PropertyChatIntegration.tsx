@@ -9,17 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Send, 
-  Paperclip, 
-  Users, 
-  MessageSquare, 
-  Phone,
-  Video,
-  MoreVertical,
-  Search,
-  Star,
-  Home
-} from 'lucide-react';
+  PaperclipIcon,
+  UsersIcon, 
+  PhoneIcon,
+  VideoIcon,
+  DotsThreeIcon,
+  MagnifyingGlassIcon,
+  StarIcon,
+  HouseIcon,
+  ChatCircleDotsIcon,
+  PaperPlaneIcon
+} from '@phosphor-icons/react';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -186,10 +186,10 @@ export function PropertyChatIntegration({
 
   const getChatTypeIcon = () => {
     switch (chatType) {
-      case 'inspection': return <Search className="h-4 w-4" />;
-      case 'investment': return <Star className="h-4 w-4" />;
-      case 'inquiry': return <MessageSquare className="h-4 w-4" />;
-      default: return <Home className="h-4 w-4" />;
+      case 'inspection': return <MagnifyingGlassIcon className="h-4 w-4" />;
+      case 'investment': return <StarIcon className="h-4 w-4" />;
+      case 'inquiry': return <ChatCircleDotsIcon className="h-4 w-4" />;
+      default: return <HouseIcon className="h-4 w-4" />;
     }
   };
 
@@ -233,17 +233,17 @@ export function PropertyChatIntegration({
           
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
-              <Phone className="h-4 w-4" />
+              <PhoneIcon className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm">
-              <Video className="h-4 w-4" />
+              <VideoIcon className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm">
-              <Users className="h-4 w-4" />
+              <UsersIcon className="h-4 w-4" />
             </Button>
             {onClose && (
               <Button variant="ghost" size="sm" onClick={onClose}>
-                <MoreVertical className="h-4 w-4" />
+                <DotsThreeIcon className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -317,7 +317,7 @@ export function PropertyChatIntegration({
       <div className="border-t p-4">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
-            <Paperclip className="h-4 w-4" />
+            <PaperclipIcon className="h-4 w-4" />
           </Button>
           
           <Input
@@ -336,7 +336,7 @@ export function PropertyChatIntegration({
             disabled={!messageInput.trim()}
             size="sm"
           >
-            <Send className="h-4 w-4" />
+            <PaperPlaneIcon className="h-4 w-4" />
           </Button>
         </div>
       </div>

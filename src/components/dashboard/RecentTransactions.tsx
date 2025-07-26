@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle } from 'lucide-react';
+import { ArrowUpRightIcon, ArrowDownRightIcon, ClockIcon, CheckCircleIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
@@ -103,24 +103,24 @@ export function RecentTransactions() {
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'dividend':
-        return <ArrowDownRight className="h-4 w-4 text-green-600" />;
+        return <ArrowDownRightIcon className="h-4 w-4 text-green-600" />;
       case 'purchase':
-        return <ArrowUpRight className="h-4 w-4 text-blue-600" />;
+        return <ArrowUpRightIcon className="h-4 w-4 text-blue-600" />;
       case 'sale':
-        return <ArrowUpRight className="h-4 w-4 text-orange-600" />;
+        return <ArrowUpRightIcon className="h-4 w-4 text-orange-600" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-600" />;
+        return <ClockIcon className="h-4 w-4 text-gray-600" />;
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-3 w-3 text-green-600" />;
+        return <CheckCircleIcon className="h-3 w-3 text-green-600" />;
       case 'pending':
-        return <Clock className="h-3 w-3 text-yellow-600" />;
+        return <ClockIcon className="h-3 w-3 text-yellow-600" />;
       default:
-        return <Clock className="h-3 w-3 text-red-600" />;
+        return <ClockIcon className="h-3 w-3 text-red-600" />;
     }
   };
 

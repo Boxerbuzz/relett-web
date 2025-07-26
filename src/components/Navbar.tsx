@@ -17,7 +17,15 @@ import { UserAvatar } from "./profile/UserAvatar";
 import { WalletAvatar } from "./wallet/WalletAvatar";
 import { HashPackConnectDialog } from "./wallet/HashPackConnectDialog";
 import { Badge } from "@/components/ui/badge";
-import { Bell, List, Gear, SignOut, User, Star, Wallet } from "phosphor-react";
+import {
+  BellIcon,
+  ListIcon,
+  GearIcon,
+  SignOutIcon,
+  UserIcon,
+  StarIcon,
+  WalletIcon,
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -51,7 +59,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           onClick={onToggleSidebar}
           className="lg:hidden"
         >
-          <List size={20} />
+          <ListIcon size={20} />
         </Button>
 
         {/* Desktop: Show page title or breadcrumb */}
@@ -64,7 +72,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
       <div className="flex items-center gap-3">
         {/* Notifications */}
         <Button variant="ghost" size="sm" className="relative">
-          <Bell size={20} />
+          <BellIcon size={20} />
           {notificationCount > 0 && (
             <Badge
               variant="destructive"
@@ -113,7 +121,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/profile"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <User size={16} />
+                <UserIcon size={16} />
                 Profile
               </Link>
             </DropdownMenuItem>
@@ -122,7 +130,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/settings"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Gear size={16} />
+                <GearIcon size={16} />
                 Settings
               </Link>
             </DropdownMenuItem>
@@ -131,7 +139,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/notifications"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Bell size={16} />
+                <BellIcon size={16} />
                 Notifications
                 {notificationCount > 0 && (
                   <Badge variant="secondary" className="ml-auto">
@@ -145,7 +153,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 to="/favourites"
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Star size={16} />
+                <StarIcon size={16} />
                 Favourites
               </Link>
             </DropdownMenuItem>
@@ -157,7 +165,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 onClick={disconnectWallet}
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Wallet size={16} />
+                <WalletIcon size={16} />
                 Disconnect Wallet
                 <Badge variant="outline" className="ml-auto text-xs">
                   Connected
@@ -168,7 +176,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
                 onClick={() => setShowWalletDialog(true)}
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <Wallet size={16} />
+                <WalletIcon size={16} />
                 Connect Wallet
               </DropdownMenuItem>
             )}
@@ -178,7 +186,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               onClick={() => signOut()}
               className="flex items-center gap-2 cursor-pointer text-red-600"
             >
-              <SignOut size={16} />
+              <SignOutIcon size={16} />
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

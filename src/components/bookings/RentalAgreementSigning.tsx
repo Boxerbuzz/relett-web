@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Download, Check, X } from 'lucide-react';
+import { FileTextIcon, DownloadIcon, CheckIcon, XIcon } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RentalAgreementSigningProps {
@@ -101,7 +101,7 @@ export function RentalAgreementSigning({
       <ResponsiveDialogContent size="full" className="max-h-[90vh]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
+            <FileTextIcon className="w-5 h-5" />
             Rental Agreement - {rental.property?.title}
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
@@ -229,14 +229,14 @@ export function RentalAgreementSigning({
                         </>
                       ) : (
                         <>
-                          <Check className="w-4 h-4 mr-2" />
+                          <CheckIcon className="w-4 h-4 mr-2" />
                           Sign Agreement
                         </>
                       )}
                     </Button>
                     
                     <Button variant="outline" className="w-full">
-                      <Download className="w-4 h-4 mr-2" />
+                      <DownloadIcon className="w-4 h-4 mr-2" />
                       Download PDF
                     </Button>
                   </div>

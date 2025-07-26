@@ -3,7 +3,7 @@
 import { useRightPanel } from "@/contexts/RightPanelContext";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "phosphor-react";
+import { XIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -49,7 +49,7 @@ export function RightPanel() {
           onClick={close}
           className="flex-shrink-0 ml-2"
         >
-          <X size={20} />
+          <XIcon size={20} />
         </Button>
       </div>
 

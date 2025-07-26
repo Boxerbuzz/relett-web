@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, ThumbsUp, ThumbsDown } from "lucide-react";
+import { PaperPlaneIcon, RobotIcon, UserIcon, ThumbsUpIcon, ThumbsDownIcon } from "@phosphor-icons/react";
 import { agentManager } from "@/lib/agents/AgentManager";
 import { AgentContext, AgentResponse } from "@/lib/agents/BaseAgent";
 
@@ -165,7 +165,7 @@ export function AgentChat({
     <Card className={`flex flex-col h-[600px] ${className}`}>
       <CardHeader className="flex-shrink-0 pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Bot className="w-5 h-5" />
+          <RobotIcon className="w-5 h-5" />
           {agent.getConfig().name}
           <Badge variant="outline" className="ml-auto">
             {isAdaptiveAgent ? "AI Learning" : "AI Agent"}
@@ -198,10 +198,10 @@ export function AgentChat({
                 >
                   <div className="flex items-start gap-2">
                     {message.sender === "agent" && (
-                      <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <RobotIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     )}
                     {message.sender === "user" && (
-                      <User className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-100" />
+                      <UserIcon className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-100" />
                     )}
                     <div className="flex-1">
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -227,7 +227,7 @@ export function AgentChat({
                                 className="h-6 w-6 p-0 hover:bg-gray-200"
                                 onClick={() => handleFeedback(message.id, true)}
                               >
-                                <ThumbsUp className="w-3 h-3" />
+                                <ThumbsUpIcon className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
@@ -237,7 +237,7 @@ export function AgentChat({
                                   handleFeedback(message.id, false)
                                 }
                               >
-                                <ThumbsDown className="w-3 h-3" />
+                                <ThumbsDownIcon className="w-3 h-3" />
                               </Button>
                             </div>
                           )}
@@ -274,7 +274,7 @@ export function AgentChat({
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-lg px-4 py-2">
                   <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4" />
+                    <RobotIcon className="w-4 h-4" />
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                       <div
@@ -308,7 +308,7 @@ export function AgentChat({
               disabled={!inputMessage.trim() || isProcessing}
               size="sm"
             >
-              <Send className="w-4 h-4" />
+              <PaperPlaneIcon className="w-4 h-4" />
             </Button>
           </div>
         </div>

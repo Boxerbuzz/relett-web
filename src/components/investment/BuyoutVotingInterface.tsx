@@ -6,14 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
-  CurrencyDollar, 
-  Users, 
-  Clock, 
-  TrendUp, 
-  CheckCircle, 
-  XCircle,
-  Calendar
-} from 'phosphor-react';
+  CurrencyDollarIcon, 
+  UsersIcon, 
+  TrendUpIcon, 
+  CheckCircleIcon, 
+  XCircleIcon,
+  CalendarIcon
+} from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -116,7 +115,7 @@ export function BuyoutVotingInterface({
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <CardTitle className="flex items-center gap-2">
-              <CurrencyDollar className="h-5 w-5" />
+              <CurrencyDollarIcon className="h-5 w-5" />
               {poll.title}
             </CardTitle>
             <CardDescription>{poll.description}</CardDescription>
@@ -129,7 +128,7 @@ export function BuyoutVotingInterface({
         {/* Buyout Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            <CurrencyDollar className="h-5 w-5 text-primary" />
+            <CurrencyDollarIcon className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm font-medium">Buyout Price</p>
               <p className="text-lg font-bold">${poll.buyout_price.toLocaleString()}</p>
@@ -137,7 +136,7 @@ export function BuyoutVotingInterface({
           </div>
 
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            <Users className="h-5 w-5 text-primary" />
+            <UsersIcon className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm font-medium">Required Approval</p>
               <p className="text-lg font-bold">{poll.min_buyout_percentage}%</p>
@@ -145,7 +144,7 @@ export function BuyoutVotingInterface({
           </div>
 
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            <Calendar className="h-5 w-5 text-primary" />
+            <CalendarIcon className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm font-medium">Deadline</p>
               <p className="text-sm font-semibold">
@@ -159,7 +158,7 @@ export function BuyoutVotingInterface({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold flex items-center gap-2">
-              <TrendUp className="h-4 w-4" />
+              <TrendUpIcon className="h-4 w-4" />
               Voting Progress
             </h4>
             <span className="text-sm text-muted-foreground">
@@ -199,7 +198,7 @@ export function BuyoutVotingInterface({
                 disabled={isVoting}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircleIcon className="h-4 w-4 mr-2" />
                 {isVoting ? 'Voting...' : 'Vote YES'}
               </Button>
               <Button
@@ -208,7 +207,7 @@ export function BuyoutVotingInterface({
                 variant="destructive"
                 className="flex-1"
               >
-                <XCircle className="h-4 w-4 mr-2" />
+                <XCircleIcon className="h-4 w-4 mr-2" />
                 {isVoting ? 'Voting...' : 'Vote NO'}
               </Button>
             </div>
@@ -219,9 +218,9 @@ export function BuyoutVotingInterface({
         {hasVoted && userVote && (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
             {userVote === 'yes' ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
             ) : (
-              <XCircle className="h-5 w-5 text-red-600" />
+              <XCircleIcon className="h-5 w-5 text-red-600" />
             )}
             <span className="text-sm font-medium">
               You voted {userVote.toUpperCase()} on this proposal

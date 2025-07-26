@@ -8,8 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Envelope } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { ArrowLeftIcon, EnvelopeIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -85,7 +84,7 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
         <div>
           <Label htmlFor="email" className="text-gray-700">Email Address</Label>
           <div className="relative mt-1">
-            <Envelope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <EnvelopeIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
               id="email"
               type="email"
@@ -107,7 +106,7 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
         >
           {loading ? (
             <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
               Sending...
             </>
           ) : (
@@ -118,11 +117,12 @@ export function ForgotPasswordForm({ onBack, onSuccess }: ForgotPasswordFormProp
 
       <div className="mt-4 text-center">
         <button
+          type="button"
           onClick={onBack}
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
           disabled={loading}
         >
-          <ArrowLeft className="mr-1 h-4 w-4" />
+          <ArrowLeftIcon className="mr-1 h-4 w-4" />
           Back to sign in
         </button>
       </div>

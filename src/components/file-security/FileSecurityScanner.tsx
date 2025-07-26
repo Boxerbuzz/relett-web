@@ -1,23 +1,33 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Shield, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
-import { useFileValidation } from '@/hooks/useFileValidation';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  ShieldIcon,
+  WarningIcon,
+  CheckCircleIcon,
+  UploadSimpleIcon,
+} from "@phosphor-icons/react";
+import { useFileValidation } from "@/hooks/useFileValidation";
 
 interface FileSecurityScannerProps {
   file: File;
-  fileType: 'image' | 'document';
+  fileType: "image" | "document";
   onValidationComplete: (result: any) => void;
   onValidationError: (error: string) => void;
 }
 
-export function FileSecurityScanner({ 
-  file, 
-  fileType, 
-  onValidationComplete, 
-  onValidationError 
+export function FileSecurityScanner({
+  file,
+  fileType,
+  onValidationComplete,
+  onValidationError,
 }: FileSecurityScannerProps) {
   const [scanResult, setScanResult] = useState<any>(null);
   const { validateFile, isValidating } = useFileValidation();
@@ -26,29 +36,31 @@ export function FileSecurityScanner({
     try {
       const result = await validateFile(file, fileType);
       setScanResult(result);
-      
+
       if (result.isValid) {
         onValidationComplete(result);
       } else {
-        onValidationError(result.errors.join(', '));
+        onValidationError(result.errors.join(", "));
       }
     } catch (error) {
-      onValidationError('File validation failed');
+      onValidationError("File validation failed");
     }
   };
 
   const getStatusIcon = () => {
-    if (isValidating) return <Shield className="h-5 w-5 text-blue-500 animate-pulse" />;
-    if (!scanResult) return <Shield className="h-5 w-5 text-gray-400" />;
-    if (scanResult.isValid) return <CheckCircle className="h-5 w-5 text-green-500" />;
-    return <AlertTriangle className="h-5 w-5 text-red-500" />;
+    if (isValidating)
+      return <ShieldIcon className="h-5 w-5 text-blue-500 animate-pulse" />;
+    if (!scanResult) return <ShieldIcon className="h-5 w-5 text-gray-400" />;
+    if (scanResult.isValid)
+      return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
+    return <WarningIcon className="h-5 w-5 text-red-500" />;
   };
 
   const getStatusText = () => {
-    if (isValidating) return 'Scanning file...';
-    if (!scanResult) return 'Ready to scan';
-    if (scanResult.isValid) return 'File is safe';
-    return 'Security issues detected';
+    if (isValidating) return "Scanning file...";
+    if (!scanResult) return "Ready to scan";
+    if (scanResult.isValid) return "File is safe";
+    return "Security issues detected";
   };
 
   return (
@@ -70,7 +82,7 @@ export function FileSecurityScanner({
               {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type}
             </div>
           </div>
-          <Upload className="h-5 w-5 text-gray-400" />
+          <UploadSimpleIcon className="h-5 w-5 text-gray-400" />
         </div>
 
         {isValidating && (
@@ -85,16 +97,18 @@ export function FileSecurityScanner({
 
         {scanResult && (
           <div className="space-y-3">
-            <div className={`p-3 rounded-lg border ${
-              scanResult.isValid 
-                ? 'bg-green-50 border-green-200' 
-                : 'bg-red-50 border-red-200'
-            }`}>
+            <div
+              className={`p-3 rounded-lg border ${
+                scanResult.isValid
+                  ? "bg-green-50 border-green-200"
+                  : "bg-red-50 border-red-200"
+              }`}
+            >
               <div className="flex items-center gap-2 mb-2">
                 {getStatusIcon()}
                 <span className="font-medium">{getStatusText()}</span>
               </div>
-              
+
               {!scanResult.isValid && (
                 <ul className="text-sm text-red-700 space-y-1">
                   {scanResult.errors.map((error: string, index: number) => (
@@ -108,7 +122,8 @@ export function FileSecurityScanner({
               <div>
                 <div className="font-medium">Original Size</div>
                 <div className="text-gray-600">
-                  {(scanResult.metadata.originalSize / 1024 / 1024).toFixed(2)} MB
+                  {(scanResult.metadata.originalSize / 1024 / 1024).toFixed(2)}{" "}
+                  MB
                 </div>
               </div>
               <div>
@@ -122,7 +137,8 @@ export function FileSecurityScanner({
                   <div>
                     <div className="font-medium">Dimensions</div>
                     <div className="text-gray-600">
-                      {scanResult.metadata.dimensions.width} × {scanResult.metadata.dimensions.height}
+                      {scanResult.metadata.dimensions.width} ×{" "}
+                      {scanResult.metadata.dimensions.height}
                     </div>
                   </div>
                 </>
@@ -133,7 +149,7 @@ export function FileSecurityScanner({
 
         {!scanResult && !isValidating && (
           <Button onClick={handleScan} className="w-full">
-            <Shield className="h-4 w-4 mr-2" />
+            <ShieldIcon className="h-4 w-4 mr-2" />
             Scan File
           </Button>
         )}

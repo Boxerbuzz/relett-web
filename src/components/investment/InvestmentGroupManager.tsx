@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Target, Clock } from 'phosphor-react';
+import { UsersIcon, PlusIcon, TargetIcon, ClockIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -95,14 +95,14 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
       {groups.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <UsersIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Investment Groups</h3>
             <p className="text-gray-600 mb-4">Create or join an investment group to start collaborating on property investments.</p>
             <InvestmentGroupCreator 
               onGroupCreated={refetch}
               trigger={
                 <Button>
-                  <Plus className="w-4 h-4 mr-2" />
+                  <PlusIcon className="w-4 h-4 mr-2" />
                   Create Your First Group
                 </Button>
               }
@@ -150,18 +150,18 @@ export function InvestmentGroupManager({ onGroupSelect }: InvestmentGroupManager
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
+                    <UsersIcon className="w-4 h-4 text-gray-500" />
                     <span>{group.investor_count} investors</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-gray-500" />
+                    <TargetIcon className="w-4 h-4 text-gray-500" />
                     <span>Min: {formatCurrency(group.minimum_investment)}</span>
                   </div>
                 </div>
 
                 {group.closes_at && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock className="w-4 h-4" />
+                    <ClockIcon className="w-4 h-4" />
                     <span>Closes: {new Date(group.closes_at).toLocaleDateString()}</span>
                   </div>
                 )}

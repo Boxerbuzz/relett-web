@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, DollarSign, Calendar } from 'lucide-react';
+import { ArrowLeftIcon, DownloadIcon, CurrencyDollarIcon, CalendarIcon } from '@phosphor-icons/react';
 
 interface PaymentHistoryViewProps {
   propertyId: string;
@@ -91,7 +91,7 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
         onClick={onBack}
         className="flex items-center gap-2"
       >
-        <ArrowLeft size={16} />
+        <ArrowLeftIcon className="h-4 w-4" />
         Back to Portfolio
       </Button>
 
@@ -101,7 +101,7 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
           <p className="text-gray-600">Track all payments and transactions</p>
         </div>
         <Button variant="outline" className="flex items-center gap-2">
-          <Download size={16} />
+          <DownloadIcon className="h-4 w-4" />
           Export
         </Button>
       </div>
@@ -114,7 +114,7 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
                 <p className="text-sm text-gray-600">Total Income</p>
                 <p className="text-2xl font-bold text-green-600">${totalIncome.toLocaleString()}</p>
               </div>
-              <DollarSign size={24} className="text-green-600" />
+              <CurrencyDollarIcon className="h-5 w-5 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
                 <p className="text-sm text-gray-600">Total Expenses</p>
                 <p className="text-2xl font-bold text-red-600">${totalExpenses.toLocaleString()}</p>
               </div>
-              <DollarSign size={24} className="text-red-600" />
+              <CurrencyDollarIcon className="h-5 w-5 text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -135,7 +135,7 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar size={20} />
+            <CalendarIcon size={20} />
             Payment Records
           </CardTitle>
         </CardHeader>
@@ -155,7 +155,10 @@ export function PaymentHistoryView({ propertyId, propertyTitle, onBack }: Paymen
                       </Badge>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">{new Date(payment.date).toLocaleDateString()}</p>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <CalendarIcon className="h-4 w-4 text-gray-500 mr-2" />
+                    <span>{new Date(payment.date).toLocaleDateString()}</span>
+                  </div>
                 </div>
                 <div className="text-right mt-2 sm:mt-0">
                   <p className={`text-lg font-bold ${payment.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>

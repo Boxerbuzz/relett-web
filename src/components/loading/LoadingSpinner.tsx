@@ -1,5 +1,5 @@
 
-import { CircleNotch } from 'phosphor-react';
+import { CircleNotchIcon } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
@@ -17,7 +17,7 @@ export function LoadingSpinner({ size = 'md', className, text }: LoadingSpinnerP
 
   return (
     <div className={cn('flex items-center justify-center gap-2', className)}>
-      <CircleNotch size={sizeMap[size]} className="animate-spin" />
+      <CircleNotchIcon size={sizeMap[size]} className="animate-spin" />
       {text && <span className="text-sm text-muted-foreground">{text}</span>}
     </div>
   );

@@ -8,8 +8,8 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock, Eye, EyeSlash } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { LockIcon, EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
+import { SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -104,7 +104,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         <div>
           <Label htmlFor="password" className="text-gray-700">New Password</Label>
           <div className="relative mt-1">
-            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <LockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -119,7 +119,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
               disabled={loading}
             >
-              {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
             </button>
           </div>
           {errors.password && (
@@ -130,7 +130,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         <div>
           <Label htmlFor="confirmPassword" className="text-gray-700">Confirm Password</Label>
           <div className="relative mt-1">
-            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <LockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
@@ -145,7 +145,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
               disabled={loading}
             >
-              {showConfirmPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showConfirmPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
             </button>
           </div>
           {errors.confirmPassword && (
@@ -160,7 +160,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         >
           {loading ? (
             <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
               Updating...
             </>
           ) : (

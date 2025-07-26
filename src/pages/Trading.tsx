@@ -5,11 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  TrendingUp, 
-  BarChart3, 
-  Activity,
-  DollarSign
-} from 'lucide-react';
+  TrendUpIcon , 
+  ChartBarIcon, 
+  ActivityIcon,
+  CurrencyDollarIcon
+} from '@phosphor-icons/react';
 import { TokenPortfolioSkeleton } from '@/components/ui/tokens-skeleton';
 import { useAuth } from '@/lib/auth';
 
@@ -31,7 +31,7 @@ const Trading = () => {
           <p className="text-muted-foreground">Professional trading tools for tokenized property assets</p>
         </div>
         <Badge className="bg-gradient-to-r from-primary to-primary-foreground text-primary-foreground">
-          <Activity className="w-4 h-4 mr-1" />
+          <ActivityIcon size={16} weight="fill" className="mr-1" />
           Trading Hub
         </Badge>
       </div>
@@ -39,19 +39,19 @@ const Trading = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto gap-1">
           <TabsTrigger value="orderbook" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
+            <ChartBarIcon className="w-4 h-4" />
             Order Book
           </TabsTrigger>
           <TabsTrigger value="market-depth" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
+            <TrendUpIcon className="w-4 h-4" />
             Market Depth
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <Activity className="w-4 h-4" />
+            <ActivityIcon className="w-4 h-4" />
             Portfolio Analytics
           </TabsTrigger>
           <TabsTrigger value="trading-tools" className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
+            <CurrencyDollarIcon className="w-4 h-4" />
             Trading Tools
           </TabsTrigger>
         </TabsList>
@@ -111,7 +111,7 @@ const Trading = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-center py-16 text-muted-foreground">
-                  <DollarSign className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <CurrencyDollarIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <h3 className="text-lg font-semibold mb-2">Advanced Tools Coming Soon</h3>
                   <p>Algorithmic trading, stop-loss orders, and automated strategies</p>
                 </div>

@@ -34,8 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
-import { MagnifyingGlass, ArrowLeft, Download } from "phosphor-react";
+import { MagnifyingGlassIcon, ArrowLeftIcon, DownloadIcon } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 interface WaitlistEntry {
@@ -216,7 +215,7 @@ export default function AdminWaitlist() {
       <div className="flex items-center gap-4">
         <Link to="/admin">
           <Button variant="ghost" size="sm">
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon size={16} className="mr-2" />
             Back to Admin
           </Button>
         </Link>
@@ -243,7 +242,7 @@ export default function AdminWaitlist() {
               variant="outline"
               disabled={loading}
             >
-              <Download size={16} className="mr-2" />
+              <DownloadIcon size={16} className="mr-2" />
               Export CSV
             </Button>
           </CardTitle>
@@ -255,7 +254,7 @@ export default function AdminWaitlist() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <MagnifyingGlass
+              <MagnifyingGlassIcon
                 size={16}
                 className="absolute left-3 top-3 text-gray-400"
               />
@@ -426,7 +425,7 @@ export default function AdminWaitlist() {
                   </PaginationItem>
 
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
+                    let pageNum: number;
                     if (totalPages <= 5) {
                       pageNum = i + 1;
                     } else if (currentPage <= 3) {

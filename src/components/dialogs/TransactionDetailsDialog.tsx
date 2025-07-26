@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowUpRight, ArrowDownLeft, Copy, ExternalLink } from 'lucide-react';
+import { ArrowUpRightIcon, ArrowDownLeftIcon, CopyIcon, LinkIcon } from '@phosphor-icons/react';
 
 interface TransactionDetailsDialogProps {
   open: boolean;
@@ -42,9 +42,9 @@ export function TransactionDetailsDialog({ open, onOpenChange, transaction }: Tr
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle className="flex items-center gap-2">
             {transaction.type === 'buy' ? (
-              <ArrowUpRight size={20} className="text-green-600" />
+              <ArrowUpRightIcon size={20} className="text-green-600" />
             ) : (
-              <ArrowDownLeft size={20} className="text-red-600" />
+              <ArrowDownLeftIcon size={20} className="text-red-600" />
             )}
             Transaction Details
           </ResponsiveDialogTitle>
@@ -113,14 +113,14 @@ export function TransactionDetailsDialog({ open, onOpenChange, transaction }: Tr
                       className="h-8 w-8"
                       onClick={() => copyToClipboard(transaction.transactionHash!)}
                     >
-                      <Copy size={14} />
+                      <CopyIcon size={14} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                     >
-                      <ExternalLink size={14} />
+                      <LinkIcon size={14} />
                     </Button>
                   </div>
                 </div>

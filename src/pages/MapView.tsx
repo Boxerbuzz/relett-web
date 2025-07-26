@@ -16,8 +16,11 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   EyeIcon,
+  StackIcon,
+  ArrowsOutIcon,
+  ArrowsInIcon,
+  FunnelSimpleIcon,
 } from "@phosphor-icons/react";
-import { Layers, Filter, Fullscreen, Minimize } from "lucide-react";
 import { GoogleMapWithProperties } from "@/components/maps/GoogleMapWithProperties";
 import { useFullscreen } from "@/hooks/useFullscreen";
 
@@ -59,7 +62,7 @@ const mapProperties = [
 
 const MapView = () => {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "verified":
@@ -102,14 +105,14 @@ const MapView = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            <Layers size={16} className="mr-2" />
+            <StackIcon size={16} className="mr-2" />
             Layers
           </Button>
           <Button variant="outline" size="sm" onClick={toggleFullscreen}>
             {isFullscreen ? (
-              <Minimize size={16} className="mr-2" />
+              <ArrowsInIcon size={16} className="mr-2" />
             ) : (
-              <Fullscreen size={16} className="mr-2" />
+              <ArrowsOutIcon size={16} className="mr-2" />
             )}
             {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </Button>
@@ -157,7 +160,7 @@ const MapView = () => {
               </Select>
 
               <Button variant="outline" size="sm">
-                <Filter size={16} className="mr-2" />
+                <FunnelSimpleIcon size={16} className="mr-2" />
                 More Filters
               </Button>
             </div>
@@ -176,7 +179,7 @@ const MapView = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 flex-1 relative">
-              <GoogleMapWithProperties 
+              <GoogleMapWithProperties
                 className="w-full h-full"
                 center={{ lat: 6.5244, lng: 3.3792 }}
                 zoom={11}
@@ -195,9 +198,24 @@ const MapView = () => {
 
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3 h-auto">
-              <TabsTrigger value="all" className="text-xs sm:text-sm px-2 py-1.5">All</TabsTrigger>
-              <TabsTrigger value="verified" className="text-xs sm:text-sm px-2 py-1.5">Verified</TabsTrigger>
-              <TabsTrigger value="tokenized" className="text-xs sm:text-sm px-2 py-1.5">Tokenized</TabsTrigger>
+              <TabsTrigger
+                value="all"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="verified"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Verified
+              </TabsTrigger>
+              <TabsTrigger
+                value="tokenized"
+                className="text-xs sm:text-sm px-2 py-1.5"
+              >
+                Tokenized
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">

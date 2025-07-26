@@ -9,7 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, MapPin, Bed, Shower, Square, Star } from "phosphor-react";
+import {
+  XIcon,
+  MapPinIcon,
+  BedIcon,
+  ShowerIcon,
+  SquareIcon,
+  StarIcon,
+} from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
 
 interface Property {
@@ -109,7 +116,7 @@ export function PropertyComparison({
                     className="absolute top-2 right-2 z-10 bg-white/80 hover:bg-white"
                     onClick={() => onRemoveProperty(property.id)}
                   >
-                    <X className="h-4 w-4" />
+                    <XIcon className="h-4 w-4" />
                   </Button>
                   <img
                     src={getPrimaryImage(property)}
@@ -127,7 +134,7 @@ export function PropertyComparison({
                     {property.title}
                   </h3>
                   <div className="flex items-center text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-1" />
+                    <MapPinIcon className="h-4 w-4 mr-1" />
                     <span className="text-sm">
                       {property.location.city}, {property.location.state}
                     </span>
@@ -137,7 +144,7 @@ export function PropertyComparison({
                   </div>
                   {property.ratings && (
                     <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                      <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                       <span className="text-sm">
                         {property.ratings.toFixed(1)}
                       </span>
@@ -152,15 +159,15 @@ export function PropertyComparison({
                   <h4 className="font-medium">Specifications</h4>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div className="flex items-center">
-                      <Bed className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <BedIcon className="h-4 w-4 mr-1 text-muted-foreground" />
                       <span>{property.specification?.bedrooms || "N/A"}</span>
                     </div>
                     <div className="flex items-center">
-                      <Shower className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <ShowerIcon className="h-4 w-4 mr-1 text-muted-foreground" />
                       <span>{property.specification?.bathrooms || "N/A"}</span>
                     </div>
                     <div className="flex items-center">
-                      <Square className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <SquareIcon className="h-4 w-4 mr-1 text-muted-foreground" />
                       <span>
                         {property.specification?.sqft
                           ? `${property.specification.sqft} ft²`

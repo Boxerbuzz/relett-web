@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon } from "@phosphor-icons/react";
 
 interface ProtectedRouteProps {
   children: ReactNode;

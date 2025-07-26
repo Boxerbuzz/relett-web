@@ -5,7 +5,7 @@ import { InvestmentGroupChat } from '@/components/investment/InvestmentGroupChat
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeftIcon, UsersIcon } from '@phosphor-icons/react';
 
 interface Property {
   id: string;
@@ -32,12 +32,12 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       <div className="flex items-center gap-4">
         <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeftIcon className="h-4 w-4 mr-2" />
           Back to Portfolio
         </Button>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{property.title} Investors</h1>
         <Badge className="bg-gradient-to-r from-green-500 to-blue-500 text-white">
-          <Users className="w-3 h-3 mr-1" />
+          <UsersIcon className="h-4 w-4 mr-2" />
           Group Discussion
         </Badge>
       </div>
@@ -45,7 +45,7 @@ export function GroupDiscussionView({ property, onBack }: GroupDiscussionViewPro
       <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-900">
-            <Users className="w-5 h-5" />
+            <UsersIcon className="w-5 h-5" />
             Investment Group Chat
           </CardTitle>
         </CardHeader>

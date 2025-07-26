@@ -19,15 +19,15 @@ import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
 import { useAdminRecentActivity } from "@/hooks/useAdminRecentActivity";
 import { Link } from "react-router-dom";
 import {
-  Users,
-  Shield,
-  House,
-  CurrencyDollar,
-  Activity,
-  Envelope,
-  ArrowRight,
-  FileText,
-} from "phosphor-react";
+  UsersIcon,
+  ShieldIcon,
+  HouseIcon,
+  CurrencyDollarIcon,
+  ActivityIcon,
+  EnvelopeIcon,
+  ArrowRightIcon,
+  FileTextIcon,
+} from "@phosphor-icons/react";
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -81,7 +81,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <UsersIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -96,7 +96,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               Pending Verifications
             </CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <ShieldIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -111,7 +111,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               Total Properties
             </CardTitle>
-            <House className="h-4 w-4 text-muted-foreground" />
+            <HouseIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -126,7 +126,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               Monthly Revenue
             </CardTitle>
-            <CurrencyDollar className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -147,7 +147,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               KYC & Role Management
             </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileTextIcon  className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -155,7 +155,7 @@ export function AdminDashboard() {
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Pending reviews
-              <ArrowRight className="ml-2 h-3 w-3" />
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
             </p>
           </CardContent>
         </Card>
@@ -168,7 +168,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               User Management
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <UsersIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -176,7 +176,7 @@ export function AdminDashboard() {
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Manage all users
-              <ArrowRight className="ml-2 h-3 w-3" />
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
             </p>
           </CardContent>
         </Card>
@@ -189,7 +189,7 @@ export function AdminDashboard() {
             <CardTitle className="text-sm font-medium">
               Property Verification
             </CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <ShieldIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -197,7 +197,7 @@ export function AdminDashboard() {
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               Pending reviews
-              <ArrowRight className="ml-2 h-3 w-3" />
+              <ArrowRightIcon className="ml-2 h-3 w-3" />
             </p>
           </CardContent>
         </Card>
@@ -208,7 +208,7 @@ export function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Contact Messages
               </CardTitle>
-              <Envelope className="h-4 w-4 text-muted-foreground" />
+              <EnvelopeIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -216,7 +216,7 @@ export function AdminDashboard() {
               </div>
               <p className="text-xs text-muted-foreground flex items-center">
                 Unread messages
-                <ArrowRight className="ml-2 h-3 w-3" />
+                <ArrowRightIcon className="ml-2 h-3 w-3" />
               </p>
             </CardContent>
           </Link>
@@ -265,7 +265,7 @@ export function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
+                    <ActivityIcon className="h-5 w-5" />
                     System Health
                   </CardTitle>
                 </CardHeader>

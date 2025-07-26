@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -19,16 +18,13 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  BarChart3,
-  PieChart,
-  Calendar,
-  Target,
-  Activity,
-} from "lucide-react";
+  TrendUpIcon,
+  CurrencyDollarIcon,
+  UsersIcon,
+  CalendarBlankIcon,
+  TargetIcon,
+  PulseIcon,
+} from "@phosphor-icons/react";
 import {
   LineChart,
   Line,
@@ -401,10 +397,10 @@ export function PropertyAnalyticsDashboard() {
                   {formatCurrency(analytics.metrics.totalValue)}
                 </p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
             </div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendUpIcon className="h-4 w-4 text-green-600 mr-1" />
               <span className="text-sm text-green-600">
                 +12.5% from last month
               </span>
@@ -421,10 +417,10 @@ export function PropertyAnalyticsDashboard() {
                   {formatPercentage(analytics.metrics.roi)}
                 </p>
               </div>
-              <Target className="h-8 w-8 text-blue-600" />
+              <TargetIcon className="h-8 w-8 text-blue-600" />
             </div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <TrendUpIcon className="h-4 w-4 text-green-600 mr-1" />
               <span className="text-sm text-green-600">
                 Above market average
               </span>
@@ -441,10 +437,10 @@ export function PropertyAnalyticsDashboard() {
                   {formatCurrency(analytics.metrics.totalDividends)}
                 </p>
               </div>
-              <Activity className="h-8 w-8 text-purple-600" />
+              <PulseIcon className="h-8 w-8 text-purple-600" />
             </div>
             <div className="flex items-center mt-2">
-              <Calendar className="h-4 w-4 text-gray-600 mr-1" />
+              <CalendarBlankIcon className="h-4 w-4 text-gray-600 mr-1" />
               <span className="text-sm text-gray-600">
                 Last distribution: Dec 2024
               </span>
@@ -461,7 +457,7 @@ export function PropertyAnalyticsDashboard() {
                   {analytics.metrics.investorCount}
                 </p>
               </div>
-              <Users className="h-8 w-8 text-orange-600" />
+              <UsersIcon className="h-8 w-8 text-orange-600" />
             </div>
             <div className="flex items-center mt-2">
               <span className="text-sm text-muted-foreground">

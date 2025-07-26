@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BuyTokenDialog } from "@/components/dialogs/BuyTokenDialog";
-import { Coins, Calendar, MapPin, Target, Shield } from "phosphor-react";
+import { CoinsIcon, CalendarIcon, MapPinIcon, TargetIcon, ShieldIcon } from "@phosphor-icons/react";
 
 interface TokenizedProperty {
   id: string;
@@ -218,7 +218,7 @@ export function TokenizedPropertyMarketplace() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8 text-gray-500">
-                  <Coins className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <CoinsIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <p>No tokenized properties found</p>
                   <p className="text-sm">
                     Check back later for new investment opportunities
@@ -255,7 +255,7 @@ export function TokenizedPropertyMarketplace() {
                         {property.token_name}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
+                        <MapPinIcon className="w-4 h-4" />
                         {property.land_title?.location_address ||
                           "Location not specified"}
                       </CardDescription>
@@ -315,20 +315,20 @@ export function TokenizedPropertyMarketplace() {
                       {/* Investment Details */}
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Target className="w-4 h-4" />
+                          <TargetIcon className="w-4 h-4" />
                           <span>
                             Total Value: $
                             {property.total_value_usd.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
+                          <CalendarIcon  className="w-4 h-4" />
                           <span>
                             Dividends: {property.revenue_distribution_frequency}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Shield className="w-4 h-4" />
+                          <ShieldIcon className="w-4 h-4" />
                           <span>Terms: {property.investment_terms}</span>
                         </div>
                       </div>

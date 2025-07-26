@@ -10,8 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Timer } from 'phosphor-react';
-import { Loader } from 'lucide-react';
+import { ArrowLeftIcon, TimerIcon, SpinnerIcon } from '@phosphor-icons/react';
 
 const otpSchema = z.object({
   otp: z.string().min(6, 'Please enter the complete OTP'),
@@ -125,7 +124,7 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
         <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
           {loading ? (
             <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
               Verifying...
             </>
           ) : (
@@ -142,12 +141,12 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
         >
           {resendLoading ? (
             <>
-              <Loader className="mr-1 h-4 w-4 animate-spin" />
+              <SpinnerIcon className="mr-1 h-4 w-4 animate-spin" />
               Sending...
             </>
           ) : (
             <>
-              <Timer className="mr-1 h-4 w-4" />
+              <TimerIcon className="mr-1 h-4 w-4" />
               Didn't receive the code? Resend
             </>
           )}
@@ -159,7 +158,7 @@ export function VerifyOTPForm({ email, onBack, onSuccess }: VerifyOTPFormProps) 
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
             disabled={loading}
           >
-            <ArrowLeft className="mr-1 h-4 w-4" />
+            <ArrowLeftIcon className="mr-1 h-4 w-4" />
             Back to sign in
           </button>
         </div>

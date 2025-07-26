@@ -1,34 +1,45 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { 
-  BookOpen, TrendingUp, Vote, BarChart3, Shield, 
-  CreditCard, Users, Settings, ChevronRight, ExternalLink 
-} from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  BookOpenIcon,
+  TrendUpIcon,
+  ChartBarIcon,
+  ShieldIcon,
+  CreditCardIcon,
+  UsersIcon,
+  GearIcon,
+  LinkIcon,
+} from "@phosphor-icons/react";
+import { Vote, ChevronRightIcon } from "lucide-react";
 
 export function UserGuide() {
-  const [selectedGuide, setSelectedGuide] = useState('getting-started');
+  const [selectedGuide, setSelectedGuide] = useState("getting-started");
 
   const guides = {
-    'getting-started': {
-      title: 'Getting Started',
-      icon: BookOpen,
+    "getting-started": {
+      title: "Getting Started",
+      icon: BookOpenIcon,
       sections: [
         {
-          title: 'Welcome to PropertyToken',
+          title: "Welcome to PropertyToken",
           content: `PropertyToken is a revolutionary platform that enables property tokenization on the Hedera blockchain. Here's how to get started:
 
 1. **Complete Your Profile**: Ensure your profile is complete with accurate information
 2. **Verify Your Identity**: Upload required KYC documents for verification
 3. **Connect Your Wallet**: Link your HashPack wallet for transactions
 4. **Explore Properties**: Browse available tokenized properties
-5. **Start Investing**: Purchase property tokens to begin building your portfolio`
+5. **Start Investing**: Purchase property tokens to begin building your portfolio`,
         },
         {
-          title: 'Account Verification',
+          title: "Account Verification",
           content: `To ensure security and compliance, all users must complete identity verification:
 
 **Required Documents:**
@@ -40,10 +51,10 @@ export function UserGuide() {
 1. Upload clear photos of your documents
 2. Wait for verifier review (typically 24-48 hours)
 3. Receive notification of approval status
-4. Gain access to all platform features`
+4. Gain access to all platform features`,
         },
         {
-          title: 'Understanding Property Tokens',
+          title: "Understanding Property Tokens",
           content: `Property tokens represent fractional ownership in real estate assets:
 
 **Token Benefits:**
@@ -56,16 +67,16 @@ export function UserGuide() {
 **Token Types:**
 - **Utility Tokens**: Access to platform features
 - **Security Tokens**: Represent actual property ownership
-- **Governance Tokens**: Voting rights in property decisions`
-        }
-      ]
+- **Governance Tokens**: Voting rights in property decisions`,
+        },
+      ],
     },
-    'trading': {
-      title: 'Trading Guide',
-      icon: TrendingUp,
+    trading: {
+      title: "Trading Guide",
+      icon: TrendUpIcon,
       sections: [
         {
-          title: 'How to Buy Property Tokens',
+          title: "How to Buy Property Tokens",
           content: `Follow these steps to purchase property tokens:
 
 **Before You Start:**
@@ -79,10 +90,10 @@ export function UserGuide() {
 3. Choose the number of tokens to purchase
 4. Review transaction details and fees
 5. Confirm the transaction in your wallet
-6. Receive confirmation and token transfer`
+6. Receive confirmation and token transfer`,
         },
         {
-          title: 'Trading on Secondary Markets',
+          title: "Trading on Secondary Markets",
           content: `Trade your tokens with other investors:
 
 **Market Orders:**
@@ -99,10 +110,10 @@ export function UserGuide() {
 - Monitor market depth before placing large orders
 - Consider transaction fees in your calculations
 - Use limit orders for better price control
-- Review property performance before trading`
+- Review property performance before trading`,
         },
         {
-          title: 'Portfolio Management',
+          title: "Portfolio Management",
           content: `Effectively manage your token portfolio:
 
 **Portfolio Tracking:**
@@ -121,16 +132,16 @@ export function UserGuide() {
 - Total portfolio value
 - Return on investment (ROI)
 - Income yield from rentals
-- Token price appreciation`
-        }
-      ]
+- Token price appreciation`,
+        },
+      ],
     },
-    'governance': {
-      title: 'Governance',
+    governance: {
+      title: "Governance",
       icon: Vote,
       sections: [
         {
-          title: 'Voting Rights and Responsibilities',
+          title: "Voting Rights and Responsibilities",
           content: `As a token holder, you have voting rights on important property decisions:
 
 **Voting Power:**
@@ -150,10 +161,10 @@ export function UserGuide() {
 2. Review proposal details and documentation
 3. Cast your vote within the specified timeframe
 4. View real-time voting results
-5. Receive notification of final outcomes`
+5. Receive notification of final outcomes`,
         },
         {
-          title: 'Creating Proposals',
+          title: "Creating Proposals",
           content: `Token holders can create proposals for property decisions:
 
 **Proposal Requirements:**
@@ -174,16 +185,16 @@ export function UserGuide() {
 2. Submit for initial review
 3. Address any feedback from moderators
 4. Proposal goes live for voting
-5. Monitor voting progress and engage with community`
-        }
-      ]
+5. Monitor voting progress and engage with community`,
+        },
+      ],
     },
-    'analytics': {
-      title: 'Analytics & Reporting',
-      icon: BarChart3,
+    analytics: {
+      title: "Analytics & Reporting",
+      icon: ChartBarIcon,
       sections: [
         {
-          title: 'Understanding Your Dashboard',
+          title: "Understanding Your Dashboard",
           content: `Your analytics dashboard provides comprehensive insights:
 
 **Portfolio Overview:**
@@ -202,10 +213,10 @@ export function UserGuide() {
 - Property market trends
 - Token price movements
 - Trading volume analysis
-- Market sentiment indicators`
+- Market sentiment indicators`,
         },
         {
-          title: 'Financial Reports',
+          title: "Financial Reports",
           content: `Access detailed financial reporting:
 
 **Income Statements:**
@@ -224,16 +235,16 @@ export function UserGuide() {
 - Download reports in PDF format
 - Export data to CSV for analysis
 - Schedule automatic report delivery
-- Integration with tax software`
-        }
-      ]
+- Integration with tax software`,
+        },
+      ],
     },
-    'security': {
-      title: 'Security Best Practices',
-      icon: Shield,
+    security: {
+      title: "Security Best Practices",
+      icon: ShieldIcon,
       sections: [
         {
-          title: 'Account Security',
+          title: "Account Security",
           content: `Protect your account with these security measures:
 
 **Strong Authentication:**
@@ -252,10 +263,10 @@ export function UserGuide() {
 - Log out when using shared computers
 - Monitor account activity regularly
 - Report suspicious activity immediately
-- Keep your browser and devices updated`
+- Keep your browser and devices updated`,
         },
         {
-          title: 'Transaction Safety',
+          title: "Transaction Safety",
           content: `Follow these guidelines for safe transactions:
 
 **Before Transacting:**
@@ -274,17 +285,21 @@ export function UserGuide() {
 - Monitor transaction status
 - Verify token receipt in your portfolio
 - Keep records for tax purposes
-- Report any issues immediately`
-        }
-      ]
-    }
+- Report any issues immediately`,
+        },
+      ],
+    },
   };
 
-  const GuideSection = ({ section }: { section: { title: string; content: string } }) => (
+  const GuideSection = ({
+    section,
+  }: {
+    section: { title: string; content: string };
+  }) => (
     <div className="space-y-4">
       <h4 className="text-lg font-semibold text-foreground">{section.title}</h4>
       <div className="prose prose-sm max-w-none text-muted-foreground">
-        {section.content.split('\n\n').map((paragraph, index) => (
+        {section.content.split("\n\n").map((paragraph, index) => (
           <p key={index} className="mb-4 leading-relaxed">
             {paragraph}
           </p>
@@ -320,7 +335,7 @@ export function UserGuide() {
                 >
                   <IconComponent className="h-4 w-4 mr-2" />
                   {guide.title}
-                  <ChevronRight className="h-4 w-4 ml-auto" />
+                  <ChevronRightIcon className="h-4 w-4 ml-auto" />
                 </Button>
               );
             })}
@@ -332,23 +347,31 @@ export function UserGuide() {
           <CardHeader>
             <div className="flex items-center space-x-2">
               {(() => {
-                const IconComponent = guides[selectedGuide as keyof typeof guides].icon;
+                const IconComponent =
+                  guides[selectedGuide as keyof typeof guides].icon;
                 return <IconComponent className="h-6 w-6 text-primary" />;
               })()}
-              <CardTitle>{guides[selectedGuide as keyof typeof guides].title}</CardTitle>
+              <CardTitle>
+                {guides[selectedGuide as keyof typeof guides].title}
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[600px] pr-4">
               <div className="space-y-8">
-                {guides[selectedGuide as keyof typeof guides].sections.map((section, index) => (
-                  <div key={index}>
-                    <GuideSection section={section} />
-                    {index < guides[selectedGuide as keyof typeof guides].sections.length - 1 && (
-                      <div className="border-t border-border my-6"></div>
-                    )}
-                  </div>
-                ))}
+                {guides[selectedGuide as keyof typeof guides].sections.map(
+                  (section, index) => (
+                    <div key={index}>
+                      <GuideSection section={section} />
+                      {index <
+                        guides[selectedGuide as keyof typeof guides].sections
+                          .length -
+                          1 && (
+                        <div className="border-t border-border my-6"></div>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
             </ScrollArea>
           </CardContent>
@@ -367,30 +390,36 @@ export function UserGuide() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button variant="outline" className="h-auto p-4">
               <div className="text-center space-y-2">
-                <CreditCard className="h-6 w-6 mx-auto text-primary" />
+                <CreditCardIcon className="h-6 w-6 mx-auto text-primary" />
                 <div>
                   <div className="font-medium">Start Trading</div>
-                  <div className="text-sm text-muted-foreground">Browse and buy tokens</div>
+                  <div className="text-sm text-muted-foreground">
+                    Browse and buy tokens
+                  </div>
                 </div>
               </div>
             </Button>
-            
+
             <Button variant="outline" className="h-auto p-4">
               <div className="text-center space-y-2">
-                <Users className="h-6 w-6 mx-auto text-primary" />
+                <UsersIcon className="h-6 w-6 mx-auto text-primary" />
                 <div>
                   <div className="font-medium">Join Community</div>
-                  <div className="text-sm text-muted-foreground">Connect with other investors</div>
+                  <div className="text-sm text-muted-foreground">
+                    Connect with other investors
+                  </div>
                 </div>
               </div>
             </Button>
-            
+
             <Button variant="outline" className="h-auto p-4">
               <div className="text-center space-y-2">
-                <Settings className="h-6 w-6 mx-auto text-primary" />
+                <GearIcon className="h-6 w-6 mx-auto text-primary" />
                 <div>
                   <div className="font-medium">Account Settings</div>
-                  <div className="text-sm text-muted-foreground">Manage your profile</div>
+                  <div className="text-sm text-muted-foreground">
+                    Manage your profile
+                  </div>
                 </div>
               </div>
             </Button>
@@ -404,16 +433,17 @@ export function UserGuide() {
           <div className="text-center space-y-4">
             <h3 className="text-lg font-semibold">Need Additional Help?</h3>
             <p className="text-muted-foreground">
-              Can't find what you're looking for? Our support team is here to help.
+              Can't find what you're looking for? Our support team is here to
+              help.
             </p>
             <div className="flex justify-center space-x-4">
               <Button>
                 Contact Support
-                <ExternalLink className="h-4 w-4 ml-2" />
+                <LinkIcon className="h-4 w-4 ml-2" />
               </Button>
               <Button variant="outline">
                 FAQ
-                <ExternalLink className="h-4 w-4 ml-2" />
+                <LinkIcon className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>

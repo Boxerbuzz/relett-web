@@ -7,41 +7,41 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { StatsCard } from './StatsCard';
 import { 
-  FileText, 
-  Shield, 
-  DollarSign, 
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Star
-} from 'lucide-react';
+  FileTextIcon, 
+  ShieldIcon, 
+  CurrencyDollarIcon, 
+  TrendUpIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  StarIcon
+} from '@phosphor-icons/react';
 
 export function VerifierDashboard() {
   const stats = [
     {
       title: 'Pending Reviews',
       value: '8',
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileTextIcon className="h-4 w-4" />,
       description: 'Awaiting verification'
     },
     {
       title: 'Completed Reviews',
       value: '24',
-      icon: <Shield className="h-4 w-4" />,
+      icon: <ShieldIcon className="h-4 w-4" />,
       description: 'This month',
       trend: { value: 15, isPositive: true }
     },
     {
       title: 'Average Review Time',
       value: '2.3 days',
-      icon: <TrendingUp className="h-4 w-4" />,
+      icon: <TrendUpIcon className="h-4 w-4" />,
       description: 'Industry leading'
     },
     {
       title: 'Monthly Earnings',
       value: '$4,200',
-      icon: <DollarSign className="h-4 w-4" />,
+      icon: <CurrencyDollarIcon className="h-4 w-4" />,
       description: 'From verification fees',
       trend: { value: 8, isPositive: true }
     }
@@ -120,7 +120,7 @@ export function VerifierDashboard() {
               </div>
             </div>
             <Button size="sm">
-              <Clock className="h-4 w-4 mr-1" />
+              <ClockIcon className="h-4 w-4 mr-1" />
               Start Review
             </Button>
           </div>
@@ -186,9 +186,9 @@ export function VerifierDashboard() {
                   </div>
                   <div className="flex items-center gap-2">
                     {item.status === 'approved' ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircleIcon className="h-4 w-4 text-green-600" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-600" />
+                      <XCircleIcon className="h-4 w-4 text-red-600" />
                     )}
                     <span className="text-sm font-medium">{item.fee}</span>
                   </div>
@@ -210,7 +210,7 @@ export function VerifierDashboard() {
             <div className="flex items-center gap-3">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  <StarIcon key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
               <span className="font-bold text-lg">4.9</span>

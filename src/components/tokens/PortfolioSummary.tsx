@@ -2,8 +2,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, MessageSquare, Coins } from 'lucide-react';
-import { TrendUpIcon } from '@phosphor-icons/react';
+import { CurrencyDollarIcon, ChatTextIcon, CoinsIcon, TrendUpIcon } from '@phosphor-icons/react';
 
 interface PortfolioSummaryProps {
   totalPortfolioValue: number;
@@ -29,7 +28,7 @@ export function PortfolioSummary({
                 ${totalPortfolioValue.toLocaleString()}
               </p>
             </div>
-            <DollarSign size={20} className="text-green-600" />
+            <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
           </div>
         </CardContent>
       </Card>
@@ -55,7 +54,7 @@ export function PortfolioSummary({
               <p className="text-sm text-gray-600">Properties</p>
               <p className="text-xl lg:text-2xl font-bold text-blue-600">{propertyCount}</p>
             </div>
-            <Coins size={20} className="text-blue-600" />
+            <CoinsIcon className="h-6 w-6 text-blue-600" />
           </div>
         </CardContent>
       </Card>
@@ -67,7 +66,7 @@ export function PortfolioSummary({
               <p className="text-sm text-gray-600">Active Chats</p>
               <p className="text-xl lg:text-2xl font-bold text-purple-600">{activeChatCount}</p>
             </div>
-            <MessageSquare size={20} className="text-purple-600" />
+            <ChatTextIcon className="h-6 w-6 text-purple-600" />
           </div>
         </CardContent>
       </Card>

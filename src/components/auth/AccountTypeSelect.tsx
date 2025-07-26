@@ -2,7 +2,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { Check, User, ShieldCheck } from 'phosphor-react';
+import { UserIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 
 interface AccountTypeSelectProps {
   value: 'landowner' | 'verifier' | 'agent';
@@ -16,19 +16,19 @@ export function AccountTypeSelect({ value, onChange, disabled = false }: Account
       value: 'landowner' as const,
       title: 'Landowner',
       description: 'Manage and tokenize properties',
-      icon: User,
+      icon: UserIcon,
     },
     {
       value: 'verifier' as const,
       title: 'Verifier',
       description: 'Verify land records',
-      icon: ShieldCheck,
+      icon: ShieldCheckIcon,
     },
     {
       value: 'agent' as const,
       title: 'Agent',
       description: 'Verify land records',
-      icon: ShieldCheck,
+      icon: ShieldCheckIcon,
     },
   ];
 
