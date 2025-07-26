@@ -24,7 +24,7 @@ import {
   CoinsIcon,
   EyeIcon,
   CalendarIcon,
-  DollarSignIcon,
+  CurrencyDollarIcon,
 } from "@phosphor-icons/react";
 
 interface PendingToken {
@@ -206,7 +206,7 @@ export function TokenApprovalManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <DollarSignIcon className="w-4 h-4" />
+                        <CurrencyDollarIcon className="w-4 h-4" />
                         <span className="font-medium">
                           {token.total_value_usd.toLocaleString()}
                         </span>

@@ -9,11 +9,11 @@ import { TokenApprovalManagement } from "@/components/admin/TokenApprovalManagem
 import { supabase } from "@/integrations/supabase/client";
 import {
   UsersIcon,
-  HomeIcon,
+  HouseIcon,
   CoinsIcon,
-  TrendingUpIcon,
-  DollarSignIcon,
-  AlertTriangleIcon,
+  TrendUpIcon,
+  CurrencyDollarIcon,
+  WarningIcon,
 } from "@phosphor-icons/react";
 
 interface DashboardStats {
@@ -42,7 +42,7 @@ export function AdminDashboard() {
     try {
       // Get total users count
       const { count: usersCount } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('*', { count: 'exact', head: true });
 
       // Get total properties count
@@ -50,8 +50,11 @@ export function AdminDashboard() {
         .from('properties')
         .select('*', { count: 'exact', head: true });
 
-      // Get pending token approvals
-      const { data: pendingTokens } = await supabase.rpc('get_pending_token_approvals');
+      // Get pending token approvals by querying tokenized_properties directly
+      const { data: pendingTokens } = await supabase
+        .from('tokenized_properties')
+        .select('id')
+        .in('status', ['draft', 'pending_approval']);
       
       // Get total token value
       const { data: tokenValues } = await supabase
@@ -116,7 +119,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Properties</CardTitle>
-            <HomeIcon className="h-4 w-4 text-muted-foreground" />
+            <HouseIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -150,7 +153,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Token Value</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -166,7 +169,7 @@ export function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Verifications</CardTitle>
             <div className="flex items-center gap-2">
-              <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
+              <WarningIcon className="h-4 w-4 text-muted-foreground" />
               {stats.pendingVerifications > 0 && (
                 <Badge variant="secondary" className="text-xs">
                   {stats.pendingVerifications}
@@ -202,7 +205,7 @@ export function AdminDashboard() {
             User Management
           </TabsTrigger>
           <TabsTrigger value="properties" className="flex items-center gap-2">
-            <HomeIcon className="w-4 h-4" />
+            <HouseIcon className="w-4 h-4" />
             Property Management
           </TabsTrigger>
         </TabsList>

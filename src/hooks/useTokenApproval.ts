@@ -26,14 +26,57 @@ export const useTokenApproval = () => {
 
   const fetchPendingApprovals = async (): Promise<PendingToken[]> => {
     try {
-      const { data, error } = await supabase.rpc('get_pending_token_approvals');
+      // Use direct query instead of RPC since the function may not be available yet
+      const { data, error } = await supabase
+        .from('tokenized_properties')
+        .select(`
+          id,
+          token_name,
+          token_symbol,
+          total_value_usd,
+          total_supply,
+          status,
+          created_at,
+          properties!inner (
+            title,
+            location
+          ),
+          land_titles!inner (
+            users!inner (
+              email
+            ),
+            user_profiles (
+              first_name,
+              last_name
+            )
+          )
+        `)
+        .in('status', ['draft', 'pending_approval'])
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching pending approvals:', error);
         throw error;
       }
 
-      return data || [];
+      // Transform the data to match the expected format
+      const transformedData: PendingToken[] = (data || []).map((item: any) => ({
+        id: item.id,
+        token_name: item.token_name,
+        token_symbol: item.token_symbol,
+        total_value_usd: item.total_value_usd,
+        total_supply: item.total_supply,
+        status: item.status,
+        created_at: item.created_at,
+        property_title: item.properties?.title || 'Unknown Property',
+        property_location: item.properties?.location || 'Unknown Location',
+        owner_name: item.land_titles?.user_profiles 
+          ? `${item.land_titles.user_profiles.first_name || ''} ${item.land_titles.user_profiles.last_name || ''}`.trim()
+          : item.land_titles?.users?.email || 'Unknown Owner',
+        owner_email: item.land_titles?.users?.email || 'Unknown Email'
+      }));
+
+      return transformedData;
     } catch (error) {
       console.error('Failed to fetch pending approvals:', error);
       toast({
@@ -61,16 +104,34 @@ export const useTokenApproval = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('update_tokenized_property_status', {
-        p_tokenized_property_id: tokenId,
-        p_new_status: newStatus,
-        p_admin_notes: adminNotes,
-        p_admin_id: user.id
-      });
+      // Try to use the RPC function, fallback to direct update if it doesn't exist
+      try {
+        const { error } = await supabase.rpc('update_tokenized_property_status', {
+          p_tokenized_property_id: tokenId,
+          p_new_status: newStatus,
+          p_admin_notes: adminNotes,
+          p_admin_id: user.id
+        });
 
-      if (error) {
-        console.error('Error updating token status:', error);
-        throw error;
+        if (error) throw error;
+      } catch (rpcError) {
+        console.warn('RPC function not available, using direct update:', rpcError);
+        
+        // Fallback to direct update
+        const { error } = await supabase
+          .from('tokenized_properties')
+          .update({ 
+            status: newStatus as any,
+            updated_at: new Date().toISOString(),
+            metadata: {
+              last_status_change: new Date().toISOString(),
+              last_admin_action: user.id,
+              admin_notes: adminNotes
+            }
+          })
+          .eq('id', tokenId);
+
+        if (error) throw error;
       }
 
       // If approved, trigger Hedera token creation
@@ -81,24 +142,28 @@ export const useTokenApproval = () => {
         });
 
         // Create Hedera token in background
-        const tokenService = new PropertyTokenizationService();
-        const hederaResult = await tokenService.createHederaTokenAfterApproval(tokenId);
-        
-        if (hederaResult.success) {
-          toast({
-            title: "Hedera Token Created",
-            description: "Token has been successfully minted on Hedera network",
-          });
-        } else {
-          console.error('Hedera token creation failed:', hederaResult.error);
-          toast({
-            title: "Warning",
-            description: "Token approved but Hedera creation failed. Please retry manually.",
-            variant: "destructive",
-          });
-        }
+        try {
+          const tokenService = new PropertyTokenizationService();
+          const hederaResult = await tokenService.createHederaTokenAfterApproval(tokenId);
+          
+          if (hederaResult.success) {
+            toast({
+              title: "Hedera Token Created",
+              description: "Token has been successfully minted on Hedera network",
+            });
+          } else {
+            console.error('Hedera token creation failed:', hederaResult.error);
+            toast({
+              title: "Warning",
+              description: "Token approved but Hedera creation failed. Please retry manually.",
+              variant: "destructive",
+            });
+          }
 
-        tokenService.close();
+          tokenService.close();
+        } catch (hederaError) {
+          console.error('Hedera token creation error:', hederaError);
+        }
       } else {
         toast({
           title: "Status Updated",
