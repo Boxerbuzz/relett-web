@@ -3159,6 +3159,7 @@ export type Database = {
           document_name: string
           document_type: Database["public"]["Enums"]["document_type"]
           expires_at: string | null
+          file_path: string | null
           file_size: number
           file_url: string
           id: string
@@ -3178,6 +3179,7 @@ export type Database = {
           document_name: string
           document_type: Database["public"]["Enums"]["document_type"]
           expires_at?: string | null
+          file_path?: string | null
           file_size: number
           file_url: string
           id?: string
@@ -3197,6 +3199,7 @@ export type Database = {
           document_name?: string
           document_type?: Database["public"]["Enums"]["document_type"]
           expires_at?: string | null
+          file_path?: string | null
           file_size?: number
           file_url?: string
           id?: string
