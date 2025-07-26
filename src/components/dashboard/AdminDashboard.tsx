@@ -3,8 +3,18 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
+import { AdminPropertyManagement } from "@/components/admin/AdminPropertyManagement";
 import { TokenApprovalManagement } from "@/components/admin/TokenApprovalManagement";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  UsersIcon,
+  HomeIcon,
+  CoinsIcon,
+  TrendingUpIcon,
+  DollarSignIcon,
+  AlertTriangleIcon,
+} from "@phosphor-icons/react";
 
 interface DashboardStats {
   totalUsers: number;
@@ -32,7 +42,7 @@ export function AdminDashboard() {
     try {
       // Get total users count
       const { count: usersCount } = await supabase
-        .from('users')
+        .from('user_profiles')
         .select('*', { count: 'exact', head: true });
 
       // Get total properties count
@@ -40,11 +50,8 @@ export function AdminDashboard() {
         .from('properties')
         .select('*', { count: 'exact', head: true });
 
-      // Get pending token approvals by querying tokenized_properties directly
-      const { data: pendingTokens } = await supabase
-        .from('tokenized_properties')
-        .select('id')
-        .in('status', ['draft', 'pending_approval']);
+      // Get pending token approvals
+      const { data: pendingTokens } = await supabase.rpc('get_pending_token_approvals');
       
       // Get total token value
       const { data: tokenValues } = await supabase
@@ -97,6 +104,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <UsersIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -108,6 +116,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Properties</CardTitle>
+            <HomeIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -120,6 +129,7 @@ export function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Tokens</CardTitle>
             <div className="flex items-center gap-2">
+              <CoinsIcon className="h-4 w-4 text-muted-foreground" />
               {stats.pendingTokenApprovals > 0 && (
                 <Badge variant="destructive" className="text-xs">
                   {stats.pendingTokenApprovals}
@@ -140,6 +150,7 @@ export function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Token Value</CardTitle>
+            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -155,6 +166,7 @@ export function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Verifications</CardTitle>
             <div className="flex items-center gap-2">
+              <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
               {stats.pendingVerifications > 0 && (
                 <Badge variant="secondary" className="text-xs">
                   {stats.pendingVerifications}
@@ -173,25 +185,40 @@ export function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Token Management Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      {/* Management Tabs */}
+      <Tabs defaultValue="tokens" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="tokens" className="flex items-center gap-2">
+            <CoinsIcon className="w-4 h-4" />
             Token Management
             {stats.pendingTokenApprovals > 0 && (
               <Badge variant="destructive" className="ml-2 text-xs">
                 {stats.pendingTokenApprovals}
               </Badge>
             )}
-          </CardTitle>
-          <CardDescription>
-            Review and approve tokenization requests
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <UsersIcon className="w-4 h-4" />
+            User Management
+          </TabsTrigger>
+          <TabsTrigger value="properties" className="flex items-center gap-2">
+            <HomeIcon className="w-4 h-4" />
+            Property Management
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tokens" className="space-y-4">
           <TokenApprovalManagement />
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <AdminUserManagement />
+        </TabsContent>
+
+        <TabsContent value="properties" className="space-y-4">
+          <AdminPropertyManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
