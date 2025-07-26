@@ -13,8 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Wallet, Shield, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { WarningCircleIcon, WalletIcon, ShieldIcon, CheckCircleIcon } from '@phosphor-icons/react';
 import { useHederaWallet } from '@/hooks/useHederaWallet';
 
 interface WalletConnectDialogProps {
@@ -59,7 +59,7 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
       <ResponsiveDialogContent size="md">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle className="flex items-center gap-2">
-            <Wallet className="w-5 h-5" />
+            <WalletIcon className="w-5 h-5" />
             Connect Hedera Wallet
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
@@ -70,7 +70,7 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
             <Card className="border-blue-200 bg-blue-50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-600" />
+                  <ShieldIcon className="w-4 h-4 text-blue-600" />
                   Security Notice
                 </CardTitle>
               </CardHeader>
@@ -109,7 +109,7 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
             </div>
 
             <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <WarningCircleIcon className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-amber-700">
                 <p className="font-medium">Important:</p>
                 <p>Make sure you're using a testnet account for demo purposes. Never share your mainnet private keys.</p>
@@ -133,7 +133,7 @@ export function WalletConnectDialog({ isOpen, onClose }: WalletConnectDialogProp
 
         {step === 'success' && (
           <div className="space-y-6 text-center">
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto" />
+            <CheckCircleIcon className="w-12 h-12 text-green-600 mx-auto" />
             <div>
               <h3 className="font-medium text-green-700">Wallet Connected!</h3>
               <p className="text-sm text-gray-600 mt-1">

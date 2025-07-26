@@ -76,6 +76,23 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const waitForHashpack = async () => {
+      for (let i = 0; i < 10; i++) {
+        if (window.hashpack) {
+          console.log("✅ HashPack injected:", window.hashpack);
+          setIsAvailable(true);
+          return;
+        }
+        console.log("⏳ Waiting for HashPack...");
+        await new Promise((res) => setTimeout(res, 300));
+      }
+      console.warn("❌ HashPack not found after retrying");
+    };
+  
+    waitForHashpack();
+  }, []);
+
   const connectWallet = async (): Promise<void> => {
     if (!window.hashpack) {
       throw new Error('HashPack extension not found. Please install HashPack from the Chrome Web Store.');

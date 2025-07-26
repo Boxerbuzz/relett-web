@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronsUpDown, Copy, Plus, Wallet as WalletIcon } from 'lucide-react';
+import { CheckIcon, CaretUpDownIcon, CopyIcon, PlusIcon, WalletIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -83,7 +83,7 @@ export function WalletCombobox({
               {placeholder}
             </div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <CaretUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
@@ -110,7 +110,7 @@ export function WalletCombobox({
                           className="h-6 w-6 p-0"
                           onClick={(e) => copyToClipboard(connectedWallet.address, e)}
                         >
-                          <Copy size={12} />
+                          <CopyIcon size={12} />
                         </Button>
                       </div>
                       <span className="text-xs text-gray-500">{connectedWallet.name}</span>
@@ -119,7 +119,7 @@ export function WalletCombobox({
                       )}
                     </div>
                     <Badge className="bg-green-100 text-green-800">Connected</Badge>
-                    <Check
+                    <CheckIcon
                       className={cn(
                         "ml-auto h-4 w-4",
                         value === connectedWallet.address ? "opacity-100" : "opacity-0"
@@ -149,7 +149,7 @@ export function WalletCombobox({
                           className="h-6 w-6 p-0"
                           onClick={(e) => copyToClipboard(wallet.address, e)}
                         >
-                          <Copy size={12} />
+                          <CopyIcon size={12} />
                         </Button>
                       </div>
                       <span className="text-xs text-gray-500">{wallet.name}</span>
@@ -157,7 +157,7 @@ export function WalletCombobox({
                         <span className="text-xs text-blue-600">{wallet.balance}</span>
                       )}
                     </div>
-                    <Check
+                    <CheckIcon
                       className={cn(
                         "ml-auto h-4 w-4",
                         value === wallet.address ? "opacity-100" : "opacity-0"
@@ -170,7 +170,7 @@ export function WalletCombobox({
 
             <CommandGroup>
               <CommandItem className="cursor-pointer">
-                <Plus className="mr-2 h-4 w-4" />
+                <PlusIcon className="mr-2 h-4 w-4" />
                 <span>Add new wallet</span>
               </CommandItem>
             </CommandGroup>

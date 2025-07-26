@@ -211,6 +211,9 @@ export function TokenizePropertyDialog({
                       (parseFloat(formData.pricePerToken) || 1)
                   )} tokens</p>
                 </div>
+
+
+                <DualCurrencyDisplay />
               </CardContent>
             </Card>
           </div>
