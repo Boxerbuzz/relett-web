@@ -45,6 +45,7 @@ interface HashPackProviderProps {
 }
 
 export function HashPackProvider({ children }: HashPackProviderProps) {
+  console.log('HashPackProvider rendered');
   const [wallet, setWallet] = useState<HashPackWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
@@ -53,6 +54,7 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   // Initialize DAppConnector
   useEffect(() => {
     const initConnector = async () => {
+      console.log('Initializing DAppConnector...');
       try {
         const projectId = "demo"; // Replace with your WalletConnect project ID
         
