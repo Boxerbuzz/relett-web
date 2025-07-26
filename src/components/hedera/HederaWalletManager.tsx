@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { SecureEncryption } from '@/lib/security/encryption';
 import { 
   Wallet, 
   Key, 
@@ -65,19 +66,26 @@ export function HederaWalletManager({ userId, onWalletConfigured }: HederaWallet
     setIsConfiguring(true);
 
     try {
+      // Generate a secure encryption password
+      const encryptionPassword = SecureEncryption.generateSecurePassword();
+      
+      // Encrypt the private key before storing
+      const encryptedPrivateKey = await SecureEncryption.encryptPrivateKey(privateKey, encryptionPassword);
+      
       // Store wallet configuration securely
       const { error } = await supabase
         .from('wallets')
         .upsert({
           user_id: userId,
           address: accountId,
-          encrypted_private_key: privateKey, // In production, this should be encrypted
+          encrypted_private_key: encryptedPrivateKey,
           wallet_type: 'hedera',
           is_primary: true,
           is_verified: false,
           metadata: {
             network: 'testnet',
-            configured_at: new Date().toISOString()
+            configured_at: new Date().toISOString(),
+            encryption_hint: encryptionPassword.substring(0, 4) + '****' // Store hint for recovery
           }
         });
 
