@@ -19,6 +19,8 @@ interface UploadedDocument {
   url: string;
   path: string;
   size: number;
+  hash?: string;
+  mime_type?: string;
 }
 
 const DOCUMENT_TYPES = [

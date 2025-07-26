@@ -19,14 +19,57 @@ import { systemLogger } from "../shared/system-logger.ts";
 
 interface PropertyRegistrationRequest {
   propertyId: string;
-  landTitleId: string;
-  tokenName: string;
-  tokenSymbol: string;
-  totalSupply: number;
-  totalValue: number;
-  minimumInvestment: number;
-  expectedROI: number;
-  lockupPeriod: number;
+  title: string;
+  description: string;
+  type: string;
+  subType: string;
+  category: string;
+  condition: string;
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    coordinates?: { lat: number; lng: number };
+    landmark?: string;
+    postal_code?: string;
+  };
+  specification: {
+    bedrooms?: number;
+    bathrooms?: number;
+    toilets?: number;
+    parking?: number;
+    garages?: number;
+    floors?: number;
+    units?: number;
+    area?: number;
+    area_unit?: string;
+    year_built?: number;
+    is_furnished?: boolean;
+  };
+  price: {
+    amount: number;
+    currency: string;
+    term: string;
+    deposit?: number;
+    service_charge?: number;
+    is_negotiable: boolean;
+  };
+  features: string[];
+  amenities: string[];
+  tags: string[];
+  documentHashes?: {
+    documentId: string;
+    documentType: string;
+    documentName: string;
+    hash: string;
+  }[];
+  legalInfo: {
+    landTitleId?: string;
+    ownershipType?: string;
+    encumbrances?: string[];
+  };
+  registeredBy: string;
 }
 
 const corsHeaders = {
@@ -74,19 +117,46 @@ serve(async (req) => {
     client.setOperator(operatorId, operatorKey);
 
     try {
-      // Create property document on Hedera File Service
+      // Create comprehensive property document on Hedera File Service
       const propertyDocument = JSON.stringify({
+        // Property Identity
         propertyId: propertyData.propertyId,
-        landTitleId: propertyData.landTitleId,
-        tokenName: propertyData.tokenName,
-        tokenSymbol: propertyData.tokenSymbol,
-        totalSupply: propertyData.totalSupply,
-        totalValue: propertyData.totalValue,
-        minimumInvestment: propertyData.minimumInvestment,
-        expectedROI: propertyData.expectedROI,
-        lockupPeriod: propertyData.lockupPeriod,
+        title: propertyData.title,
+        description: propertyData.description,
+        
+        // Property Classification
+        type: propertyData.type,
+        subType: propertyData.subType,
+        category: propertyData.category,
+        condition: propertyData.condition,
+        
+        // Location Details
+        location: propertyData.location,
+        
+        // Physical Specifications
+        specification: propertyData.specification,
+        
+        // Financial Information
+        price: propertyData.price,
+        
+        // Property Features
+        features: propertyData.features,
+        amenities: propertyData.amenities,
+        tags: propertyData.tags,
+        
+        // Document Integrity
+        documentHashes: propertyData.documentHashes || [],
+        documentCount: propertyData.documentHashes?.length || 0,
+        
+        // Legal Information
+        legalInfo: propertyData.legalInfo,
+        
+        // Registration Metadata
         registrationTimestamp: new Date().toISOString(),
-        registeredBy: operatorId.toString(),
+        registeredBy: propertyData.registeredBy,
+        operatorId: operatorId.toString(),
+        version: "1.0",
+        schemaType: "property-registration"
       });
 
       // Create file transaction

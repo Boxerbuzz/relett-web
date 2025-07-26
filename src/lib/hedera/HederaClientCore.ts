@@ -8,21 +8,20 @@ export class HederaClientCore {
   constructor() {
     const hederaNetwork = import.meta.env.VITE_HEDERA_NETWORK;
     const hederaAccountId = import.meta.env.VITE_HEDERA_ACCOUNT_ID;
-    const hederaPrivateKey = import.meta.env.VITE_HEDERA_PRIVATE_KEY;
 
-    if (!hederaNetwork || !hederaAccountId || !hederaPrivateKey) {
-      throw new Error("Hedera credentials not found in environment variables. Please set VITE_HEDERA_NETWORK, VITE_HEDERA_ACCOUNT_ID, and VITE_HEDERA_PRIVATE_KEY.");
+    if (!hederaNetwork || !hederaAccountId) {
+      throw new Error("Hedera network configuration not found. Please set VITE_HEDERA_NETWORK and VITE_HEDERA_ACCOUNT_ID.");
     }
 
     try {
-      // Initialize with real credentials
+      // Initialize client without private key for read-only operations
       this.client = hederaNetwork === 'mainnet' ? Client.forMainnet() : Client.forTestnet();
       this.operatorId = AccountId.fromString(hederaAccountId);
-      this.operatorKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
-      this.client.setOperator(this.operatorId, this.operatorKey);
-      console.log(`Hedera client initialized for ${hederaNetwork} with account ${hederaAccountId}`);
+      
+      console.log(`Hedera client initialized for ${hederaNetwork} with account ${hederaAccountId} (read-only mode)`);
+      console.warn("SECURITY: Private key operations should only be performed server-side via edge functions");
     } catch (error) {
-      console.error("Failed to initialize Hedera client with provided credentials:", error);
+      console.error("Failed to initialize Hedera client:", error);
       throw error;
     }
   }

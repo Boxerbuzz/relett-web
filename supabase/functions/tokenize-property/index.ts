@@ -1,6 +1,6 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { systemLogger } from "../shared/system-logger"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,7 +71,7 @@ serve(async (req) => {
       throw new Error('Property is already tokenized')
     }
 
-    // Create tokenized property record
+    // Create tokenized property record with pending_approval status
     const { data: tokenizedProperty, error: tokenError } = await supabaseClient
       .from('tokenized_properties')
       .insert({
@@ -84,7 +84,7 @@ serve(async (req) => {
         total_value_usd,
         minimum_investment: minimum_investment || 1000,
         token_price: token_price || (total_value_usd / parseFloat(total_supply)),
-        status: 'pending_approval',
+        status: 'pending_approval', // Changed from 'pending_approval' to trigger approval workflow
         blockchain_network: 'hedera',
         investment_terms: investment_terms || 'fixed',
         expected_roi: expected_roi || 8.0,
@@ -93,7 +93,14 @@ serve(async (req) => {
         metadata: {
           created_by: user.id,
           land_title_number: landTitle.title_number,
-          location: landTitle.location_address
+          location: landTitle.location_address,
+          awaiting_approval: true,
+          submitted_for_review: new Date().toISOString()
+        },
+        legal_structure: {
+          ownership_type: 'fractional',
+          jurisdiction: 'Nigeria',
+          compliance_status: 'pending'
         }
       })
       .select()
@@ -101,69 +108,74 @@ serve(async (req) => {
 
     if (tokenError) throw tokenError
 
-    // Create initial token holding for the owner
-    const { error: holdingError } = await supabaseClient
-      .from('token_holdings')
-      .insert({
-        tokenized_property_id: tokenizedProperty.id,
-        holder_id: user.id,
-        tokens_owned: total_supply.toString(),
-        purchase_price_per_token: token_price || (total_value_usd / parseFloat(total_supply)),
-        total_investment: total_value_usd,
-        acquisition_date: new Date().toISOString()
-      })
-
-    if (holdingError) throw holdingError
-
-    // Update property to mark as tokenized
-    if (property_id) {
-      await supabaseClient
-        .from('properties')
-        .update({
-          is_tokenized: true,
-          tokenized_property_id: tokenizedProperty.id
-        })
-        .eq('id', property_id)
-    }
-
-    // Create audit trail
+    // Create audit trail for tokenization request
     await supabaseClient
       .from('audit_trails')
       .insert({
         user_id: user.id,
         resource_type: 'tokenized_property',
         resource_id: tokenizedProperty.id,
-        action: 'create',
+        action: 'create_pending_approval',
         new_values: {
           token_symbol,
           token_name,
           total_supply,
-          total_value_usd
+          total_value_usd,
+          status: 'pending_approval'
         }
       })
 
-    // Send notification to user
+    // Send notification to user about submission
     await supabaseClient.functions.invoke('process-notification', {
       body: {
         user_id: user.id,
         type: 'investment',
-        title: 'Property Tokenization Initiated',
-        message: `Your property "${token_name}" has been submitted for tokenization review.`,
+        title: 'Tokenization Request Submitted',
+        message: `Your tokenization request for "${token_name}" has been submitted for admin review.`,
         metadata: {
           tokenized_property_id: tokenizedProperty.id,
           token_symbol,
-          total_value_usd
+          total_value_usd,
+          status: 'pending_approval'
         },
         action_url: `/tokens/${tokenizedProperty.id}`,
-        action_label: 'View Token'
+        action_label: 'View Request'
       }
     })
+
+    // Notify admins about new tokenization request
+    const { data: admins } = await supabaseClient
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin')
+      .eq('is_active', true)
+
+    if (admins && admins.length > 0) {
+      for (const admin of admins) {
+        await supabaseClient.functions.invoke('process-notification', {
+          body: {
+            user_id: admin.user_id,
+            type: 'admin',
+            title: 'New Token Approval Request',
+            message: `A new tokenization request for "${token_name}" requires admin review.`,
+            metadata: {
+              tokenized_property_id: tokenizedProperty.id,
+              token_symbol,
+              total_value_usd,
+              owner_id: user.id
+            },
+            action_url: `/admin?tab=tokens`,
+            action_label: 'Review Request'
+          }
+        })
+      }
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
         tokenized_property: tokenizedProperty,
-        message: 'Property tokenization initiated successfully'
+        message: 'Tokenization request submitted successfully and is pending admin approval'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -172,7 +184,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    systemLogger('[TOKENIZE-PROPERTY]', error);
+    console.error('[TOKENIZE-PROPERTY]', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

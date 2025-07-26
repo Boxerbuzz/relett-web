@@ -1,16 +1,59 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export interface PropertyTokenData {
+export interface PropertyBlockchainData {
   propertyId: string;
-  landTitleId: string;
-  tokenName: string;
-  tokenSymbol: string;
-  totalSupply: number;
-  totalValue: number;
-  minimumInvestment: number;
-  expectedROI: number;
-  lockupPeriod: number;
+  title: string;
+  description: string;
+  type: string;
+  subType: string;
+  category: string;
+  condition: string;
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    coordinates?: { lat: number; lng: number };
+    landmark?: string;
+    postal_code?: string;
+  };
+  specification: {
+    bedrooms?: number;
+    bathrooms?: number;
+    toilets?: number;
+    parking?: number;
+    garages?: number;
+    floors?: number;
+    units?: number;
+    area?: number;
+    area_unit?: string;
+    year_built?: number;
+    is_furnished?: boolean;
+  };
+  price: {
+    amount: number;
+    currency: string;
+    term: string;
+    deposit?: number;
+    service_charge?: number;
+    is_negotiable: boolean;
+  };
+  features: string[];
+  amenities: string[];
+  tags: string[];
+  documentHashes: {
+    documentId: string;
+    documentType: string;
+    documentName: string;
+    hash: string;
+  }[];
+  legalInfo: {
+    landTitleId?: string;
+    ownershipType?: string;
+    encumbrances?: string[];
+  };
+  registeredBy: string;
 }
 
 export class PropertyContracts {
@@ -19,7 +62,7 @@ export class PropertyContracts {
   }
 
   // Register a new property in the registry
-  async registerProperty(propertyData: PropertyTokenData) {
+  async registerProperty(propertyData: PropertyBlockchainData) {
     const { data, error } = await supabase.functions.invoke('register-property-blockchain', {
       body: propertyData
     });

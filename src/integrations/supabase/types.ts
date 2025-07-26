@@ -122,6 +122,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "agent_interactions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
         ]
       }
       agent_performance_metrics: {
@@ -204,6 +211,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_property_valuations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -392,6 +406,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_listings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "auction_listings_tokenized_property_id_fkey"
@@ -1107,6 +1128,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "document_verification_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
             foreignKeyName: "document_verification_requests_requested_by_fkey1"
             columns: ["requested_by"]
             isOneToOne: false
@@ -1177,6 +1205,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_accounts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "escrow_accounts_tokenized_property_id_fkey"
@@ -1495,6 +1530,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "inspections_user_id_fkey"
@@ -2312,6 +2354,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
             foreignKeyName: "messages_reply_to_id_fkey"
             columns: ["reply_to_id"]
             isOneToOne: false
@@ -2700,6 +2749,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
             foreignKeyName: "payments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -2898,6 +2954,8 @@ export type Database = {
         Row: {
           amenities: string[] | null
           backdrop: string | null
+          blockchain_hash: string | null
+          blockchain_network: string | null
           blockchain_transaction_id: string | null
           category: string
           condition: string | null
@@ -2909,6 +2967,7 @@ export type Database = {
           garages: number | null
           id: string
           is_ad: boolean | null
+          is_blockchain_registered: boolean | null
           is_deleted: boolean | null
           is_exclusive: boolean | null
           is_featured: boolean | null
@@ -2918,6 +2977,7 @@ export type Database = {
           likes: number | null
           location: Json
           max_guest: number | null
+          ownership_transfer_history: Json | null
           price: Json
           ratings: number | null
           review_count: number | null
@@ -2937,6 +2997,8 @@ export type Database = {
         Insert: {
           amenities?: string[] | null
           backdrop?: string | null
+          blockchain_hash?: string | null
+          blockchain_network?: string | null
           blockchain_transaction_id?: string | null
           category: string
           condition?: string | null
@@ -2948,6 +3010,7 @@ export type Database = {
           garages?: number | null
           id?: string
           is_ad?: boolean | null
+          is_blockchain_registered?: boolean | null
           is_deleted?: boolean | null
           is_exclusive?: boolean | null
           is_featured?: boolean | null
@@ -2957,6 +3020,7 @@ export type Database = {
           likes?: number | null
           location: Json
           max_guest?: number | null
+          ownership_transfer_history?: Json | null
           price: Json
           ratings?: number | null
           review_count?: number | null
@@ -2976,6 +3040,8 @@ export type Database = {
         Update: {
           amenities?: string[] | null
           backdrop?: string | null
+          blockchain_hash?: string | null
+          blockchain_network?: string | null
           blockchain_transaction_id?: string | null
           category?: string
           condition?: string | null
@@ -2987,6 +3053,7 @@ export type Database = {
           garages?: number | null
           id?: string
           is_ad?: boolean | null
+          is_blockchain_registered?: boolean | null
           is_deleted?: boolean | null
           is_exclusive?: boolean | null
           is_featured?: boolean | null
@@ -2996,6 +3063,7 @@ export type Database = {
           likes?: number | null
           location?: Json
           max_guest?: number | null
+          ownership_transfer_history?: Json | null
           price?: Json
           ratings?: number | null
           review_count?: number | null
@@ -3075,6 +3143,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "property_creation_workflows_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
         ]
       }
       property_documents: {
@@ -3084,6 +3159,7 @@ export type Database = {
           document_name: string
           document_type: Database["public"]["Enums"]["document_type"]
           expires_at: string | null
+          file_path: string | null
           file_size: number
           file_url: string
           id: string
@@ -3103,6 +3179,7 @@ export type Database = {
           document_name: string
           document_type: Database["public"]["Enums"]["document_type"]
           expires_at?: string | null
+          file_path?: string | null
           file_size: number
           file_url: string
           id?: string
@@ -3122,6 +3199,7 @@ export type Database = {
           document_name?: string
           document_type?: Database["public"]["Enums"]["document_type"]
           expires_at?: string | null
+          file_path?: string | null
           file_size?: number
           file_url?: string
           id?: string
@@ -3149,6 +3227,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "property_documents_verified_by_fkey"
@@ -3191,6 +3276,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -3235,6 +3327,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -3301,6 +3400,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "property_inquiries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
         ]
       }
       property_likes: {
@@ -3329,6 +3435,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_likes_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -3370,6 +3483,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "property_reviews_user_id_fkey"
@@ -3444,6 +3564,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "property_valuations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
         ]
       }
       property_views: {
@@ -3496,6 +3623,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_views_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -3560,7 +3694,41 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "purchase_offers_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
         ]
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          created_at: string
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          created_at?: string
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          created_at?: string
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
       }
       rentals: {
         Row: {
@@ -3650,6 +3818,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rentals_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "rentals_user_id_fkey"
@@ -3757,6 +3932,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "reservations_user_id_fkey"
@@ -4100,6 +4282,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "smart_contracts_related_property_id_fkey"
+            columns: ["related_property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
             foreignKeyName: "smart_contracts_related_tokenized_property_id_fkey"
             columns: ["related_tokenized_property_id"]
             isOneToOne: false
@@ -4404,6 +4593,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokenized_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
           },
         ]
       }
@@ -5053,6 +5249,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "verification_tasks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
             foreignKeyName: "verification_tasks_verifier_id_fkey"
             columns: ["verifier_id"]
             isOneToOne: false
@@ -5321,6 +5524,24 @@ export type Database = {
         }
         Relationships: []
       }
+      property_ownership_history: {
+        Row: {
+          current_blockchain_hash: string | null
+          current_owner_id: string | null
+          property_id: string | null
+          title: string | null
+          transfer_record: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_user_id_fkey"
+            columns: ["current_owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activities: {
         Row: {
           activity_id: string | null
@@ -5368,6 +5589,15 @@ export type Database = {
       }
       can_access_property: {
         Args: { _property_id: string; _user_id?: string }
+        Returns: boolean
+      }
+      check_rate_limit: {
+        Args: {
+          p_identifier: string
+          p_action: string
+          p_limit?: number
+          p_window_minutes?: number
+        }
         Returns: boolean
       }
       cleanup_expired_system_notifications: {
@@ -5457,6 +5687,8 @@ export type Database = {
         Returns: {
           amenities: string[] | null
           backdrop: string | null
+          blockchain_hash: string | null
+          blockchain_network: string | null
           blockchain_transaction_id: string | null
           category: string
           condition: string | null
@@ -5468,6 +5700,7 @@ export type Database = {
           garages: number | null
           id: string
           is_ad: boolean | null
+          is_blockchain_registered: boolean | null
           is_deleted: boolean | null
           is_exclusive: boolean | null
           is_featured: boolean | null
@@ -5477,6 +5710,7 @@ export type Database = {
           likes: number | null
           location: Json
           max_guest: number | null
+          ownership_transfer_history: Json | null
           price: Json
           ratings: number | null
           review_count: number | null

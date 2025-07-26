@@ -29,8 +29,8 @@ interface HederaTokenInfo {
 
 interface TokenCreationResult {
   tokenizedPropertyId: string;
-  hederaTokenId: string;
-  transactionId: string;
+  hederaTokenId?: string;
+  transactionId?: string;
   tokenSymbol: string;
   success: boolean;
   error?: string;
@@ -65,24 +65,9 @@ export class PropertyTokenizationService {
       const tokenPrice = params.totalValue / params.totalSupply;
       console.log("Calculated token price:", tokenPrice);
 
-      // Step 4: Create token on Hedera network
-      console.log("Creating token on Hedera network...");
-      const tokenResult = await this.hederaClient.createPropertyToken(
-        params.tokenName,
-        tokenSymbol,
-        params.totalSupply
-      );
+      // Step 4: Create tokenization record in database with pending_approval status
+      console.log("Creating tokenization record with pending approval status...");
 
-      if (!tokenResult.tokenId) {
-        throw new Error("Failed to create token on Hedera network");
-      }
-
-      console.log("Token created successfully on Hedera:", tokenResult);
-
-      // Step 5: Store tokenization record in database
-      console.log("Storing tokenization record in database...");
-
-      // Serialize tokenization parameters to ensure JSON compatibility
       const serializedParams = {
         landTitleId: params.landTitleId,
         propertyId: params.propertyId || null,
@@ -108,18 +93,17 @@ export class PropertyTokenizationService {
           total_value_usd: params.totalValue,
           minimum_investment: params.minimumInvestment,
           token_price: tokenPrice,
-          status: "minted",
+          status: "pending_approval",
           blockchain_network: "hedera",
-          hedera_token_id: tokenResult.tokenId,
           investment_terms: params.investmentTerms,
           expected_roi: params.expectedROI,
           revenue_distribution_frequency: params.revenueDistributionFrequency,
           lock_up_period_months: params.lockUpPeriodMonths,
           metadata: {
-            creation_transaction: tokenResult.transactionId,
             decimals: 8,
             created_at: new Date().toISOString(),
             tokenization_parameters: serializedParams,
+            awaiting_approval: true,
           },
           legal_structure: {
             ownership_type: "fractional",
@@ -137,15 +121,13 @@ export class PropertyTokenizationService {
         );
       }
 
-      console.log("Tokenization completed successfully:", tokenizedProperty);
+      console.log("Tokenization request submitted for approval:", tokenizedProperty);
 
-      // Step 6: Initialize analytics tracking
+      // Step 5: Initialize analytics tracking (without Hedera token creation)
       await this.initializeAnalytics(tokenizedProperty.id, params);
 
       return {
         tokenizedPropertyId: tokenizedProperty.id,
-        hederaTokenId: tokenResult.tokenId,
-        transactionId: tokenResult.transactionId,
         tokenSymbol,
         success: true,
       };
@@ -153,12 +135,75 @@ export class PropertyTokenizationService {
       console.error("Tokenization failed:", error);
       return {
         tokenizedPropertyId: "",
-        hederaTokenId: "",
-        transactionId: "",
         tokenSymbol: "",
         success: false,
         error:
           error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  }
+
+  async createHederaTokenAfterApproval(
+    tokenizedPropertyId: string
+  ): Promise<{ success: boolean; hederaTokenId?: string; transactionId?: string; error?: string }> {
+    try {
+      // Get tokenized property details
+      const { data: property, error: propertyError } = await supabase
+        .from("tokenized_properties")
+        .select("*")
+        .eq("id", tokenizedPropertyId)
+        .single();
+
+      if (propertyError || !property) {
+        throw new Error("Tokenized property not found");
+      }
+
+      if (property.status !== "approved") {
+        throw new Error("Token must be approved before Hedera creation");
+      }
+
+      // Create token on Hedera network
+      console.log("Creating approved token on Hedera network...");
+      const tokenResult = await this.hederaClient.createPropertyToken(
+        property.token_name,
+        property.token_symbol,
+        parseInt(property.total_supply)
+      );
+
+      if (!tokenResult.tokenId) {
+        throw new Error("Failed to create token on Hedera network");
+      }
+
+      // Update tokenized property with Hedera token details and set status to minted
+      const { error: updateError } = await supabase
+        .from("tokenized_properties")
+        .update({
+          hedera_token_id: tokenResult.tokenId,
+          status: "minted",
+          metadata: {
+            ...property.metadata,
+            creation_transaction: tokenResult.transactionId,
+            hedera_created_at: new Date().toISOString(),
+            awaiting_approval: false,
+          },
+        })
+        .eq("id", tokenizedPropertyId);
+
+      if (updateError) {
+        console.error("Failed to update property with Hedera details:", updateError);
+        throw new Error("Failed to update property with Hedera details");
+      }
+
+      return {
+        success: true,
+        hederaTokenId: tokenResult.tokenId,
+        transactionId: tokenResult.transactionId,
+      };
+    } catch (error) {
+      console.error("Hedera token creation after approval failed:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -314,6 +359,7 @@ export class PropertyTokenizationService {
             total_supply: params.totalSupply,
             token_price: params.totalValue / params.totalSupply,
             expected_roi: params.expectedROI,
+            status: "pending_approval",
           },
         },
       ];
