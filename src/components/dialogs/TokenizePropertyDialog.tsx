@@ -243,6 +243,7 @@ export function TokenizePropertyDialog({
                 <Input
                   id="lockupPeriod"
                   type="number"
+                  min="4"
                   value={formData.lockupPeriod}
                   onChange={(e) =>
                     handleInputChange("lockupPeriod", e.target.value)
