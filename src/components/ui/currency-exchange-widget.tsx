@@ -61,26 +61,42 @@ export function CurrencyExchangeWidget({
     );
   }
 
+  // Exchange-style widget with clean currency switching
   return (
     <div 
       className={cn(
-        "group cursor-pointer transition-all duration-200 hover:bg-muted/50 rounded-md p-1",
+        "group relative inline-flex items-center gap-2 cursor-pointer",
+        "transition-all duration-200 hover:bg-muted/50 rounded-lg px-2 py-1",
         className
       )}
       onClick={handleToggleCurrency}
       title="Click to switch currency"
     >
-      <div className="flex items-center gap-2">
-        <DualCurrencyDisplay 
+      <div className="flex flex-col">
+        <CurrencyDisplay 
           amount={amount}
           size={size}
-          separator=" ⟷ "
+          showBothCurrencies={false}
+          respectUserPreference={true}
         />
-        <ArrowsClockwiseIcon 
-          size={14} 
-          className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-        />
+        <div className="text-xs text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
+          <CurrencyDisplay 
+            amount={amount}
+            size="sm"
+            showBothCurrencies={false}
+            primaryCurrency={isUSD ? 'NGN' : 'USD'}
+            respectUserPreference={false}
+          />
+        </div>
       </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-6 w-6 p-0 opacity-60 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+        title="Switch currency"
+      >
+        <ArrowsClockwiseIcon size={12} />
+      </Button>
     </div>
   );
 }

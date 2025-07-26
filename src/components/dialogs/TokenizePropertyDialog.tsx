@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { DualCurrencyDisplay } from "@/components/ui/currency-display";
+
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import {
@@ -32,6 +32,7 @@ import {
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
 } from "@/components/ui/responsive-dialog";
 
 interface TokenizePropertyDialogProps {
@@ -54,6 +55,11 @@ export function TokenizePropertyDialog({
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTokenized, setIsTokenized] = useState(false);
+  const [tokenizationStatus, setTokenizationStatus] = useState<string | null>(null);
+  const [showResultDialog, setShowResultDialog] = useState(false);
+  const [resultType, setResultType] = useState<'success' | 'error'>('success');
+  const [resultMessage, setResultMessage] = useState('');
   const [formData, setFormData] = useState({
     totalTokens: "100000",
     pricePerToken: "25",
@@ -71,6 +77,37 @@ export function TokenizePropertyDialog({
     { title: "Legal & Documentation", icon: FileTextIcon },
     { title: "Review & Submit", icon: EyeIcon },
   ];
+
+  // Check if property is already tokenized or has pending request
+  useEffect(() => {
+    const checkTokenizationStatus = async () => {
+      if (!property?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('tokenized_properties')
+          .select('status')
+          .eq('property_id', property.id)
+          .maybeSingle();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking tokenization status:', error);
+          return;
+        }
+        
+        if (data) {
+          setTokenizationStatus(data.status);
+          setIsTokenized(data.status === 'active' || data.status === 'pending_approval');
+        }
+      } catch (error) {
+        console.error('Error checking tokenization status:', error);
+      }
+    };
+
+    if (open && property?.id) {
+      checkTokenizationStatus();
+    }
+  }, [open, property?.id]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -92,17 +129,18 @@ export function TokenizePropertyDialog({
         "tokenize-property",
         {
           body: {
-            propertyId: property.id,
-            tokenName: `${property.title} Token`,
-            tokenSymbol: `${property.title.substring(0, 3).toUpperCase()}T`,
-            totalSupply: parseInt(formData.totalTokens),
-            pricePerToken: parseFloat(formData.pricePerToken),
-            minimumInvestment: parseFloat(formData.minimumInvestment),
-            expectedROI: parseFloat(formData.expectedROI),
-            distributionFrequency: formData.distributionFrequency,
-            lockupPeriod: parseInt(formData.lockupPeriod),
-            description: formData.description,
-            riskLevel: formData.riskLevel,
+            land_title_id: property.id, // Edge function expects land_title_id
+            property_id: property.id,   // Also send property_id as backup
+            token_name: `${property.title} Token`,
+            token_symbol: `${property.title.substring(0, 3).toUpperCase()}T`,
+            total_supply: formData.totalTokens, // Keep as string as edge function expects
+            total_value_usd: (parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0),
+            minimum_investment: parseFloat(formData.minimumInvestment),
+            token_price: parseFloat(formData.pricePerToken),
+            investment_terms: 'fixed',
+            expected_roi: parseFloat(formData.expectedROI),
+            revenue_distribution_frequency: formData.distributionFrequency,
+            lock_up_period_months: parseInt(formData.lockupPeriod),
           },
         }
       );
@@ -114,7 +152,11 @@ export function TokenizePropertyDialog({
       }
 
       if (data?.success) {
-        toast.success("Property tokenization submitted successfully!");
+        setResultType('success');
+        setResultMessage("Your property tokenization request has been submitted successfully! Our team will review your request and notify you within 5-7 business days.");
+        setShowResultDialog(true);
+        setIsTokenized(true);
+        setTokenizationStatus('pending_approval');
         onOpenChange(false);
         // Reset form
         setStep(1);
@@ -129,11 +171,15 @@ export function TokenizePropertyDialog({
           riskLevel: "medium",
         });
       } else {
-        toast.error(data?.message || "Tokenization failed");
+        setResultType('error');
+        setResultMessage(data?.message || "Failed to submit tokenization request. Please try again.");
+        setShowResultDialog(true);
       }
     } catch (error) {
       console.error("Tokenization error:", error);
-      toast.error("An unexpected error occurred during tokenization");
+      setResultType('error');
+      setResultMessage("An unexpected error occurred during tokenization. Please try again.");
+      setShowResultDialog(true);
     } finally {
       setIsLoading(false);
     }
@@ -462,8 +508,14 @@ export function TokenizePropertyDialog({
             </Button>
 
             {step === 4 ? (
-              <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Submit for Review"}
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isLoading || isTokenized}
+                className={isTokenized ? "opacity-50 cursor-not-allowed" : ""}
+              >
+                {isLoading ? "Submitting..." : 
+                 isTokenized ? `Already ${tokenizationStatus?.replace('_', ' ') || 'Tokenized'}` : 
+                 "Submit for Review"}
               </Button>
             ) : (
               <Button onClick={nextStep}>Next</Button>
@@ -471,6 +523,50 @@ export function TokenizePropertyDialog({
           </div>
         </div>
       </ResponsiveDialogContent>
+
+      {/* Success/Error Result Dialog */}
+      <ResponsiveDialog open={showResultDialog} onOpenChange={setShowResultDialog}>
+        <ResponsiveDialogContent className="max-w-md">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle className="flex items-center gap-2">
+              {resultType === 'success' ? (
+                <>
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  Success!
+                </>
+              ) : (
+                <>
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  Error
+                </>
+              )}
+            </ResponsiveDialogTitle>
+          </ResponsiveDialogHeader>
+
+          <div className="py-4">
+            <p className="text-muted-foreground leading-relaxed">
+              {resultMessage}
+            </p>
+          </div>
+
+          <ResponsiveDialogFooter>
+            <Button 
+              onClick={() => setShowResultDialog(false)}
+              className="w-full"
+            >
+              OK
+            </Button>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </ResponsiveDialog>
   );
 }

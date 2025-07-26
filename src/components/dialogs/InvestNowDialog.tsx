@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { DualCurrencyDisplay, CurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { supabase } from "@/integrations/supabase/client";
