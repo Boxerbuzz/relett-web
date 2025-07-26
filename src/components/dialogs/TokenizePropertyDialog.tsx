@@ -129,17 +129,18 @@ export function TokenizePropertyDialog({
         "tokenize-property",
         {
           body: {
-            propertyId: property.id,
-            tokenName: `${property.title} Token`,
-            tokenSymbol: `${property.title.substring(0, 3).toUpperCase()}T`,
-            totalSupply: parseInt(formData.totalTokens),
-            pricePerToken: parseFloat(formData.pricePerToken),
-            minimumInvestment: parseFloat(formData.minimumInvestment),
-            expectedROI: parseFloat(formData.expectedROI),
-            distributionFrequency: formData.distributionFrequency,
-            lockupPeriod: parseInt(formData.lockupPeriod),
-            description: formData.description,
-            riskLevel: formData.riskLevel,
+            land_title_id: property.id, // Edge function expects land_title_id
+            property_id: property.id,   // Also send property_id as backup
+            token_name: `${property.title} Token`,
+            token_symbol: `${property.title.substring(0, 3).toUpperCase()}T`,
+            total_supply: formData.totalTokens, // Keep as string as edge function expects
+            total_value_usd: (parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0),
+            minimum_investment: parseFloat(formData.minimumInvestment),
+            token_price: parseFloat(formData.pricePerToken),
+            investment_terms: 'fixed',
+            expected_roi: parseFloat(formData.expectedROI),
+            revenue_distribution_frequency: formData.distributionFrequency,
+            lock_up_period_months: parseInt(formData.lockupPeriod),
           },
         }
       );
