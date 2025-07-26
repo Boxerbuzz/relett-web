@@ -56,10 +56,12 @@ export function TokenizePropertyDialog({
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isTokenized, setIsTokenized] = useState(false);
-  const [tokenizationStatus, setTokenizationStatus] = useState<string | null>(null);
+  const [tokenizationStatus, setTokenizationStatus] = useState<string | null>(
+    null
+  );
   const [showResultDialog, setShowResultDialog] = useState(false);
-  const [resultType, setResultType] = useState<'success' | 'error'>('success');
-  const [resultMessage, setResultMessage] = useState('');
+  const [resultType, setResultType] = useState<"success" | "error">("success");
+  const [resultMessage, setResultMessage] = useState("");
   const [formData, setFormData] = useState({
     totalTokens: "100000",
     pricePerToken: "25",
@@ -82,25 +84,27 @@ export function TokenizePropertyDialog({
   useEffect(() => {
     const checkTokenizationStatus = async () => {
       if (!property?.id) return;
-      
+
       try {
         const { data, error } = await supabase
-          .from('tokenized_properties')
-          .select('status')
-          .eq('property_id', property.id)
+          .from("tokenized_properties")
+          .select("status")
+          .eq("property_id", property.id)
           .maybeSingle();
-        
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error checking tokenization status:', error);
+
+        if (error && error.code !== "PGRST116") {
+          console.error("Error checking tokenization status:", error);
           return;
         }
-        
+
         if (data) {
           setTokenizationStatus(data.status);
-          setIsTokenized(data.status === 'active' || data.status === 'pending_approval');
+          setIsTokenized(
+            data.status === "active" || data.status === "pending_approval"
+          );
         }
       } catch (error) {
-        console.error('Error checking tokenization status:', error);
+        console.error("Error checking tokenization status:", error);
       }
     };
 
@@ -130,14 +134,16 @@ export function TokenizePropertyDialog({
         {
           body: {
             land_title_id: property.id, // Edge function expects land_title_id
-            property_id: property.id,   // Also send property_id as backup
+            property_id: property.id, // Also send property_id as backup
             token_name: `${property.title} Token`,
             token_symbol: `${property.title.substring(0, 3).toUpperCase()}T`,
             total_supply: formData.totalTokens, // Keep as string as edge function expects
-            total_value_usd: (parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0),
+            total_value_usd:
+              (parseInt(formData.totalTokens) || 0) *
+              (parseFloat(formData.pricePerToken) || 0),
             minimum_investment: parseFloat(formData.minimumInvestment),
             token_price: parseFloat(formData.pricePerToken),
-            investment_terms: 'fixed',
+            investment_terms: "fixed",
             expected_roi: parseFloat(formData.expectedROI),
             revenue_distribution_frequency: formData.distributionFrequency,
             lock_up_period_months: parseInt(formData.lockupPeriod),
@@ -152,11 +158,13 @@ export function TokenizePropertyDialog({
       }
 
       if (data?.success) {
-        setResultType('success');
-        setResultMessage("Your property tokenization request has been submitted successfully! Our team will review your request and notify you within 5-7 business days.");
+        setResultType("success");
+        setResultMessage(
+          "Your property tokenization request has been submitted successfully! Our team will review your request and notify you within 5-7 business days."
+        );
         setShowResultDialog(true);
         setIsTokenized(true);
-        setTokenizationStatus('pending_approval');
+        setTokenizationStatus("pending_approval");
         onOpenChange(false);
         // Reset form
         setStep(1);
@@ -171,14 +179,19 @@ export function TokenizePropertyDialog({
           riskLevel: "medium",
         });
       } else {
-        setResultType('error');
-        setResultMessage(data?.message || "Failed to submit tokenization request. Please try again.");
+        setResultType("error");
+        setResultMessage(
+          data?.message ||
+            "Failed to submit tokenization request. Please try again."
+        );
         setShowResultDialog(true);
       }
     } catch (error) {
       console.error("Tokenization error:", error);
-      setResultType('error');
-      setResultMessage("An unexpected error occurred during tokenization. Please try again.");
+      setResultType("error");
+      setResultMessage(
+        "An unexpected error occurred during tokenization. Please try again."
+      );
       setShowResultDialog(true);
     } finally {
       setIsLoading(false);
@@ -206,13 +219,15 @@ export function TokenizePropertyDialog({
                 <Label htmlFor="pricePerToken">Price per Token</Label>
                 <CurrencyInput
                   value={parseFloat(formData.pricePerToken) || 0}
-                  onChange={(value) => handleInputChange("pricePerToken", value.toString())}
+                  onChange={(value) =>
+                    handleInputChange("pricePerToken", value.toString())
+                  }
                   currency="USD"
                   min={0.01}
                 />
                 {formData.pricePerToken && (
                   <div className="mt-1 text-sm text-muted-foreground">
-                    <CurrencyExchangeWidget 
+                    <CurrencyExchangeWidget
                       amount={parseFloat(formData.pricePerToken) || 0}
                       size="sm"
                     />
@@ -222,18 +237,18 @@ export function TokenizePropertyDialog({
             </div>
 
             <div>
-              <Label htmlFor="minimumInvestment">
-                Minimum Investment
-              </Label>
+              <Label htmlFor="minimumInvestment">Minimum Investment</Label>
               <CurrencyInput
                 value={parseFloat(formData.minimumInvestment) || 0}
-                onChange={(value) => handleInputChange("minimumInvestment", value.toString())}
+                onChange={(value) =>
+                  handleInputChange("minimumInvestment", value.toString())
+                }
                 currency="USD"
                 min={1}
               />
               {formData.minimumInvestment && (
                 <div className="mt-1 text-sm text-muted-foreground">
-                  <CurrencyExchangeWidget 
+                  <CurrencyExchangeWidget
                     amount={parseFloat(formData.minimumInvestment) || 0}
                     size="sm"
                   />
@@ -243,23 +258,29 @@ export function TokenizePropertyDialog({
 
             <Card className="bg-muted/30">
               <CardHeader>
-                <CardTitle className="text-base">Projected Total Value</CardTitle>
+                <CardTitle className="text-base">
+                  Projected Total Value
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <CurrencyExchangeWidget 
-                  amount={(parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0)}
+                <CurrencyExchangeWidget
+                  amount={
+                    (parseInt(formData.totalTokens) || 0) *
+                    (parseFloat(formData.pricePerToken) || 0)
+                  }
                   size="lg"
                   className="font-bold text-primary justify-center"
                 />
                 <div className="text-sm text-muted-foreground">
-                  <p>Min. Tokens: {Math.ceil(
-                    (parseFloat(formData.minimumInvestment) || 0) /
-                      (parseFloat(formData.pricePerToken) || 1)
-                  )} tokens</p>
+                  <p>
+                    Min. Tokens:{" "}
+                    {Math.ceil(
+                      (parseFloat(formData.minimumInvestment) || 0) /
+                        (parseFloat(formData.pricePerToken) || 1)
+                    )}{" "}
+                    tokens
+                  </p>
                 </div>
-
-
-                <DualCurrencyDisplay />
               </CardContent>
             </Card>
           </div>
@@ -295,9 +316,12 @@ export function TokenizePropertyDialog({
                     }
                   }}
                 />
-                {parseInt(formData.lockupPeriod) > 0 && parseInt(formData.lockupPeriod) < 4 && (
-                  <p className="text-sm text-destructive mt-1">Minimum lockup period is 4 months</p>
-                )}
+                {parseInt(formData.lockupPeriod) > 0 &&
+                  parseInt(formData.lockupPeriod) < 4 && (
+                    <p className="text-sm text-destructive mt-1">
+                      Minimum lockup period is 4 months
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -399,7 +423,7 @@ export function TokenizePropertyDialog({
                   </div>
                   <div>
                     <p className="text-gray-600">Price per Token:</p>
-                    <CurrencyExchangeWidget 
+                    <CurrencyExchangeWidget
                       amount={parseFloat(formData.pricePerToken) || 0}
                       size="sm"
                       className="font-semibold"
@@ -437,35 +461,18 @@ export function TokenizePropertyDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="max-w-2xl flex flex-col">
+      <ResponsiveDialogContent
+        className="max-w-5xl w-full md:max-h-[80vh] flex flex-col gap-y-0"
+        size="3xl"
+      >
         {/* Fixed Header */}
-        <div className="flex-shrink-0 space-y-4">
+        <div className="flex-shrink-0 space-y-4  p-2">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle className="flex items-center gap-2">
               <CoinsIcon size={20} />
               Tokenize Property
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
-
-          {/* Property Info */}
-          {property && (
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex gap-3">
-                  <img
-                    src={property.image}
-                    alt={property.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{property.title}</h3>
-                    <p className="text-sm text-gray-600">{property.location}</p>
-                    <p className="text-sm font-medium">{property.value}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Progress */}
           <div className="space-y-3">
@@ -483,7 +490,7 @@ export function TokenizePropertyDialog({
                     >
                       <IconComponent size={16} />
                     </div>
-                    <span className="text-xs text-center">
+                    <span className="text-xs text-center hidden">
                       {stepInfo.title}
                     </span>
                   </div>
@@ -495,10 +502,9 @@ export function TokenizePropertyDialog({
         </div>
 
         {/* Scrollable Step Content */}
-        <div className="flex-1 overflow-y-auto py-4">{renderStep()}</div>
+        <div className="flex-1 overflow-y-auto py-4  p-6">
+          {renderStep()}
 
-        {/* Fixed Footer Navigation */}
-        <div className="flex-shrink-0 pt-4 border-t">
           <div className="flex justify-between">
             <Button
               variant="outline"
@@ -508,14 +514,18 @@ export function TokenizePropertyDialog({
             </Button>
 
             {step === 4 ? (
-              <Button 
-                onClick={handleSubmit} 
+              <Button
+                onClick={handleSubmit}
                 disabled={isLoading || isTokenized}
                 className={isTokenized ? "opacity-50 cursor-not-allowed" : ""}
               >
-                {isLoading ? "Submitting..." : 
-                 isTokenized ? `Already ${tokenizationStatus?.replace('_', ' ') || 'Tokenized'}` : 
-                 "Submit for Review"}
+                {isLoading
+                  ? "Submitting..."
+                  : isTokenized
+                  ? `Already ${
+                      tokenizationStatus?.replace("_", " ") || "Tokenized"
+                    }`
+                  : "Submit for Review"}
               </Button>
             ) : (
               <Button onClick={nextStep}>Next</Button>
@@ -525,15 +535,26 @@ export function TokenizePropertyDialog({
       </ResponsiveDialogContent>
 
       {/* Success/Error Result Dialog */}
-      <ResponsiveDialog open={showResultDialog} onOpenChange={setShowResultDialog}>
+      <ResponsiveDialog
+        open={showResultDialog}
+        onOpenChange={setShowResultDialog}
+      >
         <ResponsiveDialogContent className="max-w-md">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle className="flex items-center gap-2">
-              {resultType === 'success' ? (
+              {resultType === "success" ? (
                 <>
                   <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   Success!
@@ -541,8 +562,16 @@ export function TokenizePropertyDialog({
               ) : (
                 <>
                   <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 text-red-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   Error
@@ -558,7 +587,7 @@ export function TokenizePropertyDialog({
           </div>
 
           <ResponsiveDialogFooter>
-            <Button 
+            <Button
               onClick={() => setShowResultDialog(false)}
               className="w-full"
             >
