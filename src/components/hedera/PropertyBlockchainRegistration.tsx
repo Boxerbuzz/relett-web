@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { PropertyBlockchainData } from '@/lib/contracts';
 import { 
   CheckCircle, 
   AlertCircle, 
@@ -19,9 +21,17 @@ interface PropertyBlockchainRegistrationProps {
   propertyData: {
     id: string;
     title: string;
+    description?: string;
     type: string;
+    sub_type?: string;
+    category?: string;
+    condition?: string;
     location: any;
     price: any;
+    specification?: any;
+    features?: string[];
+    amenities?: string[];
+    tags?: string[];
   };
   onRegistrationComplete?: (transactionId: string) => void;
   onRegistrationSkip?: () => void;
@@ -54,19 +64,44 @@ export function PropertyBlockchainRegistration({
     setRegistrationStatus(null);
 
     try {
-      const tokenData = {
+      // Get comprehensive property data including documents
+      const propertyDetails = await fetchPropertyDetails(propertyData.id);
+      
+      const blockchainData: PropertyBlockchainData = {
         propertyId: propertyData.id,
-        landTitleId: `LT-${propertyData.id}`, // Mock land title ID
-        tokenName: `${propertyData.title} Token`,
-        tokenSymbol: `PROP${propertyData.id.slice(-4).toUpperCase()}`,
-        totalSupply: 1000000, // 1 million tokens
-        totalValue: propertyData.price?.amount || 0,
-        minimumInvestment: Math.floor((propertyData.price?.amount || 0) * 0.01), // 1% minimum
-        expectedROI: 8.5, // 8.5% expected ROI
-        lockupPeriod: 365 // 1 year lockup
+        title: propertyData.title,
+        description: propertyData.description || '',
+        type: propertyData.type,
+        subType: propertyData.sub_type || '',
+        category: propertyData.category || '',
+        condition: propertyData.condition || '',
+        location: {
+          address: propertyData.location?.address || '',
+          city: propertyData.location?.city || '',
+          state: propertyData.location?.state || '',
+          country: propertyData.location?.country || '',
+          coordinates: propertyData.location?.coordinates,
+          landmark: propertyData.location?.landmark,
+          postal_code: propertyData.location?.postal_code,
+        },
+        specification: propertyData.specification || {},
+        price: {
+          amount: propertyData.price?.amount || 0,
+          currency: propertyData.price?.currency || 'NGN',
+          term: propertyData.price?.term || 'month',
+          deposit: propertyData.price?.deposit,
+          service_charge: propertyData.price?.service_charge,
+          is_negotiable: propertyData.price?.is_negotiable || false,
+        },
+        features: propertyData.features || [],
+        amenities: propertyData.amenities || [],
+        tags: propertyData.tags || [],
+        documentHashes: propertyDetails.documentHashes,
+        legalInfo: propertyDetails.legalInfo,
+        registeredBy: propertyDetails.userId
       };
 
-      const result = await registerProperty(tokenData);
+      const result = await registerProperty(blockchainData);
       
       if (result.success) {
         setRegistrationStatus('success');
@@ -81,6 +116,43 @@ export function PropertyBlockchainRegistration({
     } finally {
       setIsRegistering(false);
     }
+  };
+
+  const fetchPropertyDetails = async (propertyId: string) => {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Fetch property documents with hashes
+    const { data: documents } = await supabase
+      .from('property_documents')
+      .select('id, document_type, document_name, document_hash')
+      .eq('property_id', propertyId);
+
+    // Fetch property information
+    const { data: property } = await supabase
+      .from('properties')
+      .select('user_id')
+      .eq('id', propertyId)
+      .single();
+
+    const documentHashes = (documents || []).map(doc => ({
+      documentId: doc.id,
+      documentType: doc.document_type || '',
+      documentName: doc.document_name || '',
+      hash: doc.document_hash || ''
+    }));
+
+    const legalInfo = {
+      landTitleId: undefined,
+      ownershipType: undefined,
+      encumbrances: []
+    };
+
+    return {
+      documentHashes,
+      legalInfo,
+      userId: user?.id || property?.user_id || ''
+    };
   };
 
   const handleSkip = () => {

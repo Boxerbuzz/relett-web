@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PropertyContracts, PropertyTokenData } from '@/lib/contracts';
+import { PropertyContracts, PropertyBlockchainData } from '@/lib/contracts';
 import { config } from '@/lib/config';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,7 +14,7 @@ interface ContractState {
 }
 
 interface PropertyContractContextType extends ContractState {
-  registerProperty: (propertyData: PropertyTokenData) => Promise<any>;
+  registerProperty: (propertyData: PropertyBlockchainData) => Promise<any>;
   verifyProperty: (propertyId: string) => Promise<any>;
   createListing: (propertyId: string, price: number, tokenAmount: number) => Promise<any>;
   purchaseTokens: (listingId: string, amount: number) => Promise<any>;
@@ -105,7 +105,7 @@ export function PropertyContractProvider({ children }: { children: React.ReactNo
     }
   };
 
-  const registerProperty = (propertyData: PropertyTokenData) =>
+  const registerProperty = (propertyData: PropertyBlockchainData) =>
     handleContractOperation(
       () => state.contracts!.registerProperty(propertyData),
       'Property registered on blockchain successfully',
