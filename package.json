@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
-    "@hashgraph/hedera-wallet-connect": "^1.5.1",
     "@hashgraph/sdk": "^2.65.1",
     "@hookform/resolvers": "^3.9.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
@@ -51,10 +50,6 @@
     "@types/lodash": "^4.17.20",
     "@walletconnect/core": "^2.21.5",
     "@walletconnect/modal": "^2.7.0",
-    "@walletconnect/qrcode-modal": "^1.8.0",
-    "@walletconnect/types": "^2.21.5",
-    "@walletconnect/utils": "^2.21.5",
-    "@walletconnect/web3wallet": "^1.16.1",
     "@xyflow/react": "^12.7.0",
     "awesome-react-stepper": "^1.1.1",
     "class-variance-authority": "^0.7.1",

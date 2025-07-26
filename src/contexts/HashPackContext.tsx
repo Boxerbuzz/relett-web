@@ -2,33 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod, HederaChainId } from '@hashgraph/hedera-wallet-connect';
-import { LedgerId } from '@hashgraph/sdk';
+import { HashPackWallet, HashPackContextType } from '@/types/hashpack';
 
-export interface HashPackWallet {
-  id: string;
-  address: string;
-  name: string;
-  network: string;
-  balance?: string;
-  isConnected: boolean;
-}
-
-interface HashPackContextType {
-  wallet: HashPackWallet | null;
-  isConnecting: boolean;
-  connectWallet: () => Promise<void>;
-  disconnectWallet: () => void;
-  isAvailable: boolean;
-  connector: DAppConnector | null;
-}
-
-const appMetadata = {
-  name: 'Property Tokenization Platform',
-  description: 'Tokenize and trade real estate properties on Hedera',
-  icons: [window.location.origin + '/favicon.ico'],
-  url: window.location.origin
-};
 
 const HashPackContext = createContext<HashPackContextType | undefined>(undefined);
 
@@ -49,61 +24,6 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [wallet, setWallet] = useState<HashPackWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [connector, setConnector] = useState<DAppConnector | null>(null);
-
-  // Initialize DAppConnector
-  useEffect(() => {
-    const initConnector = async () => {
-      console.log('Initializing DAppConnector...');
-      try {
-        const projectId = "demo"; // Replace with your WalletConnect project ID
-        
-        const dAppConnector = new DAppConnector(
-          appMetadata,
-          LedgerId.TESTNET,
-          projectId,
-          Object.values(HederaJsonRpcMethod),
-          [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
-          [HederaChainId.Testnet, HederaChainId.Mainnet],
-        );
-        
-        await dAppConnector.init({ logger: 'error' });
-        
-        setConnector(dAppConnector);
-        setIsAvailable(true);
-
-        // Set up event listeners
-        dAppConnector.walletConnectModal?.subscribeModal((state) => {
-          if (state.open) {
-            setIsConnecting(true);
-          } else {
-            setIsConnecting(false);
-          }
-        });
-
-        // Check for existing sessions
-        if (dAppConnector.signers && dAppConnector.signers.length > 0) {
-          const accountId = dAppConnector.signers[0].getAccountId().toString();
-          const walletData: HashPackWallet = {
-            id: accountId,
-            address: accountId,
-            name: 'Hedera Wallet',
-            network: 'testnet',
-            balance: 'Loading...',
-            isConnected: true
-          };
-          setWallet(walletData);
-          fetchBalance(accountId);
-        }
-
-      } catch (error) {
-        console.error('Failed to initialize DAppConnector:', error);
-        setIsAvailable(false);
-      }
-    };
-
-    initConnector();
-  }, []);
 
   const fetchBalance = async (accountId: string) => {
     try {
@@ -123,14 +43,75 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
     }
   };
 
+  // Check HashPack extension availability
+  useEffect(() => {
+    const checkHashPackAvailability = () => {
+      console.log('Checking HashPack availability...');
+      const available = typeof window !== 'undefined' && !!window.hashpack;
+      console.log('HashPack available:', available);
+      setIsAvailable(available);
+      
+      // Check for existing connection
+      if (available) {
+        const savedWallet = localStorage.getItem('hashpack-wallet');
+        if (savedWallet) {
+          try {
+            const walletData = JSON.parse(savedWallet);
+            setWallet(walletData);
+            fetchBalance(walletData.id);
+          } catch (error) {
+            console.error('Failed to restore wallet from localStorage:', error);
+            localStorage.removeItem('hashpack-wallet');
+          }
+        }
+      }
+    };
+
+    // Check immediately and after a short delay to handle extension loading
+    checkHashPackAvailability();
+    const timer = setTimeout(checkHashPackAvailability, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   const connectWallet = async (): Promise<void> => {
-    if (!connector) {
-      throw new Error('DAppConnector not initialized');
+    if (!window.hashpack) {
+      throw new Error('HashPack extension not found. Please install HashPack from the Chrome Web Store.');
     }
 
     try {
       setIsConnecting(true);
-      await connector.openModal();
+      console.log('Connecting to HashPack extension...');
+      
+      // Connect to extension
+      const connectionResult = await window.hashpack.connectToExtension();
+      console.log('Connection result:', connectionResult);
+      
+      if (!connectionResult.success) {
+        throw new Error(connectionResult.message || 'Failed to connect to HashPack extension');
+      }
+
+      // Request account ID
+      const accountResult = await window.hashpack.requestAccountId();
+      console.log('Account result:', accountResult);
+      
+      if (!accountResult.success || !accountResult.accountId) {
+        throw new Error(accountResult.message || 'Failed to get account ID from HashPack');
+      }
+
+      const walletData: HashPackWallet = {
+        id: accountResult.accountId,
+        address: accountResult.accountId,
+        name: 'HashPack Wallet',
+        network: accountResult.network || 'testnet',
+        balance: 'Loading...',
+        isConnected: true
+      };
+
+      setWallet(walletData);
+      localStorage.setItem('hashpack-wallet', JSON.stringify(walletData));
+      fetchBalance(accountResult.accountId);
+      
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
@@ -140,10 +121,16 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   };
 
   const disconnectWallet = async () => {
-    if (connector) {
-      await connector.disconnect('User requested disconnect');
+    try {
+      if (window.hashpack) {
+        await window.hashpack.disconnect();
+      }
+    } catch (error) {
+      console.error('Error disconnecting from HashPack:', error);
     }
+    
     setWallet(null);
+    localStorage.removeItem('hashpack-wallet');
   };
 
   return (
@@ -152,8 +139,7 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
       isConnecting,
       connectWallet,
       disconnectWallet,
-      isAvailable,
-      connector
+      isAvailable
     }}>
       {children}
     </HashPackContext.Provider>
