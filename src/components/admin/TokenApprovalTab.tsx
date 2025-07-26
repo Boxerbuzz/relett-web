@@ -4,60 +4,68 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { TokenStatusBadge } from "./TokenStatusBadge";
-import { Building, User, Calendar, DollarSign, Loader2 } from "lucide-react";
+import {
+  BuildingIcon,
+  UserIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  SpinnerIcon,
+} from "@phosphor-icons/react";
 
 export function TokenApprovalTab() {
-  const [processingTokens, setProcessingTokens] = useState<Set<string>>(new Set());
+  const [processingTokens, setProcessingTokens] = useState<Set<string>>(
+    new Set()
+  );
   const { toast } = useToast();
 
   // Mock data for now - replace with actual data fetching when backend is ready
   const pendingTokens = [
     {
-      id: '1',
-      name: 'Victoria Island Property Token',
-      symbol: 'VIPT',
+      id: "1",
+      name: "Victoria Island Property Token",
+      symbol: "VIPT",
       value: 150000000,
       supply: 1000,
-      status: 'pending_approval',
-      created_at: '2024-01-15T10:30:00Z',
+      status: "pending_approval",
+      created_at: "2024-01-15T10:30:00Z",
       property: {
-        title: 'Luxury Apartment Complex - Victoria Island',
-        location: 'Victoria Island, Lagos'
+        title: "Luxury Apartment Complex - Victoria Island",
+        location: "Victoria Island, Lagos",
       },
       owner: {
-        name: 'John Doe',
-        email: 'john@example.com'
-      }
+        name: "John Doe",
+        email: "john@example.com",
+      },
     },
     {
-      id: '2',
-      name: 'Lekki Gardens Token',
-      symbol: 'LEGT',
+      id: "2",
+      name: "Lekki Gardens Token",
+      symbol: "LEGT",
       value: 85000000,
       supply: 500,
-      status: 'draft',
-      created_at: '2024-01-14T14:20:00Z',
+      status: "draft",
+      created_at: "2024-01-14T14:20:00Z",
       property: {
-        title: 'Commercial Plaza - Lekki',
-        location: 'Lekki Phase 1, Lagos'
+        title: "Commercial Plaza - Lekki",
+        location: "Lekki Phase 1, Lagos",
       },
       owner: {
-        name: 'Jane Smith',
-        email: 'jane@example.com'
-      }
-    }
+        name: "Jane Smith",
+        email: "jane@example.com",
+      },
+    },
   ];
 
   const handleApproveToken = async (tokenId: string) => {
-    setProcessingTokens(prev => new Set(prev).add(tokenId));
-    
+    setProcessingTokens((prev) => new Set(prev).add(tokenId));
+
     // Simulate API call
     setTimeout(() => {
       toast({
         title: "Success",
         description: "Token approved successfully",
       });
-      setProcessingTokens(prev => {
+      setProcessingTokens((prev) => {
         const newSet = new Set(prev);
         newSet.delete(tokenId);
         return newSet;
@@ -66,15 +74,15 @@ export function TokenApprovalTab() {
   };
 
   const handleRejectToken = async (tokenId: string) => {
-    setProcessingTokens(prev => new Set(prev).add(tokenId));
-    
+    setProcessingTokens((prev) => new Set(prev).add(tokenId));
+
     // Simulate API call
     setTimeout(() => {
       toast({
         title: "Success",
         description: "Token rejected and returned to draft status",
       });
-      setProcessingTokens(prev => {
+      setProcessingTokens((prev) => {
         const newSet = new Set(prev);
         newSet.delete(tokenId);
         return newSet;
@@ -83,20 +91,19 @@ export function TokenApprovalTab() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
-
 
   return (
     <div className="space-y-6">
@@ -111,11 +118,16 @@ export function TokenApprovalTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Approval
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {pendingTokens.filter(t => t.status === 'pending_approval').length}
+              {
+                pendingTokens.filter((t) => t.status === "pending_approval")
+                  .length
+              }
             </div>
           </CardContent>
         </Card>
@@ -125,7 +137,7 @@ export function TokenApprovalTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {pendingTokens.filter(t => t.status === 'draft').length}
+              {pendingTokens.filter((t) => t.status === "draft").length}
             </div>
           </CardContent>
         </Card>
@@ -158,22 +170,27 @@ export function TokenApprovalTab() {
                       <Badge variant="outline">{token.symbol}</Badge>
                       <TokenStatusBadge status={token.status} />
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center space-x-2">
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{token.property?.title || 'N/A'}</span>
+                        <BuildingIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">
+                          {token.property?.title || "N/A"}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{token.owner?.name || 'N/A'}</span>
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        <span>{token.owner?.name || "N/A"}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatCurrency(token.value)} • {token.supply.toLocaleString()} tokens</span>
+                        <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          {formatCurrency(token.value)} •{" "}
+                          {token.supply.toLocaleString()} tokens
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span>Submitted {formatDate(token.created_at)}</span>
                       </div>
                     </div>
@@ -186,7 +203,7 @@ export function TokenApprovalTab() {
                       className="bg-green-600 hover:bg-green-700"
                     >
                       {processingTokens.has(token.id) ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <SpinnerIcon className="h-4 w-4 animate-spin" />
                       ) : (
                         "Approve"
                       )}
@@ -197,7 +214,7 @@ export function TokenApprovalTab() {
                       disabled={processingTokens.has(token.id)}
                     >
                       {processingTokens.has(token.id) ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <SpinnerIcon className="h-4 w-4 animate-spin" />
                       ) : (
                         "Reject"
                       )}

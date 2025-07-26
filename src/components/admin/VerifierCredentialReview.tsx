@@ -166,172 +166,149 @@ export function VerifierCredentialReview() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CertificateIcon className="h-5 w-5" />
-          Verifier Credential Review
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {credentials.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No credentials to review
-            </div>
-          ) : (
-            credentials.map((credential) => {
-              const StatusIcon = getStatusIcon(credential.verification_status);
-              return (
-                <div
-                  key={credential.id}
-                  className="border rounded-lg p-4 space-y-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">
-                          {credential.user?.first_name || "Unknown"}{" "}
-                          {credential.user?.last_name || "User"}
-                        </span>
-                        <Badge variant="outline" className="capitalize">
-                          {credential.verifier_type.replace("_", " ")}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <CertificateIcon className="h-3 w-3" />
-                          <span>{credential.license_name}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        className={getStatusColor(
-                          credential.verification_status
-                        )}
-                      >
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {credential.verification_status}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        License Number
-                      </label>
-                      <p className="text-gray-600">
-                        {credential.license_number}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Issuing Authority
-                      </label>
-                      <p className="text-gray-600">
-                        {credential.issuing_authority}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Issue Date
-                      </label>
-                      <p className="text-gray-600">
-                        {new Date(credential.issue_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Expiry Date
-                      </label>
-                      <p className="text-gray-600">
-                        {new Date(credential.expiry_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  {credential.documents.length > 0 && (
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Supporting Documents
-                      </label>
-                      <div className="flex gap-2 mt-2">
-                        {credential.documents.map((doc, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            size="sm"
-                            asChild
-                          >
-                            <a
-                              href={doc.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <FileTextIcon className="h-3 w-3 mr-1" />
-                              {doc.name}
-                            </a>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {credential.verification_status === "pending" && (
-                    <div className="border-t pt-4 space-y-3">
-                      <Textarea
-                        placeholder="Add review notes..."
-                        value={reviewNotes}
-                        onChange={(e) => setReviewNotes(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() =>
-                            handleReview(credential.id, "verified")
-                          }
-                          disabled={reviewingId === credential.id}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircleIcon className="h-4 w-4 mr-2" />
-                          Verify
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            handleReview(credential.id, "rejected")
-                          }
-                          disabled={reviewingId === credential.id}
-                          variant="destructive"
-                        >
-                          <XCircleIcon className="h-4 w-4 mr-2" />
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {credential.reviewer_notes && (
-                    <div className="border-t pt-4">
-                      <label className="font-medium text-gray-700">
-                        Review Notes
-                      </label>
-                      <p className="text-gray-600 text-sm">
-                        {credential.reviewer_notes}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Reviewed on{" "}
-                        {new Date(credential.reviewed_at!).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+    <div className="space-y-4">
+      {credentials.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No credentials to review
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        credentials.map((credential) => {
+          const StatusIcon = getStatusIcon(credential.verification_status);
+          return (
+            <div
+              key={credential.id}
+              className="border rounded-lg p-4 space-y-4"
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">
+                      {credential.user?.first_name || "Unknown"}{" "}
+                      {credential.user?.last_name || "User"}
+                    </span>
+                    <Badge variant="outline" className="capitalize">
+                      {credential.verifier_type.replace("_", " ")}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <CertificateIcon className="h-3 w-3" />
+                      <span>{credential.license_name}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={getStatusColor(credential.verification_status)}
+                  >
+                    <StatusIcon className="h-3 w-3 mr-1" />
+                    {credential.verification_status}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="font-medium text-gray-700">
+                    License Number
+                  </label>
+                  <p className="text-gray-600">{credential.license_number}</p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Issuing Authority
+                  </label>
+                  <p className="text-gray-600">
+                    {credential.issuing_authority}
+                  </p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Issue Date
+                  </label>
+                  <p className="text-gray-600">
+                    {new Date(credential.issue_date).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Expiry Date
+                  </label>
+                  <p className="text-gray-600">
+                    {new Date(credential.expiry_date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {credential.documents.length > 0 && (
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Supporting Documents
+                  </label>
+                  <div className="flex gap-2 mt-2">
+                    {credential.documents.map((doc, index) => (
+                      <Button key={index} variant="outline" size="sm" asChild>
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FileTextIcon className="h-3 w-3 mr-1" />
+                          {doc.name}
+                        </a>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {credential.verification_status === "pending" && (
+                <div className="border-t pt-4 space-y-3">
+                  <Textarea
+                    placeholder="Add review notes..."
+                    value={reviewNotes}
+                    onChange={(e) => setReviewNotes(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleReview(credential.id, "verified")}
+                      disabled={reviewingId === credential.id}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Verify
+                    </Button>
+                    <Button
+                      onClick={() => handleReview(credential.id, "rejected")}
+                      disabled={reviewingId === credential.id}
+                      variant="destructive"
+                    >
+                      <XCircleIcon className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {credential.reviewer_notes && (
+                <div className="border-t pt-4">
+                  <label className="font-medium text-gray-700">
+                    Review Notes
+                  </label>
+                  <p className="text-gray-600 text-sm">
+                    {credential.reviewer_notes}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Reviewed on{" "}
+                    {new Date(credential.reviewed_at!).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
   );
 }

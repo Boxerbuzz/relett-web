@@ -232,45 +232,43 @@ export function AdminDashboard() {
           onValueChange={setActiveTab}
           className="space-y-6 w-full"
         >
-          <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto gap-1">
-              <TabsTrigger
-                value="overview"
-                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
-              >
-                <ActivityIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Overview</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="users"
-                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
-              >
-                <UsersIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Users</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="properties"
-                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
-              >
-                <HouseIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Properties</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="tokens"
-                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
-              >
-                <Coins className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Tokens</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="verification-hub"
-                className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
-              >
-                <ShieldIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">KYC & Roles</span>
-              </TabsTrigger>
-            </TabsList>
-          </ScrollArea>
+          <TabsList className="grid w-full grid-cols-5 h-auto gap-1">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+            >
+              <ActivityIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="users"
+              className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+            >
+              <UsersIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="properties"
+              className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+            >
+              <HouseIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Properties</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="tokens"
+              className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+            >
+              <Coins className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Tokens</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="verification-hub"
+              className="flex items-center justify-center px-2 py-2 text-xs sm:text-sm"
+            >
+              <ShieldIcon className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">KYC & Roles</span>
+            </TabsTrigger>
+          </TabsList>
 
           <div className="w-full">
             <TabsContent value="overview" className="space-y-6 w-full">

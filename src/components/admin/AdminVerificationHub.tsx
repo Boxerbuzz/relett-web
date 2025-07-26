@@ -31,24 +31,27 @@ export function AdminVerificationHub() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="role-requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1">
+          <TabsList className="grid w-full grid-cols-3 h-auto gap-1">
             <TabsTrigger
               value="role-requests"
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2"
             >
-              <UsersIcon className="h-4 w-4" />
-              Role Requests
+              <UsersIcon className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Role Requests</span>
             </TabsTrigger>
-            <TabsTrigger value="kyc-review" className="flex items-center gap-2">
-              <FileTextIcon className="h-4 w-4" />
-              KYC Review
+            <TabsTrigger 
+              value="kyc-review" 
+              className="flex items-center justify-center gap-2"
+            >
+              <FileTextIcon className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">KYC Review</span>
             </TabsTrigger>
             <TabsTrigger
               value="verifier-credentials"
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2"
             >
-              <ShieldIcon className="h-4 w-4" />
-              Verifier Credentials
+              <ShieldIcon className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Verifier Credentials</span>
             </TabsTrigger>
           </TabsList>
 

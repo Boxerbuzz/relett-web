@@ -189,139 +189,120 @@ export function RoleRequestManagement() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BriefcaseIcon className="h-5 w-5" />
-          Role Request Management
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {requests.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No role requests to review
-            </div>
-          ) : (
-            requests.map((request) => {
-              const StatusIcon = getStatusIcon(request.verification_status);
-              return (
-                <div
-                  key={request.id}
-                  className="border rounded-lg p-4 space-y-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">
-                          {request.user?.first_name || "Unknown"}{" "}
-                          {request.user?.last_name || "User"}
-                        </span>
-                        <Badge variant="outline" className="capitalize">
-                          {request.requested_role}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <PhoneIcon className="h-3 w-3" />
-                          <span>{request.contact_phone}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <BriefcaseIcon className="h-3 w-3" />
-                          <span>
-                            {request.experience_years} years experience
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        className={getStatusColor(request.verification_status)}
-                      >
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {request.verification_status}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Reason
-                      </label>
-                      <p className="text-gray-600">{request.reason}</p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Credentials
-                      </label>
-                      <p className="text-gray-600">{request.credentials}</p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        License Number
-                      </label>
-                      <p className="text-gray-600">{request.license_number}</p>
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-700">
-                        Issuing Authority
-                      </label>
-                      <p className="text-gray-600">
-                        {request.issuing_authority}
-                      </p>
-                    </div>
-                  </div>
-
-                  {request.verification_status === "pending" && (
-                    <div className="border-t pt-4 space-y-3">
-                      <Textarea
-                        placeholder="Add review notes..."
-                        value={reviewNotes}
-                        onChange={(e) => setReviewNotes(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleReview(request.id, "approved")}
-                          disabled={reviewingId === request.id}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircleIcon className="h-4 w-4 mr-2" />
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => handleReview(request.id, "rejected")}
-                          disabled={reviewingId === request.id}
-                          variant="destructive"
-                        >
-                          <XCircleIcon className="h-4 w-4 mr-2" />
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {request.review_notes && (
-                    <div className="border-t pt-4">
-                      <label className="font-medium text-gray-700">
-                        Review Notes
-                      </label>
-                      <p className="text-gray-600 text-sm">
-                        {request.review_notes}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Reviewed on{" "}
-                        {new Date(request.reviewed_at!).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+    <div className="space-y-4">
+      {requests.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No role requests to review
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        requests.map((request) => {
+          const StatusIcon = getStatusIcon(request.verification_status);
+          return (
+            <div key={request.id} className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">
+                      {request.user?.first_name || "Unknown"}{" "}
+                      {request.user?.last_name || "User"}
+                    </span>
+                    <Badge variant="outline" className="capitalize">
+                      {request.requested_role}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <PhoneIcon className="h-3 w-3" />
+                      <span>{request.contact_phone}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <BriefcaseIcon className="h-3 w-3" />
+                      <span>{request.experience_years} years experience</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={getStatusColor(request.verification_status)}
+                  >
+                    <StatusIcon className="h-3 w-3 mr-1" />
+                    {request.verification_status}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="font-medium text-gray-700">Reason</label>
+                  <p className="text-gray-600">{request.reason}</p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Credentials
+                  </label>
+                  <p className="text-gray-600">{request.credentials}</p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    License Number
+                  </label>
+                  <p className="text-gray-600">{request.license_number}</p>
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Issuing Authority
+                  </label>
+                  <p className="text-gray-600">{request.issuing_authority}</p>
+                </div>
+              </div>
+
+              {request.verification_status === "pending" && (
+                <div className="border-t pt-4 space-y-3">
+                  <Textarea
+                    placeholder="Add review notes..."
+                    value={reviewNotes}
+                    onChange={(e) => setReviewNotes(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleReview(request.id, "approved")}
+                      disabled={reviewingId === request.id}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button
+                      onClick={() => handleReview(request.id, "rejected")}
+                      disabled={reviewingId === request.id}
+                      variant="destructive"
+                    >
+                      <XCircleIcon className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {request.review_notes && (
+                <div className="border-t pt-4">
+                  <label className="font-medium text-gray-700">
+                    Review Notes
+                  </label>
+                  <p className="text-gray-600 text-sm">
+                    {request.review_notes}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Reviewed on{" "}
+                    {new Date(request.reviewed_at!).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
   );
 }

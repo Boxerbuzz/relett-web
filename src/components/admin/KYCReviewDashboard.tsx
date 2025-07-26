@@ -238,9 +238,6 @@ export function KYCReviewDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
-          KYC Review Dashboard
-        </h2>
         <div className="flex gap-2">
           <Button
             variant={activeTab === "documents" ? "default" : "outline"}
@@ -394,7 +391,7 @@ export function KYCReviewDashboard() {
                           className="flex-1 bg-green-600 hover:bg-green-700"
                         >
                           <CheckCircleIcon className="h-4 w-4 mr-2" />
-                          Verify
+                        
                         </Button>
                         <Button
                           onClick={() =>
@@ -408,7 +405,7 @@ export function KYCReviewDashboard() {
                           className="flex-1"
                         >
                           <XCircleIcon className="h-4 w-4 mr-2" />
-                          Reject
+                      
                         </Button>
                       </div>
                     </>
@@ -467,7 +464,7 @@ export function KYCReviewDashboard() {
                           className="bg-green-600 hover:bg-green-700"
                         >
                           <CheckCircleIcon className="h-4 w-4 mr-1" />
-                          Verify
+                        
                         </Button>
                         <Button
                           onClick={() =>
@@ -478,7 +475,7 @@ export function KYCReviewDashboard() {
                           size="sm"
                         >
                           <XCircleIcon className="h-4 w-4 mr-1" />
-                          Reject
+                         
                         </Button>
                       </div>
                     )}
