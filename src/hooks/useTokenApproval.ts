@@ -26,7 +26,7 @@ export const useTokenApproval = () => {
 
   const fetchPendingApprovals = async (): Promise<PendingToken[]> => {
     try {
-      // Use direct query instead of RPC since the function may not be available yet
+      // Use direct query since RPC might not be available
       const { data, error } = await supabase
         .from('tokenized_properties')
         .select(`
@@ -104,35 +104,21 @@ export const useTokenApproval = () => {
 
     setIsLoading(true);
     try {
-      // Try to use the RPC function, fallback to direct update if it doesn't exist
-      try {
-        const { error } = await supabase.rpc('update_tokenized_property_status', {
-          p_tokenized_property_id: tokenId,
-          p_new_status: newStatus,
-          p_admin_notes: adminNotes,
-          p_admin_id: user.id
-        });
+      // Direct update instead of RPC call
+      const { error } = await supabase
+        .from('tokenized_properties')
+        .update({ 
+          status: newStatus as any,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            last_status_change: new Date().toISOString(),
+            last_admin_action: user.id,
+            admin_notes: adminNotes
+          }
+        })
+        .eq('id', tokenId);
 
-        if (error) throw error;
-      } catch (rpcError) {
-        console.warn('RPC function not available, using direct update:', rpcError);
-        
-        // Fallback to direct update
-        const { error } = await supabase
-          .from('tokenized_properties')
-          .update({ 
-            status: newStatus as any,
-            updated_at: new Date().toISOString(),
-            metadata: {
-              last_status_change: new Date().toISOString(),
-              last_admin_action: user.id,
-              admin_notes: adminNotes
-            }
-          })
-          .eq('id', tokenId);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       // If approved, trigger Hedera token creation
       if (newStatus === 'approved') {
