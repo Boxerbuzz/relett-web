@@ -167,7 +167,7 @@ export function TokenizePropertyDialog({
                 />
                 {formData.pricePerToken && (
                   <div className="mt-1 text-sm text-muted-foreground">
-                    <DualCurrencyDisplay 
+                    <DualCurrencyDisplay
                       amount={parseFloat(formData.pricePerToken) || 0}
                       primaryCurrency="USD"
                       size="sm"
@@ -178,9 +178,7 @@ export function TokenizePropertyDialog({
             </div>
 
             <div>
-              <Label htmlFor="minimumInvestment">
-                Minimum Investment
-              </Label>
+              <Label htmlFor="minimumInvestment">Minimum Investment</Label>
               <Input
                 id="minimumInvestment"
                 type="number"
@@ -191,7 +189,7 @@ export function TokenizePropertyDialog({
               />
               {formData.minimumInvestment && (
                 <div className="mt-1 text-sm text-muted-foreground">
-                  <DualCurrencyDisplay 
+                  <DualCurrencyDisplay
                     amount={parseFloat(formData.minimumInvestment) || 0}
                     primaryCurrency="USD"
                     size="sm"
@@ -202,20 +200,29 @@ export function TokenizePropertyDialog({
 
             <Card className="bg-muted/30">
               <CardHeader>
-                <CardTitle className="text-base">Projected Total Value</CardTitle>
+                <CardTitle className="text-base">
+                  Projected Total Value
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <DualCurrencyDisplay 
-                  amount={(parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0)}
+                <DualCurrencyDisplay
+                  amount={
+                    (parseInt(formData.totalTokens) || 0) *
+                    (parseFloat(formData.pricePerToken) || 0)
+                  }
                   primaryCurrency="USD"
                   size="lg"
                   className="font-bold text-primary"
                 />
                 <div className="text-sm text-muted-foreground">
-                  <p>Min. Tokens: {Math.ceil(
-                    (parseFloat(formData.minimumInvestment) || 0) /
-                      (parseFloat(formData.pricePerToken) || 1)
-                  )} tokens</p>
+                  <p>
+                    Min. Tokens:{" "}
+                    {Math.ceil(
+                      (parseFloat(formData.minimumInvestment) || 0) /
+                        (parseFloat(formData.pricePerToken) || 1)
+                    )}{" "}
+                    tokens
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -350,7 +357,7 @@ export function TokenizePropertyDialog({
                   </div>
                   <div>
                     <p className="text-gray-600">Price per Token:</p>
-                    <DualCurrencyDisplay 
+                    <DualCurrencyDisplay
                       amount={parseFloat(formData.pricePerToken) || 0}
                       primaryCurrency="USD"
                       size="sm"

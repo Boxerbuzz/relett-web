@@ -25,6 +25,8 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
 
+  console.log("HashPack in window:", window.hashpack);
+
   const fetchBalance = async (accountId: string) => {
     try {
       const { data: balanceData } = await supabase.functions.invoke('get-hedera-balance', {
