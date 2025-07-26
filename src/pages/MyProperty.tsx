@@ -12,6 +12,10 @@ import {
   DotsThreeVerticalIcon,
   HeartIcon,
   ShareIcon,
+  BedIcon,
+  ShowerIcon,
+  SquareIcon,
+  CarIcon,
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { PropertyGridSkeleton } from "@/components/ui/property-skeleton";
@@ -120,8 +124,7 @@ const MyProperty = () => {
           is_verified: property.is_verified || false,
           type: property.type,
           backdrop: (property.backdrop as string | null) || undefined,
-          blockchain_transaction_id:
-            property.blockchain_transaction_id ?? undefined,
+          blockchain_transaction_id: property.blockchain_transaction_id ?? "",
           property_images: imagesByProperty[property.id] || [],
         })
       );
@@ -229,18 +232,8 @@ const MyProperty = () => {
     return "₦0";
   };
 
-  const getPropertySize = (specification: any) => {
-    if (typeof specification === "object" && specification !== null) {
-      if (specification.area_sqm) {
-        return `${specification.area_sqm} sqm`;
-      }
-      if (specification.bedrooms) {
-        return `${specification.bedrooms} bed, ${
-          specification.bathrooms || 0
-        } bath`;
-      }
-    }
-    return "Size not specified";
+  const formatArea = (area: number) => {
+    return `${area?.toLocaleString()} sqm`;
   };
 
   const filteredProperties = properties.filter((property) => {
@@ -388,7 +381,7 @@ const MyProperty = () => {
                     size="icon"
                     className="h-8 w-8 rounded-full bg-white/900 backdrop-blur-sm hover:bg-white shadow-sm"
                   >
-                    <HeartIcon  size={14} />
+                    <HeartIcon size={14} />
                   </Button>
                   <Button
                     variant="secondary"
@@ -419,10 +412,35 @@ const MyProperty = () => {
               </CardHeader>
               <CardContent className="space-y-3 md:space-y-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Size:</span>
-                  <span className="font-medium">
-                    {getPropertySize(property.specification)}
-                  </span>
+                  {/* Property Specifications */}
+                  {property.specification && (
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      {property.specification.bedrooms && (
+                        <div className="flex items-center">
+                          <BedIcon className="w-4 h-4 mr-1" />
+                          {property.specification.bedrooms}
+                        </div>
+                      )}
+                      {property.specification.bathrooms && (
+                        <div className="flex items-center">
+                          <ShowerIcon className="w-4 h-4 mr-1" />
+                          {property.specification.bathrooms}
+                        </div>
+                      )}
+                      {property.specification.area_sqm && (
+                        <div className="flex items-center">
+                          <SquareIcon className="w-4 h-4 mr-1" />
+                          {formatArea(property.specification.area_sqm)}
+                        </div>
+                      )}
+                      {property.specification.parking_spaces > 0 && (
+                        <div className="flex items-center">
+                          <CarIcon className="w-4 h-4 mr-1" />
+                          {property.specification.parking_spaces}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1">
@@ -453,6 +471,8 @@ const MyProperty = () => {
                   isRegistered={!!property.blockchain_transaction_id}
                   transactionId={property.blockchain_transaction_id}
                   size="sm"
+                  showLabel={false}
+                  showTransactionId={true}
                 />
 
                 <div className="flex items-center justify-between">

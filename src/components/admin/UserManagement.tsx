@@ -36,6 +36,8 @@ import {
 } from "@phosphor-icons/react";
 import { UserMobileCard } from "./UserMobileCard";
 import { UserActionsDropdown } from "./UserActionsDropdown";
+import { capitalize } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface User {
   id: string;
@@ -154,7 +156,7 @@ export function UserManagement() {
           "bg-gray-100 text-gray-800"
         }
       >
-        {role}
+        {capitalize(role)}
       </Badge>
     );
   };
@@ -269,19 +271,26 @@ export function UserManagement() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant={user.is_active ? "destructive" : "default"}
-                        onClick={() =>
-                          toggleUserStatus(user.id, user.is_active)
-                        }
-                      >
-                        {user.is_active ? (
-                          <ProhibitIcon className="h-4 w-4" />
-                        ) : (
-                          <UserCheckIcon className="h-4 w-4" />
-                        )}
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant={user.is_active ? "destructive" : "default"}
+                            onClick={() =>
+                              toggleUserStatus(user.id, user.is_active)
+                            }
+                          >
+                            {user.is_active ? (
+                              <ProhibitIcon className="h-4 w-4" />
+                            ) : (
+                              <UserCheckIcon className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {user.is_active ? "Deactivate" : "Activate"}
+                        </TooltipContent>
+                      </Tooltip>
                       <UserActionsDropdown
                         user={user}
                         onUserUpdated={handleUserUpdated}

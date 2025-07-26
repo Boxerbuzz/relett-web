@@ -24,12 +24,13 @@ import {
   HeartIcon,
   ArrowRightIcon,
   StarIcon,
+  CornersInIcon,
+  FrameCornersIcon,
 } from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
 import { EnhancedPropertyPricing } from "@/types/property";
 import { capitalize } from "@/lib/utils";
 import { useFullscreen } from "@/hooks/useFullscreen";
-import { Fullscreen, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AdvancedMarketplace() {
@@ -108,9 +109,9 @@ export function AdvancedMarketplace() {
           )}
           <Button variant="outline" size="sm" onClick={toggleFullscreen}>
             {isFullscreen ? (
-              <Minimize className="h-4 w-4 mr-2" />
+              <CornersInIcon className="h-4 w-4 mr-2" />
             ) : (
-              <Fullscreen className="h-4 w-4 mr-2" />
+              <FrameCornersIcon className="h-4 w-4 mr-2" />
             )}
             {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </Button>
@@ -331,7 +332,7 @@ function PropertyCard({ property, onCompare, isSelected }: any) {
             {property.specification.area_sqm && (
               <div className="flex items-center">
                 <SquareIcon className="w-4 h-4 mr-1" />
-                {formatArea(property.specification.area_sqm)}
+                {formatArea(property.specification.area)}
               </div>
             )}
             {property.specification.parking_spaces > 0 && (

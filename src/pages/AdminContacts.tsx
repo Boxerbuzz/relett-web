@@ -43,7 +43,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/loading/LoadingSpinner";
-import { EnvelopeIcon, PhoneIcon, EyeIcon, ArrowLeftIcon } from "@phosphor-icons/react";
+import {
+  EnvelopeIcon,
+  PhoneIcon,
+  EyeIcon,
+  ArrowLeftIcon,
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 interface Contact {
@@ -194,12 +199,16 @@ export default function AdminContacts() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <div className="spacing-y-4">
         <Link to="/admin">
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit bg-gray-100 hover:bg-gray-200"
+          >
             <ArrowLeftIcon size={16} className="mr-2" />
-            Back to Admin
+            Back
           </Button>
         </Link>
         <div className="mt-4">
@@ -220,37 +229,86 @@ export default function AdminContacts() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="md:table-cell">Name</TableHead>
+                  <TableHead className="min-w-[180px]">Contact</TableHead>
+                  <TableHead className="hidden lg:table-cell">Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead className="w-[100px] md:w-24">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {contacts.map((contact) => (
-                  <TableRow key={contact.id}>
-                    <TableCell className="font-medium">
-                      {contact.first_name} {contact.last_name}
+                  <TableRow key={contact.id} className="hover:bg-gray-50">
+                    <TableCell className="py-3">
+                      <div className="font-medium">
+                        {contact.first_name} {contact.last_name}
+                      </div>
+                      <div className="text-xs text-gray-500 lg:hidden mt-1">
+                        {getStatusBadge(contact.status)}
+                      </div>
+                      <div className="text-xs text-gray-500 md:hidden">
+                        {new Date(contact.created_at).toLocaleDateString(
+                          "en-US",
+                          { month: "short", day: "numeric" }
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell>{contact.email}</TableCell>
-                    <TableCell>{contact.phone_number || "N/A"}</TableCell>
-                    <TableCell>{getStatusBadge(contact.status)}</TableCell>
-                    <TableCell>
-                      {new Date(contact.created_at).toLocaleDateString()}
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <EnvelopeIcon
+                          size={14}
+                          className="text-gray-400 flex-shrink-0"
+                        />
+                        <a
+                          href={`mailto:${contact.email}`}
+                          className="truncate hover:underline"
+                        >
+                          {contact.email}
+                        </a>
+                      </div>
+                      {contact.phone_number && (
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                          <PhoneIcon
+                            size={12}
+                            className="text-gray-400 flex-shrink-0"
+                          />
+                          <a
+                            href={`tel:${contact.phone_number.replace(
+                              /[^\d+]/g,
+                              ""
+                            )}`}
+                            className="truncate hover:underline"
+                          >
+                            {contact.phone_number}
+                          </a>
+                        </div>
+                      )}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                    <TableCell className="hidden lg:table-cell">
+                      {getStatusBadge(contact.status)}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell whitespace-nowrap">
+                      {new Date(contact.created_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex items-center justify-end gap-1">
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
-                              variant="outline"
-                              size="sm"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 p-0 hover:bg-gray-100"
                               onClick={() => setSelectedContact(contact)}
+                              title="View details"
                             >
-                              <EyeIcon size={16} className="mr-1" />
-                              View
+                              <EyeIcon size={16} />
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
@@ -347,7 +405,10 @@ export default function AdminContacts() {
                                             className="mr-2"
                                           />
                                         ) : (
-                                          <PhoneIcon size={16} className="mr-2" />
+                                          <PhoneIcon
+                                            size={16}
+                                            className="mr-2"
+                                          />
                                         )}
                                         Send{" "}
                                         {responseMethod === "email"
