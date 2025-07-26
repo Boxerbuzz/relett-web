@@ -172,8 +172,8 @@ export function PropertyDetailsDialog({
     if (!property?.location) return "Location not specified";
     if (typeof property.location === "string") return property.location;
 
-    const { address, city, state, country } = property.location;
-    return [address, city, state, country].filter(Boolean).join(", ");
+    const { city, state } = property.location;
+    return [city, state].filter(Boolean).join(", ");
   };
 
   const getCoordinates = () => {
@@ -187,8 +187,8 @@ export function PropertyDetailsDialog({
   const formatPrice = (price: any) => {
     if (!price) return "Price not available";
     if (typeof price === "string") return price;
-    if (typeof price === "number") return `₦${price.toLocaleString()}`;
-    if (price.amount) return `₦${price.amount.toLocaleString()}`;
+    if (typeof price === "number") return `₦${(price / 100).toLocaleString()}`;
+    if (price.amount) return `₦${(price.amount / 100).toLocaleString()}`;
     return "Price not available";
   };
 
@@ -242,7 +242,7 @@ export function PropertyDetailsDialog({
     ? [
         {
           label: "Total Value",
-          value: formatPrice(property.price.amount / 100),
+          value: formatPrice(property.price),
         },
         {
           label: "Token Price",

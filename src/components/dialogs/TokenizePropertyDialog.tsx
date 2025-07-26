@@ -19,6 +19,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { DualCurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import {
   CoinsIcon,
   FileTextIcon,
@@ -156,14 +158,11 @@ export function TokenizePropertyDialog({
               </div>
               <div>
                 <Label htmlFor="pricePerToken">Price per Token</Label>
-                <Input
-                  id="pricePerToken"
-                  type="number"
-                  step="0.01"
-                  value={formData.pricePerToken}
-                  onChange={(e) =>
-                    handleInputChange("pricePerToken", e.target.value)
-                  }
+                <CurrencyInput
+                  value={parseFloat(formData.pricePerToken) || 0}
+                  onChange={(value) => handleInputChange("pricePerToken", value.toString())}
+                  currency="USD"
+                  min={0.01}
                 />
                 {formData.pricePerToken && (
                   <div className="mt-1 text-sm text-muted-foreground">
@@ -181,13 +180,11 @@ export function TokenizePropertyDialog({
               <Label htmlFor="minimumInvestment">
                 Minimum Investment
               </Label>
-              <Input
-                id="minimumInvestment"
-                type="number"
-                value={formData.minimumInvestment}
-                onChange={(e) =>
-                  handleInputChange("minimumInvestment", e.target.value)
-                }
+              <CurrencyInput
+                value={parseFloat(formData.minimumInvestment) || 0}
+                onChange={(value) => handleInputChange("minimumInvestment", value.toString())}
+                currency="USD"
+                min={1}
               />
               {formData.minimumInvestment && (
                 <div className="mt-1 text-sm text-muted-foreground">
@@ -245,10 +242,16 @@ export function TokenizePropertyDialog({
                   type="number"
                   min="4"
                   value={formData.lockupPeriod}
-                  onChange={(e) =>
-                    handleInputChange("lockupPeriod", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (value >= 4 || value === 0) {
+                      handleInputChange("lockupPeriod", e.target.value);
+                    }
+                  }}
                 />
+                {parseInt(formData.lockupPeriod) > 0 && parseInt(formData.lockupPeriod) < 4 && (
+                  <p className="text-sm text-destructive mt-1">Minimum lockup period is 4 months</p>
+                )}
               </div>
             </div>
 
