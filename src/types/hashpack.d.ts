@@ -1,4 +1,4 @@
-import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+import { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 
 export interface HashPackWallet {
   id: string;
@@ -15,7 +15,7 @@ export interface HashPackContextType {
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   isAvailable: boolean;
-  hashConnect: HashConnect | null;
+  connector: DAppConnector | null;
 }
 
-export { HashConnect, HashConnectTypes, MessageTypes };
+export { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod, HederaChainId };

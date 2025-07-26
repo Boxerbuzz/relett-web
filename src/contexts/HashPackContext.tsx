@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { HashConnect, HashConnectConnectionState, SessionData } from 'hashconnect';
+import { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
 
 export interface HashPackWallet {
@@ -20,7 +20,7 @@ interface HashPackContextType {
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   isAvailable: boolean;
-  hashConnect: HashConnect | null;
+  connector: DAppConnector | null;
 }
 
 const appMetadata = {
@@ -48,63 +48,59 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [wallet, setWallet] = useState<HashPackWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [hashConnect, setHashConnect] = useState<HashConnect | null>(null);
-  const [pairingData, setPairingData] = useState<SessionData | null>(null);
-  const [connectionState, setConnectionState] = useState<HashConnectConnectionState>(HashConnectConnectionState.Disconnected);
+  const [connector, setConnector] = useState<DAppConnector | null>(null);
 
-  // Initialize HashConnect
+  // Initialize DAppConnector
   useEffect(() => {
-    const initHashConnect = async () => {
+    const initConnector = async () => {
       try {
-        // For now, we'll use a demo project ID - you'll need to get your own from WalletConnect Cloud
-        const projectId = "demo"; 
-        const hashConnect = new HashConnect(LedgerId.TESTNET, projectId, appMetadata, true);
+        const projectId = "demo"; // Replace with your WalletConnect project ID
         
-        setHashConnect(hashConnect);
+        const dAppConnector = new DAppConnector(
+          appMetadata,
+          LedgerId.TESTNET,
+          projectId,
+          Object.values(HederaJsonRpcMethod),
+          [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
+          [HederaChainId.Testnet, HederaChainId.Mainnet],
+        );
+        
+        await dAppConnector.init({ logger: 'error' });
+        
+        setConnector(dAppConnector);
         setIsAvailable(true);
 
         // Set up event listeners
-        hashConnect.pairingEvent.on((newPairingData) => {
-          console.log('Pairing event:', newPairingData);
-          setPairingData(newPairingData);
-          
-          if (newPairingData.accountIds.length > 0) {
-            const accountId = newPairingData.accountIds[0];
-            const walletData: HashPackWallet = {
-              id: accountId,
-              address: accountId,
-              name: newPairingData.metadata?.name || 'HashPack Wallet',
-              network: 'testnet',
-              balance: 'Loading...',
-              isConnected: true
-            };
-            setWallet(walletData);
-            
-            // Fetch balance
-            fetchBalance(accountId);
+        dAppConnector.walletConnectModal?.subscribeModal((state) => {
+          if (state.open) {
+            setIsConnecting(true);
+          } else {
+            setIsConnecting(false);
           }
         });
 
-        hashConnect.disconnectionEvent.on(() => {
-          console.log('Wallet disconnected');
-          setWallet(null);
-          setPairingData(null);
-        });
-
-        hashConnect.connectionStatusChangeEvent.on((connectionStatus) => {
-          setConnectionState(connectionStatus);
-        });
-
-        // Initialize
-        await hashConnect.init();
+        // Check for existing sessions
+        if (dAppConnector.signers && dAppConnector.signers.length > 0) {
+          const accountId = dAppConnector.signers[0].getAccountId().toString();
+          const walletData: HashPackWallet = {
+            id: accountId,
+            address: accountId,
+            name: 'Hedera Wallet',
+            network: 'testnet',
+            balance: 'Loading...',
+            isConnected: true
+          };
+          setWallet(walletData);
+          fetchBalance(accountId);
+        }
 
       } catch (error) {
-        console.error('Failed to initialize HashConnect:', error);
+        console.error('Failed to initialize DAppConnector:', error);
         setIsAvailable(false);
       }
     };
 
-    initHashConnect();
+    initConnector();
   }, []);
 
   const fetchBalance = async (accountId: string) => {
@@ -126,32 +122,13 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   };
 
   const connectWallet = async (): Promise<void> => {
-    if (!hashConnect) {
-      throw new Error('HashConnect not initialized');
+    if (!connector) {
+      throw new Error('DAppConnector not initialized');
     }
 
     try {
       setIsConnecting(true);
-      
-      // If already paired, use existing connection
-      if (pairingData && pairingData.accountIds.length > 0) {
-        const accountId = pairingData.accountIds[0];
-        const walletData: HashPackWallet = {
-          id: accountId,
-          address: accountId,
-          name: 'HashPack Wallet',
-          network: 'testnet',
-          balance: 'Loading...',
-          isConnected: true
-        };
-        setWallet(walletData);
-        fetchBalance(accountId);
-        return;
-      }
-
-      // Open pairing modal to connect to wallet
-      hashConnect.openPairingModal();
-      
+      await connector.openModal();
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
@@ -160,12 +137,11 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
     }
   };
 
-  const disconnectWallet = () => {
-    if (hashConnect) {
-      hashConnect.disconnect();
+  const disconnectWallet = async () => {
+    if (connector) {
+      await connector.disconnect('User requested disconnect');
     }
     setWallet(null);
-    setPairingData(null);
   };
 
   return (
@@ -175,7 +151,7 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
       connectWallet,
       disconnectWallet,
       isAvailable,
-      hashConnect
+      connector
     }}>
       {children}
     </HashPackContext.Provider>
