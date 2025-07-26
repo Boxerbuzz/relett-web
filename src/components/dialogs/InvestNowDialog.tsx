@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { DualCurrencyDisplay, CurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import {
@@ -160,9 +162,8 @@ export function InvestNowDialog({
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Token Price:</span>
-              <DualCurrencyDisplay 
+              <CurrencyExchangeWidget 
                 amount={tokenizedProperty.token_price}
-                primaryCurrency="USD"
                 size="sm"
                 className="font-semibold"
               />
@@ -179,9 +180,8 @@ export function InvestNowDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Min Investment:</span>
-              <DualCurrencyDisplay 
+              <CurrencyExchangeWidget 
                 amount={tokenizedProperty.minimum_investment}
-                primaryCurrency="USD"
                 size="sm"
                 className="font-semibold"
               />
@@ -190,14 +190,12 @@ export function InvestNowDialog({
 
           {/* Investment Amount */}
           <div className="space-y-2">
-            <Label htmlFor="investment-amount">Investment Amount ($)</Label>
-            <Input
-              id="investment-amount"
-              type="number"
+            <Label htmlFor="investment-amount">Investment Amount</Label>
+            <CurrencyInput
               value={investmentAmount}
-              onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+              onChange={setInvestmentAmount}
+              currency="USD"
               min={tokenizedProperty.minimum_investment}
-              step="100"
             />
           </div>
 
@@ -211,11 +209,12 @@ export function InvestNowDialog({
                   {tokensToReceive} {tokenizedProperty.token_symbol}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Estimated annual returns:</span>
-                <CurrencyDisplay 
+                <CurrencyExchangeWidget 
                   amount={estimatedReturns}
-                  primaryCurrency="USD"
+                  size="sm"
+                  variant="toggle"
                   className="font-semibold text-green-600"
                 />
               </div>

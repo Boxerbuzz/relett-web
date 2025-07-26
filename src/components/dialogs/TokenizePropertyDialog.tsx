@@ -19,6 +19,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { DualCurrencyDisplay } from "@/components/ui/currency-display";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import {
   CoinsIcon,
   FileTextIcon,
@@ -156,20 +158,16 @@ export function TokenizePropertyDialog({
               </div>
               <div>
                 <Label htmlFor="pricePerToken">Price per Token</Label>
-                <Input
-                  id="pricePerToken"
-                  type="number"
-                  step="0.01"
-                  value={formData.pricePerToken}
-                  onChange={(e) =>
-                    handleInputChange("pricePerToken", e.target.value)
-                  }
+                <CurrencyInput
+                  value={parseFloat(formData.pricePerToken) || 0}
+                  onChange={(value) => handleInputChange("pricePerToken", value.toString())}
+                  currency="USD"
+                  min={0.01}
                 />
                 {formData.pricePerToken && (
                   <div className="mt-1 text-sm text-muted-foreground">
-                    <DualCurrencyDisplay
+                    <CurrencyExchangeWidget 
                       amount={parseFloat(formData.pricePerToken) || 0}
-                      primaryCurrency="USD"
                       size="sm"
                     />
                   </div>
@@ -178,20 +176,19 @@ export function TokenizePropertyDialog({
             </div>
 
             <div>
-              <Label htmlFor="minimumInvestment">Minimum Investment</Label>
-              <Input
-                id="minimumInvestment"
-                type="number"
-                value={formData.minimumInvestment}
-                onChange={(e) =>
-                  handleInputChange("minimumInvestment", e.target.value)
-                }
+              <Label htmlFor="minimumInvestment">
+                Minimum Investment
+              </Label>
+              <CurrencyInput
+                value={parseFloat(formData.minimumInvestment) || 0}
+                onChange={(value) => handleInputChange("minimumInvestment", value.toString())}
+                currency="USD"
+                min={1}
               />
               {formData.minimumInvestment && (
                 <div className="mt-1 text-sm text-muted-foreground">
-                  <DualCurrencyDisplay
+                  <CurrencyExchangeWidget 
                     amount={parseFloat(formData.minimumInvestment) || 0}
-                    primaryCurrency="USD"
                     size="sm"
                   />
                 </div>
@@ -200,29 +197,19 @@ export function TokenizePropertyDialog({
 
             <Card className="bg-muted/30">
               <CardHeader>
-                <CardTitle className="text-base">
-                  Projected Total Value
-                </CardTitle>
+                <CardTitle className="text-base">Projected Total Value</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <DualCurrencyDisplay
-                  amount={
-                    (parseInt(formData.totalTokens) || 0) *
-                    (parseFloat(formData.pricePerToken) || 0)
-                  }
-                  primaryCurrency="USD"
+                <CurrencyExchangeWidget 
+                  amount={(parseInt(formData.totalTokens) || 0) * (parseFloat(formData.pricePerToken) || 0)}
                   size="lg"
-                  className="font-bold text-primary"
+                  className="font-bold text-primary justify-center"
                 />
                 <div className="text-sm text-muted-foreground">
-                  <p>
-                    Min. Tokens:{" "}
-                    {Math.ceil(
-                      (parseFloat(formData.minimumInvestment) || 0) /
-                        (parseFloat(formData.pricePerToken) || 1)
-                    )}{" "}
-                    tokens
-                  </p>
+                  <p>Min. Tokens: {Math.ceil(
+                    (parseFloat(formData.minimumInvestment) || 0) /
+                      (parseFloat(formData.pricePerToken) || 1)
+                  )} tokens</p>
                 </div>
               </CardContent>
             </Card>
@@ -252,10 +239,16 @@ export function TokenizePropertyDialog({
                   type="number"
                   min="4"
                   value={formData.lockupPeriod}
-                  onChange={(e) =>
-                    handleInputChange("lockupPeriod", e.target.value)
-                  }
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (value >= 4 || value === 0) {
+                      handleInputChange("lockupPeriod", e.target.value);
+                    }
+                  }}
                 />
+                {parseInt(formData.lockupPeriod) > 0 && parseInt(formData.lockupPeriod) < 4 && (
+                  <p className="text-sm text-destructive mt-1">Minimum lockup period is 4 months</p>
+                )}
               </div>
             </div>
 
@@ -357,9 +350,8 @@ export function TokenizePropertyDialog({
                   </div>
                   <div>
                     <p className="text-gray-600">Price per Token:</p>
-                    <DualCurrencyDisplay
+                    <CurrencyExchangeWidget 
                       amount={parseFloat(formData.pricePerToken) || 0}
-                      primaryCurrency="USD"
                       size="sm"
                       className="font-semibold"
                     />

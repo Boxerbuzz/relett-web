@@ -22,6 +22,20 @@ export function formatCurrency(
   }).format(amount);
 }
 
+// Convert kobo to naira for display
+export function convertKoboToNaira(kobo: number): number {
+  return kobo / 100;
+}
+
+// Format price with proper kobo to naira conversion
+export function formatPriceFromKobo(
+  koboAmount: number,
+  currency: string = "NGN"
+): string {
+  const nairaAmount = convertKoboToNaira(koboAmount);
+  return formatCurrency(nairaAmount, currency);
+}
+
 export function formatDualCurrency(
   amount: number,
   primaryCurrency: string = "NGN",
