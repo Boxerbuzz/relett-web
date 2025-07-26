@@ -56,6 +56,7 @@
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "embla-carousel-react": "^8.3.0",
+    "hashconnect": "^3.0.13",
     "input-otp": "^1.2.4",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",

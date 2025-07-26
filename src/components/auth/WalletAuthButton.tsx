@@ -14,22 +14,44 @@ export function WalletAuthButton() {
     try {
       setLoading(true);
       
-      // Check if HashPack is available
-      if (!window.hashpack) {
-        throw new Error('HashPack wallet not detected. Please install the HashPack extension.');
-      }
+      // Use HashConnect SDK instead of window.hashpack
+      const { HashConnect, HashConnectConnectionState } = await import('hashconnect');
+      const { LedgerId } = await import('@hashgraph/sdk');
       
-      // Connect to HashPack
-      const result = await window.hashpack.connectWallet();
+      const appMetadata = {
+        name: 'Property Tokenization Platform',
+        description: 'Tokenize and trade real estate properties on Hedera',
+        icons: [window.location.origin + '/favicon.ico'],
+        url: window.location.origin
+      };
       
-      if (result.accountId) {
+      const hashConnect = new HashConnect(LedgerId.TESTNET, "demo", appMetadata, true);
+      
+      await hashConnect.init();
+      
+      // Open pairing modal to connect to wallet
+      hashConnect.openPairingModal();
+      
+      // Wait for pairing event
+      const pairingPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 30000);
+        
+        hashConnect.pairingEvent.once((pairingData) => {
+          clearTimeout(timeout);
+          resolve(pairingData);
+        });
+      });
+      
+      const pairingData: any = await pairingPromise;
+      
+      if (pairingData.accountIds && pairingData.accountIds.length > 0) {
         // Create user session with wallet data
         const { error } = await supabase.auth.signInAnonymously();
         if (error) throw error;
         
         toast({
           title: "Wallet connected successfully!",
-          description: `Connected account: ${result.accountId}`
+          description: `Connected account: ${pairingData.accountIds[0]}`
         });
       }
     } catch (error: any) {

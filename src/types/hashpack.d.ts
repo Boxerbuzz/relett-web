@@ -1,37 +1,21 @@
-declare global {
-  interface Window {
-    // HashPack can be in either of these locations
-    hashpack?: HashPackAPI;
-    hedera?: {
-      hashpack: HashPackAPI;
-    };
-  }
+import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+
+export interface HashPackWallet {
+  id: string;
+  address: string;
+  name: string;
+  network: string;
+  balance?: number;
+  isConnected: boolean;
 }
 
-interface HashPackAPI {
-  // Connect to the wallet
-  connectWallet: () => Promise<{
-    accountId: string;
-    accountPubKey: string;
-    network: 'mainnet' | 'testnet' | 'previewnet' | string;
-    error?: string;
-  }>;
-  
-  // Disconnect the wallet
-  disconnect: () => void;
-  
-  // Check if connected
-  isConnected: () => boolean;
-  
-  // Get account info if already connected
-  getAccountInfo?: () => Promise<{
-    accountId: string;
-    network: string;
-  }>;
-  
-  // Event listeners
-  on?: (event: string, callback: (data: any) => void) => void;
-  off?: (event: string, callback: (data: any) => void) => void;
+export interface HashPackContextType {
+  wallet: HashPackWallet | null;
+  isConnecting: boolean;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
+  isAvailable: boolean;
+  hashConnect: HashConnect | null;
 }
 
-export {};
+export { HashConnect, HashConnectTypes, MessageTypes };
