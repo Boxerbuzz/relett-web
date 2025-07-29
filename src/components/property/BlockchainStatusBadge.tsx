@@ -40,9 +40,17 @@ export function BlockchainStatusBadge({
           {showLabel && "Blockchain Registered"}
         </Badge>
         {transactionId && transactionId !== "" && showTransactionId && (
-          <Badge variant="outline" className="text-xs text-gray-500 font-mono">
-            TX: {transactionId.slice(0, 8)}...
-          </Badge>
+          <a 
+            href={`https://hashscan.io/testnet/transaction/${transactionId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Badge variant="outline" className="text-xs text-gray-500 font-mono cursor-pointer hover:bg-gray-50">
+              TX: {transactionId.slice(0, 8)}...
+            </Badge>
+          </a>
         )}
       </div>
     );

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { WalletIcon, CheckCircleIcon, SpinnerIcon} from '@phosphor-icons/react';
+import { HashConnect } from '@hashgraph/hashconnect';
 
 interface HashPackConnectDialogProps {
   isOpen: boolean;
@@ -21,40 +22,44 @@ interface HashPackConnectDialogProps {
 export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialogProps) {
   const { connectWallet, isConnecting, isAvailable } = useHashPack();
   const { toast } = useToast();
+  const hashconnect = new HashConnect();
   const [step, setStep] = useState<'connect' | 'connecting' | 'success'>('connect');
 
   const handleConnect = async () => {
-    if (!isAvailable) {
-      toast({
-        title: 'HashPack Not Available',
-        description: 'Please install the HashPack browser extension to continue.',
-        variant: 'destructive'
-      });
-      return;
-    }
+    // if (!isAvailable) {
+    //   toast({
+    //     title: 'HashPack Not Available',
+    //     description: 'Please install the HashPack browser extension to continue.',
+    //     variant: 'destructive'
+    //   });
+    //   return;
+    // }
 
-    try {
-      setStep('connecting');
-      await connectWallet();
-      setStep('success');
+    // try {
+    //   setStep('connecting');
+    //   await connectWallet();
+    //   setStep('success');
       
-      toast({
-        title: 'Wallet Connected',
-        description: 'Your HashPack wallet has been successfully connected.',
-      });
+    //   toast({
+    //     title: 'Wallet Connected',
+    //     description: 'Your HashPack wallet has been successfully connected.',
+    //   });
 
-      setTimeout(() => {
-        onClose();
-        setStep('connect');
-      }, 2000);
-    } catch (error) {
-      setStep('connect');
-      toast({
-        title: 'Connection Failed',
-        description: error instanceof Error ? error.message : 'Failed to connect wallet',
-        variant: 'destructive'
-      });
-    }
+    //   setTimeout(() => {
+    //     onClose();
+    //     setStep('connect');
+    //   }, 2000);
+    // } catch (error) {
+    //   setStep('connect');
+    //   toast({
+    //     title: 'Connection Failed',
+    //     description: error instanceof Error ? error.message : 'Failed to connect wallet',
+    //     variant: 'destructive'
+    //   });
+    // }
+
+    await hashconnect.connect()
+
   };
 
   const handleClose = () => {
@@ -120,9 +125,10 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
               <Button 
                 onClick={handleConnect}
                 className="w-full"
-                disabled={!isAvailable}
+                // disabled={!isAvailable}
               >
-                {isAvailable ? 'Connect HashPack' : 'Waiting for HashPack...'}
+                {/* {isAvailable ? 'Connect HashPack' : 'Waiting for HashPack...'} */}
+                
               </Button>
               
               {!isAvailable && (

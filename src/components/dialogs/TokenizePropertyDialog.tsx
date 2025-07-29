@@ -133,7 +133,7 @@ export function TokenizePropertyDialog({
         "tokenize-property",
         {
           body: {
-            land_title_id: property.id, // Edge function expects land_title_id
+            land_title_id: "08ddabb1-df60-4d22-868b-81cd41132164", // Edge function expects land_title_id
             property_id: property.id, // Also send property_id as backup
             token_name: `${property.title} Token`,
             token_symbol: `${property.title.substring(0, 3).toUpperCase()}T`,
