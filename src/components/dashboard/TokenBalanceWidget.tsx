@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useHederaWallet } from "@/contexts/HederaWalletContext";
 import { TokenBalanceCard } from "@/components/wallet/TokenBalanceCard";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
-import { CoinsIcon, RefreshCwIcon } from "@phosphor-icons/react";
+import { CoinsIcon, ArrowClockwise } from "@phosphor-icons/react";
 
 export function TokenBalanceWidget() {
   const { wallet, refreshBalances } = useHederaWallet();
@@ -56,7 +56,7 @@ export function TokenBalanceWidget() {
               onClick={refreshBalances}
               className="flex items-center gap-1"
             >
-              <RefreshCwIcon className="w-3 h-3" />
+              <ArrowClockwise className="w-3 h-3" />
               Refresh
             </Button>
           </div>

@@ -75,7 +75,10 @@ export function RealTokenMarketplace() {
       if (error) throw error;
 
       if (data) {
-        setListings(data as MarketplaceListing[]);
+        setListings(data.map(listing => ({
+          ...listing,
+          tokenized_property: listing.tokenized_properties
+        })) as MarketplaceListing[]);
       }
     } catch (error) {
       console.error('Error fetching marketplace listings:', error);

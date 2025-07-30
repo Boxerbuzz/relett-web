@@ -60,14 +60,14 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   useEffect(() => {
     const initConnector = async () => {
       try {
-        const connector = new DAppConnector(
+        const connector = new (DAppConnector as any)(
           {
             name: "Tokenized Real Estate Platform",
             description: "Invest in fractional real estate ownership through blockchain tokens",
             url: window.location.origin,
             icons: [`${window.location.origin}/favicon.ico`],
           },
-          "testnet", // Use testnet for development
+          "testnet",
           {
             methods: [
               HederaJsonRpcMethod.GetNodeAddresses,
@@ -179,7 +179,7 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   const disconnectWallet = async () => {
     try {
       if (dAppConnector) {
-        await dAppConnector.disconnect();
+        await dAppConnector.disconnect(dAppConnector.walletConnectClient?.session.getAll()[0]?.topic || '');
       }
     } catch (error) {
       console.error("Error disconnecting from wallet:", error);
