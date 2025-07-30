@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CreditCardIcon,
@@ -14,16 +15,18 @@ import {
   ArmchairIcon,
   LinkIcon,
   CheckCircleIcon,
+  DownloadIcon,
+  ArrowRightIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Stepper from "awesome-react-stepper";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-// You must have installed awesome-react-stepper
-// npm install awesome-react-stepper
 import { RentalAgreementSigning } from "./RentalAgreementSigning";
 import { Tooltip } from "../ui/tooltip";
+import { DocumentStorageService } from "@/lib/documentStorage";
+import { useToast } from "@/hooks/use-toast";
 import { capitalize } from "@/lib/utils";
 
 interface RentalDetailsContentProps {
@@ -32,6 +35,8 @@ interface RentalDetailsContentProps {
 
 export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
   const [showAgreement, setShowAgreement] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Helper to safely get property info (supporting both .property and .properties)
   const property = rental.property || rental.properties || {};
@@ -158,6 +163,22 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
         </Button>
       );
     }
+    // Agreement actions based on status
+    if (rental.status === "approved" || rental.status === "agreement_pending") {
+      actions.push(
+        <Button
+          size="sm"
+          key="sign-agreement"
+          onClick={() => navigate(`/rental/${rental.id}/agreement`)}
+          className="bg-primary text-primary-foreground"
+        >
+          <FileTextIcon className="w-4 h-4 mr-2" />
+          Sign Agreement
+          <ArrowRightIcon className="w-4 h-4 ml-2" />
+        </Button>
+      );
+    }
+    
     if (
       ["agreement_signed", "confirmed", "active", "completed"].includes(
         rental.status
@@ -168,10 +189,56 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
           size="sm"
           variant="outline"
           key="view-agreement"
-          onClick={() => setShowAgreement(true)}
+          onClick={async () => {
+            try {
+              const documentUrl = await DocumentStorageService.getSignedAgreement(rental.id);
+              if (documentUrl) {
+                window.open(documentUrl, '_blank');
+              } else {
+                setShowAgreement(true);
+              }
+            } catch (error) {
+              setShowAgreement(true);
+            }
+          }}
         >
           <FileTextIcon className="w-4 h-4 mr-2" />
           View Agreement
+        </Button>
+      );
+      
+      // Download signed agreement
+      actions.push(
+        <Button
+          size="sm"
+          variant="outline"
+          key="download-agreement"
+          onClick={async () => {
+            try {
+              const documentUrl = await DocumentStorageService.getSignedAgreement(rental.id);
+              if (documentUrl) {
+                await DocumentStorageService.downloadSignedAgreement(
+                  documentUrl,
+                  `rental-agreement-${rental.property?.title}-${new Date().toISOString().split('T')[0]}.pdf`
+                );
+              } else {
+                toast({
+                  title: 'Document not found',
+                  description: 'The signed agreement could not be found.',
+                  variant: 'destructive'
+                });
+              }
+            } catch (error) {
+              toast({
+                title: 'Download failed',
+                description: 'There was an error downloading the agreement.',
+                variant: 'destructive'
+              });
+            }
+          }}
+        >
+          <DownloadIcon className="w-4 h-4 mr-2" />
+          Download PDF
         </Button>
       );
     }
@@ -338,6 +405,18 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
               <CalendarIcon className="w-5 h-5" />
             </Button>
           )}
+          {/* Sign Agreement */}
+          {(rental.status === "approved" || rental.status === "agreement_pending") && (
+            <Button
+              size="icon"
+              title="Sign Agreement"
+              onClick={() => navigate(`/rental/${rental.id}/agreement`)}
+              className="bg-primary text-primary-foreground"
+            >
+              <FileTextIcon className="w-5 h-5" />
+            </Button>
+          )}
+          
           {/* View Agreement */}
           {["agreement_signed", "confirmed", "active", "completed"].includes(
             rental.status
@@ -346,9 +425,50 @@ export function RentalDetailsContent({ rental }: RentalDetailsContentProps) {
               variant="outline"
               size="icon"
               title="View Agreement"
-              onClick={() => setShowAgreement(true)}
+              onClick={async () => {
+                try {
+                  const documentUrl = await DocumentStorageService.getSignedAgreement(rental.id);
+                  if (documentUrl) {
+                    window.open(documentUrl, '_blank');
+                  } else {
+                    setShowAgreement(true);
+                  }
+                } catch (error) {
+                  setShowAgreement(true);
+                }
+              }}
             >
               <FileTextIcon className="w-5 h-5" />
+            </Button>
+          )}
+          
+          {/* Download Agreement */}
+          {["agreement_signed", "confirmed", "active", "completed"].includes(
+            rental.status
+          ) && (
+            <Button
+              variant="outline"
+              size="icon"
+              title="Download Agreement"
+              onClick={async () => {
+                try {
+                  const documentUrl = await DocumentStorageService.getSignedAgreement(rental.id);
+                  if (documentUrl) {
+                    await DocumentStorageService.downloadSignedAgreement(
+                      documentUrl,
+                      `rental-agreement-${rental.property?.title}-${new Date().toISOString().split('T')[0]}.pdf`
+                    );
+                  }
+                } catch (error) {
+                  toast({
+                    title: 'Download failed',
+                    description: 'There was an error downloading the agreement.',
+                    variant: 'destructive'
+                  });
+                }
+              }}
+            >
+              <DownloadIcon className="w-5 h-5" />
             </Button>
           )}
           {/* Contact Support/Agent */}

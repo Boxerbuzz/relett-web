@@ -37,6 +37,7 @@ import AdminWaitlist from "./pages/AdminWaitlist";
 import LandTitles from "./pages/LandTitles";
 import TokenManagement from "./pages/TokenManagement";
 import UserBookings from "./pages/UserBookings";
+import RentalAgreementSigning from "./pages/RentalAgreementSigning";
 import AgentCalendar from "./pages/AgentCalendar";
 import AgentInspections from "./pages/AgentInspections";
 import AgentRentals from "./pages/AgentRentals";
@@ -260,6 +261,14 @@ function App() {
                               <UserBookings />
                             </ProtectedRoute>
                           </Layout>
+                        }
+                      />
+                      <Route
+                        path="/rental/:id/agreement"
+                        element={
+                          <ProtectedRoute>
+                            <RentalAgreementSigning />
+                          </ProtectedRoute>
                         }
                       />
                       <Route
