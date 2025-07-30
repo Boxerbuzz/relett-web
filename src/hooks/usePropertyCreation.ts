@@ -284,6 +284,7 @@ export function usePropertyCreation() {
           year_built: new Date(
             data.specification.year_built || new Date().getFullYear()
           ).toISOString(),
+          land_title_id: data.land_title_id || null,
         })
         .select()
         .single();
