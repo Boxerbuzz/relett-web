@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { PropertyContractProvider } from "@/contexts/PropertyContractContext";
 import { HederaWalletProvider } from "@/contexts/HederaWalletContext";
+import { HashPackProvider } from "@/contexts/HashPackContext";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -72,8 +73,9 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <HederaWalletProvider>
-              <PropertyContractProvider>
-                <WalletProvider>
+              <HashPackProvider>
+                <PropertyContractProvider>
+                  <WalletProvider>
                   <div className="min-h-screen bg-background">
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -412,8 +414,9 @@ function App() {
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>
-                </WalletProvider>
-              </PropertyContractProvider>
+                  </WalletProvider>
+                </PropertyContractProvider>
+              </HashPackProvider>
             </HederaWalletProvider>
           </TooltipProvider>
         </AuthProvider>
