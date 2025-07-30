@@ -333,6 +333,7 @@ export function usePropertyCreation() {
         is_exclusive: data.is_exclusive,
         is_featured: data.is_featured,
         location: data.location,
+        land_title_id: property.land_title_id || undefined,
       };
     } catch (error) {
       console.error("Error submitting property:", error);
