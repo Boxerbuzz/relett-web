@@ -18,11 +18,15 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useHashPack } from "@/contexts/HashPackContext";
+import { TradingService } from "@/lib/tradingService";
 import {
   CurrencyDollarIcon,
   TrendUpIcon,
   ShieldIcon,
   ClockIcon,
+  WalletIcon,
+  LinkIcon,
 } from "@phosphor-icons/react";
 
 interface TokenizedProperty {
@@ -49,11 +53,14 @@ export function InvestNowDialog({
   tokenizedProperty,
 }: InvestNowDialogProps) {
   const { user } = useAuth();
+  const { wallet, connectWallet, isConnecting } = useHashPack();
   const { toast } = useToast();
   const [investmentAmount, setInvestmentAmount] = useState(
     tokenizedProperty.minimum_investment
   );
   const [loading, setLoading] = useState(false);
+  
+  const tradingService = new TradingService();
 
   const tokensToReceive = Math.floor(
     investmentAmount / tokenizedProperty.token_price
@@ -61,11 +68,36 @@ export function InvestNowDialog({
   const estimatedReturns =
     (investmentAmount * tokenizedProperty.expected_roi) / 100;
 
+  const handleConnectWallet = async () => {
+    try {
+      await connectWallet();
+      toast({
+        title: "Wallet Connected",
+        description: "Your HashPack wallet has been connected successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Connection Failed",
+        description: error instanceof Error ? error.message : "Failed to connect wallet",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleInvest = async () => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please log in to make an investment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!wallet) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your HashPack wallet to invest",
         variant: "destructive",
       });
       return;
@@ -82,51 +114,21 @@ export function InvestNowDialog({
 
     setLoading(true);
     try {
-      // TODO: Phase 2 - Implement real token transfers via Hedera
-      // For now, creating database records only (as before)
+      // Execute real trade using TradingService
+      const tradeRequest = {
+        userId: user.id,
+        tokenizedPropertyId: tokenizedProperty.id,
+        tokenAmount: tokensToReceive,
+        pricePerToken: tokenizedProperty.token_price,
+        tradeType: 'buy' as const,
+        orderType: 'market' as const
+      };
+
+      const result = await tradingService.executeTrade(tradeRequest);
       
-      // Create a token holding record
-      const { error: holdingError } = await supabase
-        .from("token_holdings")
-        .insert({
-          holder_id: user.id,
-          tokenized_property_id: tokenizedProperty.id,
-          tokens_owned: tokensToReceive.toString(),
-          purchase_price_per_token: tokenizedProperty.token_price,
-          total_investment: investmentAmount,
-          acquisition_date: new Date().toISOString(),
-        });
-
-      if (holdingError) throw holdingError;
-
-      // Create investment tracking record
-      const { error: trackingError } = await supabase
-        .from("investment_tracking")
-        .insert({
-          user_id: user.id,
-          tokenized_property_id: tokenizedProperty.id,
-          tokens_owned: tokensToReceive,
-          investment_amount: investmentAmount,
-          current_value: investmentAmount,
-          roi_percentage: 0,
-        });
-
-      if (trackingError) throw trackingError;
-
-      // Create a token transaction record - using 'mint' as transaction type since this is creating new tokens for user
-      const { error: transactionError } = await supabase
-        .from("token_transactions")
-        .insert({
-          tokenized_property_id: tokenizedProperty.id,
-          to_holder: user.id,
-          token_amount: tokensToReceive.toString(),
-          price_per_token: tokenizedProperty.token_price,
-          total_value: investmentAmount,
-          transaction_type: "mint",
-          status: "confirmed",
-        });
-
-      if (transactionError) throw transactionError;
+      if (!result.success) {
+        throw new Error(result.error || 'Trade execution failed');
+      }
 
       toast({
         title: "Investment Successful!",
@@ -138,8 +140,7 @@ export function InvestNowDialog({
       console.error("Investment error:", error);
       toast({
         title: "Investment Failed",
-        description:
-          "There was an error processing your investment. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error processing your investment. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -241,23 +242,44 @@ export function InvestNowDialog({
 
         <ResponsiveDialogFooter>
           <ResponsiveDialogCloseButton />
-          <Button
-            onClick={handleInvest}
-            disabled={
-              loading ||
-              investmentAmount < tokenizedProperty.minimum_investment
-            }
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <ClockIcon className="h-4 w-4 animate-spin" />
-                Processing...
-              </div>
-            ) : (
-              `Invest $${investmentAmount}`
-            )}
-          </Button>
+          {!wallet ? (
+            <Button
+              onClick={handleConnectWallet}
+              disabled={isConnecting}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isConnecting ? (
+                <div className="flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4 animate-spin" />
+                  Connecting...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <WalletIcon className="h-4 w-4" />
+                  Connect Wallet
+                </div>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleInvest}
+              disabled={
+                loading ||
+                investmentAmount < tokenizedProperty.minimum_investment ||
+                !wallet
+              }
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4 animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                `Invest $${investmentAmount}`
+              )}
+            </Button>
+          )}
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>
     </ResponsiveDialog>

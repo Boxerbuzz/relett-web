@@ -152,6 +152,11 @@ export class InvestmentService {
         sum + holding.total_investment, 0) || 0;
 
       const totalValue = holdings?.reduce((sum, holding) => {
+        // Add null check for tokenized_property
+        if (!holding.tokenized_property || !holding.tokenized_property.token_price) {
+          console.warn('Missing tokenized_property data for holding:', holding.id);
+          return sum;
+        }
         const currentPrice = holding.tokenized_property.token_price;
         return sum + (parseInt(holding.tokens_owned) * currentPrice);
       }, 0) || 0;
