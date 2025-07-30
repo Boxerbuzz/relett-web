@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 import { useHashPack } from '@/contexts/HashPackContext';
 import { useToast } from '@/hooks/use-toast';
 import {

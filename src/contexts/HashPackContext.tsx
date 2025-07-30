@@ -95,13 +95,8 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
           setPairingString("");
         });
 
-        hashconnect.disconnectionEvent.on(() => {
-          console.log("Wallet disconnected");
-          setWallet(null);
-          localStorage.removeItem("hashpack-wallet");
-          setIsConnecting(false);
-          setPairingString("");
-        });
+        // Note: HashConnect doesn't have a disconnectionEvent
+        // We'll handle disconnection manually
         
         // Check for existing connection
         const savedWallet = localStorage.getItem("hashpack-wallet");
@@ -129,9 +124,22 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
       setIsConnecting(true);
       console.log("Starting HashConnect pairing...");
 
-      // Start the pairing process
-      const pairingString = await hashconnect.connect();
+      // Ensure hashconnect is initialized
+      if (!hashconnect) {
+        throw new Error("HashConnect not initialized");
+      }
+
+      // Start the pairing process - this returns a pairing string
+      const connectResult = await hashconnect.connect();
+      console.log("HashConnect connect result:", connectResult);
+      
+      // The pairing string should be available
+      const pairingString = connectResult || "";
       console.log("Pairing string generated:", pairingString);
+      
+      if (!pairingString) {
+        throw new Error("Failed to generate pairing string");
+      }
       
       setPairingString(pairingString);
       return pairingString;

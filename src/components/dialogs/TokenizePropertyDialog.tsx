@@ -120,6 +120,59 @@ export function TokenizePropertyDialog({
   const nextStep = () => setStep(Math.min(step + 1, 4));
   const prevStep = () => setStep(Math.max(step - 1, 1));
 
+  const validateTokenValue = async (property: any, totalTokens: string, pricePerToken: string) => {
+    const tokenValue = (parseInt(totalTokens) || 0) * (parseFloat(pricePerToken) || 0);
+    
+    try {
+      // Try to get AI property valuation first
+      const { data: aiValuation, error } = await supabase.functions.invoke(
+        'ai-property-valuation',
+        {
+          body: {
+            propertyData: {
+              propertyType: 'residential',
+              category: 'apartment',
+              location: {
+                state: 'Lagos',
+                city: 'Lagos',
+                address: property.location || 'Sample Address'
+              },
+              value: property.value
+            }
+          }
+        }
+      );
+
+      let propertyValue = 0;
+      if (!error && aiValuation?.estimatedValue) {
+        propertyValue = aiValuation.estimatedValue;
+        console.log("Using AI valuation:", propertyValue);
+      } else {
+        // Fallback to property value or default estimation
+        const fallbackValue = property.value ? 
+          (typeof property.value === 'string' ? parseFloat(property.value.replace(/[^\d.-]/g, '')) : property.value) :
+          tokenValue * 1.2; // Default to 20% above token value as minimum property value
+        
+        propertyValue = fallbackValue || 50000000; // Default minimum value
+        console.log("Using fallback valuation:", propertyValue, "from property value:", property.value);
+      }
+
+      // Check if token value exceeds property value
+      if (tokenValue > propertyValue) {
+        throw new Error(
+          `Token value (${tokenValue.toLocaleString()}) cannot exceed property value (${propertyValue.toLocaleString()}). Please adjust token count or price per token.`
+        );
+      }
+
+      return { valid: true, propertyValue, tokenValue };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to validate token value against property valuation");
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user || !property) {
       toast.error("User authentication or property data missing");
@@ -128,6 +181,9 @@ export function TokenizePropertyDialog({
 
     setIsLoading(true);
     try {
+      // Validate token value before submission
+      await validateTokenValue(property, formData.totalTokens, formData.pricePerToken);
+
       // Call the tokenization edge function
       const { data, error } = await supabase.functions.invoke(
         "tokenize-property",
@@ -188,10 +244,9 @@ export function TokenizePropertyDialog({
       }
     } catch (error) {
       console.error("Tokenization error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during tokenization. Please try again.";
       setResultType("error");
-      setResultMessage(
-        "An unexpected error occurred during tokenization. Please try again."
-      );
+      setResultMessage(errorMessage);
       setShowResultDialog(true);
     } finally {
       setIsLoading(false);
@@ -280,6 +335,10 @@ export function TokenizePropertyDialog({
                     )}{" "}
                     tokens
                   </p>
+                </div>
+                <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border">
+                  ⚠️ Token value will be validated against property valuation. 
+                  If property valuation is unavailable, a fallback estimation will be used.
                 </div>
               </CardContent>
             </Card>
