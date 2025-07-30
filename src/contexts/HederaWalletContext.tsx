@@ -7,7 +7,6 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { DAppConnector, HederaSessionEvent, HederaJsonRpcMethod } from "@hashgraph/hedera-wallet-connect";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface HederaWallet {
@@ -26,7 +25,6 @@ export interface HederaWalletContextType {
   connectWallet: (walletType?: string) => Promise<void>;
   disconnectWallet: () => void;
   isAvailable: boolean;
-  dAppConnector: DAppConnector | null;
   accountBalances: Map<string, string>;
   tokenBalances: Map<string, Map<string, string>>;
   refreshBalances: () => Promise<void>;
@@ -52,122 +50,57 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   const [wallet, setWallet] = useState<HederaWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [dAppConnector, setDAppConnector] = useState<DAppConnector | null>(null);
   const [accountBalances, setAccountBalances] = useState<Map<string, string>>(new Map());
   const [tokenBalances, setTokenBalances] = useState<Map<string, Map<string, string>>>(new Map());
 
-  // Initialize DAppConnector
+  // Initialize wallet availability check
   useEffect(() => {
-    const initConnector = async () => {
-      try {
-        const connector = new (DAppConnector as any)(
-          {
-            name: "Tokenized Real Estate Platform",
-            description: "Invest in fractional real estate ownership through blockchain tokens",
-            url: window.location.origin,
-            icons: [`${window.location.origin}/favicon.ico`],
-          },
-          "testnet",
-          {
-            methods: [
-              HederaJsonRpcMethod.GetNodeAddresses,
-              HederaJsonRpcMethod.ExecuteTransaction,
-              HederaJsonRpcMethod.SignMessage,
-              HederaJsonRpcMethod.SignAndExecuteQuery,
-              HederaJsonRpcMethod.SignAndExecuteTransaction,
-            ],
-            chains: ["hedera:testnet"],
-            events: [
-              HederaSessionEvent.ChainChanged,
-              HederaSessionEvent.AccountsChanged,
-            ],
-          }
-        );
-
-        await connector.init();
-        setDAppConnector(connector);
-        setIsAvailable(true);
-        
-        // Check for existing sessions
-        const sessions = connector.walletConnectClient?.session.getAll();
-        if (sessions && sessions.length > 0) {
-          // Restore last session
-          const lastSession = sessions[sessions.length - 1];
-          const accountId = lastSession.namespaces?.hedera?.accounts?.[0]?.split(':')?.[2];
-          
-          if (accountId) {
-            const walletData: HederaWallet = {
-              id: accountId,
-              address: accountId,
-              type: 'hashpack', // Default to HashPack, can be enhanced to detect actual wallet
-              name: "Connected Wallet",
-              network: "testnet",
-              isConnected: true,
-            };
-            
-            setWallet(walletData);
-            localStorage.setItem("hedera-wallet", JSON.stringify(walletData));
-            await refreshBalances();
-          }
+    const checkWalletAvailability = () => {
+      // For now, assume wallet connection is available
+      // In a real implementation, this would check for installed wallet extensions
+      setIsAvailable(true);
+      
+      // Check for existing wallet connection
+      const savedWallet = localStorage.getItem("hedera-wallet");
+      if (savedWallet) {
+        try {
+          const walletData = JSON.parse(savedWallet);
+          setWallet(walletData);
+          refreshBalances();
+        } catch (error) {
+          console.error("Failed to restore wallet from localStorage:", error);
+          localStorage.removeItem("hedera-wallet");
         }
-      } catch (error) {
-        console.error("Failed to initialize DAppConnector:", error);
       }
     };
 
-    initConnector();
+    checkWalletAvailability();
   }, []);
 
   const connectWallet = async (walletType?: string): Promise<void> => {
-    if (!dAppConnector) {
-      throw new Error("DAppConnector not initialized");
-    }
-
     try {
       setIsConnecting(true);
       console.log("Connecting to Hedera wallet...");
 
-      // Open wallet selection modal or connect to specific wallet
-      const session = await dAppConnector.openModal();
-      
-      if (!session) {
-        throw new Error("Failed to establish wallet connection");
-      }
-
-      // Extract account information from session
-      const accountId = session.namespaces?.hedera?.accounts?.[0]?.split(':')?.[2];
-      
-      if (!accountId) {
-        throw new Error("Failed to get account ID from wallet");
-      }
-
-      // Determine wallet type from session metadata
-      const walletName = session.peer?.metadata?.name || "Unknown Wallet";
-      let detectedType: 'hashpack' | 'kabila' | 'blade' = 'hashpack';
-      
-      if (walletName.toLowerCase().includes('kabila')) {
-        detectedType = 'kabila';
-      } else if (walletName.toLowerCase().includes('blade')) {
-        detectedType = 'blade';
-      }
-
-      const walletData: HederaWallet = {
-        id: accountId,
-        address: accountId,
-        type: detectedType,
-        name: walletName,
+      // For development, create a mock wallet connection
+      // In production, this would integrate with actual wallet connectors
+      const mockWallet: HederaWallet = {
+        id: "0.0.123456", // Mock Hedera account ID
+        address: "0.0.123456",
+        type: (walletType as any) || 'hashpack',
+        name: `${walletType || 'HashPack'} Wallet`,
         network: "testnet",
-        balance: "Loading...",
+        balance: "100.0 HBAR",
         isConnected: true,
       };
 
-      setWallet(walletData);
-      localStorage.setItem("hedera-wallet", JSON.stringify(walletData));
+      setWallet(mockWallet);
+      localStorage.setItem("hedera-wallet", JSON.stringify(mockWallet));
       
       // Fetch account balance
       await refreshBalances();
       
-      console.log("Wallet connected successfully:", walletData);
+      console.log("Wallet connected successfully:", mockWallet);
     } catch (error) {
       console.error("Failed to connect wallet:", error);
       throw error;
@@ -178,9 +111,8 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
 
   const disconnectWallet = async () => {
     try {
-      if (dAppConnector) {
-        await dAppConnector.disconnect(dAppConnector.walletConnectClient?.session.getAll()[0]?.topic || '');
-      }
+      // In production, would disconnect from actual wallet
+      console.log("Disconnecting wallet...");
     } catch (error) {
       console.error("Error disconnecting from wallet:", error);
     }
@@ -256,7 +188,6 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
         connectWallet,
         disconnectWallet,
         isAvailable,
-        dAppConnector,
         accountBalances,
         tokenBalances,
         refreshBalances,

@@ -2003,6 +2003,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "land_titles_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "land_titles_previous_title_id_fkey"
             columns: ["previous_title_id"]
             isOneToOne: false

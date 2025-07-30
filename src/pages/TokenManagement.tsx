@@ -9,8 +9,8 @@ import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useHederaWallet } from "@/contexts/HederaWalletContext";
 import { 
   CoinsIcon, 
-  TrendUp, 
-  ClockCounterClockwise,
+  TrendUpIcon, 
+  ClockIcon,
   ShoppingCartIcon 
 } from "@phosphor-icons/react";
 
@@ -70,7 +70,7 @@ const TokenManagement = () => {
             Marketplace
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center gap-2">
-            <ClockCounterClockwise className="w-4 h-4" />
+            <ClockIcon className="w-4 h-4" />
             History
           </TabsTrigger>
         </TabsList>
@@ -87,7 +87,7 @@ const TokenManagement = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ClockCounterClockwise className="w-5 h-5" />
+                <ClockIcon className="w-5 h-5" />
                 Transaction History
               </CardTitle>
               <CardDescription>
@@ -96,7 +96,7 @@ const TokenManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
-                <ClockCounterClockwise className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <ClockIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p>Transaction history coming soon</p>
                 <p className="text-sm">This will show your Hedera mirror node transaction data</p>
               </div>

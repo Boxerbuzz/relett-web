@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useHederaWallet } from "@/contexts/HederaWalletContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CoinsIcon, TrendUp, CurrencyDollar } from "@phosphor-icons/react";
+import { CoinsIcon, TrendUpIcon, CurrencyDollarIcon } from "@phosphor-icons/react";
 
 interface TokenHolding {
   id: string;
@@ -131,14 +131,14 @@ export function TokenBalanceCard() {
         <div className="grid grid-cols-2 gap-4 p-4 bg-muted/20 rounded-lg">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <CurrencyDollar className="w-4 h-4" />
+              <CurrencyDollarIcon className="w-4 h-4" />
               Total Value
             </p>
             <p className="text-2xl font-bold">${totalValue.toFixed(2)}</p>
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <TrendUp className="w-4 h-4" />
+              <TrendUpIcon className="w-4 h-4" />
               Total ROI
             </p>
             <p className={`text-2xl font-bold ${totalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
