@@ -88,6 +88,7 @@ export const propertySchema = z.object({
     full_bathroom_count: z.number().min(0).max(20).optional(),
   }),
   sqrft: z.string().optional(),
+  land_title_id: z.string().optional(),
   max_guest: z.number().min(0).max(50).optional(),
   features: z.array(z.string().min(1, "Feature cannot be empty")).default([]),
   amenities: z.array(z.string().min(1, "Amenity cannot be empty")).default([]),

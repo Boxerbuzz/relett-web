@@ -122,6 +122,15 @@ serve(async (req) => {
         return createResponse(createErrorResponse('Token created but database update failed'), 500);
       }
 
+      // TODO: Phase 2 - Distribute tokens to property owner's wallet
+      // This will require getting the property owner's connected Hedera wallet
+      // and transferring tokens from treasury to their wallet
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        return createResponse(createErrorResponse('Token created but database update failed'), 500);
+      }
+
       const response: TokenCreationResponse = {
         success: true,
         token_id: tokenId.toString(),

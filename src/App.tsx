@@ -32,6 +32,7 @@ import Verification from "./pages/Verification";
 import Admin from "./pages/Admin";
 import AdminContacts from "./pages/AdminContacts";
 import AdminWaitlist from "./pages/AdminWaitlist";
+import LandTitles from "./pages/LandTitles";
 import UserBookings from "./pages/UserBookings";
 import AgentCalendar from "./pages/AgentCalendar";
 import AgentInspections from "./pages/AgentInspections";
@@ -222,6 +223,16 @@ function App() {
                         <Layout>
                           <ProtectedRoute>
                             <AdminWaitlist />
+                          </ProtectedRoute>
+                        </Layout>
+                      }
+                    />
+                    <Route
+                      path="/land-titles"
+                      element={
+                        <Layout>
+                          <ProtectedRoute>
+                            <LandTitles />
                           </ProtectedRoute>
                         </Layout>
                       }

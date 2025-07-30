@@ -17,6 +17,7 @@ import {
 import { BasicDetailsStep } from "./steps/BasicDetailsStep";
 import { LocationStep } from "./steps/LocationStep";
 import { SpecificationStep } from "./steps/SpecificationStep";
+import { LandTitleStep } from "./steps/LandTitleStep";
 import { DocumentsStep } from "./steps/DocumentsStep";
 import { MediaStep } from "./steps/MediaStep";
 import { ReviewStep } from "./steps/ReviewStep";
@@ -62,6 +63,7 @@ export function AddPropertyForm() {
       is_exclusive: false,
       is_featured: false,
       id: propertyId,
+      land_title_id: "",
     },
   });
 
@@ -107,11 +109,13 @@ export function AddPropertyForm() {
       case 2: // Specifications
         fieldsToValidate = ["sqrft"];
         break;
-      case 3: // Documents - Make optional
-        // No validation required for documents step
+      case 3: // Land Title
+        fieldsToValidate = ["land_title_id"];
+        break;
+      case 4: // Documents - Make optional
         return true;
         break;
-      case 4: // Media
+      case 5: // Media
         fieldsToValidate = ["images"];
         break;
       default:
@@ -208,10 +212,12 @@ export function AddPropertyForm() {
       case 2:
         return <SpecificationStep form={form} />;
       case 3:
-        return <DocumentsStep form={form} />;
+        return <LandTitleStep form={form} />;
       case 4:
-        return <MediaStep form={form} />;
+        return <DocumentsStep form={form} />;
       case 5:
+        return <MediaStep form={form} />;
+      case 6:
         return <ReviewStep form={form} />;
       default:
         return null;

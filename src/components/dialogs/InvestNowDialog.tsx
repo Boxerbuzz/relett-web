@@ -82,6 +82,9 @@ export function InvestNowDialog({
 
     setLoading(true);
     try {
+      // TODO: Phase 2 - Implement real token transfers via Hedera
+      // For now, creating database records only (as before)
+      
       // Create a token holding record
       const { error: holdingError } = await supabase
         .from("token_holdings")
