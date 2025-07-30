@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import React from 'react';
 import { useHashPack } from '@/contexts/HashPackContext';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -19,25 +20,46 @@ interface HashPackConnectDialogProps {
 }
 
 export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialogProps) {
-  const { connectWallet, isConnecting, isAvailable } = useHashPack();
+  const { connectWallet, isConnecting, isAvailable, pairingString } = useHashPack();
   const { toast } = useToast();
-  const [step, setStep] = useState<'connect' | 'connecting' | 'success'>('connect');
+  const [step, setStep] = useState<'connect' | 'pairing' | 'success'>('connect');
 
   const handleConnect = async () => {
     if (!isAvailable) {
       toast({
         title: 'HashPack Not Available',
-        description: 'Please install the HashPack browser extension to continue.',
+        description: 'HashConnect service is not available.',
         variant: 'destructive'
       });
       return;
     }
 
     try {
-      setStep('connecting');
-      await connectWallet();
+      setStep('pairing');
+      const pairingString = await connectWallet();
+      console.log("Generated pairing string:", pairingString);
+    } catch (error) {
+      setStep('connect');
+      toast({
+        title: 'Connection Failed',
+        description: error instanceof Error ? error.message : 'Failed to start pairing',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const openHashPack = () => {
+    if (pairingString) {
+      const deepLink = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(pairingString)}`;
+      window.open(deepLink, '_blank');
+    }
+  };
+
+  // Listen for successful connection
+  const { wallet } = useHashPack();
+  React.useEffect(() => {
+    if (wallet && step === 'pairing') {
       setStep('success');
-      
       toast({
         title: 'Wallet Connected',
         description: 'Your HashPack wallet has been successfully connected.',
@@ -47,15 +69,8 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
         onClose();
         setStep('connect');
       }, 2000);
-    } catch (error) {
-      setStep('connect');
-      toast({
-        title: 'Connection Failed',
-        description: error instanceof Error ? error.message : 'Failed to connect wallet',
-        variant: 'destructive'
-      });
     }
-  };
+  }, [wallet, step, onClose, toast]);
 
   const handleClose = () => {
     if (!isConnecting) {
@@ -133,15 +148,23 @@ export function HashPackConnectDialog({ isOpen, onClose }: HashPackConnectDialog
             </>
           )}
 
-          {step === 'connecting' && (
+          {step === 'pairing' && (
             <>
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
                 <SpinnerIcon size={32} className="text-blue-600 animate-spin" />
               </div>
-              <div className="text-center space-y-2">
-                <h3 className="font-medium">Connecting...</h3>
+              <div className="text-center space-y-4">
+                <h3 className="font-medium">Open HashPack</h3>
                 <p className="text-sm text-gray-600">
-                  Please approve the connection in your HashPack wallet.
+                  Click the button below to open HashPack and approve the connection.
+                </p>
+                {pairingString && (
+                  <Button onClick={openHashPack} className="w-full">
+                    Open HashPack Wallet
+                  </Button>
+                )}
+                <p className="text-xs text-gray-500">
+                  Connection will complete automatically once approved in HashPack.
                 </p>
               </div>
             </>

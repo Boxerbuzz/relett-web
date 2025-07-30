@@ -31,7 +31,8 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
   const [hashconnect] = useState(() => new HashConnect());
   const [wallet, setWallet] = useState<HashPackWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isAvailable, setIsAvailable] = useState(true); // HashConnect should always be available
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [pairingString, setPairingString] = useState<string>("");
 
   const fetchBalance = async (accountId: string) => {
     try {
@@ -68,10 +69,39 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
           name: "Real Estate DApp",
           description: "Tokenized Real Estate Platform",
           icon: "/favicon.ico",
+          url: window.location.origin,
         };
         
         await hashconnect.init(appMetadata, "testnet");
         console.log("HashConnect initialized successfully");
+        
+        // Set up event listeners
+        hashconnect.pairingEvent.on((pairingData) => {
+          console.log("Pairing successful:", pairingData);
+          
+          const walletData: HashPackWallet = {
+            id: pairingData.accountIds[0],
+            address: pairingData.accountIds[0],
+            name: "HashPack Wallet",
+            network: pairingData.network || "testnet",
+            balance: "Loading...",
+            isConnected: true,
+          };
+
+          setWallet(walletData);
+          localStorage.setItem("hashpack-wallet", JSON.stringify(walletData));
+          fetchBalance(pairingData.accountIds[0]);
+          setIsConnecting(false);
+          setPairingString("");
+        });
+
+        hashconnect.disconnectionEvent.on(() => {
+          console.log("Wallet disconnected");
+          setWallet(null);
+          localStorage.removeItem("hashpack-wallet");
+          setIsConnecting(false);
+          setPairingString("");
+        });
         
         // Check for existing connection
         const savedWallet = localStorage.getItem("hashpack-wallet");
@@ -87,42 +117,29 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
         }
       } catch (error) {
         console.error("Failed to initialize HashConnect:", error);
+        setIsAvailable(false);
       }
     };
 
     initHashConnect();
   }, [hashconnect]);
 
-  const connectWallet = async (): Promise<void> => {
+  const connectWallet = async (): Promise<string> => {
     try {
       setIsConnecting(true);
-      console.log("Connecting via HashConnect...");
+      console.log("Starting HashConnect pairing...");
 
-      // Connect using HashConnect
-      hashconnect.connect();
+      // Start the pairing process
+      const pairingString = await hashconnect.connect();
+      console.log("Pairing string generated:", pairingString);
       
-      // Listen for pairing event
-      hashconnect.pairingEvent.on((pairingData) => {
-        console.log("Pairing successful:", pairingData);
-        
-        const walletData: HashPackWallet = {
-          id: pairingData.accountIds[0],
-          address: pairingData.accountIds[0],
-          name: "HashPack Wallet",
-          network: pairingData.network || "testnet",
-          balance: "Loading...",
-          isConnected: true,
-        };
-
-        setWallet(walletData);
-        localStorage.setItem("hashpack-wallet", JSON.stringify(walletData));
-        fetchBalance(pairingData.accountIds[0]);
-        setIsConnecting(false);
-      });
+      setPairingString(pairingString);
+      return pairingString;
 
     } catch (error) {
-      console.error("Failed to connect wallet:", error);
+      console.error("Failed to start wallet connection:", error);
       setIsConnecting(false);
+      setPairingString("");
       throw error;
     }
   };
@@ -146,6 +163,7 @@ export function HashPackProvider({ children }: HashPackProviderProps) {
         connectWallet,
         disconnectWallet,
         isAvailable,
+        pairingString,
       }}
     >
       {children}

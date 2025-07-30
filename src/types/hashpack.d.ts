@@ -45,7 +45,8 @@ export interface HashPackWallet {
 export interface HashPackContextType {
   wallet: HashPackWallet | null;
   isConnecting: boolean;
-  connectWallet: () => Promise<void>;
+  connectWallet: () => Promise<string>;
   disconnectWallet: () => void;
   isAvailable: boolean;
+  pairingString: string;
 }
