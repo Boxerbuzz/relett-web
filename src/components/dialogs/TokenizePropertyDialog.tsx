@@ -72,6 +72,9 @@ export function TokenizePropertyDialog({
     description: "",
     riskLevel: "medium",
   });
+  
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
   const steps = [
     { title: "Token Configuration", icon: CoinsIcon },
@@ -115,9 +118,31 @@ export function TokenizePropertyDialog({
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // Clear validation error when user changes input
+    if (validationError && (field === 'totalTokens' || field === 'pricePerToken')) {
+      setValidationError(null);
+    }
   };
 
-  const nextStep = () => setStep(Math.min(step + 1, 4));
+  const nextStep = async () => {
+    // Validate token value before moving to next step if on step 1
+    if (step === 1) {
+      setIsValidating(true);
+      try {
+        await validateTokenValue(property, formData.totalTokens, formData.pricePerToken);
+        setValidationError(null);
+        setStep(Math.min(step + 1, 4));
+      } catch (error) {
+        setValidationError(error instanceof Error ? error.message : "Validation failed");
+      } finally {
+        setIsValidating(false);
+      }
+    } else {
+      setStep(Math.min(step + 1, 4));
+    }
+  };
+  
   const prevStep = () => setStep(Math.max(step - 1, 1));
 
   const validateTokenValue = async (property: any, totalTokens: string, pricePerToken: string) => {
@@ -336,6 +361,11 @@ export function TokenizePropertyDialog({
                     tokens
                   </p>
                 </div>
+                {validationError && (
+                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded border">
+                    ❌ {validationError}
+                  </div>
+                )}
                 <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border">
                   ⚠️ Token value will be validated against property valuation. 
                   If property valuation is unavailable, a fallback estimation will be used.
@@ -587,7 +617,12 @@ export function TokenizePropertyDialog({
                   : "Submit for Review"}
               </Button>
             ) : (
-              <Button onClick={nextStep}>Next</Button>
+              <Button 
+                onClick={nextStep}
+                disabled={isValidating || validationError !== null}
+              >
+                {isValidating ? "Validating..." : "Next"}
+              </Button>
             )}
           </div>
         </div>
