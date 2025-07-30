@@ -33,6 +33,7 @@ import Admin from "./pages/Admin";
 import AdminContacts from "./pages/AdminContacts";
 import AdminWaitlist from "./pages/AdminWaitlist";
 import LandTitles from "./pages/LandTitles";
+import TokenManagement from "./pages/TokenManagement";
 import UserBookings from "./pages/UserBookings";
 import AgentCalendar from "./pages/AgentCalendar";
 import AgentInspections from "./pages/AgentInspections";

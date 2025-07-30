@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { WalletIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useHashPack } from '@/contexts/HashPackContext';
+import { useHederaWallet } from '@/contexts/HederaWalletContext';
 
 export function WalletAuthButton() {
   const [loading, setLoading] = useState(false);
-  const { connectWallet, isAvailable, wallet } = useHashPack();
+  const { connectWallet, isAvailable, wallet } = useHederaWallet();
 
   const handleWalletAuth = async () => {
     try {
