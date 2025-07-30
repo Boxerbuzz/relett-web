@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowsHorizontalIcon, ArrowsClockwiseIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/hooks/useCurrency";
-import { CurrencyDisplay, DualCurrencyDisplay } from "./currency-display";
+import { CurrencyDisplay } from "./currency-display";
 
 interface CurrencyExchangeWidgetProps {
   amount: number;
