@@ -1303,6 +1303,110 @@ export type Database = {
         }
         Relationships: []
       }
+      governance_proposals: {
+        Row: {
+          created_at: string
+          current_approval_percentage: number
+          description: string
+          id: string
+          metadata: Json | null
+          proposal_type: string
+          proposed_by: string
+          required_approval_percentage: number
+          status: string
+          title: string
+          tokenized_property_id: string
+          total_votes_cast: number
+          updated_at: string
+          voting_deadline: string
+        }
+        Insert: {
+          created_at?: string
+          current_approval_percentage?: number
+          description: string
+          id?: string
+          metadata?: Json | null
+          proposal_type: string
+          proposed_by: string
+          required_approval_percentage?: number
+          status?: string
+          title: string
+          tokenized_property_id: string
+          total_votes_cast?: number
+          updated_at?: string
+          voting_deadline: string
+        }
+        Update: {
+          created_at?: string
+          current_approval_percentage?: number
+          description?: string
+          id?: string
+          metadata?: Json | null
+          proposal_type?: string
+          proposed_by?: string
+          required_approval_percentage?: number
+          status?: string
+          title?: string
+          tokenized_property_id?: string
+          total_votes_cast?: number
+          updated_at?: string
+          voting_deadline?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_proposals_proposed_by_fkey"
+            columns: ["proposed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_proposals_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_votes: {
+        Row: {
+          cast_at: string
+          id: string
+          proposal_id: string
+          reasoning: string | null
+          vote: string
+          voter_id: string
+          voting_power: number
+        }
+        Insert: {
+          cast_at?: string
+          id?: string
+          proposal_id: string
+          reasoning?: string | null
+          vote: string
+          voter_id: string
+          voting_power: number
+        }
+        Update: {
+          cast_at?: string
+          id?: string
+          proposal_id?: string
+          reasoning?: string | null
+          vote?: string
+          voter_id?: string
+          voting_power?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_votes_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "governance_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hedera_tokens: {
         Row: {
           created_at: string
@@ -1852,6 +1956,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      key_management_requests: {
+        Row: {
+          collected_signatures: Json | null
+          created_at: string
+          executed_at: string | null
+          execution_deadline: string | null
+          id: string
+          key_data: Json
+          metadata: Json | null
+          request_type: string
+          requested_by: string
+          required_signatures: Json
+          status: string
+          tokenized_property_id: string
+          updated_at: string
+        }
+        Insert: {
+          collected_signatures?: Json | null
+          created_at?: string
+          executed_at?: string | null
+          execution_deadline?: string | null
+          id?: string
+          key_data: Json
+          metadata?: Json | null
+          request_type: string
+          requested_by: string
+          required_signatures: Json
+          status?: string
+          tokenized_property_id: string
+          updated_at?: string
+        }
+        Update: {
+          collected_signatures?: Json | null
+          created_at?: string
+          executed_at?: string | null
+          execution_deadline?: string | null
+          id?: string
+          key_data?: Json
+          metadata?: Json | null
+          request_type?: string
+          requested_by?: string
+          required_signatures?: Json
+          status?: string
+          tokenized_property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_management_requests_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kyc_documents: {
         Row: {
@@ -5906,6 +6066,8 @@ export type Database = {
         | "active"
         | "paused"
         | "retired"
+        | "creating"
+        | "creation_failed"
       transaction_status: "pending" | "confirmed" | "failed"
       transaction_type: "mint" | "transfer" | "burn" | "split"
       verification_status:
@@ -6111,6 +6273,8 @@ export const Constants = {
         "active",
         "paused",
         "retired",
+        "creating",
+        "creation_failed",
       ],
       transaction_status: ["pending", "confirmed", "failed"],
       transaction_type: ["mint", "transfer", "burn", "split"],
