@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { PropertyTokenizationService } from '@/lib/tokenization';
 
 interface PendingToken {
   id: string;
@@ -88,7 +87,7 @@ export const useTokenApproval = () => {
 
     setIsLoading(true);
     try {
-      // Update tokenized_properties directly since the RPC function doesn't exist yet
+      // Update tokenized_properties status - database trigger will handle Hedera creation
       const { data, error } = await supabase
         .from('tokenized_properties')
         .update({ 
@@ -103,32 +102,12 @@ export const useTokenApproval = () => {
         throw error;
       }
 
-      // If approved, trigger Hedera token creation
+      // Show appropriate message based on status
       if (newStatus === 'approved') {
         toast({
           title: "Token Approved",
-          description: "Token approved successfully. Hedera token creation will be initiated.",
+          description: "Token approved successfully. Hedera token creation will be initiated automatically.",
         });
-
-        // Create Hedera token in background
-        const tokenService = new PropertyTokenizationService();
-        const hederaResult = await tokenService.createHederaTokenAfterApproval(tokenId);
-        
-        if (hederaResult.success) {
-          toast({
-            title: "Hedera Token Created",
-            description: "Token has been successfully minted on Hedera network",
-          });
-        } else {
-          console.error('Hedera token creation failed:', hederaResult.error);
-          toast({
-            title: "Warning",
-            description: "Token approved but Hedera creation failed. Please retry manually.",
-            variant: "destructive",
-          });
-        }
-
-        tokenService.close();
       } else {
         toast({
           title: "Status Updated",
