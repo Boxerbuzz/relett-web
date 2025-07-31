@@ -341,6 +341,7 @@ export class HederaMultiSigService extends HederaClientCore {
    */
   async getTokenKeyStructure(tokenId: string): Promise<any> {
     try {
+      const { TokenInfoQuery, TokenId } = await import('@hashgraph/sdk');
       const tokenInfo = await new TokenInfoQuery()
         .setTokenId(TokenId.fromString(tokenId))
         .execute(this.client);
