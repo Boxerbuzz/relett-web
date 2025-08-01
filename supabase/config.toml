@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.create-hedera-token]
 verify_jwt = false
+
+[functions.create-hcs-topic-and-token]
+verify_jwt = false
