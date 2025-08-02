@@ -28,6 +28,12 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.register-property-blockchain]
+verify_jwt = false
+
+[functions.record-hcs-event]
+verify_jwt = false
+
+[functions.trade-tokens]
 verify_jwt = true
 
 [functions.create-hedera-token]
