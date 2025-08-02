@@ -75,7 +75,7 @@ export function TokenizedPropertyMarketplace() {
           land_title:land_titles(location_address)
         `
         )
-        .in("status", ["minted", "active"])
+        .in("status", ["approved", "minted", "active"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
