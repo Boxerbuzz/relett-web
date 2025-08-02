@@ -423,6 +423,47 @@ export type Database = {
           },
         ]
       }
+      audit_events: {
+        Row: {
+          consensus_timestamp: string | null
+          created_at: string
+          event_data: Json
+          event_type: string
+          hcs_topic_id: string | null
+          id: string
+          sequence_number: number | null
+          transaction_id: string | null
+        }
+        Insert: {
+          consensus_timestamp?: string | null
+          created_at?: string
+          event_data: Json
+          event_type: string
+          hcs_topic_id?: string | null
+          id?: string
+          sequence_number?: number | null
+          transaction_id?: string | null
+        }
+        Update: {
+          consensus_timestamp?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          hcs_topic_id?: string | null
+          id?: string
+          sequence_number?: number | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_hcs_topic_id_fkey"
+            columns: ["hcs_topic_id"]
+            isOneToOne: false
+            referencedRelation: "hcs_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_trails: {
         Row: {
           action: string
@@ -1403,6 +1444,41 @@ export type Database = {
             columns: ["proposal_id"]
             isOneToOne: false
             referencedRelation: "governance_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hcs_topics: {
+        Row: {
+          created_at: string
+          id: string
+          tokenized_property_id: string | null
+          topic_id: string
+          topic_memo: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tokenized_property_id?: string | null
+          topic_id: string
+          topic_memo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tokenized_property_id?: string | null
+          topic_id?: string
+          topic_memo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hcs_topics_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
             referencedColumns: ["id"]
           },
         ]
@@ -4670,12 +4746,80 @@ export type Database = {
           },
         ]
       }
+      tokenization_legal_agreements: {
+        Row: {
+          agreed_at: string
+          agreement_type: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          property_id: string | null
+          reading_time_seconds: number
+          sections_completed: Json
+          tokenized_property_id: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          agreed_at?: string
+          agreement_type: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          property_id?: string | null
+          reading_time_seconds?: number
+          sections_completed?: Json
+          tokenized_property_id?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          agreed_at?: string
+          agreement_type?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          property_id?: string | null
+          reading_time_seconds?: number
+          sections_completed?: Json
+          tokenized_property_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tokenization_legal_agreements_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tokenization_legal_agreements_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "tokenization_legal_agreements_tokenized_property_id_fkey"
+            columns: ["tokenized_property_id"]
+            isOneToOne: false
+            referencedRelation: "tokenized_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tokenized_properties: {
         Row: {
           blockchain_network: string
           created_at: string
           expected_roi: number
           hedera_token_id: string | null
+          hedera_transaction_id: string | null
           id: string
           investment_terms: Database["public"]["Enums"]["investment_terms"]
           land_title_id: string
@@ -4701,6 +4845,7 @@ export type Database = {
           created_at?: string
           expected_roi: number
           hedera_token_id?: string | null
+          hedera_transaction_id?: string | null
           id?: string
           investment_terms: Database["public"]["Enums"]["investment_terms"]
           land_title_id: string
@@ -4726,6 +4871,7 @@ export type Database = {
           created_at?: string
           expected_roi?: number
           hedera_token_id?: string | null
+          hedera_transaction_id?: string | null
           id?: string
           investment_terms?: Database["public"]["Enums"]["investment_terms"]
           land_title_id?: string

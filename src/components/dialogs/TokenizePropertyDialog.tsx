@@ -21,11 +21,14 @@ import { Badge } from "@/components/ui/badge";
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
+import { TokenizedPropertyLegalFramework } from "@/components/legal/TokenizedPropertyLegalFramework";
+import { LegalFrameworkConfig } from "@/types/legal";
 import {
   CoinsIcon,
   FileTextIcon,
   CalculatorIcon,
   EyeIcon,
+  ScalesIcon,
 } from "@phosphor-icons/react";
 import {
   ResponsiveDialog,
@@ -75,11 +78,13 @@ export function TokenizePropertyDialog({
   
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [showLegalFramework, setShowLegalFramework] = useState(false);
+  const [legalAgreementId, setLegalAgreementId] = useState<string | null>(null);
 
   const steps = [
     { title: "Token Configuration", icon: CoinsIcon },
     { title: "Financial Terms", icon: CalculatorIcon },
-    { title: "Legal & Documentation", icon: FileTextIcon },
+    { title: "Legal Framework", icon: ScalesIcon },
     { title: "Review & Submit", icon: EyeIcon },
   ];
 
@@ -126,6 +131,12 @@ export function TokenizePropertyDialog({
   };
 
   const nextStep = async () => {
+    // Show legal framework before step 4
+    if (step === 3 && !legalAgreementId) {
+      setShowLegalFramework(true);
+      return;
+    }
+    
     // Validate token value before moving to next step if on step 1
     if (step === 1) {
       setIsValidating(true);
@@ -141,6 +152,12 @@ export function TokenizePropertyDialog({
     } else {
       setStep(Math.min(step + 1, 4));
     }
+  };
+
+  const handleLegalAgreementComplete = (agreementId: string) => {
+    setLegalAgreementId(agreementId);
+    setShowLegalFramework(false);
+    setStep(4);
   };
   
   const prevStep = () => setStep(Math.max(step - 1, 1));
@@ -458,6 +475,14 @@ export function TokenizePropertyDialog({
       case 3:
         return (
           <div className="space-y-4">
+            <div className="text-center">
+              <ScalesIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Legal Framework Agreement</h3>
+              <p className="text-sm text-muted-foreground">
+                Complete the legal framework agreement before proceeding
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="description">Investment Description</Label>
               <Textarea
@@ -494,6 +519,30 @@ export function TokenizePropertyDialog({
                 ))}
               </CardContent>
             </Card>
+
+            {legalAgreementId ? (
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-green-800">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Legal framework agreement completed
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-yellow-800">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Legal framework agreement required to proceed
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
 
@@ -690,6 +739,28 @@ export function TokenizePropertyDialog({
           </ResponsiveDialogFooter>
         </ResponsiveDialogContent>
       </ResponsiveDialog>
+
+      {/* Legal Framework Dialog */}
+      <TokenizedPropertyLegalFramework
+        config={{
+          scenario: 'tokenization',
+          propertyDetails: property ? {
+            id: property.id,
+            title: property.title,
+            location: property.location,
+            value: parseFloat(property.value.replace(/[^0-9.]/g, '')) || 0
+          } : undefined,
+          tokenDetails: {
+            tokenPrice: parseFloat(formData.pricePerToken) || 0,
+            totalTokens: parseInt(formData.totalTokens) || 0,
+            minimumInvestment: parseFloat(formData.minimumInvestment) || 0
+          },
+          minimumReadingTime: 300 // 5 minutes
+        }}
+        open={showLegalFramework}
+        onOpenChange={setShowLegalFramework}
+        onAgreementComplete={handleLegalAgreementComplete}
+      />
     </ResponsiveDialog>
   );
 }
