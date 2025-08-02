@@ -20,6 +20,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useHashPack } from "@/contexts/HashPackContext";
 import { TradingService } from "@/lib/tradingService";
+import { TokenizedPropertyLegalFramework } from "@/components/legal/TokenizedPropertyLegalFramework";
+import { LegalFrameworkConfig } from "@/types/legal";
 import {
   CurrencyDollarIcon,
   TrendUpIcon,
@@ -27,6 +29,7 @@ import {
   ClockIcon,
   WalletIcon,
   LinkIcon,
+  ScalesIcon,
 } from "@phosphor-icons/react";
 
 interface TokenizedProperty {
@@ -59,6 +62,8 @@ export function InvestNowDialog({
     tokenizedProperty.minimum_investment
   );
   const [loading, setLoading] = useState(false);
+  const [showLegalFramework, setShowLegalFramework] = useState(false);
+  const [legalAgreementId, setLegalAgreementId] = useState<string | null>(null);
   
   const tradingService = new TradingService();
 
@@ -91,6 +96,11 @@ export function InvestNowDialog({
         description: "Please log in to make an investment",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!legalAgreementId) {
+      setShowLegalFramework(true);
       return;
     }
 
@@ -148,7 +158,13 @@ export function InvestNowDialog({
     }
   };
 
+  const handleLegalAgreementComplete = (agreementId: string) => {
+    setLegalAgreementId(agreementId);
+    setShowLegalFramework(false);
+  };
+
   return (
+    <>
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent size="md">
         <ResponsiveDialogHeader>
@@ -276,12 +292,35 @@ export function InvestNowDialog({
                   Processing...
                 </div>
               ) : (
-                `Invest $${investmentAmount}`
+                legalAgreementId ? `Invest $${investmentAmount}` : "Review Legal Terms & Invest"
               )}
             </Button>
           )}
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
+
+    {/* Legal Framework Dialog */}
+    <TokenizedPropertyLegalFramework
+      config={{
+        scenario: 'investment',
+        propertyDetails: {
+          id: tokenizedProperty.id,
+          title: tokenizedProperty.property_title || tokenizedProperty.token_name,
+          location: '',
+          value: tokenizedProperty.token_price * parseInt(tokenizedProperty.total_supply)
+        },
+        tokenDetails: {
+          tokenPrice: tokenizedProperty.token_price,
+          totalTokens: parseInt(tokenizedProperty.total_supply),
+          minimumInvestment: tokenizedProperty.minimum_investment
+        },
+        minimumReadingTime: 240 // 4 minutes for investment
+      }}
+      open={showLegalFramework}
+      onOpenChange={setShowLegalFramework}
+      onAgreementComplete={handleLegalAgreementComplete}
+    />
+    </>
   );
 }

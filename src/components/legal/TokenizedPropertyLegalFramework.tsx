@@ -430,15 +430,17 @@ export const TokenizedPropertyLegalFramework: React.FC<TokenizedPropertyLegalFra
         reading_time_seconds: totalReadingTime,
         sections_completed: Object.keys(readingProgress),
         metadata: {
-          config,
-          readingProgress,
+          scenario: config.scenario,
+          propertyId: config.propertyDetails?.id,
+          minimumReadingTime: config.minimumReadingTime,
+          sectionsRead: Object.keys(readingProgress).length,
           userAgent: navigator.userAgent,
           completedAt: new Date().toISOString()
         }
       };
 
       const { data, error } = await supabase
-        .from('legal_agreements')
+        .from('tokenization_legal_agreements')
         .insert(agreementData)
         .select()
         .single();
