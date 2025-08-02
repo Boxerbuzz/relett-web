@@ -1,5 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import {
+  Client,
+  TopicMessageSubmitTransaction,
+  AccountId,
+  PrivateKey,
+  Hbar
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,18 +42,24 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Find the appropriate HCS topic
+    let hcsTopicRecord = null;
     let hcsTopicId = null;
     
     if (tokenizedPropertyId) {
       const { data: hcsTopic, error: topicError } = await supabase
         .from('hcs_topics')
-        .select('id')
+        .select('*')
         .eq('tokenized_property_id', tokenizedPropertyId)
         .single();
       
       if (!topicError && hcsTopic) {
-        hcsTopicId = hcsTopic.id;
+        hcsTopicRecord = hcsTopic;
+        hcsTopicId = hcsTopic.topic_id; // Use the actual Hedera topic ID
       }
+    }
+
+    if (!hcsTopicId) {
+      throw new Error('HCS topic not found for this tokenized property');
     }
 
     // Create comprehensive event record
@@ -59,10 +72,36 @@ serve(async (req) => {
       data: eventData
     };
 
-    console.log('Submitting message to HCS topic');
-    // Simulate HCS message submission (integrate actual Hedera SDK here)
-    const consensusTimestamp = new Date().toISOString();
-    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Initialize Hedera client
+    const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID')!;
+    const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY')!;
+    
+    if (!hederaAccountId || !hederaPrivateKey) {
+      throw new Error('Hedera credentials not configured');
+    }
+
+    const client = Client.forTestnet();
+    client.setOperator(AccountId.fromString(hederaAccountId), PrivateKey.fromString(hederaPrivateKey));
+
+    console.log(`Submitting message to HCS topic: ${hcsTopicId}`);
+    
+    // Submit message to HCS topic
+    const messageContent = JSON.stringify(eventRecord);
+    const messageSubmitTx = new TopicMessageSubmitTransaction()
+      .setTopicId(hcsTopicId)
+      .setMessage(messageContent)
+      .setMaxTransactionFee(new Hbar(2));
+
+    const messageSubmit = await messageSubmitTx.execute(client);
+    const messageReceipt = await messageSubmit.getReceipt(client);
+    
+    const transactionId = messageSubmit.transactionId.toString();
+    const consensusTimestamp = messageReceipt.consensusTimestamp?.toDate().toISOString() || new Date().toISOString();
+    
+    console.log(`Message submitted with Transaction ID: ${transactionId}`);
+    
+    // Close Hedera client
+    client.close();
 
     // Store audit event in database
     const { error: auditError } = await supabase
@@ -70,7 +109,7 @@ serve(async (req) => {
       .insert({
         event_type: eventType,
         event_data: eventRecord,
-        hcs_topic_id: hcsTopicId,
+        hcs_topic_id: hcsTopicRecord?.id || null, // Use the database ID, not the Hedera topic ID
         transaction_id: transactionId,
         consensus_timestamp: consensusTimestamp
       });

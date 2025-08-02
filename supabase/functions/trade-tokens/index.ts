@@ -1,5 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import {
+  Client,
+  TransferTransaction,
+  AccountId,
+  PrivateKey,
+  TokenId,
+  Hbar
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,7 +59,74 @@ serve(async (req) => {
       throw new Error('Seller does not have enough tokens');
     }
 
-    // Update token holdings
+    // Get tokenized property details for Hedera token transfer
+    const { data: tokenizedProperty, error: tokenError } = await supabase
+      .from('tokenized_properties')
+      .select('*')
+      .eq('id', tokenizedPropertyId)
+      .single();
+
+    if (tokenError || !tokenizedProperty) {
+      throw new Error('Tokenized property not found');
+    }
+
+    // Get seller and buyer wallet information
+    const { data: sellerWallet, error: sellerWalletError } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', sellerId)
+      .eq('is_primary', true)
+      .single();
+
+    const { data: buyerWallet, error: buyerWalletError } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', buyerId)
+      .eq('is_primary', true)
+      .single();
+
+    if (sellerWalletError || !sellerWallet || buyerWalletError || !buyerWallet) {
+      throw new Error('Seller or buyer wallet not found');
+    }
+
+    // Initialize Hedera client for token transfer
+    const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID')!;
+    const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY')!;
+    
+    if (!hederaAccountId || !hederaPrivateKey) {
+      throw new Error('Hedera credentials not configured');
+    }
+
+    const client = Client.forTestnet();
+    client.setOperator(AccountId.fromString(hederaAccountId), PrivateKey.fromString(hederaPrivateKey));
+
+    // Execute Hedera token transfer
+    console.log(`Executing Hedera token transfer: ${tokenAmount} tokens from ${sellerWallet.address} to ${buyerWallet.address}`);
+    
+    const tokenTransferTx = new TransferTransaction()
+      .addTokenTransfer(
+        TokenId.fromString(tokenizedProperty.hedera_token_id),
+        AccountId.fromString(sellerWallet.address),
+        -tokenAmount
+      )
+      .addTokenTransfer(
+        TokenId.fromString(tokenizedProperty.hedera_token_id),
+        AccountId.fromString(buyerWallet.address),
+        tokenAmount
+      )
+      .setMaxTransactionFee(new Hbar(2));
+
+    // Sign with seller's private key (in real implementation, this would be done securely)
+    const transferSubmit = await tokenTransferTx.execute(client);
+    const transferReceipt = await transferSubmit.getReceipt(client);
+    const transferTransactionId = transferSubmit.transactionId.toString();
+    
+    console.log(`Hedera token transfer completed with Transaction ID: ${transferTransactionId}`);
+    
+    // Close Hedera client
+    client.close();
+
+    // Update token holdings in database
     await supabase.rpc('update_token_holdings_after_sale', {
       p_seller_id: sellerId,
       p_buyer_id: buyerId,
@@ -72,7 +147,7 @@ serve(async (req) => {
         total_amount: totalPrice,
         transaction_type: 'token_trade',
         status: 'completed',
-        blockchain_hash: `trade_${Date.now()}`,
+        blockchain_hash: transferTransactionId,
         metadata: {
           tradeTimestamp: new Date().toISOString(),
           tradeType: 'fractional_ownership'
@@ -128,12 +203,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        tradeId: `trade_${Date.now()}`,
+        tradeId: transferTransactionId,
         sellerId,
         buyerId,
         tokenAmount,
         totalPrice,
-        message: 'Token trade completed successfully'
+        hederaTransactionId: transferTransactionId,
+        message: 'Token trade completed successfully on Hedera network'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

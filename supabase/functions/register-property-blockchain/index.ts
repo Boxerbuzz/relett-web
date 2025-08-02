@@ -1,5 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import {
+  Client,
+  FileCreateTransaction,
+  TopicCreateTransaction,
+  AccountId,
+  PrivateKey,
+  Hbar
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,13 +84,44 @@ serve(async (req) => {
       })) || []
     };
 
-    // Store metadata on Hedera (simulated for now - you can integrate actual Hedera SDK here)
-    console.log('Storing property metadata on Hedera File Service');
-    const hederaFileId = `0.0.${Math.floor(Math.random() * 1000000)}`; // Simulated file ID
+    // Initialize Hedera client
+    const hederaAccountId = Deno.env.get('HEDERA_ACCOUNT_ID')!;
+    const hederaPrivateKey = Deno.env.get('HEDERA_PRIVATE_KEY')!;
     
+    if (!hederaAccountId || !hederaPrivateKey) {
+      throw new Error('Hedera credentials not configured');
+    }
+
+    const client = Client.forTestnet();
+    client.setOperator(AccountId.fromString(hederaAccountId), PrivateKey.fromString(hederaPrivateKey));
+
+    // Store property metadata on Hedera File Service
+    console.log('Storing property metadata on Hedera File Service');
+    const metadataContent = JSON.stringify(propertyMetadata);
+    const fileCreateTx = new FileCreateTransaction()
+      .setContents(metadataContent)
+      .setMaxTransactionFee(new Hbar(2));
+
+    const fileSubmit = await fileCreateTx.execute(client);
+    const fileReceipt = await fileSubmit.getReceipt(client);
+    const hederaFileId = fileReceipt.fileId!.toString();
+    
+    console.log(`Property metadata stored with File ID: ${hederaFileId}`);
+
     // Create HCS topic for this property
     console.log('Creating HCS topic for property audit trail');
-    const hcsTopicId = `0.0.${Math.floor(Math.random() * 1000000)}`; // Simulated topic ID
+    const topicCreateTx = new TopicCreateTransaction()
+      .setTopicMemo(`Property audit trail for ${property.title}`)
+      .setMaxTransactionFee(new Hbar(2));
+
+    const topicSubmit = await topicCreateTx.execute(client);
+    const topicReceipt = await topicSubmit.getReceipt(client);
+    const hcsTopicId = topicReceipt.topicId!.toString();
+    
+    console.log(`HCS topic created with Topic ID: ${hcsTopicId}`);
+
+    // Close Hedera client
+    client.close();
 
     // Store HCS topic in database
     const { error: hcsError } = await supabase
