@@ -1,12 +1,10 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
-import { FileText, X, Eye, Download, SkipForward } from "lucide-react";
+import { SkipForward } from "lucide-react";
 import { DocumentUpload } from "../DocumentUpload";
 
 interface DocumentsStepProps {
@@ -101,81 +99,6 @@ export function DocumentsStep({ form }: DocumentsStepProps) {
           form.setValue("documents", [...documents, document]);
         }}
       />
-
-      {/* Uploaded Documents by Type */}
-      <div className="space-y-4">
-        {DOCUMENT_TYPES.map(({ type, label }) => {
-          const typeDocuments = getDocumentsByType(type);
-          if (typeDocuments.length === 0) return null;
-
-          return (
-            <Card key={type}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center justify-between">
-                  {label}
-                  <Badge variant="outline">{typeDocuments.length} files</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {typeDocuments.map((doc: UploadedDocument, index: number) => {
-                    const globalIndex = documents.findIndex(
-                      (d: UploadedDocument) =>
-                        d.url === doc.url && d.type === doc.type
-                    );
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-blue-500" />
-                          <div>
-                            <p className="font-medium text-sm">{doc.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {formatFileSize(doc.size)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.open(doc.url, "_blank")}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              const link = document.createElement("a");
-                              link.href = doc.url;
-                              link.download = doc.name;
-                              link.click();
-                            }}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeDocument(globalIndex)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
     </div>
   );
 }

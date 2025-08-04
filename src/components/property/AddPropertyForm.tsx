@@ -36,6 +36,8 @@ export function AddPropertyForm() {
     resolver: zodResolver(propertySchema),
     mode: "onChange",
     defaultValues: {
+      title: "",
+      description: "",
       type: "residential",
       sub_type: "",
       category: "sell",
@@ -50,9 +52,27 @@ export function AddPropertyForm() {
       },
       location: {
         country: "Nigeria",
+        address: "",
+        city: "",
+        state: "",
+        coordinates: {
+          lat: 0,
+          lng: 0,
+        },
       },
       specification: {
         is_furnished: false,
+
+        bedrooms: undefined,
+        bathrooms: undefined,
+        toilets: undefined,
+        parking: undefined,
+        garages: undefined,
+        floors: undefined,
+        units: undefined,
+        area: undefined,
+        area_unit: "sqft",
+        year_built: undefined,
       },
       features: [],
       amenities: [],
@@ -107,15 +127,16 @@ export function AddPropertyForm() {
         ];
         break;
       case 2: // Specifications
-        fieldsToValidate = ["sqrft"];
+        fieldsToValidate = [
+          "sqrft",
+          "specification.bedrooms",
+          "specification.bathrooms",
+          "specification.year_built",
+        ];
         break;
-      case 3: // Land Title
-        fieldsToValidate = ["land_title_id"];
-        break;
-      case 4: // Documents - Make optional
+      case 3: // Documents - Make optional
         return true;
-        break;
-      case 5: // Media
+      case 4: // Media
         fieldsToValidate = ["images"];
         break;
       default:
@@ -212,12 +233,10 @@ export function AddPropertyForm() {
       case 2:
         return <SpecificationStep form={form} />;
       case 3:
-        return <LandTitleStep form={form} />;
-      case 4:
         return <DocumentsStep form={form} />;
-      case 5:
+      case 4:
         return <MediaStep form={form} />;
-      case 6:
+      case 5:
         return <ReviewStep form={form} />;
       default:
         return null;
