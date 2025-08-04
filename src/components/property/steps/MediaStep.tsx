@@ -52,17 +52,13 @@ export function MediaStep({ form }: MediaStepProps) {
   };
 
   const handleFilesSelected = async (files: File[]) => {
-    if (uploadInProgress.current) {
-      console.log("Upload already in progress, skipping...");
-      return;
-    }
-
     try {
-      uploadInProgress.current = true;
       console.log(
         `Starting upload for ${files.length} files in category: ${selectedCategory}`
       );
 
+      const currentImages = form.getValues("images") || [];
+      
       const uploadPromises = files.map(async (file, index) => {
         const result = await uploadFile(file, {
           bucket: "property-images",
@@ -74,7 +70,7 @@ export function MediaStep({ form }: MediaStepProps) {
         return {
           url: result.url,
           path: result.path,
-          is_primary: images.length === 0 && index === 0,
+          is_primary: currentImages.length === 0 && index === 0,
           category: selectedCategory,
           size: result.size,
           name: result.name,
@@ -82,14 +78,13 @@ export function MediaStep({ form }: MediaStepProps) {
       });
 
       const uploadedImages = await Promise.all(uploadPromises);
-      const updatedImages = [...images, ...uploadedImages];
+      const updatedImages = [...currentImages, ...uploadedImages];
       form.setValue("images", updatedImages);
 
       console.log(`Upload completed. Total images: ${updatedImages.length}`);
+      console.log("Uploaded images:", uploadedImages);
     } catch (error) {
       console.error("Upload failed:", error);
-    } finally {
-      uploadInProgress.current = false;
     }
   };
 

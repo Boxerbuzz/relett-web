@@ -195,22 +195,37 @@ export function usePropertyCreation() {
     }
 
     try {
-      const imageInserts = images.map((img) => ({
+      console.log(`Creating ${images.length} property images for property ${propertyId}`);
+      console.log("Images data:", images);
+
+      const imageInserts = images.map((img, index) => ({
         property_id: propertyId,
         url: img.url,
         is_primary: img.is_primary,
         category: img.category,
+        file_name: img.name || `image-${index + 1}`,
+        file_size: img.size || 0,
+        file_path: img.path || "",
+        metadata: {
+          original_name: img.name,
+          size: img.size,
+          path: img.path,
+        },
       }));
 
-      const { error: imageError } = await supabase
+      console.log("Image inserts:", imageInserts);
+
+      const { data: insertedImages, error: imageError } = await supabase
         .from("property_images")
-        .insert(imageInserts);
+        .insert(imageInserts)
+        .select();
 
       if (imageError) {
         console.error("Error storing images:", imageError);
         return { success: false, error: imageError };
       }
 
+      console.log(`Successfully created ${insertedImages?.length || 0} property images`);
       return { success: true, error: null };
     } catch (error) {
       console.error("Error creating property images:", error);
