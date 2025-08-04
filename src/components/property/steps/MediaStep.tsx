@@ -36,7 +36,7 @@ const IMAGE_CATEGORIES = [
 export function MediaStep({ form }: MediaStepProps) {
   const images = form.watch("images") || [];
   const [selectedCategory, setSelectedCategory] = useState<string>("general");
-  const { uploadFile, deleteFile, isUploading, uploadProgress } =
+  const { uploadFile, deleteFile, isUploading, uploadProgress, clearUploadHistory } =
     useSupabaseStorage();
 
   const uploadInProgress = useRef(false);
@@ -45,6 +45,8 @@ export function MediaStep({ form }: MediaStepProps) {
   // Reset FileDropzone when category changes
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
+    // Clear upload history to prevent false duplicate detection
+    clearUploadHistory();
     // Reset the FileDropzone's internal state
     if (fileDropzoneRef.current?.resetFiles) {
       fileDropzoneRef.current.resetFiles();

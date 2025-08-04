@@ -38,12 +38,6 @@ export function useSupabaseStorage() {
     file: File,
     options: UploadOptions
   ): Promise<UploadResult> => {
-    // Check for duplicate uploads
-    const fileHash = await generateFileHash(file);
-    if (uploadedFilesRef.current.has(fileHash)) {
-      throw new Error("This file has already been uploaded");
-    }
-
     try {
       setIsUploading(true);
       setUploadProgress(0);
@@ -70,7 +64,10 @@ export function useSupabaseStorage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Create unique file path with hash to prevent duplicates
+      // Generate file hash for unique identification
+      const fileHash = await generateFileHash(file);
+      
+      // Create unique file path with timestamp and hash
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${fileHash.substring(0, 8)}.${fileExt}`;
 
@@ -79,17 +76,6 @@ export function useSupabaseStorage() {
 
       options.onProgress?.(30);
       setUploadProgress(30);
-
-      // Check if file already exists
-      const { data: existingFile } = await supabase.storage
-        .from(options.bucket)
-        .list(options.path, {
-          search: fileName,
-        });
-
-      if (existingFile && existingFile.length > 0) {
-        throw new Error("A file with this content already exists");
-      }
 
       options.onProgress?.(50);
       setUploadProgress(50);
