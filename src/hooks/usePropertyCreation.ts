@@ -198,7 +198,28 @@ export function usePropertyCreation() {
       console.log(`Creating ${images.length} property images for property ${propertyId}`);
       console.log("Images data:", images);
 
-      const imageInserts = images.map((img, index) => ({
+      // Check for existing images first
+      const { data: existingImages, error: fetchError } = await supabase
+        .from("property_images")
+        .select("url")
+        .eq("property_id", propertyId);
+
+      if (fetchError) {
+        console.error("Error fetching existing images:", fetchError);
+        return { success: false, error: fetchError };
+      }
+
+      const existingUrls = new Set(existingImages?.map(img => img.url) || []);
+      
+      // Only insert images that don't already exist
+      const newImages = images.filter(img => !existingUrls.has(img.url));
+      
+      if (newImages.length === 0) {
+        console.log("No new images to insert, all images already exist");
+        return { success: true, error: null };
+      }
+
+      const imageInserts = newImages.map((img, index) => ({
         property_id: propertyId,
         url: img.url,
         is_primary: img.is_primary,
@@ -213,6 +234,7 @@ export function usePropertyCreation() {
         },
       }));
 
+      console.log(`Inserting ${imageInserts.length} new images (${images.length - newImages.length} already exist)`);
       console.log("Image inserts:", imageInserts);
 
       const { data: insertedImages, error: imageError } = await supabase
