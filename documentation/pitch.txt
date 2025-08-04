@@ -18,9 +18,9 @@ Little innovation in property discovery, valuation, or management
 Slide 3: The Solution – Relett
 A Unified PropTech Ecosystem
 
-End-to-end platform for property listing, investing, managing, and trading
+End-to-end platform for property listing, discovery, managing and investing.
 
-AI + Blockchain = transparency, automation, and trust
+AI + Hedera Consensus Service = transparency, automation, and trust
 
 For agents, owners, renters, and micro-investors
 

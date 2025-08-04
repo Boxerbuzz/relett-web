@@ -17,7 +17,7 @@ Relett is a comprehensive property tokenization platform that allows users to bu
 
 ### Main Application Flow
 
-```
+```text
 App.tsx → AuthProvider → Layout → Protected Routes
 ├── Auth (Login/Signup)
 ├── Dashboard (Role-based)
@@ -214,14 +214,14 @@ App.tsx → AuthProvider → Layout → Protected Routes
 - ai-learning-tracker
 - track-interaction
 
-### Hedera Integration
+### Hedera Integration Edge Functions 🪙
 
 - create-hedera-token
 - associate-hedera-token
 - transfer-hedera-tokens
 - distribute-hedera-revenue
 
-### Communication
+### Communication Edge Functions
 
 - send-chat-notification
 - send-booking-notification
