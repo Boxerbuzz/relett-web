@@ -110,8 +110,7 @@ export function useSupabaseStorage() {
       options.onProgress?.(100);
       setUploadProgress(100);
 
-      // Add to uploaded files set for basic duplicate prevention
-      uploadedFilesRef.current.add(fileHash);
+      // Note: Removed uploaded files tracking for more flexibility
 
       toast({
         title: "Upload successful",

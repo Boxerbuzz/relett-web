@@ -56,13 +56,6 @@ export function MediaStep({ form }: MediaStepProps) {
     }
   };
 
-  const generateFileHash = async (file: File): Promise<string> => {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  };
-
   const handleFilesSelected = async (files: File[]) => {
     try {
       console.log(
@@ -71,37 +64,7 @@ export function MediaStep({ form }: MediaStepProps) {
 
       const currentImages = form.getValues("images") || [];
       
-      // Check for duplicates within current images by file content
-      const filteredFiles: File[] = [];
-      const duplicateFiles: string[] = [];
-      
-      for (const file of files) {
-        const fileHash = await generateFileHash(file);
-        const isDuplicate = currentImages.some((img: UploadedImage) => {
-          // Check if we already have this file hash stored (you might need to store hash in metadata)
-          return img.name === file.name && img.size === file.size;
-        });
-        
-        if (isDuplicate) {
-          duplicateFiles.push(file.name);
-        } else {
-          filteredFiles.push(file);
-        }
-      }
-      
-      if (duplicateFiles.length > 0) {
-        toast({
-          title: "Duplicate Files Detected",
-          description: `Skipped ${duplicateFiles.length} duplicate file(s): ${duplicateFiles.join(", ")}`,
-          variant: "default",
-        });
-      }
-      
-      if (filteredFiles.length === 0) {
-        if (duplicateFiles.length > 0) {
-          return; // All files were duplicates
-        }
-      }
+      // No duplicate detection - let users upload what they want
       
       // Get property ID or use a temporary one based on user ID
       const propertyId = form.getValues("id");
@@ -116,7 +79,7 @@ export function MediaStep({ form }: MediaStepProps) {
       // Use user ID for temporary path if no property ID exists
       const uploadPath = propertyId || `temp-${user.id}`;
       
-      const uploadPromises = filteredFiles.map(async (file, index) => {
+      const uploadPromises = files.map(async (file, index) => {
         try {
           const result = await uploadFile(file, {
             bucket: "property-images",
