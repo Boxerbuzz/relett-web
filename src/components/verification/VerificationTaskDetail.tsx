@@ -33,6 +33,7 @@ import { VerificationStatusBadge } from "./VerificationStatusBadge";
 import { useVerificationTaskDetailAction } from "@/hooks/usePropertyVerificationTasks";
 import { PropertyDocumentVerificationList } from "./PropertyDocumentVerificationList";
 import { useAuth } from "@/lib/auth";
+import { LandTitleManager } from "./LandTitleManager";
 
 interface VerificationTaskDetailProps {
   task: VerificationTask;
@@ -240,6 +241,8 @@ export function VerificationTaskDetail({
         propertyId={task.property_id}
         canEdit={canEdit || false}
       />
+
+      <LandTitleManager />
 
       {/* Verification Checklist and Notes */}
       <div className="flex flex-col md:flex-row gap-4 md:items-stretch">

@@ -17,7 +17,6 @@ import {
 import { BasicDetailsStep } from "./steps/BasicDetailsStep";
 import { LocationStep } from "./steps/LocationStep";
 import { SpecificationStep } from "./steps/SpecificationStep";
-import { LandTitleStep } from "./steps/LandTitleStep";
 import { DocumentsStep } from "./steps/DocumentsStep";
 import { MediaStep } from "./steps/MediaStep";
 import { ReviewStep } from "./steps/ReviewStep";
@@ -138,6 +137,26 @@ export function AddPropertyForm() {
         return true;
       case 4: // Media
         fieldsToValidate = ["images"];
+        break;
+      case 5: // Review
+        fieldsToValidate = [
+          "title",
+          "description",
+          "type",
+          "sub_type",
+          "category",
+          "condition",
+          "price.amount",
+          "location.address",
+          "location.city",
+          "location.state",
+          "location.country",
+          "sqrft",
+          "specification.bedrooms",
+          "specification.bathrooms",
+          "specification.year_built",
+          "images",
+        ];
         break;
       default:
         return true;

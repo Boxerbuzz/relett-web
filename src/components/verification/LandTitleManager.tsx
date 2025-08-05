@@ -23,11 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddLandTitleDialog } from "@/components/land-titles/AddLandTitleDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  FileTextIcon,
-  PlusIcon,
-  CheckCircleIcon,
-} from "@phosphor-icons/react";
+import { FileTextIcon, PlusIcon, CheckCircleIcon } from "@phosphor-icons/react";
 import { AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -40,17 +36,14 @@ interface LandTitle {
   status: string;
 }
 
-interface LandTitleStepProps {
-  form: UseFormReturn<any>;
-}
-
-export function LandTitleStep({ form }: LandTitleStepProps) {
+export function LandTitleManager() {
   const { user } = useAuth();
   const [landTitles, setLandTitles] = useState<LandTitle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-
-  const selectedLandTitleId = form.watch("land_title_id");
+  const [selectedLandTitleId, setSelectedLandTitleId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (user) {
@@ -63,13 +56,20 @@ export function LandTitleStep({ form }: LandTitleStepProps) {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("land_titles")
-        .select("id, title_number, location_address, area_sqm, title_type, status")
+        .select(
+          "id, title_number, location_address, area_sqm, title_type, status"
+        )
         .eq("owner_id", user?.id || "")
         .eq("status", "verified")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setLandTitles((data || []).map(item => ({ ...item, status: item.status || "verified" })));
+      setLandTitles(
+        (data || []).map((item) => ({
+          ...item,
+          status: item.status || "verified",
+        }))
+      );
     } catch (error) {
       console.error("Error fetching land titles:", error);
     } finally {
@@ -77,7 +77,9 @@ export function LandTitleStep({ form }: LandTitleStepProps) {
     }
   };
 
-  const selectedTitle = landTitles.find((title) => title.id === selectedLandTitleId);
+  const selectedTitle = landTitles.find(
+    (title) => title.id === selectedLandTitleId
+  );
 
   const getTitleTypeDisplay = (type: string) => {
     return type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -101,8 +103,8 @@ export function LandTitleStep({ form }: LandTitleStepProps) {
       <div>
         <h3 className="text-xl font-semibold mb-2">Land Title Documentation</h3>
         <p className="text-gray-600">
-          Link this property to an existing land title or create a new one. This is
-          required for property tokenization.
+          Link this property to an existing land title or create a new one. This
+          is required for property tokenization.
         </p>
       </div>
 
@@ -126,35 +128,27 @@ export function LandTitleStep({ form }: LandTitleStepProps) {
         </Alert>
       ) : (
         <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="land_title_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Land Title</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose an existing land title" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {landTitles.map((title) => (
-                      <SelectItem key={title.id} value={title.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{title.title_number}</span>
-                          <span className="text-sm text-gray-500">
-                            {title.location_address} • {Number(title.area_sqm).toLocaleString()} sqm
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Select
+            onValueChange={setSelectedLandTitleId}
+            value={selectedLandTitleId || undefined}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Choose an existing land title" />
+            </SelectTrigger>
+            <SelectContent>
+              {landTitles.map((title) => (
+                <SelectItem key={title.id} value={title.id}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{title.title_number}</span>
+                    <span className="text-sm text-gray-500">
+                      {title.location_address} •{" "}
+                      {Number(title.area_sqm).toLocaleString()} sqm
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {selectedTitle && (
             <Card>
@@ -204,12 +198,8 @@ export function LandTitleStep({ form }: LandTitleStepProps) {
           <PlusIcon className="h-4 w-4" />
           Add New Land Title
         </Button>
-        
-        <Button
-          type="button"
-          variant="outline"
-          asChild
-        >
+
+        <Button type="button" variant="outline" asChild>
           <Link to="/land-titles" className="flex items-center gap-2">
             <FileTextIcon className="h-4 w-4" />
             Manage Land Titles
