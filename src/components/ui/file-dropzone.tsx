@@ -81,8 +81,8 @@ export const FileDropzone = forwardRef<
 
         setSelectedFiles((prev) => {
           const updated = [...prev, ...filesWithPreview];
-          // Call onFilesSelected with the updated files, not the stale state
-          onFilesSelected(updated);
+          // Only send the newly selected files, not the accumulated ones
+          onFilesSelected(filesWithPreview);
           return updated;
         });
       },
@@ -92,8 +92,12 @@ export const FileDropzone = forwardRef<
     const removeFile = (fileId: string) => {
       setSelectedFiles((prev) => {
         const updated = prev.filter((file) => file.id !== fileId);
-        onFilesSelected(updated);
-        onFileRemoved?.(updated.find((file) => file.id === fileId) as File);
+        // Don't call onFilesSelected when removing files to avoid re-uploading
+        // The parent component should handle file removal through its own logic
+        const removedFile = prev.find((file) => file.id === fileId);
+        if (removedFile) {
+          onFileRemoved?.(removedFile as File);
+        }
         return updated;
       });
     };
