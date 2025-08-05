@@ -79,10 +79,14 @@ export const FileDropzone = forwardRef<
           return fileWithId;
         });
 
-        setSelectedFiles((prev) => [...prev, ...filesWithPreview]);
-        onFilesSelected([...selectedFiles, ...acceptedFiles]);
+        setSelectedFiles((prev) => {
+          const updated = [...prev, ...filesWithPreview];
+          // Call onFilesSelected with the updated files, not the stale state
+          onFilesSelected(updated);
+          return updated;
+        });
       },
-      [selectedFiles, onFilesSelected]
+      [onFilesSelected]
     );
 
     const removeFile = (fileId: string) => {

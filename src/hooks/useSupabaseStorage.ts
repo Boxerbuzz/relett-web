@@ -67,6 +67,11 @@ export function useSupabaseStorage() {
       // Generate file hash for unique identification
       const fileHash = await generateFileHash(file);
       
+      // Check if file was already uploaded by hash
+      if (uploadedFilesRef.current.has(fileHash)) {
+        throw new Error("This file has already been uploaded. Please choose a different file.");
+      }
+      
       // Create unique file path with timestamp and hash
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${fileHash.substring(0, 8)}.${fileExt}`;

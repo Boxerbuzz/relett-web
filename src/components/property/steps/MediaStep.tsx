@@ -9,6 +9,8 @@ import { FileDropzone } from "@/components/ui/file-dropzone";
 import { useSupabaseStorage } from "@/hooks/useSupabaseStorage";
 import { Image, X, Star, Eye } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MediaStepProps {
   form: UseFormReturn<any>;
@@ -38,6 +40,7 @@ export function MediaStep({ form }: MediaStepProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("general");
   const { uploadFile, deleteFile, isUploading, uploadProgress, clearUploadHistory } =
     useSupabaseStorage();
+  const { toast } = useToast();
 
   const uploadInProgress = useRef(false);
   const fileDropzoneRef = useRef<any>(null);
@@ -61,22 +64,40 @@ export function MediaStep({ form }: MediaStepProps) {
 
       const currentImages = form.getValues("images") || [];
       
+      // Get property ID or use a temporary one based on user ID
+      const propertyId = form.getValues("id");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      
+      // Use user ID for temporary path if no property ID exists
+      const uploadPath = propertyId || `temp-${user.id}`;
+      
       const uploadPromises = files.map(async (file, index) => {
-        const result = await uploadFile(file, {
-          bucket: "property-images",
-          path: `${form.getValues("id") || "temp"}`,
-          maxSize: 5 * 1024 * 1024,
-          allowedTypes: ["image/jpeg", "image/png", "image/jpg", "image/webp"],
-        });
+        try {
+          const result = await uploadFile(file, {
+            bucket: "property-images",
+            path: uploadPath,
+            maxSize: 5 * 1024 * 1024,
+            allowedTypes: ["image/jpeg", "image/png", "image/jpg", "image/webp"],
+          });
 
-        return {
-          url: result.url,
-          path: result.path,
-          is_primary: currentImages.length === 0 && index === 0,
-          category: selectedCategory,
-          size: result.size,
-          name: result.name,
-        };
+          return {
+            url: result.url,
+            path: result.path,
+            is_primary: currentImages.length === 0 && index === 0,
+            category: selectedCategory,
+            size: result.size,
+            name: result.name,
+          };
+        } catch (error) {
+          console.error(`Failed to upload ${file.name}:`, error);
+          throw error;
+        }
       });
 
       const uploadedImages = await Promise.all(uploadPromises);
@@ -87,6 +108,13 @@ export function MediaStep({ form }: MediaStepProps) {
       console.log("Uploaded images:", uploadedImages);
     } catch (error) {
       console.error("Upload failed:", error);
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -259,20 +287,34 @@ export function MediaStep({ form }: MediaStepProps) {
         </div>
       </div>
 
-      {/* Upload Tips */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2 flex items-center">
-          <Image className="w-4 h-4 mr-2" />
-          Photography Tips
-        </h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Use natural lighting when possible for best results</li>
-          <li>• Take photos from multiple angles to showcase the space</li>
-          <li>• Include both wide shots and detail shots</li>
-          <li>• Make sure the space is clean and well-staged</li>
-          <li>• Upload high-resolution images (max 5MB each)</li>
-          <li>• Set your best exterior shot as the primary image</li>
-        </ul>
+      {/* Upload Tips and Validation Status */}
+      <div className="space-y-4">
+        {images.length < 1 && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+            <h4 className="font-medium text-amber-900 mb-2 flex items-center">
+              <Image className="w-4 h-4 mr-2" />
+              Required
+            </h4>
+            <p className="text-sm text-amber-800">
+              At least one image is required to create a property listing. Please upload photos to continue.
+            </p>
+          </div>
+        )}
+        
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+            <Image className="w-4 h-4 mr-2" />
+            Photography Tips
+          </h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• Use natural lighting when possible for best results</li>
+            <li>• Take photos from multiple angles to showcase the space</li>
+            <li>• Include both wide shots and detail shots</li>
+            <li>• Make sure the space is clean and well-staged</li>
+            <li>• Upload high-resolution images (max 5MB each)</li>
+            <li>• Set your best exterior shot as the primary image</li>
+          </ul>
+        </div>
       </div>
 
       {images.length === 0 && (
