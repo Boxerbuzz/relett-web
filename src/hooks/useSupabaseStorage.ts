@@ -67,10 +67,7 @@ export function useSupabaseStorage() {
       // Generate file hash for unique identification
       const fileHash = await generateFileHash(file);
       
-      // Check if file was already uploaded by hash
-      if (uploadedFilesRef.current.has(fileHash)) {
-        throw new Error("This file has already been uploaded. Please choose a different file.");
-      }
+      // Note: Duplicate detection is now handled at the component level for more flexibility
       
       // Create unique file path with timestamp and hash
       const fileExt = file.name.split(".").pop();
@@ -113,8 +110,7 @@ export function useSupabaseStorage() {
       options.onProgress?.(100);
       setUploadProgress(100);
 
-      // Add to uploaded files set
-      uploadedFilesRef.current.add(fileHash);
+      // Note: Removed uploaded files tracking for more flexibility
 
       toast({
         title: "Upload successful",

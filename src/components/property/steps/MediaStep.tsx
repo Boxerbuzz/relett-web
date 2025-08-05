@@ -64,6 +64,8 @@ export function MediaStep({ form }: MediaStepProps) {
 
       const currentImages = form.getValues("images") || [];
       
+      // No duplicate detection - let users upload what they want
+      
       // Get property ID or use a temporary one based on user ID
       const propertyId = form.getValues("id");
       const {
@@ -106,6 +108,13 @@ export function MediaStep({ form }: MediaStepProps) {
 
       console.log(`Upload completed. Total images: ${updatedImages.length}`);
       console.log("Uploaded images:", uploadedImages);
+      
+      if (uploadedImages.length > 0) {
+        toast({
+          title: "Upload Successful",
+          description: `Successfully uploaded ${uploadedImages.length} image(s) to ${selectedCategory} category`,
+        });
+      }
     } catch (error) {
       console.error("Upload failed:", error);
       // Show user-friendly error message

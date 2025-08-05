@@ -224,14 +224,9 @@ export function usePropertyCreation() {
         url: img.url,
         is_primary: img.is_primary,
         category: img.category,
-        file_name: img.name || `image-${index + 1}`,
-        file_size: img.size || 0,
-        file_path: img.path || "",
-        metadata: {
-          original_name: img.name,
-          size: img.size,
-          path: img.path,
-        },
+        size: img.size || 0,
+        sort_order: index,
+        // Note: file_name, file_path, and metadata are not part of the property_images schema
       }));
 
       console.log(`Inserting ${imageInserts.length} new images (${images.length - newImages.length} already exist)`);
@@ -244,10 +239,12 @@ export function usePropertyCreation() {
 
       if (imageError) {
         console.error("Error storing images:", imageError);
+        console.error("Failed image inserts:", imageInserts);
         return { success: false, error: imageError };
       }
 
       console.log(`Successfully created ${insertedImages?.length || 0} property images`);
+      console.log("Inserted images data:", insertedImages);
       return { success: true, error: null };
     } catch (error) {
       console.error("Error creating property images:", error);
@@ -332,7 +329,11 @@ export function usePropertyCreation() {
       const imageResult = await createPropertyImages(property.id, data.images);
       if (!imageResult.success) {
         console.error("Failed to create property images:", imageResult.error);
-        // You might want to handle this error appropriately
+        toast({
+          title: "Warning",
+          description: "Property created but some images failed to save. You can add them later in the edit form.",
+          variant: "destructive",
+        });
       }
 
       // Create documents using the new function
