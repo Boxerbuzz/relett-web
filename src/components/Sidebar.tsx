@@ -15,7 +15,6 @@ import {
   BellIcon,
   PlusIcon,
   MapPinPlusIcon,
-  EyeIcon,
   BuildingsIcon,
   UsersIcon,
   CalendarIcon,
@@ -27,7 +26,8 @@ import {
   StarIcon,
   ChartDonutIcon,
   UserIcon,
-  HeadCircuitIcon
+  HeadCircuitIcon,
+  BinocularsIcon,
 } from "@phosphor-icons/react";
 import {
   Collapsible,
@@ -128,7 +128,7 @@ const agentNavigation = [
   {
     name: "Inspections",
     href: "/agent/inspections",
-    icon: EyeIcon,
+    icon: BinocularsIcon,
     roles: ["agent", "admin", "landowner"],
   },
   {
