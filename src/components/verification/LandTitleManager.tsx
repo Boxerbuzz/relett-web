@@ -12,19 +12,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddLandTitleDialog } from "@/components/land-titles/AddLandTitleDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileTextIcon, PlusIcon, CheckCircleIcon } from "@phosphor-icons/react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Check, ChevronsUpDown } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface LandTitle {
@@ -44,6 +50,8 @@ export function LandTitleManager() {
   const [selectedLandTitleId, setSelectedLandTitleId] = useState<string | null>(
     null
   );
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -79,6 +87,13 @@ export function LandTitleManager() {
 
   const selectedTitle = landTitles.find(
     (title) => title.id === selectedLandTitleId
+  );
+
+  const filteredTitles = landTitles.filter(
+    (title) =>
+      title.title_number.toLowerCase().includes(searchValue.toLowerCase()) ||
+      title.location_address.toLowerCase().includes(searchValue.toLowerCase()) ||
+      title.title_type.toLowerCase().includes(searchValue.toLowerCase())
   );
 
   const getTitleTypeDisplay = (type: string) => {
@@ -128,27 +143,68 @@ export function LandTitleManager() {
         </Alert>
       ) : (
         <div className="space-y-4">
-          <Select
-            onValueChange={setSelectedLandTitleId}
-            value={selectedLandTitleId || undefined}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Choose an existing land title" />
-            </SelectTrigger>
-            <SelectContent>
-              {landTitles.map((title) => (
-                <SelectItem key={title.id} value={title.id}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{title.title_number}</span>
-                    <span className="text-sm text-gray-500">
-                      {title.location_address} •{" "}
-                      {Number(title.area_sqm).toLocaleString()} sqm
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={searchOpen}
+                className="w-full justify-between h-auto p-3"
+              >
+                {selectedTitle ? (
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">{selectedTitle.title_number}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {selectedTitle.location_address} •{" "}
+                      {Number(selectedTitle.area_sqm).toLocaleString()} sqm
                     </span>
                   </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                ) : (
+                  "Choose an existing land title"
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput
+                  placeholder="Search land titles..."
+                  value={searchValue}
+                  onValueChange={setSearchValue}
+                />
+                <CommandList>
+                  <CommandEmpty>No land titles found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredTitles.map((title) => (
+                      <CommandItem
+                        key={title.id}
+                        value={title.id}
+                        onSelect={() => {
+                          setSelectedLandTitleId(title.id);
+                          setSearchOpen(false);
+                          setSearchValue("");
+                        }}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{title.title_number}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {title.location_address} •{" "}
+                            {Number(title.area_sqm).toLocaleString()} sqm • {getTitleTypeDisplay(title.title_type)}
+                          </span>
+                        </div>
+                        <Check
+                          className={`ml-auto h-4 w-4 ${
+                            selectedLandTitleId === title.id ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
           {selectedTitle && (
             <Card>
