@@ -50,7 +50,7 @@ export function MediaStep({ form }: MediaStepProps) {
     setSelectedCategory(category);
     // Clear upload history to prevent false duplicate detection
     clearUploadHistory();
-    // Reset the FileDropzone's internal state
+    // Reset the FileDropzone's internal state to start fresh for new category
     if (fileDropzoneRef.current?.resetFiles) {
       fileDropzoneRef.current.resetFiles();
     }
@@ -61,8 +61,10 @@ export function MediaStep({ form }: MediaStepProps) {
       console.log(
         `Starting upload for ${files.length} files in category: ${selectedCategory}`
       );
+      console.log("Files being uploaded:", files.map(f => f.name));
 
       const currentImages = form.getValues("images") || [];
+      console.log(`Current images in form: ${currentImages.length}`);
       
       // No duplicate detection - let users upload what they want
       
@@ -106,6 +108,11 @@ export function MediaStep({ form }: MediaStepProps) {
       const updatedImages = [...currentImages, ...uploadedImages];
       form.setValue("images", updatedImages);
 
+      // Reset the FileDropzone to prevent accumulating files
+      if (fileDropzoneRef.current?.resetFiles) {
+        fileDropzoneRef.current.resetFiles();
+      }
+
       console.log(`Upload completed. Total images: ${updatedImages.length}`);
       console.log("Uploaded images:", uploadedImages);
       
@@ -117,6 +124,12 @@ export function MediaStep({ form }: MediaStepProps) {
       }
     } catch (error) {
       console.error("Upload failed:", error);
+      
+      // Reset the FileDropzone even on error to prevent accumulating files
+      if (fileDropzoneRef.current?.resetFiles) {
+        fileDropzoneRef.current.resetFiles();
+      }
+      
       // Show user-friendly error message
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       toast({
