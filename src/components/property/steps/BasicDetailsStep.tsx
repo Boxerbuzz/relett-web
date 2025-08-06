@@ -220,70 +220,88 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="price.term"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price Term</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select term" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="night">Per Night</SelectItem>
-                    <SelectItem value="week">Per Week</SelectItem>
-                    <SelectItem value="month">Per Month</SelectItem>
-                    <SelectItem value="year">Per Year</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="price.deposit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Deposit Amount</FormLabel>
+                  <FormField
+          control={form.control}
+          name="price.term"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Price Term</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
                 <FormControl>
-                  <CurrencyInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="₦0"
-                  />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select term" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <SelectContent>
+                  {/* Show all terms for residential and commercial properties */}
+                  {(type === "residential" || type === "commercial") && category === "shortlet" && (
+                    <SelectItem value="night">Per Night</SelectItem>
+                  )}
+                  {(type === "residential" || type === "commercial") && (category === "rent" || category === "shortlet") && (
+                    <SelectItem value="week">Per Week</SelectItem>
+                  )}
+                  {type !== "land" && (
+                    <SelectItem value="month">Per Month</SelectItem>
+                  )}
+                  <SelectItem value="year">Per Year</SelectItem>
+                  {/* For land and sell category, show total price option */}
+                  {(category === "sell" || type === "land") && (
+                    <SelectItem value="total">Total Price</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+          {/* Deposit only for rental properties */}
+          {(category === "rent" || category === "shortlet" || category === "lease") && (
+            <FormField
+              control={form.control}
+              name="price.deposit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deposit Amount</FormLabel>
+                  <FormControl>
+                    <CurrencyInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="₦0"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
+        {/* Additional pricing fields - show based on category and type */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="price.service_charge"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Service Charge</FormLabel>
-                <FormControl>
-                  <CurrencyInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="₦0"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Service charge only for rental properties */}
+          {(category === "rent" || category === "shortlet") && (
+            <FormField
+              control={form.control}
+              name="price.service_charge"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Service Charge</FormLabel>
+                  <FormControl>
+                    <CurrencyInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="₦0"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
