@@ -40,7 +40,6 @@ export default function TokenizeProperty() {
   const navigate = useNavigate();
   const { propertyId } = useParams();
   const { user } = useAuth();
-  
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,36 +72,38 @@ export default function TokenizeProperty() {
     { title: "Review & Submit", icon: EyeIcon },
   ];
 
-    // Load property data from URL params or redirect if missing
+  // Load property data from URL params or redirect if missing
   useEffect(() => {
     // Add a small delay to ensure React Router has fully initialized
     const timer = setTimeout(() => {
       // Try to get propertyId from useParams first, then fallback to URL parsing
       let finalPropertyId = propertyId;
-      
+
       if (!finalPropertyId) {
         // Fallback: Extract propertyId from URL path
-        const pathParts = window.location.pathname.split('/');
-        const tokenizeIndex = pathParts.findIndex(part => part === 'tokenize-property');
+        const pathParts = window.location.pathname.split("/");
+        const tokenizeIndex = pathParts.findIndex(
+          (part) => part === "tokenize-property"
+        );
         if (tokenizeIndex !== -1 && pathParts[tokenizeIndex + 1]) {
           finalPropertyId = pathParts[tokenizeIndex + 1];
         }
       }
-      
+
       if (!finalPropertyId) {
         toast.error("Property ID is required");
         navigate("/marketplace");
         return;
       }
 
-              const loadProperty = async () => {
-          setIsLoadingProperty(true);
-          try {
-            const { data, error } = await supabase
-              .from("properties")
-              .select("id, title, price, location, backdrop")
-              .eq("id", finalPropertyId)
-              .single();
+      const loadProperty = async () => {
+        setIsLoadingProperty(true);
+        try {
+          const { data, error } = await supabase
+            .from("properties")
+            .select("id, title, price, location, backdrop")
+            .eq("id", finalPropertyId)
+            .single();
 
           if (error || !data) {
             toast.error("Property not found");
@@ -293,7 +294,11 @@ export default function TokenizeProperty() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {!propertyId ? "Initializing..." : isLoadingProperty ? "Loading property..." : "Property not found"}
+            {!propertyId
+              ? "Initializing..."
+              : isLoadingProperty
+              ? "Loading property..."
+              : "Property not found"}
           </p>
           {!propertyId && (
             <p className="text-xs text-gray-500 mt-2">
@@ -316,7 +321,7 @@ export default function TokenizeProperty() {
                 ? {
                     id: property.id,
                     title: property.title,
-                    location: 'getLocationString()',
+                    location: "getLocationString()",
                     value:
                       parseFloat(property.value.replace(/[^0-9.]/g, "")) || 0,
                   }
@@ -592,7 +597,7 @@ export default function TokenizeProperty() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mt-5">
                       <div className="flex items-center gap-2 text-yellow-800">
                         <svg
                           className="h-5 w-5"
