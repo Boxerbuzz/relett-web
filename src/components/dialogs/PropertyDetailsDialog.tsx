@@ -28,12 +28,11 @@ import {
   ArchiveBoxIcon,
 } from "@phosphor-icons/react";
 import { getAmenityById } from "@/types/amenities";
-import { TokenizePropertyDialog } from "@/components/dialogs/TokenizePropertyDialog";
-import { EditPropertyDialog } from "@/components/dialogs/EditPropertyDialog";
 import { DocumentUpload } from "@/components/property/DocumentUpload";
 import { capitalize } from "@/lib/utils";
 import { usePropertyDocument } from "@/hooks/usePropertyDocument";
 import { PropertyBlockchainRegistration } from "../hedera/PropertyBlockchainRegistration";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyData {
   id: string;
@@ -99,11 +98,9 @@ export function PropertyDetailsDialog({
 }: PropertyDetailsDialogProps) {
   const [property, setProperty] = useState<PropertyData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showTokenizeDialog, setShowTokenizeDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
-  const { createDocument, updateDocument, deleteDocument } =
-    usePropertyDocument();
+  const navigate = useNavigate();
+  const { createDocument, deleteDocument } = usePropertyDocument();
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -190,11 +187,6 @@ export function PropertyDetailsDialog({
     if (typeof price === "number") return `₦${(price / 100).toLocaleString()}`;
     if (price.amount) return `₦${(price.amount / 100).toLocaleString()}`;
     return "Price not available";
-  };
-
-  const handleTokenizeProperty = () => {
-    if (!property) return;
-    setShowTokenizeDialog(true);
   };
 
   const keySpecs = property
@@ -394,33 +386,38 @@ export function PropertyDetailsDialog({
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => setShowEditDialog(true)}
+                    onClick={() => navigate(`/edit-property/${property.id}`)}
                   >
                     <PencilCircleIcon size={16} className="mr-2" />
                     Edit Property
                   </Button>
 
-                  {property.is_verified && !property.is_blockchain_registered && (
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setShowBlockchainDialog(true)}
-                    >
-                      <CoinsIcon size={16} className="mr-2" />
-                      Register on Blockchain
-                    </Button>
-                  )}
+                  {property.is_verified &&
+                    !property.is_blockchain_registered && (
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setShowBlockchainDialog(true)}
+                      >
+                        <CoinsIcon size={16} className="mr-2" />
+                        Register on Blockchain
+                      </Button>
+                    )}
 
-                  {property.is_blockchain_registered && !property.is_tokenized && (
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleTokenizeProperty()}
-                    >
-                      <CoinsIcon size={16} className="mr-2" />
-                      Tokenize
-                    </Button>
-                  )}
+                  {property.is_blockchain_registered &&
+                    !property.is_tokenized && (
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          console.log(property.id);
+                          navigate(`/tokenize-property/${property.id}`);
+                        }}
+                      >
+                        <CoinsIcon size={16} className="mr-2" />
+                        Tokenize
+                      </Button>
+                    )}
                 </div>
               )}
             </div>
@@ -648,28 +645,6 @@ export function PropertyDetailsDialog({
           </div>
         </div>
       </div>
-
-      {property && (
-        <TokenizePropertyDialog
-          open={showTokenizeDialog}
-          onOpenChange={setShowTokenizeDialog}
-          property={{
-            id: property.id,
-            location: getLocationString(),
-            value: formatPrice(property.price),
-            image: property.backdrop || "",
-            title: property.title || "",
-          }}
-        />
-      )}
-
-      {/* Edit Property Dialog */}
-      <EditPropertyDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        propertyId={propertyId}
-        onPropertyUpdated={fetchPropertyDetails}
-      />
 
       {/* Blockchain Registration Dialog */}
       {property && showBlockchainDialog && (
