@@ -101,8 +101,35 @@ export function AddPropertyForm() {
     return current?.message;
   };
 
+  // Utility function to determine which fields should be validated based on property type and category
+  const getValidationFields = (propertyType: string, category: string) => {
+    const fieldConfig = {
+      residential: {
+        specifications: ["specification.bedrooms", "specification.bathrooms", "specification.year_built"],
+        area: ["sqrft"],
+      },
+      commercial: {
+        specifications: ["specification.toilets", "specification.floors", "specification.year_built"],
+        area: ["sqrft"],
+      },
+      industrial: {
+        specifications: ["specification.toilets", "specification.floors", "specification.year_built"],
+        area: ["sqrft"],
+      },
+      land: {
+        specifications: ["specification.area"],
+        area: ["sqrft"],
+      },
+    };
+
+    return fieldConfig[propertyType as keyof typeof fieldConfig] || fieldConfig.residential;
+  };
+
   const validateCurrentStep = async () => {
     const values = form.getValues();
+    const propertyType = values.type;
+    const category = values.category;
+    const validationConfig = getValidationFields(propertyType, category);
     let fieldsToValidate: string[] = [];
 
     switch (currentStep) {
@@ -127,10 +154,8 @@ export function AddPropertyForm() {
         break;
       case 2: // Specifications
         fieldsToValidate = [
-          "sqrft",
-          "specification.bedrooms",
-          "specification.bathrooms",
-          "specification.year_built",
+          ...validationConfig.area,
+          ...validationConfig.specifications,
         ];
         break;
       case 3: // Documents - Make optional
@@ -151,10 +176,8 @@ export function AddPropertyForm() {
           "location.city",
           "location.state",
           "location.country",
-          "sqrft",
-          "specification.bedrooms",
-          "specification.bathrooms",
-          "specification.year_built",
+          ...validationConfig.area,
+          ...validationConfig.specifications,
           "images",
         ];
         break;

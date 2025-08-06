@@ -34,7 +34,7 @@ export const propertySchema = z.object({
       .min(1000, "Price must be at least ₦1,000")
       .max(1000000000, "Price cannot exceed ₦1 billion"),
     currency: z.string().default("NGN"),
-    term: z.enum(["night", "week", "month", "year"]).default("month"),
+    term: z.enum(["night", "week", "month", "year", "total"]).default("month"),
     deposit: z.number().optional(),
     service_charge: z.number().optional(),
     is_negotiable: z.boolean().default(false),

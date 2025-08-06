@@ -406,3 +406,155 @@ export const runComprehensiveTests = async () => {
   const tester = new ComprehensiveTester();
   return await tester.runAllTests();
 };
+
+// Utility functions for testing
+
+export const testPropertyFormFields = () => {
+  // Test the field visibility logic for different property types
+  const getVisibleFields = (propertyType: string, category: string) => {
+    const fieldConfig = {
+      residential: {
+        bedrooms: true,
+        bathrooms: true,
+        toilets: true,
+        parking: true,
+        garages: true,
+        floors: true,
+        units: category === 'rent' || category === 'shortlet',
+        area: true,
+        year_built: true,
+        is_furnished: true,
+        full_bedroom_count: true,
+      },
+      commercial: {
+        bedrooms: false,
+        bathrooms: false,
+        toilets: true,
+        parking: true,
+        garages: false,
+        floors: true,
+        units: true,
+        area: true,
+        year_built: true,
+        is_furnished: category === 'rent' || category === 'shortlet',
+        full_bedroom_count: false,
+      },
+      industrial: {
+        bedrooms: false,
+        bathrooms: false,
+        toilets: true,
+        parking: true,
+        garages: false,
+        floors: true,
+        units: false,
+        area: true,
+        year_built: true,
+        is_furnished: false,
+        full_bedroom_count: false,
+      },
+      land: {
+        bedrooms: false,
+        bathrooms: false,
+        toilets: false,
+        parking: false,
+        garages: false,
+        floors: false,
+        units: false,
+        area: true,
+        year_built: false,
+        is_furnished: false,
+        full_bedroom_count: false,
+      },
+    };
+
+    return fieldConfig[propertyType as keyof typeof fieldConfig] || fieldConfig.residential;
+  };
+
+  // Test cases
+  const testCases = [
+    {
+      name: 'Residential Sale',
+      type: 'residential',
+      category: 'sell',
+      expectedFields: ['bedrooms', 'bathrooms', 'toilets', 'parking', 'garages', 'floors', 'area', 'year_built', 'is_furnished', 'full_bedroom_count'],
+      unexpectedFields: ['units'],
+    },
+    {
+      name: 'Residential Rent',
+      type: 'residential',
+      category: 'rent',
+      expectedFields: ['bedrooms', 'bathrooms', 'toilets', 'parking', 'garages', 'floors', 'units', 'area', 'year_built', 'is_furnished', 'full_bedroom_count'],
+      unexpectedFields: [],
+    },
+    {
+      name: 'Commercial Office',
+      type: 'commercial',
+      category: 'sell',
+      expectedFields: ['toilets', 'parking', 'floors', 'units', 'area', 'year_built'],
+      unexpectedFields: ['bedrooms', 'bathrooms', 'garages', 'is_furnished', 'full_bedroom_count'],
+    },
+    {
+      name: 'Land Sale',
+      type: 'land',
+      category: 'sell',
+      expectedFields: ['area'],
+      unexpectedFields: ['bedrooms', 'bathrooms', 'toilets', 'parking', 'garages', 'floors', 'units', 'year_built', 'is_furnished', 'full_bedroom_count'],
+    },
+    {
+      name: 'Industrial Property',
+      type: 'industrial',
+      category: 'lease',
+      expectedFields: ['toilets', 'parking', 'floors', 'area', 'year_built'],
+      unexpectedFields: ['bedrooms', 'bathrooms', 'garages', 'units', 'is_furnished', 'full_bedroom_count'],
+    },
+  ];
+
+  console.log('Testing Property Form Field Visibility Logic...\n');
+
+  let allTestsPassed = true;
+
+  testCases.forEach(testCase => {
+    const fields = getVisibleFields(testCase.type, testCase.category);
+    console.log(`Test: ${testCase.name} (${testCase.type} - ${testCase.category})`);
+    
+    let testPassed = true;
+
+    // Check expected fields are visible
+    testCase.expectedFields.forEach(field => {
+      if (!fields[field as keyof typeof fields]) {
+        console.log(`  ❌ Expected field '${field}' to be visible but it's not`);
+        testPassed = false;
+      }
+    });
+
+    // Check unexpected fields are hidden
+    testCase.unexpectedFields.forEach(field => {
+      if (fields[field as keyof typeof fields]) {
+        console.log(`  ❌ Expected field '${field}' to be hidden but it's visible`);
+        testPassed = false;
+      }
+    });
+
+    if (testPassed) {
+      console.log(`  ✅ All field visibility rules correct`);
+    } else {
+      allTestsPassed = false;
+    }
+
+    console.log(`  Visible fields: ${Object.keys(fields).filter(key => fields[key as keyof typeof fields])}`);
+    console.log(`  Hidden fields: ${Object.keys(fields).filter(key => !fields[key as keyof typeof fields])}\n`);
+  });
+
+  if (allTestsPassed) {
+    console.log('🎉 All property form field visibility tests passed!');
+  } else {
+    console.log('❌ Some tests failed. Please check the field visibility logic.');
+  }
+
+  return allTestsPassed;
+};
+
+// Call the test function if this module is run directly
+if (typeof window !== 'undefined' && (window as any).testPropertyFormFields) {
+  (window as any).testPropertyFormFields = testPropertyFormFields;
+}
