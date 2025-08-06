@@ -299,10 +299,24 @@ export function TokenizePropertyDialog({
     switch (step) {
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="totalTokens">Total Tokens</Label>
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Configure Token Parameters
+              </h3>
+              <p className="text-slate-600 text-sm">
+                Set up your property tokenization with precise parameters
+              </p>
+            </div>
+
+            {/* Token Configuration Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Total Tokens */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 hover:border-blue-300/60 transition-all duration-300">
+                <Label htmlFor="totalTokens" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Total Token Supply
+                </Label>
                 <Input
                   id="totalTokens"
                   type="number"
@@ -310,10 +324,20 @@ export function TokenizePropertyDialog({
                   onChange={(e) =>
                     handleInputChange("totalTokens", e.target.value)
                   }
+                  className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold"
+                  placeholder="100,000"
                 />
+                <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+                  <CoinsIcon size={12} />
+                  <span>Individual ownership units</span>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="pricePerToken">Price per Token</Label>
+
+              {/* Price per Token */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-green-50/50 to-emerald-50/30 hover:border-green-300/60 transition-all duration-300">
+                <Label htmlFor="pricePerToken" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Token Price
+                </Label>
                 <CurrencyInput
                   value={parseFloat(formData.pricePerToken) || 0}
                   onChange={(value) =>
@@ -321,20 +345,25 @@ export function TokenizePropertyDialog({
                   }
                   currency="USD"
                   min={0.01}
+                  className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold"
                 />
                 {formData.pricePerToken && (
-                  <div className="mt-1 text-sm text-muted-foreground">
+                  <div className="mt-3">
                     <CurrencyExchangeWidget
                       amount={parseFloat(formData.pricePerToken) || 0}
                       size="sm"
+                      variant="swap"
                     />
                   </div>
                 )}
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="minimumInvestment">Minimum Investment</Label>
+            {/* Minimum Investment */}
+            <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-purple-50/50 to-pink-50/30 hover:border-purple-300/60 transition-all duration-300">
+              <Label htmlFor="minimumInvestment" className="text-sm font-semibold text-slate-700 mb-2 block">
+                Minimum Investment Threshold
+              </Label>
               <CurrencyInput
                 value={parseFloat(formData.minimumInvestment) || 0}
                 onChange={(value) =>
@@ -342,132 +371,270 @@ export function TokenizePropertyDialog({
                 }
                 currency="USD"
                 min={1}
+                className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold"
               />
               {formData.minimumInvestment && (
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-3">
                   <CurrencyExchangeWidget
                     amount={parseFloat(formData.minimumInvestment) || 0}
                     size="sm"
+                    variant="swap"
                   />
                 </div>
               )}
             </div>
 
-            <Card className="bg-muted/30">
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Projected Total Value
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+            {/* Total Value Projection */}
+            <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-yellow-50/30 via-orange-50/20 to-red-50/30">
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/10" />
+              
+              <div className="relative p-6 space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalculatorIcon size={20} className="text-amber-600" />
+                  <h4 className="text-lg font-bold text-slate-800">
+                    Total Tokenization Value
+                  </h4>
+                </div>
+                
                 <CurrencyExchangeWidget
                   amount={
                     (parseInt(formData.totalTokens) || 0) *
                     (parseFloat(formData.pricePerToken) || 0)
                   }
                   size="lg"
-                  className="font-bold text-primary justify-center"
+                  variant="swap"
+                  className="font-bold"
                 />
-                <div className="text-sm text-muted-foreground">
-                  <p>
-                    Min. Tokens:{" "}
-                    {Math.ceil(
-                      (parseFloat(formData.minimumInvestment) || 0) /
-                        (parseFloat(formData.pricePerToken) || 1)
-                    )}{" "}
-                    tokens
-                  </p>
-                </div>
-                {validationError && (
-                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded border">
-                    ❌ {validationError}
+                
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200/50">
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Min. Tokens Required</p>
+                    <p className="text-lg font-bold text-slate-800">
+                      {Math.ceil(
+                        (parseFloat(formData.minimumInvestment) || 0) /
+                          (parseFloat(formData.pricePerToken) || 1)
+                      )}
+                    </p>
                   </div>
-                )}
-                <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border">
-                  ⚠️ Token value will be validated against property valuation. 
-                  If property valuation is unavailable, a fallback estimation will be used.
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Total Supply</p>
+                    <p className="text-lg font-bold text-slate-800">
+                      {parseInt(formData.totalTokens) || 0}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Validation Messages */}
+            {validationError && (
+              <div className="p-4 rounded-xl border-2 border-red-200 bg-red-50/50 text-red-700">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                    <span className="text-xs">❌</span>
+                  </div>
+                  <span className="text-sm font-medium">{validationError}</span>
+                </div>
+              </div>
+            )}
+            
+            <div className="p-4 rounded-xl border-2 border-amber-200 bg-amber-50/50 text-amber-700">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                  <span className="text-xs">⚠️</span>
+                </div>
+                <span className="text-sm">
+                  Token value will be validated against property valuation for accuracy and compliance.
+                </span>
+              </div>
+            </div>
           </div>
         );
 
       case 2:
         return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="expectedROI">Expected ROI (%)</Label>
-                <Input
-                  id="expectedROI"
-                  type="number"
-                  step="0.1"
-                  value={formData.expectedROI}
-                  onChange={(e) =>
-                    handleInputChange("expectedROI", e.target.value)
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="lockupPeriod">Lock-up Period (months)</Label>
-                <Input
-                  id="lockupPeriod"
-                  type="number"
-                  min="4"
-                  value={formData.lockupPeriod}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    if (value >= 4 || value === 0) {
-                      handleInputChange("lockupPeriod", e.target.value);
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                Financial Terms & Returns
+              </h3>
+              <p className="text-slate-600 text-sm">
+                Define the investment structure and expected returns
+              </p>
+            </div>
+
+            {/* ROI and Lock-up Period */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Expected ROI */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-emerald-50/50 to-green-50/30 hover:border-emerald-300/60 transition-all duration-300">
+                <Label htmlFor="expectedROI" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Expected Annual ROI
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="expectedROI"
+                    type="number"
+                    step="0.1"
+                    value={formData.expectedROI}
+                    onChange={(e) =>
+                      handleInputChange("expectedROI", e.target.value)
                     }
-                  }}
-                />
+                    className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold pr-8"
+                    placeholder="12.5"
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">
+                    %
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600">
+                  <CalculatorIcon size={12} />
+                  <span>Projected annual returns</span>
+                </div>
+              </div>
+
+              {/* Lock-up Period */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-orange-50/50 to-amber-50/30 hover:border-orange-300/60 transition-all duration-300">
+                <Label htmlFor="lockupPeriod" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Investment Lock-up Period
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="lockupPeriod"
+                    type="number"
+                    min="4"
+                    value={formData.lockupPeriod}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      if (value >= 4 || value === 0) {
+                        handleInputChange("lockupPeriod", e.target.value);
+                      }
+                    }}
+                    className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold pr-16"
+                    placeholder="12"
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">
+                    months
+                  </span>
+                </div>
                 {parseInt(formData.lockupPeriod) > 0 &&
                   parseInt(formData.lockupPeriod) < 4 && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+                      <span>⚠️</span>
                       Minimum lockup period is 4 months
                     </p>
                   )}
+                <div className="mt-2 flex items-center gap-2 text-xs text-orange-600">
+                  <CoinsIcon size={12} />
+                  <span>Minimum investment duration</span>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="distributionFrequency">
-                Distribution Frequency
-              </Label>
-              <Select
-                value={formData.distributionFrequency}
-                onValueChange={(value) =>
-                  handleInputChange("distributionFrequency", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                  <SelectItem value="semi-annually">Semi-Annually</SelectItem>
-                  <SelectItem value="annually">Annually</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Distribution and Risk */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Distribution Frequency */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 hover:border-blue-300/60 transition-all duration-300">
+                <Label htmlFor="distributionFrequency" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Revenue Distribution
+                </Label>
+                <Select
+                  value={formData.distributionFrequency}
+                  onValueChange={(value) =>
+                    handleInputChange("distributionFrequency", value)
+                  }
+                >
+                  <SelectTrigger className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-slate-200/50 bg-white/95 backdrop-blur-sm">
+                    <SelectItem value="monthly" className="rounded-lg">Monthly</SelectItem>
+                    <SelectItem value="quarterly" className="rounded-lg">Quarterly</SelectItem>
+                    <SelectItem value="semi-annually" className="rounded-lg">Semi-Annually</SelectItem>
+                    <SelectItem value="annually" className="rounded-lg">Annually</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+                  <FileTextIcon size={12} />
+                  <span>How often returns are paid</span>
+                </div>
+              </div>
+
+              {/* Risk Level */}
+              <div className="p-4 rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-purple-50/50 to-pink-50/30 hover:border-purple-300/60 transition-all duration-300">
+                <Label htmlFor="riskLevel" className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Investment Risk Level
+                </Label>
+                <Select
+                  value={formData.riskLevel}
+                  onValueChange={(value) => handleInputChange("riskLevel", value)}
+                >
+                  <SelectTrigger className="border-0 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200 text-lg font-semibold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-2 border-slate-200/50 bg-white/95 backdrop-blur-sm">
+                    <SelectItem value="low" className="rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        Low Risk
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="medium" className="rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                        Medium Risk
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="high" className="rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        High Risk
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="mt-2 flex items-center gap-2 text-xs text-purple-600">
+                  <ScalesIcon size={12} />
+                  <span>Investment risk assessment</span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="riskLevel">Risk Level</Label>
-              <Select
-                value={formData.riskLevel}
-                onValueChange={(value) => handleInputChange("riskLevel", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Risk</SelectItem>
-                  <SelectItem value="medium">Medium Risk</SelectItem>
-                  <SelectItem value="high">High Risk</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Investment Summary */}
+            <div className="relative overflow-hidden rounded-2xl border-2 border-slate-200/50 bg-gradient-to-br from-slate-50/50 to-gray-50/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-gray-500/10" />
+              
+              <div className="relative p-6 space-y-4">
+                <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <EyeIcon size={20} className="text-slate-600" />
+                  Investment Overview
+                </h4>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Annual ROI</p>
+                    <p className="text-lg font-bold text-emerald-600">{formData.expectedROI}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Lock-up</p>
+                    <p className="text-lg font-bold text-orange-600">{formData.lockupPeriod}mo</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Frequency</p>
+                    <p className="text-lg font-bold text-blue-600 capitalize">{formData.distributionFrequency}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-slate-600 mb-1">Risk</p>
+                    <p className={`text-lg font-bold capitalize ${
+                      formData.riskLevel === 'low' ? 'text-green-600' :
+                      formData.riskLevel === 'medium' ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {formData.riskLevel}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -564,6 +731,7 @@ export function TokenizePropertyDialog({
                     <CurrencyExchangeWidget
                       amount={parseFloat(formData.pricePerToken) || 0}
                       size="sm"
+                      variant="swap"
                       className="font-semibold"
                     />
                   </div>
@@ -600,53 +768,74 @@ export function TokenizePropertyDialog({
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent
-        className="max-w-5xl w-full md:max-h-[80vh] flex flex-col gap-y-0"
+        className="max-w-5xl w-full md:max-h-[85vh] flex flex-col gap-y-0 bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200/50"
         size="3xl"
       >
         {/* Fixed Header */}
-        <div className="flex-shrink-0 space-y-4  p-2">
+        <div className="flex-shrink-0 space-y-4 p-4 border-b border-slate-200/50 bg-white/80 backdrop-blur-sm">
           <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle className="flex items-center gap-2">
-              <CoinsIcon size={20} />
-              Tokenize Property
+            <ResponsiveDialogTitle className="flex items-center gap-3 text-2xl font-bold">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+                <CoinsIcon size={24} />
+              </div>
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Tokenize Property
+              </span>
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
 
           {/* Progress */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex justify-between text-sm">
               {steps.map((stepInfo, index) => {
                 const IconComponent = stepInfo.icon;
+                const isActive = index + 1 <= step;
+                const isCurrent = index + 1 === step;
                 return (
-                  <div key={index} className="flex flex-col items-center gap-1">
+                  <div key={index} className="flex flex-col items-center gap-2">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        index + 1 <= step
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-500"
+                      className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                        isActive
+                          ? isCurrent
+                            ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25 scale-110"
+                            : "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md"
+                          : "bg-slate-200 text-slate-500 hover:bg-slate-300"
                       }`}
                     >
-                      <IconComponent size={16} />
+                      <IconComponent size={18} />
                     </div>
-                    <span className="text-xs text-center hidden">
+                    <span className={`text-xs text-center font-medium transition-colors duration-300 ${
+                      isActive ? "text-slate-700" : "text-slate-400"
+                    }`}>
                       {stepInfo.title}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <Progress value={(step / 4) * 100} className="w-full" />
+            <div className="relative">
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${(step / 4) * 100}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Scrollable Step Content */}
-        <div className="flex-1 overflow-y-auto py-4  p-6">
+        <div className="flex-1 overflow-y-auto py-6 px-6 space-y-6">
           {renderStep()}
+        </div>
 
-          <div className="flex justify-between">
+        {/* Action Buttons */}
+        <div className="flex-shrink-0 p-6 border-t border-slate-200/50 bg-white/80 backdrop-blur-sm">
+          <div className="flex justify-between gap-4">
             <Button
               variant="outline"
               onClick={step === 1 ? () => onOpenChange(false) : prevStep}
+              className="px-6 py-2.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200"
             >
               {step === 1 ? "Cancel" : "Previous"}
             </Button>
@@ -655,7 +844,9 @@ export function TokenizePropertyDialog({
               <Button
                 onClick={handleSubmit}
                 disabled={isLoading || isTokenized}
-                className={isTokenized ? "opacity-50 cursor-not-allowed" : ""}
+                className={`px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                  isTokenized ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 {isLoading
                   ? "Submitting..."
@@ -669,8 +860,9 @@ export function TokenizePropertyDialog({
               <Button 
                 onClick={nextStep}
                 disabled={isValidating || validationError !== null}
+                className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isValidating ? "Validating..." : "Next"}
+                {isValidating ? "Validating..." : "Continue"}
               </Button>
             )}
           </div>
