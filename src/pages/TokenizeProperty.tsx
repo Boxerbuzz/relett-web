@@ -40,6 +40,8 @@ export default function TokenizeProperty() {
   const navigate = useNavigate();
   const { propertyId } = useParams();
   const { user } = useAuth();
+  
+
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isTokenized, setIsTokenized] = useState(false);
@@ -47,6 +49,7 @@ export default function TokenizeProperty() {
     null
   );
   const [property, setProperty] = useState<Property | null>(null);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(true);
   const [formData, setFormData] = useState({
     totalTokens: "100000",
     pricePerToken: "25",
@@ -70,54 +73,63 @@ export default function TokenizeProperty() {
     { title: "Review & Submit", icon: EyeIcon },
   ];
 
-  const getLocationString = () => {
-    if (!property?.location) return "Location not specified";
-    if (typeof property.location === "string") return property.location;
-
-    const { city, state } = property.location as {
-      city: string;
-      state: string;
-    };
-    return [city, state].filter(Boolean).join(", ");
-  };
-
-  // Load property data from URL params or redirect if missing
+    // Load property data from URL params or redirect if missing
   useEffect(() => {
-    if (!propertyId) {
-      toast.error("Property ID is required");
-      navigate("/my-properties");
-      return;
-    }
-
-    const loadProperty = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("properties")
-          .select("id, title, price, location, backdrop")
-          .eq("id", propertyId)
-          .single();
-
-        if (error || !data) {
-          toast.error("Property not found");
-          navigate("/marketplace");
-          return;
+    // Add a small delay to ensure React Router has fully initialized
+    const timer = setTimeout(() => {
+      // Try to get propertyId from useParams first, then fallback to URL parsing
+      let finalPropertyId = propertyId;
+      
+      if (!finalPropertyId) {
+        // Fallback: Extract propertyId from URL path
+        const pathParts = window.location.pathname.split('/');
+        const tokenizeIndex = pathParts.findIndex(part => part === 'tokenize-property');
+        if (tokenizeIndex !== -1 && pathParts[tokenizeIndex + 1]) {
+          finalPropertyId = pathParts[tokenizeIndex + 1];
         }
-
-        setProperty({
-          id: data.id,
-          title: data.title || "",
-          value: data.price?.toString() || "0",
-          location: data.location || "",
-          image: data.backdrop || "",
-        });
-      } catch (error) {
-        console.error("Error loading property:", error);
-        toast.error("Failed to load property");
-        navigate("/marketplace");
       }
-    };
+      
+      if (!finalPropertyId) {
+        toast.error("Property ID is required");
+        navigate("/marketplace");
+        return;
+      }
 
-    loadProperty();
+              const loadProperty = async () => {
+          setIsLoadingProperty(true);
+          try {
+            const { data, error } = await supabase
+              .from("properties")
+              .select("id, title, price, location, backdrop")
+              .eq("id", finalPropertyId)
+              .single();
+
+          if (error || !data) {
+            toast.error("Property not found");
+            navigate("/marketplace");
+            return;
+          }
+
+          setProperty({
+            id: data.id,
+            title: data.title || "",
+            value: data.price?.toString() || "0",
+            location: data.location || "",
+            image: data.backdrop || "",
+          });
+        } catch (error) {
+          console.error("Error loading property:", error);
+          toast.error("Failed to load property");
+          navigate("/marketplace");
+        } finally {
+          setIsLoadingProperty(false);
+        }
+      };
+
+      loadProperty();
+    }, 100); // Small delay to ensure React Router is ready
+
+    return () => clearTimeout(timer);
   }, [propertyId, navigate]);
 
   // Check if property is already tokenized or has pending request
@@ -274,12 +286,20 @@ export default function TokenizeProperty() {
     setStep(4);
   };
 
-  if (!property) {
+  // Show loading state while propertyId is being determined or property is loading
+  if (!propertyId || isLoadingProperty || !property) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading property...</p>
+          <p className="text-gray-600">
+            {!propertyId ? "Initializing..." : isLoadingProperty ? "Loading property..." : "Property not found"}
+          </p>
+          {!propertyId && (
+            <p className="text-xs text-gray-500 mt-2">
+              Please wait while we load the property details...
+            </p>
+          )}
         </div>
       </div>
     );
@@ -296,7 +316,7 @@ export default function TokenizeProperty() {
                 ? {
                     id: property.id,
                     title: property.title,
-                    location: getLocationString(),
+                    location: 'getLocationString()',
                     value:
                       parseFloat(property.value.replace(/[^0-9.]/g, "")) || 0,
                   }
