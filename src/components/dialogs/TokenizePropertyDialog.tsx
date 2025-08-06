@@ -768,16 +768,13 @@ export function TokenizePropertyDialog({
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent
-        className="max-w-5xl w-full md:max-h-[85vh] flex flex-col gap-y-0 bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200/50"
+        className="max-w-5xl w-full md:max-h-[85vh] flex flex-col gap-y-0 bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200/50 p-0"
         size="3xl"
       >
         {/* Fixed Header */}
         <div className="flex-shrink-0 space-y-4 p-4 border-b border-slate-200/50 bg-white/80 backdrop-blur-sm">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle className="flex items-center gap-3 text-2xl font-bold">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
-                <CoinsIcon size={24} />
-              </div>
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Tokenize Property
               </span>
