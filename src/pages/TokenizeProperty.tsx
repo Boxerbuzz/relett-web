@@ -27,6 +27,9 @@ import {
   ArrowLeftIcon,
 } from "@phosphor-icons/react";
 import { Json } from "@/types/database";
+import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
+import { CurrencyDisplay } from "@/components/ui/currency-display";
+import { useFormattedNumber } from "@/hooks/useNumberFormatter";
 
 interface Property {
   id: string;
@@ -167,6 +170,14 @@ export default function TokenizeProperty() {
   }, [property?.id]);
 
   const handleInputChange = (field: string, value: string) => {
+    const numericValue = value.replace(/,/g, "");
+    if (/^\d*$/.test(numericValue)) {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: numericValue,
+      }));
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear validation error when user changes input
@@ -175,6 +186,26 @@ export default function TokenizeProperty() {
       (field === "totalTokens" || field === "pricePerToken")
     ) {
       setValidationError(null);
+    }
+  };
+
+  const formatNumberWithCommas = (value) => {
+    if (!value) return "";
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const removeCommas = (value) => {
+    return value.replace(/,/g, "");
+  };
+
+  // Updated handleInputChange
+  const handleTotalTokensChange = (field, value) => {
+    const numericValue = removeCommas(value);
+    if (/^\d*$/.test(numericValue)) {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: numericValue,
+      }));
     }
   };
 
@@ -358,9 +389,9 @@ export default function TokenizeProperty() {
               Back
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-md font-bold text-gray-900">
                 Tokenize Property
-              </h1>
+              </h3>
               <p className="text-gray-600">{property.title}</p>
             </div>
           </div>
@@ -431,10 +462,10 @@ export default function TokenizeProperty() {
                       <Label htmlFor="totalTokens">Total Tokens</Label>
                       <Input
                         id="totalTokens"
-                        type="number"
-                        value={formData.totalTokens}
+                        type="text" // Changed from "number" to "text"
+                        value={formatNumberWithCommas(formData.totalTokens)}
                         onChange={(e) =>
-                          handleInputChange("totalTokens", e.target.value)
+                          handleTotalTokensChange("totalTokens", e.target.value)
                         }
                         className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       />
@@ -457,6 +488,54 @@ export default function TokenizeProperty() {
                     </div>
                   )}
                 </div>
+                {formData.pricePerToken && (
+                  <div className="mt-3">
+                    <CurrencyExchangeWidget
+                      amount={Number(formData.pricePerToken) || 0}
+                      size="sm"
+                      variant="swap"
+                    />
+                  </div>
+                )}
+
+                {/* Total Value Calculation */}
+                {formData.totalTokens && formData.pricePerToken && (
+                  <div className="mt-6 p-4 bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          Total Token Value
+                        </p>
+                        <div className="text-2xl font-bold text-gray-900">
+                          <CurrencyDisplay
+                            amount={
+                              parseInt(formData.totalTokens.replace(/,/g, "")) *
+                              parseFloat(formData.pricePerToken)
+                            }
+                            size="lg"
+                            showBothCurrencies={true}
+                            respectUserPreference={true}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">
+                          {formData.totalTokens}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ×{" "}
+                          <CurrencyDisplay
+                            amount={parseFloat(formData.pricePerToken)}
+                            size="sm"
+                            showBothCurrencies={false}
+                            respectUserPreference={true}
+                          />{" "}
+                          each
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -635,7 +714,14 @@ export default function TokenizeProperty() {
                       <div>
                         <p className="text-sm text-gray-600">Price per Token</p>
                         <p className="font-medium">
-                          ${Number(formData.pricePerToken).toFixed(2)}
+                          $
+                          {Number(formData.pricePerToken).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
                         </p>
                       </div>
                       <div>

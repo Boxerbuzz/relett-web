@@ -73,7 +73,7 @@ export function CurrencyExchangeWidget({
       <div 
         className={cn(
           "group relative inline-flex items-center gap-2 cursor-pointer",
-          "transition-all duration-200 hover:bg-muted/50 rounded-lg px-2 py-1",
+          "transition-all duration-200 hover:bg-muted/50 rounded-md px-2 py-1",
           className
         )}
         onClick={handleToggleCurrency}
@@ -137,7 +137,7 @@ export function CurrencyExchangeWidget({
       {/* Main Currency Container */}
       <div 
         className={cn(
-          "relative overflow-hidden rounded-2xl border-2 border-slate-200/50",
+          "relative overflow-hidden rounded-md border-2 border-slate-200/50",
           "bg-gradient-to-br from-white to-slate-50/80",
           "hover:border-blue-300/60 hover:shadow-lg hover:shadow-blue-500/10",
           "transition-all duration-300 ease-out cursor-pointer group",
@@ -181,7 +181,7 @@ export function CurrencyExchangeWidget({
               variant="ghost"
               size="sm"
               className={cn(
-                "rounded-xl border-2 border-slate-200 bg-white/80 hover:bg-white",
+                "rounded-md border-2 border-slate-200 bg-white/80 hover:bg-white",
                 "hover:border-blue-300 hover:shadow-md transition-all duration-200",
                 "hover:scale-105 active:scale-95",
                 isFlipping && "animate-spin",
@@ -208,7 +208,7 @@ export function CurrencyExchangeWidget({
       {/* Secondary Currency Display */}
       <div 
         className={cn(
-          "mt-2 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3",
+          "mt-2 rounded-md border border-slate-200/80 bg-slate-50/50 p-3",
           "transition-all duration-200 hover:bg-slate-100/50",
           size === 'lg' ? 'p-4' : size === 'sm' ? 'p-2' : 'p-3'
         )}

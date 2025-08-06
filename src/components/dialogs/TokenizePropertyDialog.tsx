@@ -16,13 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { TokenizedPropertyLegalFramework } from "@/components/legal/TokenizedPropertyLegalFramework";
-import { LegalFrameworkConfig } from "@/types/legal";
 import {
   CoinsIcon,
   FileTextIcon,
