@@ -360,6 +360,36 @@ export function useVerificationTaskDetailAction({
       return;
     }
 
+    // Check if land title is associated (required for approval)
+    if (decision === "approved") {
+      try {
+        const { data: property, error: propertyError } = await supabase
+          .from("properties")
+          .select("land_title_id")
+          .eq("id", task.property_id)
+          .single();
+
+        if (propertyError) throw propertyError;
+        
+        if (!property?.land_title_id) {
+          toast({
+            title: "Land Title Required",
+            description: "Please associate a land title before approving the property",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking land title association:", error);
+        toast({
+          title: "Error",
+          description: "Failed to verify land title association",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase.rpc("complete_verification_task", {
