@@ -18,6 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import CurrencyInput from "@/components/input/CurrencyInput";
 import CounterInput from "@/components/input/CounterInput";
+import { getPricingGridClass } from "@/utils/gridUtils";
 
 interface BasicDetailsStepProps {
   form: UseFormReturn<any>;
@@ -77,7 +78,10 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={(() => {
+        // Property details section - usually has 4-5 fields, so 2 columns work well
+        return "grid grid-cols-1 md:grid-cols-2 gap-6";
+      })()}>
         <FormField
           control={form.control}
           name="title"
@@ -199,7 +203,14 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Pricing Information</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={(() => {
+          // Calculate visible pricing fields
+          const pricingFields = ['price.amount', 'price.term'];
+          if (category === "rent" || category === "shortlet" || category === "lease") {
+            pricingFields.push('price.deposit');
+          }
+          return getPricingGridClass(pricingFields);
+        })()}>
           <FormField
             control={form.control}
             name="price.amount"
@@ -281,7 +292,18 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
         </div>
 
         {/* Additional pricing fields - show based on category and type */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={(() => {
+          // Calculate visible additional pricing fields
+          const additionalFields = [];
+          if (category === "rent" || category === "shortlet") {
+            additionalFields.push('service_charge');
+          }
+          additionalFields.push('is_negotiable'); // Always shown
+          
+          return additionalFields.length === 1 
+            ? "grid grid-cols-1 gap-4" 
+            : "grid grid-cols-1 md:grid-cols-2 gap-4";
+        })()}>
           {/* Service charge only for rental properties */}
           {(category === "rent" || category === "shortlet") && (
             <FormField

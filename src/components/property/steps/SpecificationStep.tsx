@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { X } from "lucide-react";
 import { getAmenities, getAmenityById } from "@/types/amenities";
+import { getFormFieldGridClass, getAmenityGridClass } from "@/utils/gridUtils";
 
 interface SpecificationStepProps {
   form: UseFormReturn<any>;
@@ -203,7 +204,13 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
       </div>
 
       {/* Basic Specifications */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={(() => {
+        // Count visible specification fields
+        const visibleSpecFields = Object.keys(visibleFields).filter(key => 
+          key !== 'area' && key !== 'is_furnished' && visibleFields[key as keyof typeof visibleFields]
+        );
+        return getFormFieldGridClass(visibleSpecFields);
+      })()}>
         {visibleFields.bedrooms && (
           <FormField
             control={form.control}
@@ -414,7 +421,11 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
 
       {/* Area and Size */}
       {visibleFields.area && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={(() => {
+          // Area section typically has 3 fields: area, area_unit, sqrft
+          // But we want to keep it as 3 columns when all are present, 2 when not
+          return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+        })()}>
           <FormField
             control={form.control}
             name="specification.area"
@@ -523,7 +534,7 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+          <div className={getAmenityGridClass((commonFeatures || []).length)}>
             {(commonFeatures || []).map(
               (feature: {
                 id: string;
@@ -584,7 +595,7 @@ export function SpecificationStep({ form }: SpecificationStepProps) {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+          <div className={getAmenityGridClass(relevantAmenities.length)}>
             {relevantAmenities.map((amenity) => (
               <div key={amenity} className="flex items-center space-x-2">
                 <Checkbox
