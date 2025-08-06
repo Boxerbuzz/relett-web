@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/ui/use-toast";
 import {
   FormField,
   FormItem,
@@ -42,8 +43,19 @@ interface LandTitle {
   status: string;
 }
 
-export function LandTitleManager() {
+interface LandTitleManagerProps {
+  propertyId?: string;
+  isVerifier?: boolean;
+  onLandTitleAssociated?: () => void;
+}
+
+export function LandTitleManager({ 
+  propertyId, 
+  isVerifier = false, 
+  onLandTitleAssociated 
+}: LandTitleManagerProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [landTitles, setLandTitles] = useState<LandTitle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -52,24 +64,56 @@ export function LandTitleManager() {
   );
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [isAssociating, setIsAssociating] = useState(false);
+  const [currentAssociation, setCurrentAssociation] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchLandTitles();
+      if (propertyId && isVerifier) {
+        fetchCurrentAssociation();
+      }
     }
-  }, [user]);
+  }, [user, propertyId, isVerifier]);
+
+  const fetchCurrentAssociation = async () => {
+    if (!propertyId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("land_title_id")
+        .eq("id", propertyId)
+        .single();
+
+      if (error) throw error;
+      if (data?.land_title_id) {
+        setCurrentAssociation(data.land_title_id);
+        setSelectedLandTitleId(data.land_title_id);
+      }
+    } catch (error) {
+      console.error("Error fetching current association:", error);
+    }
+  };
 
   const fetchLandTitles = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      // For verifiers, fetch all verified land titles, not just their own
+      const query = supabase
         .from("land_titles")
         .select(
           "id, title_number, location_address, area_sqm, title_type, status"
         )
-        .eq("owner_id", user?.id || "")
         .eq("status", "verified")
         .order("created_at", { ascending: false });
+
+      // If not a verifier, only show user's own land titles
+      if (!isVerifier) {
+        query.eq("owner_id", user?.id || "");
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setLandTitles(
@@ -82,6 +126,39 @@ export function LandTitleManager() {
       console.error("Error fetching land titles:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const associateLandTitle = async () => {
+    if (!propertyId || !selectedLandTitleId) return;
+
+    try {
+      setIsAssociating(true);
+      const { error } = await supabase
+        .from("properties")
+        .update({ land_title_id: selectedLandTitleId })
+        .eq("id", propertyId);
+
+      if (error) throw error;
+
+      setCurrentAssociation(selectedLandTitleId);
+      toast({
+        title: "Success",
+        description: "Land title successfully associated with property",
+      });
+      
+      if (onLandTitleAssociated) {
+        onLandTitleAssociated();
+      }
+    } catch (error) {
+      console.error("Error associating land title:", error);
+      toast({
+        title: "Error",
+        description: "Failed to associate land title with property",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAssociating(false);
     }
   };
 
@@ -213,6 +290,11 @@ export function LandTitleManager() {
                   <span className="flex items-center gap-2">
                     <CheckCircleIcon className="h-5 w-5 text-green-600" />
                     Selected Land Title
+                    {currentAssociation === selectedTitle.id && (
+                      <Badge variant="secondary" className="ml-2">
+                        Associated
+                      </Badge>
+                    )}
                   </span>
                   <Badge className={getStatusColor(selectedTitle.status)}>
                     {selectedTitle.status}
@@ -238,6 +320,18 @@ export function LandTitleManager() {
                     <p>{Number(selectedTitle.area_sqm).toLocaleString()} sqm</p>
                   </div>
                 </div>
+                
+                {isVerifier && propertyId && selectedLandTitleId !== currentAssociation && (
+                  <div className="pt-3 border-t">
+                    <Button
+                      onClick={associateLandTitle}
+                      disabled={isAssociating}
+                      className="w-full"
+                    >
+                      {isAssociating ? "Associating..." : "Confirm Association"}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

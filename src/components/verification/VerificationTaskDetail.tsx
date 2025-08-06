@@ -242,7 +242,14 @@ export function VerificationTaskDetail({
         canEdit={canEdit || false}
       />
 
-      <LandTitleManager />
+        <LandTitleManager 
+          propertyId={task.property_id}
+          isVerifier={true}
+          onLandTitleAssociated={() => {
+            // Refresh the task data or update checklist
+            console.log("Land title associated");
+          }}
+        />
 
       {/* Verification Checklist and Notes */}
       <div className="flex flex-col md:flex-row gap-4 md:items-stretch">
