@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -17,15 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { TokenizedPropertyLegalFramework } from "@/components/legal/TokenizedPropertyLegalFramework";
-import { LegalFrameworkConfig } from "@/types/legal";
 import {
   CoinsIcon,
-  FileTextIcon,
   CalculatorIcon,
   EyeIcon,
   ScalesIcon,
@@ -75,11 +70,22 @@ export default function TokenizeProperty() {
     { title: "Review & Submit", icon: EyeIcon },
   ];
 
+  const getLocationString = () => {
+    if (!property?.location) return "Location not specified";
+    if (typeof property.location === "string") return property.location;
+
+    const { city, state } = property.location as {
+      city: string;
+      state: string;
+    };
+    return [city, state].filter(Boolean).join(", ");
+  };
+
   // Load property data from URL params or redirect if missing
   useEffect(() => {
     if (!propertyId) {
       toast.error("Property ID is required");
-      navigate("/marketplace");
+      navigate("/my-properties");
       return;
     }
 
@@ -227,23 +233,23 @@ export default function TokenizeProperty() {
     setIsLoading(true);
     try {
       const tokenData = {
+        blockchain_network: "hedera",
+        expected_roi: parseFloat(formData.expectedROI),
+        investment_terms: "fixed" as const,
+        land_title_id: "default", // You'll need to provide a valid land_title_id
+        legal_structure: legalAgreementId,
+        lock_up_period_months: parseInt(formData.lockupPeriod),
+        minimum_investment: parseFloat(formData.minimumInvestment),
         property_id: property.id,
-        token_symbol: "PROP",
+        revenue_distribution_frequency: formData.distributionFrequency,
+        status: "pending_approval" as const,
         token_name: `${property.title} Token`,
-        token_type: "fractional_ownership",
-        total_supply: parseInt(formData.totalTokens),
+        token_price: parseFloat(formData.pricePerToken),
+        token_symbol: "PROP",
+        token_type: "hts_fungible" as const,
+        total_supply: formData.totalTokens,
         total_value_usd:
           parseInt(formData.totalTokens) * parseFloat(formData.pricePerToken),
-        minimum_investment: parseFloat(formData.minimumInvestment),
-        token_price: parseFloat(formData.pricePerToken),
-        status: "pending_approval",
-        blockchain_network: "hedera",
-        investment_terms: formData.description,
-        expected_roi: parseFloat(formData.expectedROI),
-        revenue_distribution_frequency: formData.distributionFrequency,
-        lock_up_period_months: parseInt(formData.lockupPeriod),
-        legal_structure: legalAgreementId,
-        land_title_id: null,
       };
 
       const { error } = await supabase
@@ -285,19 +291,22 @@ export default function TokenizeProperty() {
         <div className="max-w-4xl mx-auto">
           <TokenizedPropertyLegalFramework
             config={{
-              scenario: 'tokenization',
-              propertyDetails: property ? {
-                id: property.id,
-                title: property.title,
-                location: property.location,
-                value: parseFloat(property.value.replace(/[^0-9.]/g, '')) || 0
-              } : undefined,
+              scenario: "tokenization",
+              propertyDetails: property
+                ? {
+                    id: property.id,
+                    title: property.title,
+                    location: getLocationString(),
+                    value:
+                      parseFloat(property.value.replace(/[^0-9.]/g, "")) || 0,
+                  }
+                : undefined,
               tokenDetails: {
                 tokenPrice: parseFloat(formData.pricePerToken) || 0,
                 totalTokens: parseInt(formData.totalTokens) || 0,
-                minimumInvestment: parseFloat(formData.minimumInvestment) || 0
+                minimumInvestment: parseFloat(formData.minimumInvestment) || 0,
               },
-              minimumReadingTime: 300 // 5 minutes
+              minimumReadingTime: 300, // 5 minutes
             }}
             open={showLegalFramework}
             onOpenChange={setShowLegalFramework}
@@ -510,7 +519,7 @@ export default function TokenizeProperty() {
                   <p className="text-sm text-gray-600 mb-4">
                     Complete the legal framework agreement before proceeding
                   </p>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="riskLevel">Risk Level</Label>
@@ -548,8 +557,16 @@ export default function TokenizeProperty() {
                   {legalAgreementId ? (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 text-green-800">
-                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         Legal framework agreement completed
                       </div>
@@ -557,8 +574,16 @@ export default function TokenizeProperty() {
                   ) : (
                     <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <div className="flex items-center gap-2 text-yellow-800">
-                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         Legal framework agreement required to proceed
                       </div>
