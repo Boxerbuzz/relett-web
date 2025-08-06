@@ -76,10 +76,39 @@ export const formatDateTime = (dateString: string) => {
 };
 
 
+
+
+
 export const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+};
+
+/**
+ * Masks an ID by showing only the first and last few characters
+ * @param id - The ID to mask
+ * @param visibleChars - Number of characters to show at the beginning and end (default: 4)
+ * @param maskChar - Character to use for masking (default: '*')
+ * @returns The masked ID
+ */
+export const maskId = (
+  id: string,
+  visibleChars: number = 4,
+  maskChar: string = '*'
+): string => {
+  // If the ID is too short to mask, return it as is
+  if (id.length <= visibleChars * 2) {
+    return id;
+  }
+
+  // Extract the parts to show
+  const start = id.slice(0, visibleChars);
+  const end = id.slice(-visibleChars);
+  
+  // Create the masked portion represented by a single mask character
+  // regardless of the actual length of the masked section
+  return `${start}${maskChar}${end}`;
 };
