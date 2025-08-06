@@ -32,7 +32,8 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { capitalize } from "@/lib/utils";
 
 interface PropertyDocumentVerificationListProps {
   propertyId: string;
@@ -111,7 +112,9 @@ function VerificationDialog({
             </div>
 
             <div className="gap-4 text-sm">
-              <Badge>{request.property_documents?.document_type}</Badge>
+              <Badge>
+                {capitalize(request.property_documents?.document_type)}
+              </Badge>
               <div>
                 <span className="font-medium flex items-center gap-2 mt-2">
                   <CalendarBlankIcon />
@@ -256,7 +259,10 @@ function VerificationDialog({
   );
 }
 
-export function PropertyDocumentVerificationList({ propertyId, canEdit = true }: PropertyDocumentVerificationListProps) {
+export function PropertyDocumentVerificationList({
+  propertyId,
+  canEdit = true,
+}: PropertyDocumentVerificationListProps) {
   const { requests, loading, error, refetch } =
     useDocumentVerificationRequests(propertyId);
   const { updateRequest } = useUpdateDocumentVerificationRequest();
@@ -317,9 +323,7 @@ export function PropertyDocumentVerificationList({ propertyId, canEdit = true }:
             onClick={canEdit ? () => setOpenDialogId(req.id) : undefined}
             className={
               "transition " +
-              (canEdit
-                ? "cursor-pointer hover:shadow-lg"
-                : "cursor-not-allowed opacity-60")
+              (canEdit ? "cursor-pointer" : "cursor-not-allowed opacity-60")
             }
           >
             <CardHeader>

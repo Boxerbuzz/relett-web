@@ -1,16 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UseFormReturn } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
 import {
   Popover,
   PopoverContent,
@@ -92,7 +84,9 @@ export function LandTitleManager() {
   const filteredTitles = landTitles.filter(
     (title) =>
       title.title_number.toLowerCase().includes(searchValue.toLowerCase()) ||
-      title.location_address.toLowerCase().includes(searchValue.toLowerCase()) ||
+      title.location_address
+        .toLowerCase()
+        .includes(searchValue.toLowerCase()) ||
       title.title_type.toLowerCase().includes(searchValue.toLowerCase())
   );
 
@@ -153,7 +147,9 @@ export function LandTitleManager() {
               >
                 {selectedTitle ? (
                   <div className="flex flex-col items-start">
-                    <span className="font-medium">{selectedTitle.title_number}</span>
+                    <span className="font-medium">
+                      {selectedTitle.title_number}
+                    </span>
                     <span className="text-sm text-muted-foreground">
                       {selectedTitle.location_address} •{" "}
                       {Number(selectedTitle.area_sqm).toLocaleString()} sqm
@@ -187,15 +183,20 @@ export function LandTitleManager() {
                         className="flex items-center justify-between"
                       >
                         <div className="flex flex-col">
-                          <span className="font-medium">{title.title_number}</span>
+                          <span className="font-medium">
+                            {title.title_number}
+                          </span>
                           <span className="text-sm text-muted-foreground">
                             {title.location_address} •{" "}
-                            {Number(title.area_sqm).toLocaleString()} sqm • {getTitleTypeDisplay(title.title_type)}
+                            {Number(title.area_sqm).toLocaleString()} sqm •{" "}
+                            {getTitleTypeDisplay(title.title_type)}
                           </span>
                         </div>
                         <Check
                           className={`ml-auto h-4 w-4 ${
-                            selectedLandTitleId === title.id ? "opacity-100" : "opacity-0"
+                            selectedLandTitleId === title.id
+                              ? "opacity-100"
+                              : "opacity-0"
                           }`}
                         />
                       </CommandItem>
@@ -253,13 +254,6 @@ export function LandTitleManager() {
         >
           <PlusIcon className="h-4 w-4" />
           Add New Land Title
-        </Button>
-
-        <Button type="button" variant="outline" asChild>
-          <Link to="/land-titles" className="flex items-center gap-2">
-            <FileTextIcon className="h-4 w-4" />
-            Manage Land Titles
-          </Link>
         </Button>
       </div>
 

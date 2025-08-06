@@ -25,7 +25,11 @@ import {
   LinkIcon,
   PlusIcon,
   HouseIcon,
+  MapPinAreaIcon,
+  CalendarBlankIcon,
+  SquareIcon,
 } from "@phosphor-icons/react";
+import { capitalize } from "@/lib/utils";
 
 interface LandTitle {
   id: string;
@@ -72,15 +76,11 @@ export function LandTitleManagement() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("land_titles")
-        .select(`
-          *,
-          properties:properties(id, title, location, value)
-        `)
-        .eq("owner_id", user?.id || "")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setLandTitles(data as LandTitle[] || []);
+      setLandTitles((data as LandTitle[]) || []);
     } catch (error) {
       console.error("Error fetching land titles:", error);
       toast({
@@ -189,17 +189,22 @@ export function LandTitleManagement() {
           <TabsContent value="grid" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {landTitles.map((title) => (
-                <Card key={title.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={title.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
                           {title.title_number}
                         </CardTitle>
-                        <p className="text-sm text-gray-600">{title.location_address}</p>
+                        <p className="text-sm text-gray-600">
+                          {title.location_address}
+                        </p>
                       </div>
                       <Badge className={getStatusColor(title.status)}>
-                        {title.status}
+                        {capitalize(title.status)}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -212,18 +217,18 @@ export function LandTitleManagement() {
                         {title.title_type.replace("_", " ").toUpperCase()}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="font-medium">Location:</span>{" "}
+                      <div className="flex items-center gap-2">
+                        <MapPinAreaIcon className="h-4 w-4 mr-1" />{" "}
                         {title.location_address}
                       </div>
-                      <div>
-                        <span className="font-medium">Area:</span>{" "}
+                      <div className="flex items-center gap-2">
+                        <SquareIcon className="h-4 w-4 mr-1" />{" "}
                         {Number(title.area_sqm)?.toLocaleString()} sqm
                       </div>
-                      <div>
-                        <span className="font-medium">Acquired:</span>{" "}
+                      <div className="flex items-center gap-2">
+                        <CalendarBlankIcon className="h-4 w-4 mr-1" />{" "}
                         {new Date(title.acquisition_date).toLocaleDateString()}
                       </div>
                     </div>
@@ -291,7 +296,9 @@ export function LandTitleManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>{title.location_address}</TableCell>
-                      <TableCell>{Number(title.area_sqm)?.toLocaleString()}</TableCell>
+                      <TableCell>
+                        {Number(title.area_sqm)?.toLocaleString()}
+                      </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(title.status)}>
                           {title.status}
