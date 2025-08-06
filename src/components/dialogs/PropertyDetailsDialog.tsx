@@ -67,6 +67,7 @@ interface PropertyData {
     token_price: number | null;
     total_supply: string | null;
     expected_roi: number | null;
+    status?: string | null; // Add status field
   };
   property_images: Array<{
     url: string | null;
@@ -119,7 +120,13 @@ export function PropertyDetailsDialog({
         .select(
           `
           *,
-          tokenized_properties:tokenized_properties_property_id_fkey(*),
+          tokenized_properties:tokenized_properties_property_id_fkey(
+            id,
+            token_price,
+            total_supply,
+            expected_roi,
+            status
+          ),
           property_images (
             url,
             is_primary
@@ -134,8 +141,14 @@ export function PropertyDetailsDialog({
 
       if (error) throw error;
       if (data) {
+        // Handle tokenized_properties as an array and get the first (most recent) entry
+        const tokenizedProperty = Array.isArray(data.tokenized_properties) 
+          ? data.tokenized_properties[0] 
+          : data.tokenized_properties;
+
         setProperty({
           ...data,
+          tokenized_property: tokenizedProperty || null,
           property_images: Array.isArray(data.property_images)
             ? data.property_images
             : [],
@@ -405,7 +418,8 @@ export function PropertyDetailsDialog({
                     )}
 
                   {property.is_blockchain_registered &&
-                    !property.is_tokenized && (
+                    !property.is_tokenized &&
+                    !property.tokenized_property && (
                       <Button
                         size="sm"
                         className="flex-1"
@@ -418,6 +432,27 @@ export function PropertyDetailsDialog({
                         Tokenize
                       </Button>
                     )}
+
+                  {/* Show status for pending tokenization */}
+                  {property.tokenized_property && 
+                   (property.tokenized_property.status === "pending_approval" || 
+                    property.tokenized_property.status === "pending") && (
+                    <div className="flex-1">
+                      <div className="text-center p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                        Tokenization Pending Review
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show status for rejected tokenization */}
+                  {property.tokenized_property && 
+                   property.tokenized_property.status === "rejected" && (
+                    <div className="flex-1">
+                      <div className="text-center p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800">
+                        Tokenization Rejected
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

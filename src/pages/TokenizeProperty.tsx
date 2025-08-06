@@ -25,11 +25,13 @@ import {
   EyeIcon,
   ScalesIcon,
   ArrowLeftIcon,
+  Info,
 } from "@phosphor-icons/react";
 import { Json } from "@/types/database";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { useFormattedNumber } from "@/hooks/useNumberFormatter";
+import { cn } from "@/lib/utils";
 
 interface Property {
   id: string;
@@ -37,6 +39,7 @@ interface Property {
   value: string;
   location: Json;
   image: string;
+  landTitleId: string;
 }
 
 export default function TokenizeProperty() {
@@ -61,6 +64,13 @@ export default function TokenizeProperty() {
     lockupPeriod: "12",
     description: "",
     riskLevel: "medium",
+    tokenName: "",
+    tokenSymbol: "",
+  });
+
+  const [tokenValidationErrors, setTokenValidationErrors] = useState({
+    tokenName: "",
+    tokenSymbol: "",
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -95,7 +105,7 @@ export default function TokenizeProperty() {
 
       if (!finalPropertyId) {
         toast.error("Property ID is required");
-        navigate("/marketplace");
+        navigate("/my-properties");
         return;
       }
 
@@ -104,13 +114,13 @@ export default function TokenizeProperty() {
         try {
           const { data, error } = await supabase
             .from("properties")
-            .select("id, title, price, location, backdrop")
+            .select("id, title, price, location, backdrop, land_title_id")
             .eq("id", finalPropertyId)
             .single();
 
           if (error || !data) {
             toast.error("Property not found");
-            navigate("/marketplace");
+            navigate("/my-properties");
             return;
           }
 
@@ -120,6 +130,7 @@ export default function TokenizeProperty() {
             value: data.price?.toString() || "0",
             location: data.location || "",
             image: data.backdrop || "",
+            landTitleId: data.land_title_id || "",
           });
         } catch (error) {
           console.error("Error loading property:", error);
@@ -169,23 +180,54 @@ export default function TokenizeProperty() {
     }
   }, [property?.id]);
 
-  const handleInputChange = (field: string, value: string) => {
-    const numericValue = value.replace(/,/g, "");
-    if (/^\d*$/.test(numericValue)) {
-      setFormData((prev) => ({
+  // Add this effect to generate smart defaults when property loads
+  useEffect(() => {
+    if (property && !formData.tokenName && !formData.tokenSymbol) {
+      const defaultName = generateTokenName(property.title, property.id);
+      const defaultSymbol = generateTokenSymbol(property.title, property.id);
+      
+      setFormData(prev => ({
         ...prev,
-        [field]: numericValue,
+        tokenName: defaultName,
+        tokenSymbol: defaultSymbol,
       }));
     }
+  }, [property]);
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  // Update the handleInputChange function to include token validation
+  const handleInputChange = (field: string, value: string) => {
+    if (field === "tokenSymbol") {
+      // Auto-uppercase and remove invalid characters for symbol
+      const cleanValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      setFormData(prev => ({ ...prev, [field]: cleanValue }));
+      
+      // Validate symbol
+      const error = validateTokenSymbol(cleanValue);
+      setTokenValidationErrors(prev => ({ ...prev, tokenSymbol: error || "" }));
+    } else if (field === "tokenName") {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      
+      // Validate name
+      const error = validateTokenName(value);
+      setTokenValidationErrors(prev => ({ ...prev, tokenName: error || "" }));
+    } else {
+      const numericValue = value.replace(/,/g, "");
+      if (/^\d*$/.test(numericValue)) {
+        setFormData(prev => ({
+          ...prev,
+          [field]: numericValue,
+        }));
+      }
 
-    // Clear validation error when user changes input
-    if (
-      validationError &&
-      (field === "totalTokens" || field === "pricePerToken")
-    ) {
-      setValidationError(null);
+      setFormData(prev => ({ ...prev, [field]: value }));
+
+      // Clear validation error when user changes input
+      if (
+        validationError &&
+        (field === "totalTokens" || field === "pricePerToken")
+      ) {
+        setValidationError(null);
+      }
     }
   };
 
@@ -237,6 +279,33 @@ export default function TokenizeProperty() {
     }
   };
 
+  // Add a function to check for token uniqueness
+  const checkTokenUniqueness = async (tokenName: string, tokenSymbol: string) => {
+    try {
+      // Check for existing tokens with same name or symbol
+      const { data, error } = await supabase
+        .from("tokenized_properties")
+        .select("token_name, token_symbol")
+        .or(`token_name.eq.${tokenName},token_symbol.eq.${tokenSymbol}`);
+
+      if (error) throw error;
+
+      const conflicts: string[] = [];
+      if (data?.some(token => token.token_name === tokenName)) {
+        conflicts.push("Token name already exists");
+      }
+      if (data?.some(token => token.token_symbol === tokenSymbol)) {
+        conflicts.push("Token symbol already exists");
+      }
+
+      return conflicts;
+    } catch (error) {
+      console.error("Error checking token uniqueness:", error);
+      return [];
+    }
+  };
+
+  // Update the nextStep function to include token validation
   const nextStep = async () => {
     // Show legal framework before step 4
     if (step === 3 && !legalAgreementId) {
@@ -244,16 +313,38 @@ export default function TokenizeProperty() {
       return;
     }
 
-    // Validate token value before moving to next step if on step 1
+    // Validate token fields if on step 1
     if (step === 1) {
       setIsValidating(true);
       try {
+        // Validate token value
         await validateTokenValue(
           property,
           formData.totalTokens,
           formData.pricePerToken
         );
+        
+        // Validate token name and symbol
+        const nameError = validateTokenName(formData.tokenName);
+        const symbolError = validateTokenSymbol(formData.tokenSymbol);
+        
+        if (nameError || symbolError) {
+          setTokenValidationErrors({
+            tokenName: nameError || "",
+            tokenSymbol: symbolError || "",
+          });
+          return;
+        }
+        
+        // Check for uniqueness
+        const conflicts = await checkTokenUniqueness(formData.tokenName, formData.tokenSymbol);
+        if (conflicts.length > 0) {
+          setValidationError(conflicts.join(", "));
+          return;
+        }
+        
         setValidationError(null);
+        setTokenValidationErrors({ tokenName: "", tokenSymbol: "" });
         setStep(Math.min(step + 1, 4));
       } catch (error) {
         setValidationError(
@@ -280,16 +371,16 @@ export default function TokenizeProperty() {
         blockchain_network: "hedera",
         expected_roi: parseFloat(formData.expectedROI),
         investment_terms: "fixed" as const,
-        land_title_id: "default", // You'll need to provide a valid land_title_id
+        land_title_id: property.landTitleId, // You'll need to provide a valid land_title_id
         legal_structure: legalAgreementId,
         lock_up_period_months: parseInt(formData.lockupPeriod),
         minimum_investment: parseFloat(formData.minimumInvestment),
         property_id: property.id,
         revenue_distribution_frequency: formData.distributionFrequency,
         status: "pending_approval" as const,
-        token_name: `${property.title} Token`,
+        token_name: formData.tokenName || `${property.title} Token`,
         token_price: parseFloat(formData.pricePerToken),
-        token_symbol: "PROP",
+        token_symbol: formData.tokenSymbol || "PROP",
         token_type: "hts_fungible" as const,
         total_supply: formData.totalTokens,
         total_value_usd:
@@ -303,7 +394,7 @@ export default function TokenizeProperty() {
       if (error) throw error;
 
       toast.success("Property tokenization request submitted successfully!");
-      navigate("/marketplace");
+      navigate("/my-properties");
     } catch (error) {
       console.error("Error submitting tokenization:", error);
       toast.error("Failed to submit tokenization request");
@@ -457,12 +548,82 @@ export default function TokenizeProperty() {
                   <h3 className="text-lg font-semibold mb-4">
                     Token Configuration
                   </h3>
+                  
+                  {/* Token Name and Symbol */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <Label htmlFor="tokenName">Token Name</Label>
+                      <Input
+                        id="tokenName"
+                        type="text"
+                        value={formData.tokenName}
+                        onChange={(e) =>
+                          handleInputChange("tokenName", e.target.value)
+                        }
+                        placeholder="Enter token name"
+                        maxLength={50}
+                        className={cn(
+                          "mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                          tokenValidationErrors.tokenName && "border-red-300 focus:border-red-500"
+                        )}
+                      />
+                      {tokenValidationErrors.tokenName && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {tokenValidationErrors.tokenName}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Full name of your token (5-50 characters, letters, numbers, spaces, hyphens, parentheses)
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="tokenSymbol">Token Symbol</Label>
+                      <Input
+                        id="tokenSymbol"
+                        type="text"
+                        value={formData.tokenSymbol}
+                        onChange={(e) =>
+                          handleInputChange("tokenSymbol", e.target.value)
+                        }
+                        placeholder="Enter symbol"
+                        maxLength={10}
+                        className={cn(
+                          "mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                          tokenValidationErrors.tokenSymbol && "border-red-300 focus:border-red-500"
+                        )}
+                      />
+                      {tokenValidationErrors.tokenSymbol && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {tokenValidationErrors.tokenSymbol}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Short symbol (3-10 characters, uppercase letters and numbers only)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Smart Defaults Info */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                    <div className="flex items-start gap-2">
+                      <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-800 mb-1">Smart Defaults Applied</p>
+                        <p className="text-blue-700">
+                          Token name and symbol have been automatically generated based on your property details. 
+                          You can customize them to match your branding preferences.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Token Supply and Price */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="totalTokens">Total Tokens</Label>
                       <Input
                         id="totalTokens"
-                        type="text" // Changed from "number" to "text"
+                        type="text"
                         value={formatNumberWithCommas(formData.totalTokens)}
                         onChange={(e) =>
                           handleTotalTokensChange("totalTokens", e.target.value)
@@ -482,12 +643,14 @@ export default function TokenizeProperty() {
                       />
                     </div>
                   </div>
+                  
                   {validationError && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
                       <p className="text-red-600 text-sm">{validationError}</p>
                     </div>
                   )}
                 </div>
+                
                 {formData.pricePerToken && (
                   <div className="mt-3">
                     <CurrencyExchangeWidget
@@ -659,7 +822,7 @@ export default function TokenizeProperty() {
                   </div>
 
                   {legalAgreementId ? (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-5">
                       <div className="flex items-center gap-2 text-green-800">
                         <svg
                           className="h-5 w-5"
@@ -704,39 +867,62 @@ export default function TokenizeProperty() {
                     Review & Submit
                   </h3>
                   <div className="bg-gray-50 p-6 rounded-lg space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Total Tokens</p>
-                        <p className="font-medium">
-                          {Number(formData.totalTokens).toLocaleString()}
-                        </p>
+                    {/* Token Details */}
+                    <div className="border-b border-gray-200 pb-4">
+                      <h4 className="font-medium text-gray-900 mb-3">Token Details</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Token Name</p>
+                          <p className="font-medium">
+                            {formData.tokenName || `${property?.title} Token`}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Token Symbol</p>
+                          <p className="font-medium">
+                            {formData.tokenSymbol || "PROP"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Price per Token</p>
-                        <p className="font-medium">
-                          $
-                          {Number(formData.pricePerToken).toLocaleString(
-                            undefined,
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }
-                          )}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          Minimum Investment
-                        </p>
-                        <p className="font-medium">
-                          ${Number(formData.minimumInvestment).toFixed(2)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Expected ROI</p>
-                        <p className="font-medium">
-                          {Number(formData.expectedROI).toFixed(1)}%
-                        </p>
+                    </div>
+                    
+                    {/* Financial Details */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-3">Financial Details</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Total Tokens</p>
+                          <p className="font-medium">
+                            {Number(formData.totalTokens).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Price per Token</p>
+                          <p className="font-medium">
+                            $
+                            {Number(formData.pricePerToken).toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">
+                            Minimum Investment
+                          </p>
+                          <p className="font-medium">
+                            ${Number(formData.minimumInvestment).toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Expected ROI</p>
+                          <p className="font-medium">
+                            {Number(formData.expectedROI).toFixed(1)}%
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -779,3 +965,61 @@ export default function TokenizeProperty() {
     </div>
   );
 }
+
+const generateTokenName = (propertyTitle: string, propertyId: string) => {
+  // Clean the property title and create a standardized name
+  const cleanTitle = propertyTitle
+    .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
+    .replace(/\s+/g, ' ') // Normalize spaces
+    .trim();
+  
+  // Create a unique identifier using property ID
+  const uniqueId = propertyId.slice(-6).toUpperCase();
+  
+  return `${cleanTitle} Token (${uniqueId})`;
+};
+
+const generateTokenSymbol = (propertyTitle: string, propertyId: string) => {
+  // Extract meaningful words from property title
+  const words = propertyTitle
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .split(' ')
+    .filter(word => word.length > 2)
+    .slice(0, 3); // Take first 3 meaningful words
+  
+  // Create symbol from first letters
+  let symbol = words.map(word => word.charAt(0).toUpperCase()).join('');
+  
+  // Add unique identifier if symbol is too short
+  if (symbol.length < 3) {
+    const uniqueId = propertyId.slice(-3).toUpperCase();
+    symbol = symbol + uniqueId;
+  }
+  
+  // Ensure it's exactly 4-6 characters
+  if (symbol.length > 6) {
+    symbol = symbol.slice(0, 6);
+  }
+  
+  return symbol;
+};
+
+const validateTokenName = (name: string) => {
+  if (!name.trim()) return "Token name is required";
+  if (name.length < 5) return "Token name must be at least 5 characters";
+  if (name.length > 50) return "Token name must be less than 50 characters";
+  if (!/^[a-zA-Z0-9\s\-\(\)]+$/.test(name)) {
+    return "Token name can only contain letters, numbers, spaces, hyphens, and parentheses";
+  }
+  return null;
+};
+
+const validateTokenSymbol = (symbol: string) => {
+  if (!symbol.trim()) return "Token symbol is required";
+  if (symbol.length < 3) return "Token symbol must be at least 3 characters";
+  if (symbol.length > 10) return "Token symbol must be less than 10 characters";
+  if (!/^[A-Z0-9]+$/.test(symbol)) {
+    return "Token symbol can only contain uppercase letters and numbers";
+  }
+  return null;
+};
