@@ -294,7 +294,7 @@ export function BasicDetailsStep({ form }: BasicDetailsStepProps) {
         {/* Additional pricing fields - show based on category and type */}
         <div className={(() => {
           // Calculate visible additional pricing fields
-          const additionalFields = [];
+          const additionalFields: string[] = [];
           if (category === "rent" || category === "shortlet") {
             additionalFields.push('service_charge');
           }

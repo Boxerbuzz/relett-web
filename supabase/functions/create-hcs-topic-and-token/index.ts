@@ -134,18 +134,43 @@ serve(async (req) => {
 
     console.log("Creating token on Hedera network...");
 
-    // Create the token
+    // Get property blockchain hash from the property
+    const { data: propertyData } = await supabase
+      .from("properties")
+      .select("blockchain_hash, title, location")
+      .eq("id", tokenData.property_id)
+      .single();
+
+    // Create comprehensive token metadata
+    const tokenMetadata = JSON.stringify({
+      propertyBlockchainHash: propertyData?.blockchain_hash || null,
+      propertyTitle: propertyData?.title || tokenData.property?.title,
+      propertyLocation: propertyData?.location || tokenData.property?.location,
+      landTitleNumber: tokenData.land_titles?.title_number,
+      tokenizationDate: new Date().toISOString(),
+      legalStructure: tokenData.legal_structure,
+      totalSupply: tokenData.total_supply,
+      tokenPrice: tokenData.token_price,
+      version: "1.0"
+    });
+
+    // Create the token with all required keys and proper supply
     const tokenCreateTx = new TokenCreateTransaction()
       .setTokenName(tokenData.token_name)
       .setTokenSymbol(tokenData.token_symbol)
       .setTokenType(TokenType.FungibleCommon)
       .setSupplyType(TokenSupplyType.Finite)
       .setInitialSupply(0) // Start with 0, mint later
-      .setMaxSupply(parseInt(tokenData.total_supply))
+      .setMaxSupply(Number(tokenData.total_supply)) // Ensure proper number conversion
       .setDecimals(8)
       .setTreasuryAccountId(operatorAccountId)
       .setSupplyKey(operatorPrivateKey)
       .setAdminKey(operatorPrivateKey)
+      .setWipeKey(operatorPrivateKey) // Required for compliance
+      .setFreezeKey(operatorPrivateKey) // Required for compliance
+      .setMetadataKey(operatorPrivateKey) // Required for compliance
+      .setPauseKey(operatorPrivateKey) // Required for compliance
+      .setTokenMemo(tokenMetadata) // Set comprehensive metadata
       .setFreezeDefault(false)
       .setMaxTransactionFee(new Hbar(20))
       .freezeWith(client);
@@ -233,13 +258,15 @@ serve(async (req) => {
       }
     }
 
-    // Update database with Hedera token info
+    // Update database with Hedera token info including contract address
     const { error: updateError } = await supabase
       .from("tokenized_properties")
       .update({
         status: "minted",
         hedera_token_id: tokenId,
         hedera_transaction_id: transactionId,
+        token_id: tokenId, // Populate the token_id field
+        token_contract_address: `0x${tokenId.split('.').slice(1).join('').padStart(40, '0')}`, // Generate EVM address format
         updated_at: new Date().toISOString(),
       })
       .eq("id", tokenizedPropertyId);
@@ -249,14 +276,21 @@ serve(async (req) => {
       throw new Error(`Failed to update database: ${updateError.message}`);
     }
 
-    // Create hedera_tokens record
+    // Create hedera_tokens record with comprehensive metadata
     await supabase.from("hedera_tokens").insert({
       tokenized_property_id: tokenizedPropertyId,
       hedera_token_id: tokenId,
       token_name: tokenData.token_name,
       token_symbol: tokenData.token_symbol,
-      total_supply: parseInt(tokenData.total_supply),
+      total_supply: Number(tokenData.total_supply), // Ensure proper number conversion
       treasury_account_id: hederaAccountId,
+      metadata: {
+        propertyBlockchainHash: propertyData?.blockchain_hash,
+        tokenMetadata: tokenMetadata,
+        createdAt: new Date().toISOString(),
+        transactionId: transactionId,
+        topicId: topicId
+      }
     });
 
     console.log("Token creation and HCS audit trail completed successfully");
