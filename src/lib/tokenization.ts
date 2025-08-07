@@ -174,17 +174,34 @@ export class PropertyTokenizationService {
         throw new Error("Failed to create token on Hedera network");
       }
 
-      // Update tokenized property with Hedera token details and set status to minted
+      // Create investment group for this token before minting
+      try {
+        const { error: groupError } = await supabase.functions.invoke('create-investment-group', {
+          body: {
+            tokenizedPropertyId,
+            salesWindowDays: 30 // Default 30-day sales window
+          }
+        });
+        
+        if (groupError) {
+          console.warn('Failed to create investment group:', groupError);
+        }
+      } catch (groupError) {
+        console.warn('Failed to create investment group:', groupError);
+      }
+
+      // Update tokenized property with Hedera token details but keep as approved for sales window
       const { error: updateError } = await supabase
         .from("tokenized_properties")
         .update({
           hedera_token_id: tokenResult.tokenId,
-          status: "minted",
+          status: "approved", // Keep as approved during sales window
           metadata: {
             ...((property.metadata as object) || {}),
             creation_transaction: tokenResult.transactionId,
             hedera_created_at: new Date().toISOString(),
             awaiting_approval: false,
+            sales_window_active: true,
           },
         })
         .eq("id", tokenizedPropertyId);

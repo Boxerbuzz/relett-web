@@ -54,6 +54,16 @@ export class TradingService {
         };
       }
 
+      // Check if sales window is still open for this property
+      const { data: property } = await supabase
+        .from('tokenized_properties')
+        .select('status')
+        .eq('id', request.tokenizedPropertyId)
+        .single();
+
+      const isSalesWindow = property?.status === 'approved'; // During sales window
+      const holdingStatus = isSalesWindow ? 'committed' : 'distributed';
+
       // Update holdings and record transaction
       await Promise.all([
         this.holdingsService.updateHoldings(
@@ -61,9 +71,12 @@ export class TradingService {
           request.tokenizedPropertyId,
           request.tokenAmount,
           request.pricePerToken,
-          request.tradeType
+          request.tradeType,
+          holdingStatus
         ),
-        this.transactionService.recordTransaction(request, tradeResult.transactionId, 'confirmed')
+        this.transactionService.recordTransaction(request, tradeResult.transactionId, 'confirmed'),
+        // Auto-add user to investment group on first purchase
+        this.addUserToInvestmentGroup(request.userId, request.tokenizedPropertyId)
       ]);
 
       return {
@@ -140,5 +153,40 @@ export class TradingService {
 
     if (error) throw error;
     return data;
+  }
+
+  private async addUserToInvestmentGroup(userId: string, tokenizedPropertyId: string): Promise<void> {
+    try {
+      // Get the investment group for this tokenized property
+      const { data: investmentGroup } = await supabase
+        .from('investment_groups')
+        .select('id, investor_count')
+        .eq('tokenized_property_id', tokenizedPropertyId)
+        .single();
+
+      if (investmentGroup) {
+        // Check if user is already in the group by checking token_holdings
+        const { data: existingHolding } = await supabase
+          .from('token_holdings')
+          .select('id')
+          .eq('holder_id', userId)
+          .eq('tokenized_property_id', tokenizedPropertyId)
+          .single();
+
+        if (!existingHolding) {
+          // Increment investor count for new investors
+          await supabase
+            .from('investment_groups')
+            .update({ 
+              investor_count: (investmentGroup.investor_count || 0) + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', investmentGroup.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding user to investment group:', error);
+      // Don't fail the trade if investment group update fails
+    }
   }
 }

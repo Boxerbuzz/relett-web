@@ -7,7 +7,8 @@ export class TokenHoldingsService {
     tokenizedPropertyId: string,
     tokenAmount: number,
     pricePerToken: number,
-    tradeType: 'buy' | 'sell'
+    tradeType: 'buy' | 'sell',
+    status: 'committed' | 'distributed' | 'active' = 'active'
   ): Promise<void> {
     const { data: currentHolding, error: fetchError } = await supabase
       .from('token_holdings')
@@ -19,9 +20,9 @@ export class TokenHoldingsService {
     if (fetchError) throw fetchError;
 
     if (currentHolding) {
-      await this.updateExistingHolding(currentHolding, tokenAmount, pricePerToken, tradeType);
+      await this.updateExistingHolding(currentHolding, tokenAmount, pricePerToken, tradeType, status);
     } else if (tradeType === 'buy') {
-      await this.createNewHolding(userId, tokenizedPropertyId, tokenAmount, pricePerToken);
+      await this.createNewHolding(userId, tokenizedPropertyId, tokenAmount, pricePerToken, status);
     }
   }
 
@@ -29,7 +30,8 @@ export class TokenHoldingsService {
     currentHolding: any,
     tokenAmount: number,
     pricePerToken: number,
-    tradeType: 'buy' | 'sell'
+    tradeType: 'buy' | 'sell',
+    status: 'committed' | 'distributed' | 'active' = 'active'
   ): Promise<void> {
     const newTokenAmount = parseInt(currentHolding.tokens_owned) + (tradeType === 'buy' ? tokenAmount : -tokenAmount);
     const newTotalInvestment = tradeType === 'buy' 
@@ -48,6 +50,7 @@ export class TokenHoldingsService {
         .update({
           tokens_owned: newTokenAmount.toString(),
           total_investment: newTotalInvestment,
+          status,
           updated_at: new Date().toISOString()
         })
         .eq('id', currentHolding.id);
@@ -58,7 +61,8 @@ export class TokenHoldingsService {
     userId: string,
     tokenizedPropertyId: string,
     tokenAmount: number,
-    pricePerToken: number
+    pricePerToken: number,
+    status: 'committed' | 'distributed' | 'active' = 'active'
   ): Promise<void> {
     await supabase
       .from('token_holdings')
@@ -68,6 +72,7 @@ export class TokenHoldingsService {
         tokens_owned: tokenAmount.toString(),
         purchase_price_per_token: pricePerToken,
         total_investment: tokenAmount * pricePerToken,
+        status,
         acquisition_date: new Date().toISOString()
       });
   }

@@ -27,6 +27,7 @@ interface BuyTokenDialogProps {
     hedera_token_id: string;
     minimum_investment: number;
     available_tokens?: number;
+    status: string;
   };
 }
 

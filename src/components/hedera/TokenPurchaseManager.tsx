@@ -25,6 +25,7 @@ interface TokenPurchaseManagerProps {
     hedera_token_id: string;
     minimum_investment: number;
     available_tokens?: number;
+    status: string;
   };
   userWallet: {
     address: string;
@@ -86,12 +87,17 @@ export function TokenPurchaseManager({
     setIsPurchasing(true);
 
     try {
-      // Create payment session for token purchase
+      // Check if this is during sales window (status = 'approved') or after (status = 'minted')
+      const isSalesWindow = tokenizedProperty.status === 'approved';
+      const actionType = isSalesWindow ? 'commitment' : 'purchase';
+
+      // Create payment session for token purchase/commitment
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-token-purchase-payment', {
         body: {
           tokenizedPropertyId: tokenizedProperty.id,
           tokenAmount: parseFloat(tokenAmount),
           investorAccountId: userWallet.address,
+          actionType, // Pass whether this is a commitment or direct purchase
         }
       });
 
@@ -108,7 +114,7 @@ export function TokenPurchaseManager({
       console.error('Token purchase payment error:', error);
       toast({
         title: 'Payment Failed',
-        description: 'Failed to initialize token purchase payment',
+        description: `Failed to initialize token ${tokenizedProperty.status === 'approved' ? 'commitment' : 'purchase'} payment`,
         variant: 'destructive'
       });
       setIsPurchasing(false);
@@ -120,10 +126,13 @@ export function TokenPurchaseManager({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Coins className="w-5 h-5" />
-          Purchase {tokenizedProperty.token_symbol} Tokens
+          {tokenizedProperty.status === 'approved' ? 'Commit to' : 'Purchase'} {tokenizedProperty.token_symbol} Tokens
         </CardTitle>
         <CardDescription>
-          Invest in {tokenizedProperty.token_name}
+          {tokenizedProperty.status === 'approved' 
+            ? `Commit to investing in ${tokenizedProperty.token_name} during the sales window`
+            : `Invest in ${tokenizedProperty.token_name}`
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -205,10 +214,10 @@ export function TokenPurchaseManager({
             className="w-full"
           >
             {isPurchasing ? (
-              'Processing Purchase...'
+              `Processing ${tokenizedProperty.status === 'approved' ? 'Commitment' : 'Purchase'}...`
             ) : (
               <span className="flex items-center gap-2">
-                Purchase Tokens
+                {tokenizedProperty.status === 'approved' ? 'Commit to Tokens' : 'Purchase Tokens'}
                 <ArrowRight className="w-4 h-4" />
               </span>
             )}

@@ -30,6 +30,7 @@ interface TokenizedProperty {
   status: string;
   revenue_distribution_frequency: string;
   investment_terms: string;
+  hedera_token_id?: string;
   property?: {
     id: string;
     title: string;
@@ -364,9 +365,10 @@ export function TokenizedPropertyMarketplace() {
             token_name: selectedProperty.token_name,
             token_symbol: selectedProperty.token_symbol,
             token_price: selectedProperty.token_price,
-            hedera_token_id: selectedProperty.id || "",
+            hedera_token_id: selectedProperty.hedera_token_id || "",
             minimum_investment: selectedProperty.minimum_investment,
             available_tokens: selectedProperty.available_tokens,
+            status: selectedProperty.status,
           }}
         />
       )}

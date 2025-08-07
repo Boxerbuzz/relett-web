@@ -1,5 +1,11 @@
 project_id = "wossuijahchhtjzphsgh"
 
+[functions.create-investment-group]
+verify_jwt = false
+
+[functions.close-sales-window]
+verify_jwt = false
+
 [functions.create-investment-poll]
 verify_jwt = true
 
