@@ -73,7 +73,7 @@ serve(async (req) => {
     // Initialize Hedera client
     const client = Client.forTestnet();
     const operatorAccountId = AccountId.fromString(hederaAccountId);
-    const operatorPrivateKey = PrivateKey.fromString(hederaPrivateKey);
+    const operatorPrivateKey = PrivateKey.fromStringECDSA(hederaPrivateKey);
     
     client.setOperator(operatorAccountId, operatorPrivateKey);
 

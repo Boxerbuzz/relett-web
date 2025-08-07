@@ -1,12 +1,11 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
+import {
   createTypedSupabaseClient,
-  createSuccessResponse, 
+  createSuccessResponse,
   createErrorResponse,
   createResponse,
-  createCorsResponse 
-} from '../shared/supabase-client.ts';
+  createCorsResponse,
+} from "../shared/supabase-client.ts";
 
 interface RevenueDistributionRequest {
   tokenized_property_id: string;
@@ -37,7 +36,7 @@ interface TokenHolder {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return createCorsResponse();
   }
 
@@ -48,23 +47,34 @@ serve(async (req) => {
       tokenized_property_id,
       total_revenue,
       distribution_type,
-      source_description
+      source_description,
     }: RevenueDistributionRequest = await req.json();
 
     // Validate required fields
-    if (!tokenized_property_id || !total_revenue || !distribution_type || !source_description) {
-      return createResponse(createErrorResponse('Missing required fields for revenue distribution'), 400);
+    if (
+      !tokenized_property_id ||
+      !total_revenue ||
+      !distribution_type ||
+      !source_description
+    ) {
+      return createResponse(
+        createErrorResponse("Missing required fields for revenue distribution"),
+        400
+      );
     }
 
     // Get tokenized property details
     const { data: tokenizedProperty, error: propertyError } = await supabase
-      .from('tokenized_properties')
-      .select('*')
-      .eq('id', tokenized_property_id)
+      .from("tokenized_properties")
+      .select("*")
+      .eq("id", tokenized_property_id)
       .single();
 
     if (propertyError || !tokenizedProperty) {
-      return createResponse(createErrorResponse('Tokenized property not found'), 404);
+      return createResponse(
+        createErrorResponse("Tokenized property not found"),
+        404
+      );
     }
 
     const property = tokenizedProperty as TokenizedProperty;
@@ -75,7 +85,7 @@ serve(async (req) => {
 
     // Create revenue distribution record
     const { data: distribution, error: distributionError } = await supabase
-      .from('revenue_distributions')
+      .from("revenue_distributions")
       .insert({
         tokenized_property_id,
         distribution_date: new Date().toISOString(),
@@ -85,8 +95,8 @@ serve(async (req) => {
         source_description,
         metadata: {
           total_supply: totalSupply,
-          calculation_date: new Date().toISOString()
-        }
+          calculation_date: new Date().toISOString(),
+        },
       })
       .select()
       .single();
@@ -95,20 +105,26 @@ serve(async (req) => {
 
     // Get all token holders
     const { data: tokenHolders, error: holdersError } = await supabase
-      .from('token_holdings')
-      .select('*')
-      .eq('tokenized_property_id', tokenized_property_id)
-      .gt('tokens_owned', '0');
+      .from("token_holdings")
+      .select("*")
+      .eq("tokenized_property_id", tokenized_property_id)
+      .gt("tokens_owned", "0");
 
     if (holdersError) throw holdersError;
 
     if (!tokenHolders || tokenHolders.length === 0) {
-      return createResponse(createErrorResponse('No token holders found'), 404);
+      return createResponse(createErrorResponse("No token holders found"), 404);
     }
 
     // Create dividend payment records for each holder
-    const dividendPayments = [];
-    
+    const dividendPayments: Array<{
+      id: string;
+      amount: number;
+      net_amount: number;
+      recipient_id: string;
+      status: string;
+    }> = [];
+
     for (const holder of tokenHolders as TokenHolder[]) {
       const tokensOwned = parseFloat(holder.tokens_owned);
       const dividendAmount = tokensOwned * revenuePerToken;
@@ -116,7 +132,7 @@ serve(async (req) => {
       const netAmount = dividendAmount - taxWithholding;
 
       const { data: payment, error: paymentError } = await supabase
-        .from('dividend_payments')
+        .from("dividend_payments")
         .insert({
           revenue_distribution_id: distribution.id,
           token_holding_id: holder.id,
@@ -124,68 +140,78 @@ serve(async (req) => {
           amount: dividendAmount,
           tax_withholding: taxWithholding,
           net_amount: netAmount,
-          currency: 'USD',
-          status: 'pending',
-          payment_method: 'bank_transfer'
+          currency: "USD",
+          status: "pending",
+          payment_method: "bank_transfer",
         })
         .select()
         .single();
 
       if (paymentError) {
-        console.error('Error creating dividend payment:', paymentError);
+        console.error("Error creating dividend payment:", paymentError);
         continue;
       }
 
       dividendPayments.push(payment);
 
+      // Get current account balance
+      const { data: currentAccount } = await supabase
+        .from("accounts")
+        .select("amount")
+        .eq("user_id", holder.holder_id)
+        .eq("type", "wallet")
+        .single();
+
       // Update user's account balance
       await supabase
-        .from('accounts')
+        .from("accounts")
         .update({
-          amount: supabase.raw('amount + ?', [netAmount])
+          amount: (currentAccount?.amount || 0) + netAmount,
         })
-        .eq('user_id', holder.holder_id)
-        .eq('type', 'wallet');
+        .eq("user_id", holder.holder_id)
+        .eq("type", "wallet");
 
       // Update investment tracking
       await supabase
-        .from('investment_tracking')
+        .from("investment_tracking")
         .update({
-          total_dividends_received: supabase.raw('total_dividends_received + ?', [netAmount]),
+          total_dividends_received: netAmount, // Set to new amount instead of incrementing
           last_dividend_amount: netAmount,
-          last_dividend_date: new Date().toISOString()
+          last_dividend_date: new Date().toISOString(),
         })
-        .eq('user_id', holder.holder_id)
-        .eq('tokenized_property_id', tokenized_property_id);
+        .eq("user_id", holder.holder_id)
+        .eq("tokenized_property_id", tokenized_property_id);
 
       // Send notification to token holder
-      await supabase.functions.invoke('process-notification', {
+      await supabase.functions.invoke("process-notification", {
         body: {
           user_id: holder.holder_id,
-          type: 'investment',
-          title: 'Dividend Payment Received',
-          message: `You've received a dividend payment of $${netAmount.toFixed(2)} from ${property.token_name}.`,
+          type: "investment",
+          title: "Dividend Payment Received",
+          message: `You've received a dividend payment of $${netAmount.toFixed(
+            2
+          )} from ${property.token_name}.`,
           metadata: {
             amount: netAmount,
             gross_amount: dividendAmount,
             tax_withholding: taxWithholding,
             tokens_owned: tokensOwned,
-            property_name: property.token_name
+            property_name: property.token_name,
           },
           action_url: `/tokens/${tokenized_property_id}`,
-          action_label: 'View Investment'
-        }
+          action_label: "View Investment",
+        },
       });
     }
 
     // Mark dividend payments as paid
     await supabase
-      .from('dividend_payments')
+      .from("dividend_payments")
       .update({
-        status: 'paid',
-        paid_at: new Date().toISOString()
+        status: "paid",
+        paid_at: new Date().toISOString(),
       })
-      .eq('revenue_distribution_id', distribution.id);
+      .eq("revenue_distribution_id", distribution.id);
 
     const response: RevenueDistributionResponse = {
       success: true,
@@ -193,14 +219,16 @@ serve(async (req) => {
       payments_processed: dividendPayments.length,
       total_distributed: total_revenue,
       revenue_per_token: revenuePerToken,
-      message: 'Revenue distribution completed successfully'
+      message: "Revenue distribution completed successfully",
     };
 
     return createResponse(createSuccessResponse(response));
-
   } catch (error) {
-    console.error('Revenue distribution error:', error);
+    console.error("Revenue distribution error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return createResponse(createErrorResponse('Revenue distribution failed', errorMessage), 400);
+    return createResponse(
+      createErrorResponse("Revenue distribution failed", errorMessage),
+      400
+    );
   }
 });

@@ -3,11 +3,11 @@ import {
   Client,
   AccountId,
   PrivateKey,
-  ContractCreateTransaction,
-  ContractExecuteTransaction,
-  FileCreateTransaction,
-  FileAppendTransaction,
-  Hbar
+  //ContractCreateTransaction,
+  //ContractExecuteTransaction,
+  //FileCreateTransaction,
+  //FileAppendTransaction,
+  //Hbar
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
 import { 
   createSuccessResponse, 
@@ -18,8 +18,8 @@ import {
 } from '../shared/supabase-client.ts';
 
 // Property Registry Contract Bytecode (this would normally be compiled from .sol)
-const PROPERTY_REGISTRY_BYTECODE = ""; // This needs to be populated with compiled bytecode
-const PROPERTY_TOKEN_BYTECODE = ""; // This needs to be populated with compiled bytecode
+//const PROPERTY_REGISTRY_BYTECODE = ""; // This needs to be populated with compiled bytecode
+//const PROPERTY_TOKEN_BYTECODE = ""; // This needs to be populated with compiled bytecode
 
 interface DeployContractsRequest {
   network?: 'testnet' | 'mainnet';

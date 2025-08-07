@@ -138,7 +138,7 @@ serve(async (req) => {
     const { data: propertyData } = await supabase
       .from("properties")
       .select("blockchain_hash, title, location")
-      .eq("id", tokenData.property_id)
+      .eq("id", tokenData.property_id || "")
       .single();
 
     // Create comprehensive token metadata
@@ -151,7 +151,7 @@ serve(async (req) => {
       legalStructure: tokenData.legal_structure,
       totalSupply: tokenData.total_supply,
       tokenPrice: tokenData.token_price,
-      version: "1.0"
+      version: "1.0",
     });
 
     // Create the token with all required keys and proper supply
@@ -266,7 +266,11 @@ serve(async (req) => {
         hedera_token_id: tokenId,
         hedera_transaction_id: transactionId,
         token_id: tokenId, // Populate the token_id field
-        token_contract_address: `0x${tokenId.split('.').slice(1).join('').padStart(40, '0')}`, // Generate EVM address format
+        token_contract_address: `0x${tokenId
+          .split(".")
+          .slice(1)
+          .join("")
+          .padStart(40, "0")}`, // Generate EVM address format
         updated_at: new Date().toISOString(),
       })
       .eq("id", tokenizedPropertyId);
@@ -289,8 +293,8 @@ serve(async (req) => {
         tokenMetadata: tokenMetadata,
         createdAt: new Date().toISOString(),
         transactionId: transactionId,
-        topicId: topicId
-      }
+        topicId: topicId,
+      },
     });
 
     console.log("Token creation and HCS audit trail completed successfully");
