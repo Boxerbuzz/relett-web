@@ -9,7 +9,7 @@ import {
   TokenSupplyType,
   Hbar,
   Status
-} from '@hashgraph/sdk';
+} from 'https://esm.sh/@hashgraph/sdk@2.65.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

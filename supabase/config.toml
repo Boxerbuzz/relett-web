@@ -41,3 +41,93 @@ verify_jwt = false
 
 [functions.create-hcs-topic-and-token]
 verify_jwt = false
+
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.user-created-webhook]
+verify_jwt = false
+
+[functions.expire-unpaid-bookings]
+verify_jwt = false
+
+[functions.ai-property-valuation]
+verify_jwt = false
+
+[functions.ai-location-analysis]
+verify_jwt = false
+
+[functions.ai-learning-tracker]
+verify_jwt = false
+
+[functions.advanced-search]
+verify_jwt = false
+
+[functions.track-interaction]
+verify_jwt = false
+
+[functions.process-notification]
+verify_jwt = false
+
+[functions.scan-file]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.send-sms-notification]
+verify_jwt = false
+
+[functions.send-booking-notification]
+verify_jwt = false
+
+[functions.send-chat-notification]
+verify_jwt = false
+
+[functions.send-inspection-notification]
+verify_jwt = false
+
+[functions.send-rental-notification]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
+
+[functions.verify-payment-status]
+verify_jwt = true
+
+[functions.generate-intercom-token]
+verify_jwt = true
+
+[functions.transfer-property-ownership]
+verify_jwt = true
+
+[functions.tokenize-property]
+verify_jwt = true
+
+[functions.validate-hedera-property]
+verify_jwt = false
+
+[functions.validate-hedera-wallet]
+verify_jwt = true
+
+[functions.update-user-defaults]
+verify_jwt = false
+
+[functions.update-user-verification-status]
+verify_jwt = false
+
+[functions.update-agent-balance]
+verify_jwt = false
+
+[functions.distribute-revenue]
+verify_jwt = false
+
+[functions.create-payment-session]
+verify_jwt = true
+
+[functions.create-payment-intent]
+verify_jwt = true
+
+[functions.deploy-property-contracts]
+verify_jwt = true
