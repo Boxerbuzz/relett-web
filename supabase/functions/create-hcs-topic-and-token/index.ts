@@ -321,6 +321,26 @@ serve(async (req) => {
 
     console.log("Token creation and HCS audit trail completed successfully");
 
+    // PHASE 2: Auto-create investment group for the tokenized property
+    console.log("Creating investment group for token sales window...");
+    try {
+      const createGroupResponse = await supabase.functions.invoke('create-investment-group', {
+        body: {
+          tokenizedPropertyId: tokenizedPropertyId,
+          salesWindowDays: 30 // Default 30-day sales window
+        }
+      });
+
+      if (createGroupResponse.error) {
+        console.warn('Failed to auto-create investment group:', createGroupResponse.error);
+      } else {
+        console.log('Investment group created successfully:', createGroupResponse.data);
+      }
+    } catch (groupError) {
+      console.warn('Failed to auto-create investment group:', groupError);
+      // Don't fail the entire token creation for this
+    }
+
     // Close Hedera client
     client.close();
 
