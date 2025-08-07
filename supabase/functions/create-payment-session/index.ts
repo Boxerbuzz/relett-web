@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { serve } from "std/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.6";
 import { systemLogger } from "../shared/system-logger.ts";
 import { Database } from "../types/database.types.ts";
