@@ -195,6 +195,28 @@ serve(async (req) => {
 
     console.log(`Token created successfully: ${tokenId}`);
 
+    // CRITICAL: Mint the full supply to treasury account
+    console.log("Minting full token supply to treasury...");
+    const { TokenMintTransaction } = await import("https://esm.sh/@hashgraph/sdk@2.65.1");
+    
+    const mintTx = new TokenMintTransaction()
+      .setTokenId(tokenId)
+      .setAmount(Number(tokenData.total_supply))
+      .setMaxTransactionFee(new Hbar(10))
+      .freezeWith(client);
+
+    const mintTxSigned = await mintTx.sign(operatorPrivateKey);
+    const mintSubmit = await mintTxSigned.execute(client);
+    const mintReceipt = await mintSubmit.getReceipt(client);
+
+    if (mintReceipt.status !== Status.Success) {
+      throw new Error(
+        `Token minting failed with status: ${mintReceipt.status}`
+      );
+    }
+
+    console.log(`Minted ${tokenData.total_supply} tokens to treasury successfully`);
+
     // Record tokenization event on HCS
     const auditEvent = {
       eventType: "PROPERTY_TOKENIZATION",

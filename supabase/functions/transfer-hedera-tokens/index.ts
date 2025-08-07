@@ -48,6 +48,8 @@ serve(async (req) => {
       fromPrivateKey,
       tokenizedPropertyId,
       pricePerToken,
+      paymentReference,
+      userId,
     } = await req.json();
 
     if (
@@ -129,20 +131,45 @@ serve(async (req) => {
           transaction_type: "transfer",
           hedera_transaction_id: transferSubmit.transactionId.toString(),
           status: "confirmed",
+          metadata: {
+            payment_reference: paymentReference,
+            purchase_type: "token_purchase",
+          }
         });
 
       if (insertError) {
         systemLogger("[TRANSFER-HEDERA-TOKENS]", insertError);
       }
 
-      // Update token holdings
-      await supabaseClient.rpc("process_token_transfer", {
-        p_tokenized_property_id: tokenizedPropertyId,
-        p_from_holder: fromAccountId,
-        p_to_holder: toAccountId,
-        p_token_amount: amount,
-        p_price_per_token: pricePerToken || 0,
-      });
+      // Create or update token holdings for buyer
+      if (userId) {
+        const { error: holdingError } = await supabaseClient
+          .from("token_holdings")
+          .upsert({
+            tokenized_property_id: tokenizedPropertyId,
+            holder_id: userId,
+            tokens_owned: amount.toString(),
+            purchase_price_per_token: pricePerToken || 0,
+            total_investment: amount * (pricePerToken || 0),
+            acquisition_date: new Date().toISOString(),
+          }, {
+            onConflict: "holder_id,tokenized_property_id",
+            ignoreDuplicates: false,
+          });
+
+        if (holdingError) {
+          systemLogger("[TRANSFER-HEDERA-TOKENS]", `Token holdings update failed: ${holdingError.message}`);
+        }
+
+        // Initialize investment tracking
+        await supabaseClient.rpc("create_investment_tracking", {
+          p_user_id: userId,
+          p_tokenized_property_id: tokenizedPropertyId,
+          p_tokens_owned: amount,
+          p_investment_amount: amount * (pricePerToken || 0),
+          p_purchase_price_per_token: pricePerToken || 0,
+        });
+      }
 
       client.close();
 

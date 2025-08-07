@@ -43,33 +43,31 @@ serve(async (req) => {
 
     const transaction = paystackData.data;
 
-    // Find the payment record
+    // Find the payment record (might not exist for token purchases)
     const { data: payment, error: paymentError } = await supabaseClient
       .from("payments")
       .select("*")
       .eq("reference", reference)
       .single();
 
-    if (paymentError || !payment) {
-      throw new Error("Payment record not found");
+    // Update payment status if payment record exists
+    if (payment && !paymentError) {
+      const { error: updateError } = await supabaseClient
+        .from("payments")
+        .update({
+          status: transaction.status === "success" ? "completed" : "failed",
+          paid_at: new Date().toISOString(),
+          metadata: {
+            ...payment.metadata,
+            paystack_transaction: transaction,
+          },
+        })
+        .eq("id", payment.id);
+
+      if (updateError) throw updateError;
     }
 
-    // Update payment status
-    const { error: updateError } = await supabaseClient
-      .from("payments")
-      .update({
-        status: transaction.status === "success" ? "completed" : "failed",
-        paid_at: new Date().toISOString(),
-        metadata: {
-          ...payment.metadata,
-          paystack_transaction: transaction,
-        },
-      })
-      .eq("id", payment.id);
-
-    if (updateError) throw updateError;
-
-    if (transaction.status === "success") {
+    if (transaction.status === "success" && payment) {
       // Process based on payment type
       if (payment.related_type === "rentals") {
         // Update rental status
@@ -228,24 +226,100 @@ serve(async (req) => {
 
         if (accountError) throw accountError;
       }
+    }
 
-      // Send success notification to user
-      await supabaseClient.functions.invoke("process-notification", {
-        body: {
-          user_id: payment.user_id,
-          type: "payment",
-          title: "Payment Successful",
-          message: `Your payment of ₦${(
-            transaction.amount / 100
-          ).toLocaleString()} has been processed successfully.`,
-          metadata: {
-            amount: transaction.amount / 100,
-            currency: transaction.currency,
-            reference: reference,
-            type: payment.related_type,
+    // Handle token purchase payments
+    const { data: tokenPayment, error: tokenPaymentError } = await supabaseClient
+      .from("payment_sessions")
+      .select("*")
+      .eq("session_id", reference)
+      .eq("purpose", "token_purchase")
+      .single();
+
+    if (!tokenPaymentError && tokenPayment && transaction.status === "success") {
+      console.log("Processing token purchase payment...");
+      
+      // Extract token purchase details from metadata
+      const metadata = tokenPayment.metadata as any;
+      
+      // Call token transfer function
+      const { error: transferError } = await supabaseClient.functions.invoke(
+        "transfer-hedera-tokens",
+        {
+          body: {
+            tokenId: metadata.tokenized_property_id,
+            fromAccountId: Deno.env.get("HEDERA_ACCOUNT_ID"),
+            toAccountId: metadata.investor_account_id,
+            amount: metadata.token_amount,
+            fromPrivateKey: Deno.env.get("HEDERA_PRIVATE_KEY"),
+            tokenizedPropertyId: metadata.tokenized_property_id,
+            pricePerToken: metadata.token_price_usd,
+            paymentReference: reference,
+            userId: tokenPayment.user_id,
           },
-        },
-      });
+        }
+      );
+
+      if (transferError) {
+        console.error("Token transfer failed:", transferError);
+        throw new Error("Token transfer failed after payment");
+      }
+
+      // Update payment session status
+      await supabaseClient
+        .from("payment_sessions")
+        .update({
+          status: "completed",
+          metadata: {
+            ...tokenPayment.metadata,
+            transfer_completed: true,
+            transfer_completed_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", tokenPayment.id);
+
+      console.log("Token purchase completed successfully");
+    }
+
+    if (transaction.status === "success") {
+      // Send success notification to user (for regular payments)
+      if (payment) {
+        await supabaseClient.functions.invoke("process-notification", {
+          body: {
+            user_id: payment.user_id,
+            type: "payment",
+            title: "Payment Successful",
+            message: `Your payment of ₦${(
+              transaction.amount / 100
+            ).toLocaleString()} has been processed successfully.`,
+            metadata: {
+              amount: transaction.amount / 100,
+              currency: transaction.currency,
+              reference: reference,
+              type: payment.related_type,
+            },
+          },
+        });
+      }
+
+      // Send token purchase notification (for token payments)
+      if (tokenPayment) {
+        await supabaseClient.functions.invoke("process-notification", {
+          body: {
+            user_id: tokenPayment.user_id,
+            type: "investment",
+            title: "Token Purchase Successful",
+            message: `You have successfully purchased ${tokenPayment.metadata.token_amount} tokens of ${tokenPayment.metadata.property_name}`,
+            metadata: {
+              amount: transaction.amount / 100,
+              currency: transaction.currency,
+              reference: reference,
+              token_amount: tokenPayment.metadata.token_amount,
+              property_name: tokenPayment.metadata.property_name,
+            },
+          },
+        });
+      }
     }
 
     return new Response(

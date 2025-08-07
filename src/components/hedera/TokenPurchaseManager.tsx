@@ -86,52 +86,31 @@ export function TokenPurchaseManager({
     setIsPurchasing(true);
 
     try {
-      // First, transfer tokens from treasury to buyer
-      const { data: transferData, error: transferError } = await supabase.functions.invoke('transfer-hedera-tokens', {
+      // Create payment session for token purchase
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-token-purchase-payment', {
         body: {
-          tokenId: tokenizedProperty.hedera_token_id,
-          fromAccountId: 'treasury_account', // This would be the treasury account
-          toAccountId: userWallet.address,
-          amount: parseFloat(tokenAmount),
-          fromPrivateKey: 'treasury_private_key', // This would be the treasury private key
           tokenizedPropertyId: tokenizedProperty.id,
-          pricePerToken: tokenizedProperty.token_price
+          tokenAmount: parseFloat(tokenAmount),
+          investorAccountId: userWallet.address,
         }
       });
 
-      if (transferError) throw transferError;
+      if (paymentError) throw paymentError;
 
-      // Update local token holdings
-      const { error: holdingError } = await supabase
-        .from('token_holdings')
-        .upsert({
-          tokenized_property_id: tokenizedProperty.id,
-          holder_id: userWallet.address,
-          tokens_owned: tokenAmount,
-          purchase_price_per_token: tokenizedProperty.token_price,
-          total_investment: totalCost,
-          acquisition_date: new Date().toISOString()
-        });
-
-      if (holdingError) throw holdingError;
-
-      onPurchaseComplete?.();
-
-      toast({
-        title: 'Purchase Successful',
-        description: `You have successfully purchased ${tokenAmount} ${tokenizedProperty.token_symbol} tokens`,
-      });
-
-      setTokenAmount('');
+      // Redirect to Paystack payment page
+      if (paymentData.payment_url) {
+        window.open(paymentData.payment_url, '_self');
+      } else {
+        throw new Error('No payment URL received');
+      }
 
     } catch (error) {
-      console.error('Token purchase error:', error);
+      console.error('Token purchase payment error:', error);
       toast({
-        title: 'Purchase Failed',
-        description: 'Failed to complete token purchase',
+        title: 'Payment Failed',
+        description: 'Failed to initialize token purchase payment',
         variant: 'destructive'
       });
-    } finally {
       setIsPurchasing(false);
     }
   };
