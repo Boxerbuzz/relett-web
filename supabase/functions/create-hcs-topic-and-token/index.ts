@@ -11,6 +11,7 @@ import {
   TopicId,
   Hbar,
   Status,
+  FileCreateTransaction,
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
 import { createTypedSupabaseClient } from "../shared/supabase-client.ts";
 
@@ -142,7 +143,7 @@ serve(async (req) => {
       .single();
 
     // Create comprehensive token metadata
-    const tokenMetadata = JSON.stringify({
+    const tokenMetadata = {
       propertyBlockchainHash: propertyData?.blockchain_hash || null,
       propertyTitle: propertyData?.title || tokenData.property?.title,
       propertyLocation: propertyData?.location || tokenData.property?.location,
@@ -152,7 +153,21 @@ serve(async (req) => {
       totalSupply: tokenData.total_supply,
       tokenPrice: tokenData.token_price,
       version: "1.0",
-    });
+    };
+
+    const metadataBytes = new TextEncoder().encode(
+      JSON.stringify(tokenMetadata)
+    );
+
+    // Step 1: Upload metadata to File Service
+    const fileCreateTx = new FileCreateTransaction()
+      .setKeys([operatorPrivateKey.publicKey]) // Required so only you can update/delete the file
+      .setContents(metadataBytes)
+      .setMaxTransactionFee(new Hbar(2));
+
+    const fileCreateSubmit = await fileCreateTx.execute(client);
+    const fileReceipt = await fileCreateSubmit.getReceipt(client);
+    const fileId = fileReceipt.fileId;
 
     // Create the token with all required keys and proper supply
     const tokenCreateTx = new TokenCreateTransaction()
@@ -170,7 +185,11 @@ serve(async (req) => {
       .setFreezeKey(operatorPrivateKey) // Required for compliance
       .setMetadataKey(operatorPrivateKey) // Required for compliance
       .setPauseKey(operatorPrivateKey) // Required for compliance
-      .setTokenMemo(tokenMetadata) // Set comprehensive metadata
+      .setTokenMemo(
+        `Property Token Audit Trail: ${
+          tokenData.property?.title || "Unknown"
+        } - ${tokenData.token_symbol}`
+      )
       .setFreezeDefault(false)
       .setMaxTransactionFee(new Hbar(20))
       .freezeWith(client);
@@ -197,8 +216,10 @@ serve(async (req) => {
 
     // CRITICAL: Mint the full supply to treasury account
     console.log("Minting full token supply to treasury...");
-    const { TokenMintTransaction } = await import("https://esm.sh/@hashgraph/sdk@2.65.1");
-    
+    const { TokenMintTransaction } = await import(
+      "https://esm.sh/@hashgraph/sdk@2.65.1"
+    );
+
     const mintTx = new TokenMintTransaction()
       .setTokenId(tokenId)
       .setAmount(Number(tokenData.total_supply))
@@ -215,7 +236,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Minted ${tokenData.total_supply} tokens to treasury successfully`);
+    console.log(
+      `Minted ${tokenData.total_supply} tokens to treasury successfully`
+    );
 
     // Record tokenization event on HCS
     const auditEvent = {
@@ -229,6 +252,7 @@ serve(async (req) => {
         action: "TOKEN_CREATED",
         timestamp: new Date().toISOString(),
         version: "1.0",
+        fileId: fileId?.toString(),
       },
       metadata: {
         source: "hedera-consensus-service",
@@ -236,6 +260,7 @@ serve(async (req) => {
         propertyTitle: tokenData.property?.title,
         location: tokenData.property?.location,
         titleNumber: tokenData.land_titles?.title_number,
+        fileId: fileId?.toString(),
       },
     };
 
@@ -294,6 +319,10 @@ serve(async (req) => {
           .join("")
           .padStart(40, "0")}`, // Generate EVM address format
         updated_at: new Date().toISOString(),
+        metadata: {
+          ...tokenMetadata,
+          fileId: fileId?.toString(),
+        },
       })
       .eq("id", tokenizedPropertyId);
 
@@ -316,6 +345,7 @@ serve(async (req) => {
         createdAt: new Date().toISOString(),
         transactionId: transactionId,
         topicId: topicId,
+        fileId: fileId?.toString(),
       },
     });
 
@@ -324,20 +354,29 @@ serve(async (req) => {
     // PHASE 2: Auto-create investment group for the tokenized property
     console.log("Creating investment group for token sales window...");
     try {
-      const createGroupResponse = await supabase.functions.invoke('create-investment-group', {
-        body: {
-          tokenizedPropertyId: tokenizedPropertyId,
-          salesWindowDays: 30 // Default 30-day sales window
+      const createGroupResponse = await supabase.functions.invoke(
+        "create-investment-group",
+        {
+          body: {
+            tokenizedPropertyId: tokenizedPropertyId,
+            salesWindowDays: 30, // Default 30-day sales window
+          },
         }
-      });
+      );
 
       if (createGroupResponse.error) {
-        console.warn('Failed to auto-create investment group:', createGroupResponse.error);
+        console.warn(
+          "Failed to auto-create investment group:",
+          createGroupResponse.error
+        );
       } else {
-        console.log('Investment group created successfully:', createGroupResponse.data);
+        console.log(
+          "Investment group created successfully:",
+          createGroupResponse.data
+        );
       }
     } catch (groupError) {
-      console.warn('Failed to auto-create investment group:', groupError);
+      console.warn("Failed to auto-create investment group:", groupError);
       // Don't fail the entire token creation for this
     }
 

@@ -4643,6 +4643,7 @@ export type Database = {
           holder_id: string
           id: string
           purchase_price_per_token: number
+          status: string | null
           tokenized_property_id: string
           tokens_owned: string
           total_investment: number
@@ -4655,6 +4656,7 @@ export type Database = {
           holder_id: string
           id?: string
           purchase_price_per_token: number
+          status?: string | null
           tokenized_property_id: string
           tokens_owned: string
           total_investment: number
@@ -4667,6 +4669,7 @@ export type Database = {
           holder_id?: string
           id?: string
           purchase_price_per_token?: number
+          status?: string | null
           tokenized_property_id?: string
           tokens_owned?: string
           total_investment?: number

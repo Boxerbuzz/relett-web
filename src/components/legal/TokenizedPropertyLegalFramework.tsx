@@ -133,7 +133,7 @@ export const TokenizedPropertyLegalFramework: React.FC<Props> = ({
   ]);
 
   const handleAgree = async () => {
-    if (!canProceed) return;
+    //if (!canProceed) return;
 
     setIsSubmitting(true);
     try {
@@ -676,7 +676,7 @@ export const TokenizedPropertyLegalFramework: React.FC<Props> = ({
                   ) : (
                     <Button
                       onClick={handleAgree}
-                      disabled={!canProceed || isSubmitting}
+                      //disabled={!canProceed || isSubmitting}
                       className="bg-green-600 hover:bg-green-700"
                     >
                       {isSubmitting ? "Processing..." : "I Agree & Accept"}

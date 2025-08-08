@@ -229,19 +229,25 @@ serve(async (req) => {
     }
 
     // Handle token purchase payments
-    const { data: tokenPayment, error: tokenPaymentError } = await supabaseClient
-      .from("payment_sessions")
-      .select("*")
-      .eq("session_id", reference)
-      .eq("purpose", "token_purchase")
-      .single();
+    const { data: tokenPayment, error: tokenPaymentError } =
+      await supabaseClient
+        .from("payment_sessions")
+        .select("*")
+        .eq("session_id", reference)
+        .eq("purpose", "token_purchase")
+        .single();
 
-    if (!tokenPaymentError && tokenPayment && transaction.status === "success") {
+    if (
+      !tokenPaymentError &&
+      tokenPayment &&
+      transaction.status === "success"
+    ) {
       console.log("Processing token purchase payment...");
-      
+
       // Extract token purchase details from metadata
+      // deno-lint-ignore no-explicit-any
       const metadata = tokenPayment.metadata as any;
-      
+
       // Call token transfer function
       const { error: transferError } = await supabaseClient.functions.invoke(
         "transfer-hedera-tokens",
@@ -337,9 +343,14 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Payment verification error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }
+    );
   }
 });
