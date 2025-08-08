@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from '@supabase/supabase-js';
 import {
   Client,
   PrivateKey,
@@ -10,11 +9,14 @@ import {
   Hbar,
   Status
 } from 'https://esm.sh/@hashgraph/sdk@2.65.1';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import {
+  createTypedSupabaseClient,
+  handleSupabaseError,
+  createSuccessResponse,
+  createErrorResponse,
+  createResponse,
+  createCorsResponse
+} from '../shared/supabase-client.ts';
 
 interface TokenCreationRequest {
   tokenizedPropertyId: string;
@@ -23,7 +25,7 @@ interface TokenCreationRequest {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse();
   }
 
   try {
@@ -39,9 +41,7 @@ serve(async (req) => {
     console.log(`Processing token creation for property: ${tokenizedPropertyId}`);
 
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createTypedSupabaseClient();
 
     // Update status to "creating"
     await supabase
@@ -146,18 +146,11 @@ serve(async (req) => {
     // Close Hedera client
     client.close();
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        tokenId,
-        transactionId,
-        message: 'Token created successfully on Hedera network'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    );
+    return createResponse(createSuccessResponse({
+      tokenId,
+      transactionId,
+      message: 'Token created successfully on Hedera network'
+    }));
 
   } catch (error) {
     console.error('Token creation failed:', error);
@@ -168,9 +161,7 @@ serve(async (req) => {
       const { tokenizedPropertyId } = body;
       
       if (tokenizedPropertyId) {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const supabase = createTypedSupabaseClient();
 
         await supabase
           .from('tokenized_properties')
@@ -184,16 +175,9 @@ serve(async (req) => {
       console.error('Failed to update status to creation_failed:', updateError);
     }
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        message: 'Failed to create token on Hedera network'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
-    );
+    return createResponse(createErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error occurred',
+      'Failed to create token on Hedera network'
+    ), 500);
   }
 });
