@@ -362,28 +362,28 @@ export function TokenizedPropertyMarketplace() {
       </Tabs>
 
       {selectedProperty && (
-        // <BuyTokenDialog
-        //   open={showBuyDialog}
-        //   onOpenChange={(open) => {
-        //     setShowBuyDialog(open);
-        //     if (!open) setSelectedProperty(null);
-        //   }}
-        //   tokenizedProperty={{
-        //     id: selectedProperty.id,
-        //     token_name: selectedProperty.token_name,
-        //     token_symbol: selectedProperty.token_symbol,
-        //     token_price: selectedProperty.token_price,
-        //     hedera_token_id: selectedProperty.hedera_token_id || "",
-        //     minimum_investment: selectedProperty.minimum_investment,
-        //     available_tokens: selectedProperty.available_tokens,
-        //     status: selectedProperty.status,
-        //   }}
-        // />
-        <InvestNowDialog
+        <BuyTokenDialog
           open={showBuyDialog}
-          onOpenChange={setShowBuyDialog}
-          tokenizedProperty={selectedProperty}
+          onOpenChange={(open) => {
+            setShowBuyDialog(open);
+            if (!open) setSelectedProperty(null);
+          }}
+          tokenizedProperty={{
+            id: selectedProperty.id,
+            token_name: selectedProperty.token_name,
+            token_symbol: selectedProperty.token_symbol,
+            token_price: selectedProperty.token_price,
+            hedera_token_id: selectedProperty.hedera_token_id || "",
+            minimum_investment: selectedProperty.minimum_investment,
+            available_tokens: selectedProperty.available_tokens,
+            status: selectedProperty.status,
+          }}
         />
+        // <InvestNowDialog
+        //   open={showBuyDialog}
+        //   onOpenChange={setShowBuyDialog}
+        //   tokenizedProperty={selectedProperty}
+        // />
       )}
     </div>
   );
