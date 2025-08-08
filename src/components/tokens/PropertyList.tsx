@@ -15,6 +15,7 @@ import {
 } from "@phosphor-icons/react";
 import { EnhancedTradeDialog } from "./EnhancedTradeDialog";
 import { TokenProperty } from "@/types/tokens";
+import { TokenStatusBadge } from "./TokenStatusBadge";
 
 interface PropertyListProps {
   properties: TokenProperty[];

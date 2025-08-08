@@ -1848,6 +1848,50 @@ export type Database = {
           },
         ]
       }
+      investment_group_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          investment_amount: number | null
+          investment_group_id: string | null
+          joined_at: string | null
+          status: string | null
+          tokens_committed: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          investment_amount?: number | null
+          investment_group_id?: string | null
+          joined_at?: string | null
+          status?: string | null
+          tokens_committed?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          investment_amount?: number | null
+          investment_group_id?: string | null
+          joined_at?: string | null
+          status?: string | null
+          tokens_committed?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_group_members_investment_group_id_fkey"
+            columns: ["investment_group_id"]
+            isOneToOne: false
+            referencedRelation: "investment_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_groups: {
         Row: {
           closes_at: string | null
