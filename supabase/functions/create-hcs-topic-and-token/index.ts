@@ -279,7 +279,7 @@ serve(async (req) => {
         is_tokenized: true,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", tokenData.property_id);
+      .eq("id", tokenData.property_id || "");
 
     const { error: updateError } = await supabase
       .from("tokenized_properties")
