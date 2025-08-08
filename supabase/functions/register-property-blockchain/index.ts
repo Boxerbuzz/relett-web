@@ -105,31 +105,51 @@ serve(async (req) => {
 
     console.log(`Property metadata stored with File ID: ${hederaFileId}`);
 
-    // Create HCS topic for this property
-    console.log("Creating HCS topic for property audit trail");
-    const topicCreateTx = new TopicCreateTransaction()
-      .setTopicMemo(`Property audit trail for ${property.title}`)
-      .setMaxTransactionFee(new Hbar(2));
+    // Ensure a single HCS topic per property (reuse if exists)
+    let hcsTopicId: string | null = null;
+    let hcsTopicRowId: string | null = null;
 
-    const topicSubmit = await topicCreateTx.execute(client);
-    const topicReceipt = await topicSubmit.getReceipt(client);
-    const hcsTopicId = topicReceipt.topicId!.toString();
-
-    console.log(`HCS topic created with Topic ID: ${hcsTopicId}`);
-
-    // Client will be closed after HCS message submission
-
-
-    // Store HCS topic in database and capture row id
-    const { data: hcsTopicRow, error: hcsError } = await supabase
+    // Try to find existing topic for this property
+    const { data: existingTopic } = await supabase
       .from("hcs_topics")
-      .insert({
-        topic_id: hcsTopicId,
-        topic_memo: `Property audit trail for ${property.title}`,
-        tokenized_property_id: null, // Not tokenized yet
-      })
-      .select("id")
-      .single();
+      .select("id, topic_id")
+      .eq("property_id", property.id)
+      .maybeSingle();
+
+    if (existingTopic?.topic_id) {
+      hcsTopicId = existingTopic.topic_id as string;
+      hcsTopicRowId = existingTopic.id as string;
+      console.log(`Reusing existing HCS topic for property: ${hcsTopicId}`);
+    } else {
+      // Create HCS topic for this property
+      console.log("Creating HCS topic for property audit trail");
+      const topicCreateTx = new TopicCreateTransaction()
+        .setTopicMemo(`Property audit trail for ${property.title}`)
+        .setMaxTransactionFee(new Hbar(2));
+
+      const topicSubmit = await topicCreateTx.execute(client);
+      const topicReceipt = await topicSubmit.getReceipt(client);
+      hcsTopicId = topicReceipt.topicId!.toString();
+
+      console.log(`HCS topic created with Topic ID: ${hcsTopicId}`);
+
+      // Store HCS topic in database and capture row id
+      const { data: hcsTopicRow, error: hcsError } = await supabase
+        .from("hcs_topics")
+        .insert({
+          topic_id: hcsTopicId,
+          topic_memo: `Property audit trail for ${property.title}`,
+          tokenized_property_id: null, // Not tokenized yet
+          property_id: property.id,
+        })
+        .select("id")
+        .single();
+
+      if (hcsError) {
+        console.error("Error storing HCS topic:", hcsError);
+      }
+      hcsTopicRowId = hcsTopicRow?.id || null;
+    }
 
 
     // Record initial property registration event on HCS
@@ -158,7 +178,7 @@ serve(async (req) => {
     await supabase.from("audit_events").insert({
       event_type: "PROPERTY_REGISTRATION",
       event_data: registrationEvent,
-      hcs_topic_id: hcsTopicRow?.id || null,
+      hcs_topic_id: hcsTopicRowId,
       transaction_id: messageSubmit.transactionId.toString(),
       sequence_number: messageReceipt.topicSequenceNumber?.toNumber() ?? null,
     });
@@ -172,12 +192,6 @@ serve(async (req) => {
         is_blockchain_registered: true,
         blockchain_network: "hedera",
         blockchain_transaction_id: fileSubmit.transactionId.toString(),
-        blockchain_topic_id: hcsTopicId,
-        blockchain_topic_memo: `Property audit trail for ${property.title}`,
-        blockchain_topic_sequence_number:
-          (typeof messageReceipt !== "undefined" && messageReceipt.topicSequenceNumber)
-            ? messageReceipt.topicSequenceNumber.toNumber()
-            : 0,
       })
       .eq("id", propertyId);
 
