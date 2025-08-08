@@ -67,6 +67,8 @@ export default function TokenizeProperty() {
     tokenName: "",
     tokenSymbol: "",
     investmentTerms: "fixed",
+    saleStartDate: "",
+    saleEndDate: "",
   });
 
   const [tokenValidationErrors, setTokenValidationErrors] = useState({
@@ -383,6 +385,8 @@ export default function TokenizeProperty() {
           expected_roi: parseFloat(formData.expectedROI) || 8.0,
           revenue_distribution_frequency: formData.distributionFrequency,
           lock_up_period_months: parseInt(formData.lockupPeriod) || 12,
+          sale_start_date: formData.saleStartDate ? new Date(formData.saleStartDate).toISOString() : null,
+          sale_end_date: formData.saleEndDate ? new Date(formData.saleEndDate).toISOString() : null,
         }
       });
 
@@ -766,6 +770,40 @@ export default function TokenizeProperty() {
                         }
                         className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       />
+                    </div>
+                    
+                    {/* Sale Period Configuration */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div>
+                        <Label htmlFor="saleStartDate">Sale Start Date</Label>
+                        <Input
+                          id="saleStartDate"
+                          type="datetime-local"
+                          value={formData.saleStartDate}
+                          onChange={(e) =>
+                            handleInputChange("saleStartDate", e.target.value)
+                          }
+                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          When the token sale will begin (optional - if not set, sale starts immediately after approval)
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="saleEndDate">Sale End Date</Label>
+                        <Input
+                          id="saleEndDate"
+                          type="datetime-local"
+                          value={formData.saleEndDate}
+                          onChange={(e) =>
+                            handleInputChange("saleEndDate", e.target.value)
+                          }
+                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          When the token sale will end (optional - if not set, sale continues indefinitely)
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

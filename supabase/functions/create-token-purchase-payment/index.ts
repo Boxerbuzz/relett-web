@@ -51,7 +51,7 @@ serve(async (req) => {
       .from("tokenized_properties")
       .select("*")
       .eq("id", tokenizedPropertyId)
-      .eq("status", "minted")
+      .eq("status", "sale_active")
       .single();
 
     if (propertyError || !property) {
@@ -92,6 +92,8 @@ serve(async (req) => {
         amount: totalCostNGN,
         currency: "NGN",
         purpose: "token_purchase",
+        related_type: "token_purchase",
+        related_id: tokenizedPropertyId,
         metadata: {
           tokenized_property_id: tokenizedPropertyId,
           token_amount: tokenAmount,

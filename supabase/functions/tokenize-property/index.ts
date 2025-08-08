@@ -40,7 +40,9 @@ serve(async (req) => {
       investment_terms,
       expected_roi,
       revenue_distribution_frequency,
-      lock_up_period_months
+      lock_up_period_months,
+      sale_start_date,
+      sale_end_date
     } = await req.json()
 
     // Validate required fields
@@ -90,6 +92,8 @@ serve(async (req) => {
         expected_roi: expected_roi || 8.0,
         revenue_distribution_frequency: revenue_distribution_frequency || 'quarterly',
         lock_up_period_months: lock_up_period_months || 12,
+        sale_start_date,
+        sale_end_date,
         metadata: {
           created_by: user.id,
           land_title_number: landTitle.title_number,
