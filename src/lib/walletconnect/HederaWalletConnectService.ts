@@ -1,6 +1,7 @@
 'use client';
 
 import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
+import { LedgerId } from '@hashgraph/sdk';
 
 export interface ConnectedWallet {
   id: string;
@@ -36,8 +37,8 @@ export class HederaWalletConnectService {
     try {
       this.dAppConnector = new DAppConnector(
         this.options.metadata,
+        LedgerId.TESTNET,
         this.options.projectId,
-        Object.values(HederaChainId),
         Object.values(HederaJsonRpcMethod),
         [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged]
       );
