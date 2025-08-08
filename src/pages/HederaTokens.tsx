@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HederaWalletManager } from '@/components/hedera/HederaWalletManager';
+import { WalletConnectSetup } from '@/components/setup/WalletConnectSetup';
 import { TokenPurchaseManager } from '@/components/hedera/TokenPurchaseManager';
 import { ContractStatusIndicator } from '@/components/hedera/ContractStatusIndicator';
 import { useAuth } from '@/lib/auth';
@@ -95,10 +95,9 @@ const HederaTokens = () => {
         </TabsContent>
 
         <TabsContent value="wallet" className="space-y-6">
-          <HederaWalletManager 
-            userId={user.id}
-            onWalletConfigured={(accountId) => {
-              console.log('Wallet configured:', accountId);
+          <WalletConnectSetup 
+            onComplete={() => {
+              console.log('WalletConnect configured');
             }}
           />
         </TabsContent>

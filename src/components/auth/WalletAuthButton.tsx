@@ -17,10 +17,10 @@ export function WalletAuthButton() {
       setLoading(true);
       
       if (!isAvailable) {
-        throw new Error('HashPack extension not found. Please install HashPack from the Chrome Web Store.');
+        throw new Error('WalletConnect not available. Please check your configuration.');
       }
 
-      // Connect to HashPack wallet
+      // Connect via WalletConnect
       await connectWallet();
       
       // Create user session with wallet data
@@ -29,7 +29,7 @@ export function WalletAuthButton() {
       
       toast({
         title: "Wallet connected successfully!",
-        description: "Connected to HashPack wallet"
+        description: "Connected via WalletConnect"
       });
     } catch (error: any) {
       toast({
@@ -72,7 +72,7 @@ export function WalletAuthButton() {
       ) : (
         <>
           <WalletIcon className="mr-2 h-4 w-4" />
-          {isAvailable ? 'Connect HashPack' : 'Install HashPack'}
+          {isAvailable ? 'Connect Wallet' : 'WalletConnect Unavailable'}
         </>
       )}
     </Button>
