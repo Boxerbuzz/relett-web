@@ -100,7 +100,7 @@ serve(async (req) => {
     const { data: existingTopic } = await supabase
       .from("hcs_topics")
       .select("id, topic_id")
-      .eq("property_id", tokenData.property_id)
+      .eq("property_id", tokenData.property_id || "")
       .maybeSingle();
 
     if (existingTopic?.topic_id) {

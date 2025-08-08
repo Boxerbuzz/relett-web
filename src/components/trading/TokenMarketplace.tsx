@@ -382,6 +382,7 @@ export function TokenMarketplace() {
             <div>
               <Label>Select Property</Label>
               <select 
+                title="Select Property"
                 value={selectedProperty} 
                 onChange={(e) => {
                   setSelectedProperty(e.target.value);
@@ -473,6 +474,7 @@ export function TokenMarketplace() {
                 <div>
                   <Label>Property</Label>
                   <select 
+                    title="Select Property"
                     value={selectedProperty} 
                     onChange={(e) => setSelectedProperty(e.target.value)}
                     className="w-full mt-1 p-2 border rounded-md"

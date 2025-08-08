@@ -15,7 +15,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BuyTokenDialog } from "@/components/dialogs/BuyTokenDialog";
-import { CoinsIcon, CalendarIcon, MapPinIcon, TargetIcon, ShieldIcon } from "@phosphor-icons/react";
+import {
+  CoinsIcon,
+  CalendarIcon,
+  MapPinIcon,
+  TargetIcon,
+  ShieldIcon,
+} from "@phosphor-icons/react";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 
 interface TokenizedProperty {
   id: string;
@@ -268,7 +275,7 @@ export function TokenizedPropertyMarketplace() {
                         <div className="space-y-1">
                           <p className="text-sm text-gray-600">Token Price</p>
                           <p className="font-semibold">
-                            ${property.token_price}
+                            {formatCurrency(property.token_price)}
                           </p>
                         </div>
                         <div className="space-y-1">
@@ -282,7 +289,7 @@ export function TokenizedPropertyMarketplace() {
                             Min Investment
                           </p>
                           <p className="font-semibold">
-                            ${property.minimum_investment}
+                            {formatCurrency(property.minimum_investment)}
                           </p>
                         </div>
                         <div className="space-y-1">
@@ -308,7 +315,7 @@ export function TokenizedPropertyMarketplace() {
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>{property.investor_count || 0} investors</span>
                           <span>
-                            {property.available_tokens || 0} tokens available
+                            {formatNumber(property.available_tokens || 0)}
                           </span>
                         </div>
                       </div>
@@ -318,12 +325,12 @@ export function TokenizedPropertyMarketplace() {
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <TargetIcon className="w-4 h-4" />
                           <span>
-                            Total Value: $
-                            {property.total_value_usd.toLocaleString()}
+                            Total Value:{" "}
+                            {formatCurrency(property.total_value_usd)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <CalendarIcon  className="w-4 h-4" />
+                          <CalendarIcon className="w-4 h-4" />
                           <span>
                             Dividends: {property.revenue_distribution_frequency}
                           </span>

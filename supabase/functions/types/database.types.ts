@@ -1452,6 +1452,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          property_id: string | null
           tokenized_property_id: string | null
           topic_id: string
           topic_memo: string | null
@@ -1460,6 +1461,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          property_id?: string | null
           tokenized_property_id?: string | null
           topic_id: string
           topic_memo?: string | null
@@ -1468,12 +1470,27 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          property_id?: string | null
           tokenized_property_id?: string | null
           topic_id?: string
           topic_memo?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "hcs_topics_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hcs_topics_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_ownership_history"
+            referencedColumns: ["property_id"]
+          },
           {
             foreignKeyName: "hcs_topics_tokenized_property_id_fkey"
             columns: ["tokenized_property_id"]
