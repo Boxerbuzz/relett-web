@@ -4893,6 +4893,8 @@ export type Database = {
           minimum_investment: number
           property_id: string | null
           revenue_distribution_frequency: string
+          sale_end_date: string | null
+          sale_start_date: string | null
           status: Database["public"]["Enums"]["tokenization_status"] | null
           token_contract_address: string | null
           token_id: string | null
@@ -4919,6 +4921,8 @@ export type Database = {
           minimum_investment: number
           property_id?: string | null
           revenue_distribution_frequency: string
+          sale_end_date?: string | null
+          sale_start_date?: string | null
           status?: Database["public"]["Enums"]["tokenization_status"] | null
           token_contract_address?: string | null
           token_id?: string | null
@@ -4945,6 +4949,8 @@ export type Database = {
           minimum_investment?: number
           property_id?: string | null
           revenue_distribution_frequency?: string
+          sale_end_date?: string | null
+          sale_start_date?: string | null
           status?: Database["public"]["Enums"]["tokenization_status"] | null
           token_contract_address?: string | null
           token_id?: string | null
