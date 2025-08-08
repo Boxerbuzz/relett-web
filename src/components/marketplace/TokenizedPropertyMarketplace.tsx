@@ -14,7 +14,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BuyTokenDialog } from "@/components/dialogs/BuyTokenDialog";
+import { TokenPurchaseManager } from "@/components/hedera/TokenPurchaseManager";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CoinsIcon,
   CalendarIcon,
@@ -24,6 +25,7 @@ import {
 } from "@phosphor-icons/react";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { InvestNowDialog } from "../dialogs/InvestNowDialog";
+import { useAuth } from "@/lib/auth";
 
 interface TokenizedProperty {
   id: string;
@@ -62,6 +64,7 @@ export function TokenizedPropertyMarketplace() {
   const [showBuyDialog, setShowBuyDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchTokenizedProperties();
@@ -361,30 +364,42 @@ export function TokenizedPropertyMarketplace() {
         </TabsContent>
       </Tabs>
 
-      {selectedProperty && (
-        // <BuyTokenDialog
-        //   open={showBuyDialog}
-        //   onOpenChange={(open) => {
-        //     setShowBuyDialog(open);
-        //     if (!open) setSelectedProperty(null);
-        //   }}
-        //   tokenizedProperty={{
-        //     id: selectedProperty.id,
-        //     token_name: selectedProperty.token_name,
-        //     token_symbol: selectedProperty.token_symbol,
-        //     token_price: selectedProperty.token_price,
-        //     hedera_token_id: selectedProperty.hedera_token_id || "",
-        //     minimum_investment: selectedProperty.minimum_investment,
-        //     available_tokens: selectedProperty.available_tokens,
-        //     status: selectedProperty.status,
-        //   }}
-        // />
-        <InvestNowDialog
-          open={showBuyDialog}
-          onOpenChange={setShowBuyDialog}
-          tokenizedProperty={selectedProperty}
-        />
-      )}
+      <Dialog open={showBuyDialog} onOpenChange={(open) => {
+        setShowBuyDialog(open);
+        if (!open) setSelectedProperty(null);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Invest in {selectedProperty?.token_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedProperty && user && (
+            <TokenPurchaseManager
+              tokenizedProperty={{
+                id: selectedProperty.id,
+                token_name: selectedProperty.token_name,
+                token_symbol: selectedProperty.token_symbol,
+                token_price: selectedProperty.token_price,
+                hedera_token_id: selectedProperty.hedera_token_id || "",
+                minimum_investment: selectedProperty.minimum_investment,
+                available_tokens: selectedProperty.available_tokens,
+                status: selectedProperty.status,
+              }}
+              userWallet={{ address: '', encrypted_private_key: '' }} // TokenPurchaseManager handles wallet requirement internally
+              onPurchaseComplete={() => {
+                toast({
+                  title: 'Investment Successful',
+                  description: 'Your investment has been processed successfully',
+                });
+                setShowBuyDialog(false);
+                setSelectedProperty(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
