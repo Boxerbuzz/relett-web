@@ -16,11 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TokenPurchaseManager } from "@/components/hedera/TokenPurchaseManager";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import {
   CoinsIcon,
   CalendarIcon,
@@ -369,17 +369,17 @@ export function TokenizedPropertyMarketplace() {
         </TabsContent>
       </Tabs>
 
-      <Dialog
+      <ResponsiveDialog
         open={showBuyDialog}
         onOpenChange={(open) => {
           setShowBuyDialog(open);
           if (!open) setSelectedProperty(null);
         }}
       >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Invest in {selectedProperty?.token_name}</DialogTitle>
-          </DialogHeader>
+        <ResponsiveDialogContent size="2xl">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>Invest in {selectedProperty?.token_name}</ResponsiveDialogTitle>
+          </ResponsiveDialogHeader>
 
           {selectedProperty && user && (
             <TokenPurchaseManager
@@ -391,6 +391,7 @@ export function TokenizedPropertyMarketplace() {
                 hedera_token_id: selectedProperty.hedera_token_id || "",
                 minimum_investment: selectedProperty.minimum_investment,
                 available_tokens: selectedProperty.available_tokens,
+                total_supply: selectedProperty.total_supply,
                 status: selectedProperty.status,
               }}
               userWallet={{ address: "", encrypted_private_key: "" }} // TokenPurchaseManager handles wallet requirement internally
@@ -402,11 +403,12 @@ export function TokenizedPropertyMarketplace() {
                 });
                 setShowBuyDialog(false);
                 setSelectedProperty(null);
+                fetchTokenizedProperties(); // Refresh data
               }}
             />
           )}
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }
