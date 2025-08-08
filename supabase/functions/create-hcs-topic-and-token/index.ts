@@ -320,6 +320,7 @@ serve(async (req) => {
           .slice(1)
           .join("")
           .padStart(40, "0")}`, // Generate EVM address format
+        status: 'token_created',  // Updated status to reflect token creation
         updated_at: new Date().toISOString(),
         metadata: {
           ...tokenMetadata,

@@ -201,6 +201,8 @@ async function handleChargeSuccess(supabaseClient: SupabaseClient, data: any) {
     await processReservationPayment(supabaseClient, payment, data);
   } else if (payment.related_type === "wallet_topup") {
     await processWalletTopup(supabaseClient, payment, data);
+  } else if (payment.related_type === "token_purchase") {
+    await processTokenPurchasePayment(supabaseClient, payment, data);
   }
 
   // Send success notification to user
@@ -498,14 +500,87 @@ async function handleTransferSuccess(_: any, data: any) {
   await Promise.resolve();
 }
 
+async function processTokenPurchasePayment(
+  supabaseClient: SupabaseClient,
+  payment: any,
+  transactionData: any
+) {
+  const { metadata } = payment;
+  const { tokenized_property_id, token_amount, investor_account_id } = metadata;
+
+  systemLogger(
+    "[PAYSTACK-WEBHOOK]",
+    `Processing token purchase: ${tokenized_property_id}, amount: ${token_amount}`
+  );
+
+  // Create token holdings record with committed status
+  const { error: holdingsError } = await supabaseClient
+    .from("token_holdings")
+    .insert({
+      holder_id: payment.user_id,
+      tokenized_property_id,
+      tokens_owned: token_amount.toString(),
+      purchase_price_per_token: metadata.token_price_usd,
+      total_investment: metadata.total_cost_usd,
+      status: 'committed',
+      acquisition_date: new Date().toISOString(),
+      hedera_account_id: investor_account_id,
+      payment_reference: payment.reference
+    });
+
+  if (holdingsError) {
+    systemLogger(
+      "[PAYSTACK-WEBHOOK]",
+      `Failed to create token holdings: ${holdingsError.message}`
+    );
+    return;
+  }
+
+  // Get investment group for this property
+  const { data: investmentGroup } = await supabaseClient
+    .from("investment_groups")
+    .select("id")
+    .eq("tokenized_property_id", tokenized_property_id)
+    .single();
+
+  // Add user to investment group if it exists
+  if (investmentGroup) {
+    await supabaseClient
+      .from("investment_group_members")
+      .insert({
+        investment_group_id: investmentGroup.id,
+        user_id: payment.user_id,
+        tokens_committed: token_amount,
+        investment_amount: metadata.total_cost_usd,
+      })
+      .onConflict("investment_group_id,user_id")
+      .merge();
+  }
+
+  // Send confirmation notification
+  await supabaseClient.functions.invoke("process-notification", {
+    body: {
+      user_id: payment.user_id,
+      type: "investment",
+      title: "Token Purchase Confirmed",
+      message: `Your purchase of ${token_amount} tokens has been confirmed and committed.`,
+      metadata: {
+        token_amount,
+        total_cost_usd: metadata.total_cost_usd,
+        property_name: metadata.property_name,
+        tokenized_property_id,
+      },
+      action_url: `/tokens/${tokenized_property_id}`,
+      action_label: "View Investment",
+    },
+  });
+}
+
 async function handleTransferFailed(_: any, data: any) {
   systemLogger(
     "[PAYSTACK-WEBHOOK]",
     `Transfer failed: ${data.reference || "unknown"}`
   );
-
-  await Promise.resolve(); // Placeholder for actual logic
-
   // Handle failed transfers
 }
 

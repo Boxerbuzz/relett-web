@@ -58,14 +58,17 @@ export default function TokenizeProperty() {
   const [formData, setFormData] = useState({
     totalTokens: "100000",
     pricePerToken: "25",
-    minimumInvestment: "100",
-    expectedROI: "12.5",
+    minimumInvestment: "1000",
+    expectedROI: "8.0",
     distributionFrequency: "quarterly",
     lockupPeriod: "12",
     description: "",
     riskLevel: "medium",
     tokenName: "",
     tokenSymbol: "",
+    investmentTerms: "fixed",
+    saleStartDate: "",
+    saleEndDate: "",
   });
 
   const [tokenValidationErrors, setTokenValidationErrors] = useState({
@@ -367,29 +370,25 @@ export default function TokenizeProperty() {
 
     setIsLoading(true);
     try {
-      const tokenData = {
-        blockchain_network: "hedera",
-        expected_roi: parseFloat(formData.expectedROI),
-        investment_terms: "fixed" as const,
-        land_title_id: property.landTitleId, // You'll need to provide a valid land_title_id
-        legal_structure: legalAgreementId,
-        lock_up_period_months: parseInt(formData.lockupPeriod),
-        minimum_investment: parseFloat(formData.minimumInvestment),
-        property_id: property.id,
-        revenue_distribution_frequency: formData.distributionFrequency,
-        status: "pending_approval" as const,
-        token_name: formData.tokenName || `${property.title} Token`,
-        token_price: parseFloat(formData.pricePerToken),
-        token_symbol: formData.tokenSymbol || "PROP",
-        token_type: "hts_fungible" as const,
-        total_supply: formData.totalTokens,
-        total_value_usd:
-          parseInt(formData.totalTokens) * parseFloat(formData.pricePerToken),
-      };
-
-      const { error } = await supabase
-        .from("tokenized_properties")
-        .insert(tokenData);
+      // Call the tokenize-property Edge Function instead
+      const { data, error } = await supabase.functions.invoke('tokenize-property', {
+        body: {
+          land_title_id: property.landTitleId,
+          property_id: property.id,
+          token_symbol: formData.tokenSymbol || "PROP",
+          token_name: formData.tokenName || `${property.title} Token`,
+          total_supply: formData.totalTokens,
+          total_value_usd: parseInt(formData.totalTokens) * parseFloat(formData.pricePerToken),
+          minimum_investment: parseFloat(formData.minimumInvestment) || 1000,
+          token_price: parseFloat(formData.pricePerToken),
+          investment_terms: formData.investmentTerms,
+          expected_roi: parseFloat(formData.expectedROI) || 8.0,
+          revenue_distribution_frequency: formData.distributionFrequency,
+          lock_up_period_months: parseInt(formData.lockupPeriod) || 12,
+          sale_start_date: formData.saleStartDate ? new Date(formData.saleStartDate).toISOString() : null,
+          sale_end_date: formData.saleEndDate ? new Date(formData.saleEndDate).toISOString() : null,
+        }
+      });
 
       if (error) throw error;
 
@@ -771,6 +770,40 @@ export default function TokenizeProperty() {
                         }
                         className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       />
+                    </div>
+                    
+                    {/* Sale Period Configuration */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div>
+                        <Label htmlFor="saleStartDate">Sale Start Date</Label>
+                        <Input
+                          id="saleStartDate"
+                          type="datetime-local"
+                          value={formData.saleStartDate}
+                          onChange={(e) =>
+                            handleInputChange("saleStartDate", e.target.value)
+                          }
+                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          When the token sale will begin (optional - if not set, sale starts immediately after approval)
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="saleEndDate">Sale End Date</Label>
+                        <Input
+                          id="saleEndDate"
+                          type="datetime-local"
+                          value={formData.saleEndDate}
+                          onChange={(e) =>
+                            handleInputChange("saleEndDate", e.target.value)
+                          }
+                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          When the token sale will end (optional - if not set, sale continues indefinitely)
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
