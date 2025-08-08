@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
+import { createTypedSupabaseClient } from '../shared/supabase-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +9,8 @@ interface CloseSalesWindowRequest {
   tokenizedPropertyId: string;
 }
 
+const supabaseClient = createTypedSupabaseClient();
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,11 +18,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const { tokenizedPropertyId }: CloseSalesWindowRequest = await req.json();
 
     console.log('Closing sales window for token:', tokenizedPropertyId);
