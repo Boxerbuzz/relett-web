@@ -6234,6 +6234,9 @@ export type Database = {
         | "retired"
         | "creating"
         | "creation_failed"
+        | "token_created"
+        | "sale_active"
+        | "sale_ended"
       transaction_status: "pending" | "confirmed" | "failed"
       transaction_type: "mint" | "transfer" | "burn" | "split"
       verification_status:
@@ -6441,6 +6444,9 @@ export const Constants = {
         "retired",
         "creating",
         "creation_failed",
+        "token_created",
+        "sale_active",
+        "sale_ended",
       ],
       transaction_status: ["pending", "confirmed", "failed"],
       transaction_type: ["mint", "transfer", "burn", "split"],
