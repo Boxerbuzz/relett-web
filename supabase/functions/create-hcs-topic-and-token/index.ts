@@ -95,43 +95,32 @@ serve(async (req) => {
 
     client.setOperator(operatorAccountId, operatorPrivateKey);
 
-    console.log("Creating HCS topic for audit trail...");
+    console.log("Reusing property's HCS topic for audit trail...");
 
-    // Create HCS topic for this tokenized property
-    const topicMemo = `Property Token Audit Trail: ${
-      tokenData.property?.title || "Unknown"
-    } - ${tokenData.token_symbol}`;
+    // Reuse the property's existing HCS topic (avoid creating duplicates)
+    const { data: propertyForTopic, error: propTopicErr } = await supabase
+      .from("properties")
+      .select("blockchain_topic_id, title")
+      .eq("id", tokenData.property_id || "")
+      .single();
 
-    const topicCreateTx = new TopicCreateTransaction()
-      .setTopicMemo(topicMemo)
-      .setAdminKey(operatorPrivateKey)
-      .setSubmitKey(operatorPrivateKey)
-      .setMaxTransactionFee(new Hbar(5))
-      .freezeWith(client);
-
-    const topicCreateTxSigned = await topicCreateTx.sign(operatorPrivateKey);
-    const topicCreateSubmit = await topicCreateTxSigned.execute(client);
-    const topicCreateReceipt = await topicCreateSubmit.getReceipt(client);
-
-    if (topicCreateReceipt.status !== Status.Success) {
+    if (propTopicErr || !propertyForTopic?.blockchain_topic_id) {
       throw new Error(
-        `Topic creation failed with status: ${topicCreateReceipt.status}`
+        "Property does not have an HCS topic; ensure property registration created one"
       );
     }
 
-    const topicId = topicCreateReceipt.topicId?.toString();
-    if (!topicId) {
-      throw new Error("Topic ID not returned from Hedera");
-    }
+    const topicId = propertyForTopic.blockchain_topic_id as string;
 
-    console.log(`HCS topic created successfully: ${topicId}`);
+    // Link existing HCS topic to this tokenized property (idempotent)
+    await supabase
+      .from("hcs_topics")
+      .update({ tokenized_property_id: tokenizedPropertyId })
+      .eq("topic_id", topicId);
 
-    // Store HCS topic in database
-    await supabase.from("hcs_topics").insert({
-      tokenized_property_id: tokenizedPropertyId,
-      topic_id: topicId,
-      topic_memo: topicMemo,
-    });
+    console.log(`Using HCS topic: ${topicId}`);
+
+    console.log("Creating token on Hedera network...");
 
     console.log("Creating token on Hedera network...");
 
@@ -214,31 +203,9 @@ serve(async (req) => {
 
     console.log(`Token created successfully: ${tokenId}`);
 
-    // CRITICAL: Mint the full supply to treasury account
-    console.log("Minting full token supply to treasury...");
-    const { TokenMintTransaction } = await import(
-      "https://esm.sh/@hashgraph/sdk@2.65.1"
-    );
+    // Skipping minting: tokens will be minted after the presale window closes.
+    // This aligns with the agreed flow to accept fiat commitments first.
 
-    const mintTx = new TokenMintTransaction()
-      .setTokenId(tokenId)
-      .setAmount(Number(tokenData.total_supply))
-      .setMaxTransactionFee(new Hbar(10))
-      .freezeWith(client);
-
-    const mintTxSigned = await mintTx.sign(operatorPrivateKey);
-    const mintSubmit = await mintTxSigned.execute(client);
-    const mintReceipt = await mintSubmit.getReceipt(client);
-
-    if (mintReceipt.status !== Status.Success) {
-      throw new Error(
-        `Token minting failed with status: ${mintReceipt.status}`
-      );
-    }
-
-    console.log(
-      `Minted ${tokenData.total_supply} tokens to treasury successfully`
-    );
 
     // Record tokenization event on HCS
     const auditEvent = {
@@ -305,11 +272,19 @@ serve(async (req) => {
       }
     }
 
-    // Update database with Hedera token info including contract address
+    // Mark property as tokenized (without minting)
+    await supabase
+      .from("properties")
+      .update({
+        is_tokenized: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", tokenData.property_id);
+
     const { error: updateError } = await supabase
       .from("tokenized_properties")
       .update({
-        status: "minted",
+        status: "token_created",
         hedera_token_id: tokenId,
         hedera_transaction_id: transactionId,
         token_id: tokenId, // Populate the token_id field

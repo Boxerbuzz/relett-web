@@ -3,6 +3,8 @@ import {
   Client,
   FileCreateTransaction,
   TopicCreateTransaction,
+  TopicMessageSubmitTransaction,
+  TopicId,
   AccountId,
   PrivateKey,
   Hbar,
@@ -115,20 +117,20 @@ serve(async (req) => {
 
     console.log(`HCS topic created with Topic ID: ${hcsTopicId}`);
 
-    // Close Hedera client
-    client.close();
+    // Client will be closed after HCS message submission
 
-    // Store HCS topic in database
-    const { error: hcsError } = await supabase.from("hcs_topics").insert({
-      topic_id: hcsTopicId,
-      topic_memo: `Property audit trail for ${property.title}`,
-      tokenized_property_id: null, // Not tokenized yet
-    });
 
-    if (hcsError) {
-      console.error("Error storing HCS topic:", hcsError);
-      throw new Error(`Failed to store HCS topic: ${hcsError.message}`);
-    }
+    // Store HCS topic in database and capture row id
+    const { data: hcsTopicRow, error: hcsError } = await supabase
+      .from("hcs_topics")
+      .insert({
+        topic_id: hcsTopicId,
+        topic_memo: `Property audit trail for ${property.title}`,
+        tokenized_property_id: null, // Not tokenized yet
+      })
+      .select("id")
+      .single();
+
 
     // Record initial property registration event on HCS
     const registrationEvent = {
@@ -144,20 +146,24 @@ serve(async (req) => {
 
     console.log("Recording property registration event on HCS");
 
-    // Store audit event in database
-    const { error: auditError } = await supabase.from("audit_events").insert({
+    const messageSubmitTx = new TopicMessageSubmitTransaction()
+      .setTopicId(TopicId.fromString(hcsTopicId))
+      .setMessage(JSON.stringify(registrationEvent))
+      .setMaxTransactionFee(new Hbar(2));
+
+    const messageSubmit = await messageSubmitTx.execute(client);
+    const messageReceipt = await messageSubmit.getReceipt(client);
+
+    // Store audit event in database with linked topic id
+    await supabase.from("audit_events").insert({
       event_type: "PROPERTY_REGISTRATION",
       event_data: registrationEvent,
-      hcs_topic_id: null, // Will be updated once we have the topic UUID
-      transaction_id: `txn_${Date.now()}`,
-      consensus_timestamp: new Date().toISOString(),
+      hcs_topic_id: hcsTopicRow?.id || null,
+      transaction_id: messageSubmit.transactionId.toString(),
+      sequence_number: messageReceipt.topicSequenceNumber?.toNumber() ?? null,
     });
 
-    if (auditError) {
-      console.error("Error storing audit event:", auditError);
-    }
-
-    // Update property with blockchain information
+    // Update property with blockchain information (use real transaction and sequence details)
     const { error: updateError } = await supabase
       .from("properties")
       .update({
@@ -165,12 +171,13 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
         is_blockchain_registered: true,
         blockchain_network: "hedera",
-        blockchain_transaction_id: `txn_${Date.now()}`,
-        blockchain_consensus_timestamp: new Date().toISOString(),
-        blockchain_sequence_number: 0,
+        blockchain_transaction_id: fileSubmit.transactionId.toString(),
         blockchain_topic_id: hcsTopicId,
         blockchain_topic_memo: `Property audit trail for ${property.title}`,
-        blockchain_topic_sequence_number: 0,
+        blockchain_topic_sequence_number:
+          (typeof messageReceipt !== "undefined" && messageReceipt.topicSequenceNumber)
+            ? messageReceipt.topicSequenceNumber.toNumber()
+            : 0,
       })
       .eq("id", propertyId);
 
@@ -181,6 +188,7 @@ serve(async (req) => {
       );
     }
 
+    client.close();
     console.log(`Successfully registered property ${propertyId} on blockchain`);
 
     return new Response(
