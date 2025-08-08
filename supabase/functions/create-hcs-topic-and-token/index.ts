@@ -48,11 +48,7 @@ serve(async (req) => {
       `Processing token creation for property: ${tokenizedPropertyId}`
     );
 
-    // Update status to "creating"
-    await supabase
-      .from("tokenized_properties")
-      .update({ status: "creating" })
-      .eq("id", tokenizedPropertyId);
+    // Keep existing status to avoid retriggering the approval hook
 
     // Get tokenized property details with property info
     const { data: tokenData, error: fetchError } = await supabase
@@ -95,32 +91,64 @@ serve(async (req) => {
 
     client.setOperator(operatorAccountId, operatorPrivateKey);
 
-    console.log("Reusing property's HCS topic for audit trail...");
+    console.log("Ensuring single HCS topic per property (reuse if exists)...");
 
-    // Reuse the property's existing HCS topic (avoid creating duplicates)
-    const { data: propertyForTopic, error: propTopicErr } = await supabase
-      .from("properties")
-      .select("blockchain_topic_id, title")
-      .eq("id", tokenData.property_id || "")
-      .single();
+    // Try to find existing topic for this property
+    let topicId: string | null = null;
+    let hcsTopicRowId: string | null = null;
 
-    if (propTopicErr || !propertyForTopic?.blockchain_topic_id) {
-      throw new Error(
-        "Property does not have an HCS topic; ensure property registration created one"
-      );
+    const { data: existingTopic } = await supabase
+      .from("hcs_topics")
+      .select("id, topic_id")
+      .eq("property_id", tokenData.property_id)
+      .maybeSingle();
+
+    if (existingTopic?.topic_id) {
+      topicId = existingTopic.topic_id as string;
+      hcsTopicRowId = existingTopic.id as string;
+      console.log(`Reusing HCS topic ${topicId} for property ${tokenData.property_id}`);
+    } else {
+      console.log("Creating HCS topic for property audit trail...");
+      const topicMemo = `Property audit trail for ${tokenData.property?.title || 'Unknown'}`;
+      const topicCreateTx = new TopicCreateTransaction()
+        .setTopicMemo(topicMemo)
+        .setMaxTransactionFee(new Hbar(5))
+        .freezeWith(client);
+
+      const topicCreateTxSigned = await topicCreateTx.sign(operatorPrivateKey);
+      const topicCreateSubmit = await topicCreateTxSigned.execute(client);
+      const topicCreateReceipt = await topicCreateSubmit.getReceipt(client);
+
+      if (topicCreateReceipt.status !== Status.Success) {
+        throw new Error(`Topic creation failed with status: ${topicCreateReceipt.status}`);
+      }
+
+      topicId = topicCreateReceipt.topicId!.toString();
+      console.log(`HCS topic created: ${topicId}`);
+
+      // Store HCS topic in database and link to property and tokenized property
+      const { data: hcsTopicRow, error: hcsErr } = await supabase
+        .from("hcs_topics")
+        .insert({
+          topic_id: topicId,
+          topic_memo: topicMemo,
+          property_id: tokenData.property_id,
+          tokenized_property_id: tokenizedPropertyId,
+        })
+        .select("id")
+        .single();
+
+      if (hcsErr) console.warn("Failed to persist HCS topic:", hcsErr);
+      hcsTopicRowId = hcsTopicRow?.id || null;
     }
 
-    const topicId = propertyForTopic.blockchain_topic_id as string;
-
-    // Link existing HCS topic to this tokenized property (idempotent)
+    // Ensure linkage to tokenized property (idempotent)
     await supabase
       .from("hcs_topics")
       .update({ tokenized_property_id: tokenizedPropertyId })
-      .eq("topic_id", topicId);
+      .eq("topic_id", topicId!);
 
     console.log(`Using HCS topic: ${topicId}`);
-
-    console.log("Creating token on Hedera network...");
 
     console.log("Creating token on Hedera network...");
 
@@ -284,7 +312,6 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from("tokenized_properties")
       .update({
-        status: "token_created",
         hedera_token_id: tokenId,
         hedera_transaction_id: transactionId,
         token_id: tokenId, // Populate the token_id field
