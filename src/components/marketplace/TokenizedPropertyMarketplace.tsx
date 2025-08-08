@@ -15,7 +15,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TokenPurchaseManager } from "@/components/hedera/TokenPurchaseManager";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   CoinsIcon,
   CalendarIcon,
@@ -87,7 +92,7 @@ export function TokenizedPropertyMarketplace() {
           land_title:land_titles(location_address)
         `
         )
-        .in("status", ["approved", "minted", "active"])
+        .in("status", ["approved", "minted", "active", "token_created"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -364,17 +369,18 @@ export function TokenizedPropertyMarketplace() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={showBuyDialog} onOpenChange={(open) => {
-        setShowBuyDialog(open);
-        if (!open) setSelectedProperty(null);
-      }}>
+      <Dialog
+        open={showBuyDialog}
+        onOpenChange={(open) => {
+          setShowBuyDialog(open);
+          if (!open) setSelectedProperty(null);
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Invest in {selectedProperty?.token_name}
-            </DialogTitle>
+            <DialogTitle>Invest in {selectedProperty?.token_name}</DialogTitle>
           </DialogHeader>
-          
+
           {selectedProperty && user && (
             <TokenPurchaseManager
               tokenizedProperty={{
@@ -387,11 +393,12 @@ export function TokenizedPropertyMarketplace() {
                 available_tokens: selectedProperty.available_tokens,
                 status: selectedProperty.status,
               }}
-              userWallet={{ address: '', encrypted_private_key: '' }} // TokenPurchaseManager handles wallet requirement internally
+              userWallet={{ address: "", encrypted_private_key: "" }} // TokenPurchaseManager handles wallet requirement internally
               onPurchaseComplete={() => {
                 toast({
-                  title: 'Investment Successful',
-                  description: 'Your investment has been processed successfully',
+                  title: "Investment Successful",
+                  description:
+                    "Your investment has been processed successfully",
                 });
                 setShowBuyDialog(false);
                 setSelectedProperty(null);
