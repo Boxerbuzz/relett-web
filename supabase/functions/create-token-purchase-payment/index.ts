@@ -162,7 +162,7 @@ serve(async (req) => {
       .update({
         session_id: paystackData.data.reference,
         metadata: {
-          ...paymentSession.metadata,
+          ...(paymentSession.metadata as Record<string, any>),
           paystack_reference: paystackData.data.reference,
           access_code: paystackData.data.access_code,
         },
