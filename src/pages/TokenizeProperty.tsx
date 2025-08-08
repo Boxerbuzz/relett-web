@@ -32,6 +32,14 @@ import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { useFormattedNumber } from "@/hooks/useNumberFormatter";
 import { cn } from "@/lib/utils";
+import { SingleDatePicker } from "@/components/ui/single-date-picker";
+import { 
+  validateSaleStartDate, 
+  validateSaleEndDate, 
+  validateSaleDateRange,
+  getDisabledDatesForSaleStart,
+  getDisabledDatesForSaleEnd 
+} from "@/utils/dateUtils";
 
 interface Property {
   id: string;
@@ -74,6 +82,11 @@ export default function TokenizeProperty() {
   const [tokenValidationErrors, setTokenValidationErrors] = useState({
     tokenName: "",
     tokenSymbol: "",
+  });
+
+  const [dateValidationErrors, setDateValidationErrors] = useState({
+    saleStartDate: "",
+    saleEndDate: "",
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -213,6 +226,23 @@ export default function TokenizeProperty() {
       // Validate name
       const error = validateTokenName(value);
       setTokenValidationErrors(prev => ({ ...prev, tokenName: error || "" }));
+    } else if (field === "saleStartDate" || field === "saleEndDate") {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      
+      // Validate dates when they change
+      if (field === "saleStartDate") {
+        const error = validateSaleStartDate(value);
+        setDateValidationErrors(prev => ({ ...prev, saleStartDate: error || "" }));
+        
+        // Re-validate end date when start date changes
+        if (formData.saleEndDate) {
+          const endError = validateSaleEndDate(value, formData.saleEndDate);
+          setDateValidationErrors(prev => ({ ...prev, saleEndDate: endError || "" }));
+        }
+      } else if (field === "saleEndDate") {
+        const error = validateSaleEndDate(formData.saleStartDate, value);
+        setDateValidationErrors(prev => ({ ...prev, saleEndDate: error || "" }));
+      }
     } else {
       const numericValue = value.replace(/,/g, "");
       if (/^\d*$/.test(numericValue)) {
@@ -356,6 +386,25 @@ export default function TokenizeProperty() {
       } finally {
         setIsValidating(false);
       }
+    } else if (step === 2) {
+      // Validate sale dates if on step 2
+      const dateValidation = validateSaleDateRange(formData.saleStartDate, formData.saleEndDate);
+      
+      if (!dateValidation.isValid) {
+        const startError = validateSaleStartDate(formData.saleStartDate);
+        const endError = validateSaleEndDate(formData.saleStartDate, formData.saleEndDate);
+        
+        setDateValidationErrors({
+          saleStartDate: startError || "",
+          saleEndDate: endError || "",
+        });
+        
+        toast.error("Please fix the sale date validation errors before proceeding");
+        return;
+      }
+      
+      setDateValidationErrors({ saleStartDate: "", saleEndDate: "" });
+      setStep(Math.min(step + 1, 4));
     } else {
       setStep(Math.min(step + 1, 4));
     }
@@ -773,37 +822,76 @@ export default function TokenizeProperty() {
                     </div>
                     
                     {/* Sale Period Configuration */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                      <div>
-                        <Label htmlFor="saleStartDate">Sale Start Date</Label>
-                        <Input
-                          id="saleStartDate"
-                          type="datetime-local"
-                          value={formData.saleStartDate}
-                          onChange={(e) =>
-                            handleInputChange("saleStartDate", e.target.value)
-                          }
-                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          When the token sale will begin (optional - if not set, sale starts immediately after approval)
-                        </p>
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-gray-900 mb-4">Sale Period (Required)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <Label htmlFor="saleStartDate" className="text-sm font-medium text-gray-700">
+                            Sale Start Date <span className="text-red-500">*</span>
+                          </Label>
+                          <SingleDatePicker
+                            date={formData.saleStartDate ? new Date(formData.saleStartDate) : undefined}
+                            onDateChange={(date) => {
+                              const dateString = date ? date.toISOString().slice(0, 16) : "";
+                              handleInputChange("saleStartDate", dateString);
+                            }}
+                            disabled={getDisabledDatesForSaleStart()}
+                            placeholder="Select start date"
+                            className={cn(
+                              "w-full mt-1",
+                              dateValidationErrors.saleStartDate && "border-red-300 focus:border-red-500"
+                            )}
+                          />
+                          {dateValidationErrors.saleStartDate && (
+                            <p className="text-xs text-red-600 mt-1">
+                              {dateValidationErrors.saleStartDate}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            Token sale start date (minimum 24 hours from now)
+                          </p>
+                        </div>
+                        <div>
+                          <Label htmlFor="saleEndDate" className="text-sm font-medium text-gray-700">
+                            Sale End Date <span className="text-red-500">*</span>
+                          </Label>
+                          <SingleDatePicker
+                            date={formData.saleEndDate ? new Date(formData.saleEndDate) : undefined}
+                            onDateChange={(date) => {
+                              const dateString = date ? date.toISOString().slice(0, 16) : "";
+                              handleInputChange("saleEndDate", dateString);
+                            }}
+                            disabled={getDisabledDatesForSaleEnd(formData.saleStartDate)}
+                            placeholder="Select end date"
+                            className={cn(
+                              "w-full mt-1",
+                              dateValidationErrors.saleEndDate && "border-red-300 focus:border-red-500"
+                            )}
+                          />
+                          {dateValidationErrors.saleEndDate && (
+                            <p className="text-xs text-red-600 mt-1">
+                              {dateValidationErrors.saleEndDate}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            Token sale end date (7 days to 2 years after start date)
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="saleEndDate">Sale End Date</Label>
-                        <Input
-                          id="saleEndDate"
-                          type="datetime-local"
-                          value={formData.saleEndDate}
-                          onChange={(e) =>
-                            handleInputChange("saleEndDate", e.target.value)
-                          }
-                          className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          When the token sale will end (optional - if not set, sale continues indefinitely)
-                        </p>
-                      </div>
+                      
+                      {/* Date Range Summary */}
+                      {formData.saleStartDate && formData.saleEndDate && !dateValidationErrors.saleStartDate && !dateValidationErrors.saleEndDate && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-green-800">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-sm font-medium">
+                              Sale Period: {new Date(formData.saleStartDate).toLocaleDateString()} - {new Date(formData.saleEndDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

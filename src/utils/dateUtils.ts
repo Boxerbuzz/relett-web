@@ -87,3 +87,122 @@ export function checkDateAvailability(
 export function formatDateRange(from: Date, to: Date): string {
   return `${format(from, "MMM dd")} - ${format(to, "MMM dd, yyyy")}`;
 }
+
+/**
+ * Validate sale start date for token sales
+ */
+export function validateSaleStartDate(dateString: string): string | null {
+  if (!dateString.trim()) {
+    return "Sale start date is required";
+  }
+
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
+
+    if (isNaN(date.getTime())) {
+      return "Invalid date format";
+    }
+
+    if (date < minDate) {
+      return "Sale start date must be at least 24 hours from now";
+    }
+
+    return null;
+  } catch {
+    return "Invalid date format";
+  }
+}
+
+/**
+ * Validate sale end date for token sales
+ */
+export function validateSaleEndDate(startDateString: string, endDateString: string): string | null {
+  if (!endDateString.trim()) {
+    return "Sale end date is required";
+  }
+
+  if (!startDateString.trim()) {
+    return "Please set a valid start date first";
+  }
+
+  try {
+    const startDate = new Date(startDateString);
+    const endDate = new Date(endDateString);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return "Invalid date format";
+    }
+
+    const minEndDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days after start
+    const maxEndDate = new Date(startDate.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); // 2 years after start
+
+    if (endDate <= startDate) {
+      return "Sale end date must be after the start date";
+    }
+
+    if (endDate < minEndDate) {
+      return "Sale end date must be at least 7 days after the start date";
+    }
+
+    if (endDate > maxEndDate) {
+      return "Sale end date cannot be more than 2 years after the start date";
+    }
+
+    return null;
+  } catch {
+    return "Invalid date format";
+  }
+}
+
+/**
+ * Validate complete sale date range
+ */
+export function validateSaleDateRange(startDateString: string, endDateString: string): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  const startError = validateSaleStartDate(startDateString);
+  if (startError) errors.push(startError);
+  
+  const endError = validateSaleEndDate(startDateString, endDateString);
+  if (endError) errors.push(endError);
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ * Get disabled dates for date picker (past dates and before minimum start date)
+ */
+export function getDisabledDatesForSaleStart(): (date: Date) => boolean {
+  const minDate = new Date();
+  minDate.setHours(minDate.getHours() + 24); // 24 hours from now
+  
+  return (date: Date) => {
+    return date < startOfDay(minDate);
+  };
+}
+
+/**
+ * Get disabled dates for end date picker based on start date
+ */
+export function getDisabledDatesForSaleEnd(startDateString: string): (date: Date) => boolean {
+  if (!startDateString) {
+    return () => true; // Disable all dates if no start date
+  }
+  
+  try {
+    const startDate = new Date(startDateString);
+    const minEndDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days after start
+    const maxEndDate = new Date(startDate.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); // 2 years after start
+    
+    return (date: Date) => {
+      return date < startOfDay(minEndDate) || date > startOfDay(maxEndDate);
+    };
+  } catch {
+    return () => true; // Disable all dates if invalid start date
+  }
+}
