@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { Badge } from "@/components/ui/badge";
 import { WalletIcon, SpinnerIcon } from "@phosphor-icons/react";
 import { useHederaWallet } from "@/contexts/HederaWalletContext";
@@ -106,8 +106,8 @@ export function WalletConnectButton() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveDialog open={isOpen} onOpenChange={setIsOpen}>
+      <ResponsiveDialogTrigger asChild>
         <Button
           variant="outline"
           className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
@@ -125,42 +125,44 @@ export function WalletConnectButton() {
             </>
           )}
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Connect Your Hedera Wallet</DialogTitle>
-          <DialogDescription>
-            Choose a wallet to connect to the platform and start investing in tokenized real estate.
-          </DialogDescription>
-        </DialogHeader>
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="sm:max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Connect Your Hedera Wallet</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            Scan the QR code with your mobile wallet or use a browser extension to connect.
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <div className="space-y-3">
-          {walletOptions.map((wallet) => (
-            <Button
-              key={wallet.id}
-              variant="outline"
-              className="w-full justify-start h-auto p-4"
-              onClick={() => handleWalletConnect(wallet.id)}
-              disabled={loading || !wallet.isAvailable}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <span className="text-2xl">{wallet.icon}</span>
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{wallet.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {wallet.description}
-                  </div>
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4"
+            onClick={() => handleWalletConnect('walletconnect')}
+            disabled={loading}
+          >
+            <div className="flex items-center gap-3 w-full">
+              <span className="text-2xl">🔗</span>
+              <div className="flex-1 text-left">
+                <div className="font-medium">WalletConnect</div>
+                <div className="text-sm text-muted-foreground">
+                  Connect with any compatible Hedera wallet
                 </div>
-                {!wallet.isAvailable && (
-                  <Badge variant="secondary">Coming Soon</Badge>
-                )}
               </div>
-            </Button>
-          ))}
+            </div>
+          </Button>
+          
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p><strong>Supported wallets:</strong></p>
+            <p>• HashPack (Mobile & Extension)</p>
+            <p>• Kabila Wallet</p>
+            <p>• Blade Wallet</p>
+            <p>• And other WalletConnect compatible wallets</p>
+          </div>
         </div>
         <div className="text-xs text-muted-foreground text-center">
           By connecting a wallet, you agree to the platform's Terms of Service
         </div>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

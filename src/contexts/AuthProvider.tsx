@@ -3,7 +3,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/lib/auth";
-import { WalletProvider } from "@/contexts/WalletContext";
+
 import { RightPanelProvider } from "@/contexts/RightPanelContext";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -399,7 +399,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }}
     >
       <RightPanelProvider>
-        <WalletProvider>{children}</WalletProvider>
+        {children}
       </RightPanelProvider>
     </AuthContext.Provider>
   );

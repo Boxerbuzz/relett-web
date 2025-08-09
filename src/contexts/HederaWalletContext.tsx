@@ -8,16 +8,10 @@ import {
   ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { HederaWalletConnectService, ConnectedWallet } from "@/lib/walletconnect/HederaWalletConnectService";
+import { walletConnectConfig, isWalletConnectConfigured } from "@/lib/walletconnect/config";
 
-export interface HederaWallet {
-  id: string;
-  address: string;
-  type: 'hashpack' | 'kabila' | 'blade';
-  name: string;
-  network: string;
-  balance?: string;
-  isConnected: boolean;
-}
+export interface HederaWallet extends ConnectedWallet {}
 
 export interface HederaWalletContextType {
   wallet: HederaWallet | null;
@@ -52,55 +46,55 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   const [isAvailable, setIsAvailable] = useState(false);
   const [accountBalances, setAccountBalances] = useState<Map<string, string>>(new Map());
   const [tokenBalances, setTokenBalances] = useState<Map<string, Map<string, string>>>(new Map());
+  const [walletConnectService, setWalletConnectService] = useState<HederaWalletConnectService | null>(null);
 
-  // Initialize wallet availability check
+  // Initialize WalletConnect service
   useEffect(() => {
-    const checkWalletAvailability = () => {
-      // For now, assume wallet connection is available
-      // In a real implementation, this would check for installed wallet extensions
-      setIsAvailable(true);
-      
-      // Check for existing wallet connection
-      const savedWallet = localStorage.getItem("hedera-wallet");
-      if (savedWallet) {
-        try {
-          const walletData = JSON.parse(savedWallet);
-          setWallet(walletData);
-          refreshBalances();
-        } catch (error) {
-          console.error("Failed to restore wallet from localStorage:", error);
-          localStorage.removeItem("hedera-wallet");
+    const initializeWalletConnect = async () => {
+      try {
+        if (!isWalletConnectConfigured()) {
+          console.warn('WalletConnect not configured. Please set up PROJECT_ID in config.ts');
+          setIsAvailable(false);
+          return;
         }
+
+        const service = new HederaWalletConnectService(walletConnectConfig);
+        await service.initialize();
+        setWalletConnectService(service);
+        setIsAvailable(true);
+
+        // Set up connection listener
+        const unsubscribe = service.onConnectionChanged((connectedWallet) => {
+          setWallet(connectedWallet);
+          if (connectedWallet) {
+            refreshBalances();
+          } else {
+            setAccountBalances(new Map());
+            setTokenBalances(new Map());
+          }
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Failed to initialize WalletConnect:', error);
+        setIsAvailable(false);
       }
     };
 
-    checkWalletAvailability();
+    initializeWalletConnect();
   }, []);
 
   const connectWallet = async (walletType?: string): Promise<void> => {
+    if (!walletConnectService) {
+      throw new Error('WalletConnect service not initialized');
+    }
+
     try {
       setIsConnecting(true);
-      console.log("Connecting to Hedera wallet...");
-
-      // For development, create a mock wallet connection
-      // In production, this would integrate with actual wallet connectors
-      const mockWallet: HederaWallet = {
-        id: "0.0.123456", // Mock Hedera account ID
-        address: "0.0.123456",
-        type: (walletType as any) || 'hashpack',
-        name: `${walletType || 'HashPack'} Wallet`,
-        network: "testnet",
-        balance: "100.0 HBAR",
-        isConnected: true,
-      };
-
-      setWallet(mockWallet);
-      localStorage.setItem("hedera-wallet", JSON.stringify(mockWallet));
+      console.log("Connecting to Hedera wallet via WalletConnect...");
       
-      // Fetch account balance
-      await refreshBalances();
-      
-      console.log("Wallet connected successfully:", mockWallet);
+      const accountId = await walletConnectService.connectWallet();
+      console.log("Wallet connected successfully with account:", accountId);
     } catch (error) {
       console.error("Failed to connect wallet:", error);
       throw error;
@@ -110,17 +104,14 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   };
 
   const disconnectWallet = async () => {
+    if (!walletConnectService) return;
+
     try {
-      // In production, would disconnect from actual wallet
       console.log("Disconnecting wallet...");
+      await walletConnectService.disconnectWallet();
     } catch (error) {
       console.error("Error disconnecting from wallet:", error);
     }
-
-    setWallet(null);
-    setAccountBalances(new Map());
-    setTokenBalances(new Map());
-    localStorage.removeItem("hedera-wallet");
   };
 
   const refreshBalances = async () => {
