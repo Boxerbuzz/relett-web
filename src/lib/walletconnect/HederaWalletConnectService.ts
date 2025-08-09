@@ -2,7 +2,6 @@
 
 import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
-import { WalletConnectModal } from '@walletconnect/modal';
 
 export interface ConnectedWallet {
   id: string;
@@ -32,7 +31,6 @@ export class HederaWalletConnectService {
   private connectionTimeout = 30000; // 30 seconds
   private maxRetries = 3;
   private retryDelay = 1000; // Start with 1 second
-  private wcModal: WalletConnectModal | null = null;
 
   constructor(private options: WalletConnectOptions) {}
 
@@ -50,9 +48,6 @@ export class HederaWalletConnectService {
 
       await this.dAppConnector.init();
 
-      // Initialize WalletConnect Modal for QR code presentation
-      this.wcModal = new WalletConnectModal({ projectId: this.options.projectId });
-
       // Sanity check: ensure WalletConnect client actually initialized inside DAppConnector
       // The underlying library swallows init errors, so verify explicitly.
       if (!(this.dAppConnector as any).walletConnectClient) {
@@ -68,12 +63,21 @@ export class HederaWalletConnectService {
   }
 
   async connectWallet(): Promise<string> {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.dAppConnector) {
       await this.initialize();
     }
 
     if (!this.dAppConnector) {
       throw new Error('DApp connector not initialized');
+    }
+
+    // Ensure the internal WalletConnect client is ready; if not, try to re-init
+    if (!((this.dAppConnector as any).walletConnectClient)) {
+      console.warn('WalletConnect client not ready. Re-initializing...');
+      await this.dAppConnector.init();
+      if (!((this.dAppConnector as any).walletConnectClient)) {
+        throw new Error('WalletConnect client is not initialized');
+      }
     }
 
     // Implement retry logic with exponential backoff
@@ -95,8 +99,6 @@ export class HederaWalletConnectService {
         
         // If this is the last attempt, throw the error
         if (attempt === this.maxRetries - 1) {
-          // Ensure modal is closed on terminal failure
-          try { this.wcModal?.closeModal(); } catch {}
           throw this.createUserFriendlyError(error);
         }
 
@@ -114,24 +116,12 @@ export class HederaWalletConnectService {
     try {
       console.log('Opening WalletConnect modal...');
       
-      // Open WalletConnect modal and wait for connection
-      const session = await this.dAppConnector!.connect(
-        async (uri: string) => {
-          console.log('WalletConnect URI:', uri);
-          try {
-            await this.wcModal?.openModal({ uri });
-          } catch (e) {
-            console.warn('Failed to open WalletConnect modal:', e);
-          }
-        }
-      );
+      // Use the DAppConnector's built-in modal flow
+      const session = await this.dAppConnector!.openModal(undefined, true);
       
       if (!session) {
         throw new Error('No session returned from wallet connection');
       }
-
-      // Close the modal now that we have a session
-      try { await this.wcModal?.closeModal(); } catch {}
 
       // Extract wallet information from session
       const accounts = session.namespaces?.hedera?.accounts || [];
@@ -173,8 +163,6 @@ export class HederaWalletConnectService {
       return accountId;
     } catch (error) {
       console.error('Connection attempt failed:', error);
-      // Ensure modal is closed on error
-      try { await this.wcModal?.closeModal(); } catch {}
       throw error;
     }
   }
@@ -198,6 +186,10 @@ export class HederaWalletConnectService {
       return new Error('Connection was cancelled. Please try again and approve the connection in your wallet.');
     }
     
+    if (errorMessage.includes('WalletConnect is not initialized')) {
+      return new Error('Wallet service failed to initialize. Please refresh the page and try again.');
+    }
+
     return new Error(`Wallet connection failed: ${errorMessage}`);
   }
 
