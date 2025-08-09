@@ -64,20 +64,55 @@ export class HederaWalletConnectService {
     try {
       console.log('Opening WalletConnect modal...');
       
-      // Create mock wallet for development
-      const mockWallet: ConnectedWallet = {
-        id: '0.0.123456',
-        address: '0.0.123456',
-        type: 'hashpack',
-        name: 'HashPack Wallet',
-        network: 'testnet',
+      // Open WalletConnect modal and wait for connection
+      const session = await this.dAppConnector.connect(
+        (uri: string) => {
+          console.log('WalletConnect URI:', uri);
+        }
+      );
+      
+      if (!session) {
+        throw new Error('No session returned from wallet connection');
+      }
+
+      // Extract wallet information from session
+      const accounts = session.namespaces?.hedera?.accounts || [];
+      if (accounts.length === 0) {
+        throw new Error('No accounts found in wallet session');
+      }
+
+      // Parse the first account (format: "hedera:testnet:0.0.123456")
+      const accountString = accounts[0];
+      const accountParts = accountString.split(':');
+      const accountId = accountParts[accountParts.length - 1];
+      const network = accountParts[1] || 'testnet';
+
+      // Determine wallet type from session metadata
+      const walletName = session.peer?.metadata?.name || 'Unknown Wallet';
+      let walletType: 'hashpack' | 'kabila' | 'blade' | 'other' = 'other';
+      
+      if (walletName.toLowerCase().includes('hashpack')) {
+        walletType = 'hashpack';
+      } else if (walletName.toLowerCase().includes('kabila')) {
+        walletType = 'kabila';
+      } else if (walletName.toLowerCase().includes('blade')) {
+        walletType = 'blade';
+      }
+
+      const connectedWallet: ConnectedWallet = {
+        id: accountId,
+        address: accountId,
+        type: walletType,
+        name: walletName,
+        network: network,
         isConnected: true,
       };
 
-      this.currentWallet = mockWallet;
-      this.notifyConnectionCallbacks(mockWallet);
+      this.currentWallet = connectedWallet;
+      this.notifyConnectionCallbacks(connectedWallet);
       
-      return mockWallet.id;
+      console.log('Wallet connected successfully:', connectedWallet);
+      return accountId;
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
@@ -85,6 +120,13 @@ export class HederaWalletConnectService {
   }
 
   async disconnectWallet(): Promise<void> {
+    if (this.dAppConnector && this.currentWallet) {
+      try {
+        await this.dAppConnector.disconnect('topic');
+      } catch (error) {
+        console.error('Error disconnecting wallet:', error);
+      }
+    }
     this.currentWallet = null;
     this.notifyConnectionCallbacks(null);
   }
