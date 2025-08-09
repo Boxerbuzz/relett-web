@@ -1,4 +1,4 @@
-# PropertyToken - Real Estate Tokenization Platform
+# Relett - Real Estate Tokenization Platform
 
 A comprehensive blockchain-based platform for tokenizing real estate properties on the Hedera network, enabling fractional ownership and transparent property investment management.
 
