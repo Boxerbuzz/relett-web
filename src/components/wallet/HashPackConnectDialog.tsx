@@ -15,19 +15,13 @@ import {
   CheckCircleIcon,
   SpinnerIcon,
 } from "@phosphor-icons/react";
-import type UniversalProvider from "@walletconnect/universal-provider";
-import {
-  HederaProvider,
-  HederaAdapter,
-  HederaChainDefinition,
-  hederaNamespace,
-} from "@hashgraph/hedera-wallet-connect";
-import { createAppKit } from "@reown/appkit";
+import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
+import { LedgerId } from '@hashgraph/sdk';
 
 const metadata = {
-  name: "Relett",
-  description: "Hedera dAppConnector Example",
-  url: "http://localhost:8080", // origin must match your domain & subdomain
+  name: "PropertyToken",
+  description: "Property Tokenization Platform",
+  url: window.location.origin,
   icons: ["https://avatars.githubusercontent.com/u/31002956"],
 };
 
@@ -42,6 +36,7 @@ export function HashPackConnectDialog({
 }: HashPackConnectDialogProps) {
   const { toast } = useToast();
   const [isInitialized, setIsInitialized] = React.useState(false);
+  const [dAppConnector, setDAppConnector] = React.useState<DAppConnector | null>(null);
   const [step, setStep] = useState<"connect" | "pairing" | "success">(
     "connect"
   );
@@ -50,65 +45,73 @@ export function HashPackConnectDialog({
     import.meta.env.VITE_HEDERA_PROJECT_ID ||
     "b0ec34a6fe4eafec65a7dfbf17cc147a";
 
-  const hederaEVMAdapter = new HederaAdapter({
-    projectId,
-    networks: [
-      HederaChainDefinition.EVM.Mainnet,
-      HederaChainDefinition.EVM.Testnet,
-    ],
-    namespace: "eip155",
-  });
-
-  const hederaNativeAdapter = new HederaAdapter({
-    projectId,
-    networks: [
-      HederaChainDefinition.Native.Mainnet,
-      HederaChainDefinition.Native.Testnet,
-    ],
-    namespace: hederaNamespace, // 'hedera' as CaipNamespace,
-  });
-
   const handleConnect = async () => {
-    if (!isInitialized) {
-      console.warn("WalletConnect not initialized yet");
+    if (!dAppConnector) {
+      console.warn("DAppConnector not initialized yet");
       return;
+    }
+    
+    try {
+      setStep("pairing");
+      
+      const session = await dAppConnector.connect((uri: string) => {
+        console.log('WalletConnect URI:', uri);
+      });
+      
+      if (session) {
+        setStep("success");
+        toast({
+          title: "Success",
+          description: "Wallet connected successfully!",
+        });
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Connection failed:", error);
+      setStep("connect");
+      toast({
+        title: "Connection Failed",
+        description: error instanceof Error ? error.message : "Failed to connect wallet",
+        variant: "destructive",
+      });
     }
   };
 
-  const openHashPack = () => {};
+  const openHashPack = () => {
+    // Try to open HashPack extension or app
+    const hashpackUrl = "https://www.hashpack.app/";
+    window.open(hashpackUrl, "_blank");
+  };
 
-  // Listen for successful connection
+  // Initialize DAppConnector
   React.useEffect(() => {
     const init = async () => {
       try {
-        const universalProvider = (await HederaProvider.init({
-          projectId,
+        const connector = new DAppConnector(
           metadata,
-        })) as unknown as UniversalProvider;
-
-        createAppKit({
-          adapters: [hederaEVMAdapter, hederaNativeAdapter],
-          //@ts-expect-error expected type error
-          universalProvider,
+          LedgerId.TESTNET,
           projectId,
-          metadata,
-          networks: [
-            // EVM
-            HederaChainDefinition.EVM.Mainnet,
-            HederaChainDefinition.EVM.Testnet,
-            // Native
-            HederaChainDefinition.Native.Mainnet,
-            HederaChainDefinition.Native.Testnet,
-          ],
-        });
+          Object.values(HederaJsonRpcMethod),
+          [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged]
+        );
 
+        await connector.init();
+        setDAppConnector(connector);
         setIsInitialized(true);
+        console.log("DAppConnector initialized successfully");
       } catch (error) {
-        console.error("Failed to initialize dAppConnector:", error);
+        console.error("Failed to initialize DAppConnector:", error);
+        toast({
+          title: "Initialization Failed",
+          description: "Failed to initialize wallet connector",
+          variant: "destructive",
+        });
       }
     };
     init();
-  }, []);
+  }, [projectId]);
 
   const handleClose = () => {
     onClose();
