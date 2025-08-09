@@ -9,12 +9,14 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 ## ✨ Key Features
 
 ### 🔐 User Authentication & Verification
+
 - **Multi-role Authentication**: Landowners, Investors, Agents, Verifiers, and Admins
 - **KYC/Identity Verification**: Secure identity validation process
 - **Document Verification**: Upload and verification of legal documents
 - **Role-based Access Control**: Different permissions for different user types
 
 ### 🏡 Property Management
+
 - **Property Registration**: Register properties with detailed information
 - **Document Management**: Upload property documents, title deeds, legal papers
 - **Property Verification**: Multi-step verification process by certified verifiers
@@ -22,6 +24,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **Property Analytics**: AI-powered property valuation and market analysis
 
 ### 🪙 Tokenization Process
+
 - **Token Creation**: Convert properties into fungible tokens on Hedera network
 - **Approval Workflow**: Admin approval system for tokenization requests
 - **Legal Framework**: Compliant tokenization with proper legal structure
@@ -29,6 +32,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **Token Trading**: Secondary market for token exchanges
 
 ### 💰 Investment Features
+
 - **Token Purchase**: Buy fractional ownership through tokens
 - **Portfolio Management**: Track investments and returns
 - **Investment Analytics**: Detailed performance metrics and reports
@@ -36,6 +40,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **Revenue Sharing**: Automatic distribution of rental income and profits
 
 ### 🔗 Blockchain Integration
+
 - **Hedera Network**: Built on Hedera's enterprise-grade blockchain
 - **HCS Topics**: Audit trails using Hedera Consensus Service
 - **Token Standards**: HTS (Hedera Token Service) implementation
@@ -43,6 +48,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **Smart Contracts**: Solidity contracts for property operations
 
 ### 🏪 Marketplace
+
 - **Token Trading**: Buy and sell property tokens
 - **Listing Management**: Create and manage token listings
 - **Escrow Services**: Secure transaction handling
@@ -50,6 +56,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **Price Discovery**: Market-driven token pricing
 
 ### 📊 Analytics & Reporting
+
 - **Investment Tracking**: Real-time portfolio performance
 - **Property Analytics**: AI-powered insights and valuations
 - **Financial Reports**: Comprehensive investment reports
@@ -57,6 +64,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **ROI Calculations**: Return on investment tracking
 
 ### 💬 Communication
+
 - **Investment Group Chats**: Token holders can communicate
 - **Notifications**: Real-time updates on investments
 - **AI Assistant**: PropertyBot for platform guidance
@@ -74,12 +82,14 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 ### Environment Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    cd propertytoken
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
@@ -91,7 +101,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 
 4. **Configure Hedera Credentials**:
    Set up the following secrets in Supabase (Project Settings → Edge Functions → Secrets):
-   
+
    ```
    HEDERA_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
    HEDERA_PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE
@@ -104,6 +114,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 
 5. **Optional API Keys**:
    Configure these secrets for enhanced functionality:
+
    ```
    OPENAI_API_KEY=your_openai_key        # For AI features
    PAYSTACK_SECRET_KEY=your_paystack_key # For payments
@@ -115,16 +126,19 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 ### Development
 
 1. **Start the development server**:
+
    ```bash
    npm run dev
    ```
 
 2. **Build for production**:
+
    ```bash
    npm run build
    ```
 
 3. **Preview production build**:
+
    ```bash
    npm run preview
    ```
@@ -132,12 +146,14 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 ## 📋 Complete Tokenization Flow
 
 ### Phase 1: Property Registration
+
 1. **Landowner Registration**: Create account and complete KYC verification
 2. **Property Submission**: Upload property details, documents, and images
 3. **Document Verification**: Verifiers review and approve property documents
 4. **Property Approval**: Admin approves verified properties
 
 ### Phase 2: Tokenization Request
+
 1. **Tokenization Form**: Owner fills tokenization parameters:
    - Token name and symbol
    - Total value and supply
@@ -145,18 +161,20 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
    - Expected ROI percentage
    - Revenue distribution frequency
    - Lock-up period
-   
+
 2. **Legal Framework Setup**: Configure legal structure and compliance
 3. **Submission**: Request submitted with "pending_approval" status
 4. **Admin Review**: Platform administrators review tokenization request
 
 ### Phase 3: Token Creation (Post-Approval)
+
 1. **Hedera Token Creation**: HTS fungible token created on Hedera network
 2. **HCS Topic Setup**: Audit trail topic created for property
 3. **Investment Group**: Automatic investment group creation
 4. **Sales Window**: Token becomes available for purchase
 
 ### Phase 4: Investment Process
+
 1. **Investor Onboarding**: Investors complete KYC and wallet setup
 2. **Token Association**: Hedera account associated with property token
 3. **Token Purchase**: Investors buy tokens with fiat or crypto
@@ -164,6 +182,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 5. **Portfolio Tracking**: Investment performance tracking begins
 
 ### Phase 5: Property Management
+
 1. **Governance Voting**: Token holders vote on property decisions
 2. **Revenue Distribution**: Rental income and profits distributed
 3. **Token Trading**: Secondary market trading enabled
@@ -172,6 +191,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 ## 🏗️ Technical Architecture
 
 ### Frontend Stack
+
 - **React 18** with TypeScript
 - **Tailwind CSS** for styling
 - **Radix UI** components
@@ -179,19 +199,23 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 - **React Router** for navigation
 
 ### Backend Infrastructure
+
 - **Supabase** for database and authentication
 - **Edge Functions** for serverless logic
 - **PostgreSQL** with Row Level Security
 - **Real-time subscriptions**
 
 ### Blockchain Integration
+
 - **Hedera SDK** for network operations
 - **WalletConnect** for wallet integration
 - **HTS** for token operations
 - **HCS** for audit trails
 
 ### Smart Contracts
+
 Located in `/contracts` directory:
+
 - **PropertyRegistry.sol**: Central property registry
 - **PropertyToken.sol**: Individual property tokens
 - **PropertyMarketplace.sol**: Trading marketplace
@@ -200,7 +224,9 @@ Located in `/contracts` directory:
 ## 🔧 Configuration Guide
 
 ### Database Setup
+
 The platform uses Supabase with pre-configured tables and functions. Key tables include:
+
 - `properties`: Property information
 - `tokenized_properties`: Tokenization records
 - `token_holdings`: Investor holdings
@@ -208,11 +234,13 @@ The platform uses Supabase with pre-configured tables and functions. Key tables 
 - `governance_proposals`: Voting systems
 
 ### Hedera Configuration
+
 1. **Network Selection**: Configure for testnet or mainnet in `src/lib/config.ts`
 2. **Account Setup**: Treasury account for token operations
 3. **Contract Deployment**: Deploy smart contracts using provided scripts
 
 ### Payment Integration
+
 - **Paystack**: For fiat payments (Nigerian market)
 - **Cryptocurrency**: Direct token payments
 - **Escrow**: Secure transaction handling
@@ -220,6 +248,7 @@ The platform uses Supabase with pre-configured tables and functions. Key tables 
 ## 📚 User Guides
 
 ### For Landowners
+
 1. Complete identity verification
 2. Register properties with all required documents
 3. Wait for verification approval
@@ -227,6 +256,7 @@ The platform uses Supabase with pre-configured tables and functions. Key tables 
 5. Monitor token sales and manage property
 
 ### For Investors
+
 1. Complete KYC verification
 2. Connect Hedera wallet (HashPack, Blade, etc.)
 3. Browse available tokenized properties
@@ -234,12 +264,14 @@ The platform uses Supabase with pre-configured tables and functions. Key tables 
 5. Track portfolio performance and receive distributions
 
 ### For Verifiers
+
 1. Review property documents and legal papers
 2. Conduct verification checks
 3. Approve or reject properties with detailed reasoning
 4. Monitor verification queue and assignments
 
 ### For Administrators
+
 1. Manage user roles and permissions
 2. Review and approve tokenization requests
 3. Monitor platform analytics and performance
@@ -257,17 +289,20 @@ The platform uses Supabase with pre-configured tables and functions. Key tables 
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 npm run test
 ```
 
 ### Smart Contract Testing
+
 ```bash
 cd contracts
 npm test
 ```
 
 ### E2E Testing
+
 ```bash
 npm run test:e2e
 ```
@@ -275,12 +310,15 @@ npm run test:e2e
 ## 📦 Deployment
 
 ### Supabase Deployment
+
 Edge functions deploy automatically with code changes. Manual deployment:
+
 ```bash
 supabase functions deploy
 ```
 
 ### Contract Deployment
+
 ```bash
 cd contracts
 npm run deploy          # Testnet
@@ -288,7 +326,9 @@ npm run deploy:mainnet  # Mainnet
 ```
 
 ### Frontend Deployment
+
 The app can be deployed to any static hosting service:
+
 - Vercel
 - Netlify
 - AWS S3 + CloudFront
@@ -314,7 +354,9 @@ The app can be deployed to any static hosting service:
    - Ensure proper currency conversion
 
 ### Debug Mode
+
 Enable debug logging:
+
 ```bash
 VITE_DEBUG=true npm run dev
 ```
@@ -329,6 +371,7 @@ VITE_DEBUG=true npm run dev
 ## 📄 Legal Compliance
 
 The platform includes:
+
 - Terms of Service integration
 - Privacy Policy compliance
 - KYC/AML procedures
@@ -344,6 +387,7 @@ The platform includes:
 ---
 
 **⚠️ Important Notes:**
+
 - This is a complex financial platform involving real estate and cryptocurrency
 - Ensure compliance with local regulations before deployment
 - Conduct thorough security audits before handling real funds
