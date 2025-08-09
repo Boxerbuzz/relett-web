@@ -16,6 +16,21 @@ import {
   CheckCircleIcon,
   SpinnerIcon,
 } from "@phosphor-icons/react";
+import type UniversalProvider from "@walletconnect/universal-provider";
+import {
+  HederaProvider,
+  HederaAdapter,
+  HederaChainDefinition,
+  hederaNamespace,
+} from "@hashgraph/hedera-wallet-connect";
+import { createAppKit } from "@reown/appkit";
+
+const metadata = {
+  name: "Relett",
+  description: "Hedera dAppConnector Example",
+  url: "http://localhost:8080", // origin must match your domain & subdomain
+  icons: ["https://avatars.githubusercontent.com/u/31002956"],
+};
 
 interface HashPackConnectDialogProps {
   isOpen: boolean;
@@ -27,17 +42,75 @@ export function HashPackConnectDialog({
   onClose,
 }: HashPackConnectDialogProps) {
   const { toast } = useToast();
+  const [isInitialized, setIsInitialized] = React.useState(false);
   const [step, setStep] = useState<"connect" | "pairing" | "success">(
     "connect"
   );
 
-  const handleConnect = async () => {};
+  const projectId =
+    import.meta.env.VITE_HEDERA_PROJECT_ID ||
+    "b0ec34a6fe4eafec65a7dfbf17cc147a";
+
+  const hederaEVMAdapter = new HederaAdapter({
+    projectId,
+    networks: [
+      HederaChainDefinition.EVM.Mainnet,
+      HederaChainDefinition.EVM.Testnet,
+    ],
+    namespace: "eip155",
+  });
+
+  const hederaNativeAdapter = new HederaAdapter({
+    projectId,
+    networks: [
+      HederaChainDefinition.Native.Mainnet,
+      HederaChainDefinition.Native.Testnet,
+    ],
+    namespace: hederaNamespace, // 'hedera' as CaipNamespace,
+  });
+
+  const handleConnect = async () => {
+    if (!isInitialized) {
+      console.warn("WalletConnect not initialized yet");
+      return;
+    }
+  };
 
   const openHashPack = () => {};
 
   // Listen for successful connection
   const { wallet } = useHashPack();
-  React.useEffect(() => {}, [wallet, step, onClose, toast]);
+  React.useEffect(() => {
+    const init = async () => {
+      try {
+        const universalProvider = (await HederaProvider.init({
+          projectId,
+          metadata,
+        })) as unknown as UniversalProvider;
+
+        createAppKit({
+          adapters: [hederaEVMAdapter, hederaNativeAdapter],
+          //@ts-expect-error expected type error
+          universalProvider,
+          projectId,
+          metadata,
+          networks: [
+            // EVM
+            HederaChainDefinition.EVM.Mainnet,
+            HederaChainDefinition.EVM.Testnet,
+            // Native
+            HederaChainDefinition.Native.Mainnet,
+            HederaChainDefinition.Native.Testnet,
+          ],
+        });
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("Failed to initialize dAppConnector:", error);
+      }
+    };
+    init();
+  }, []);
 
   const handleClose = () => {
     onClose();
