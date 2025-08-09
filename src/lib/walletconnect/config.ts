@@ -3,7 +3,7 @@
 import { WalletConnectOptions } from './HederaWalletConnectService';
 
 // WalletConnect Project ID - Get this from https://cloud.walletconnect.com
-const PROJECT_ID = 'your-walletconnect-project-id-here';
+const PROJECT_ID = 'b0ec34a6fe4eafec65a7dfbf17cc147a';
 
 export const walletConnectConfig: WalletConnectOptions = {
   projectId: PROJECT_ID,
@@ -16,5 +16,5 @@ export const walletConnectConfig: WalletConnectOptions = {
 };
 
 export const isWalletConnectConfigured = (): boolean => {
-  return PROJECT_ID !== 'your-walletconnect-project-id-here' && (PROJECT_ID as string).length > 0;
+  return PROJECT_ID.length > 0 && !PROJECT_ID.includes('your-walletconnect-project-id-here');
 };
