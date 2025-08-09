@@ -28,6 +28,9 @@ export class HederaWalletConnectService {
   private isInitialized = false;
   private connectionCallbacks: Array<(wallet: ConnectedWallet | null) => void> = [];
   private currentWallet: ConnectedWallet | null = null;
+  private connectionTimeout = 30000; // 30 seconds
+  private maxRetries = 3;
+  private retryDelay = 1000; // Start with 1 second
 
   constructor(private options: WalletConnectOptions) {}
 
@@ -61,11 +64,44 @@ export class HederaWalletConnectService {
       throw new Error('DApp connector not initialized');
     }
 
+    // Implement retry logic with exponential backoff
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      try {
+        console.log(`Connecting wallet attempt ${attempt + 1}/${this.maxRetries}...`);
+        
+        // Create a promise that will timeout
+        const connectionPromise = this.attemptConnection();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout')), this.connectionTimeout)
+        );
+
+        // Race between connection and timeout
+        const result = await Promise.race([connectionPromise, timeoutPromise]);
+        return result as string;
+      } catch (error) {
+        console.error(`Connection attempt ${attempt + 1} failed:`, error);
+        
+        // If this is the last attempt, throw the error
+        if (attempt === this.maxRetries - 1) {
+          throw this.createUserFriendlyError(error);
+        }
+
+        // Wait before retrying with exponential backoff
+        const delay = this.retryDelay * Math.pow(2, attempt);
+        console.log(`Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    throw new Error('Failed to connect after maximum retries');
+  }
+
+  private async attemptConnection(): Promise<string> {
     try {
       console.log('Opening WalletConnect modal...');
       
       // Open WalletConnect modal and wait for connection
-      const session = await this.dAppConnector.connect(
+      const session = await this.dAppConnector!.connect(
         (uri: string) => {
           console.log('WalletConnect URI:', uri);
         }
@@ -114,9 +150,31 @@ export class HederaWalletConnectService {
       console.log('Wallet connected successfully:', connectedWallet);
       return accountId;
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error('Connection attempt failed:', error);
       throw error;
     }
+  }
+
+  private createUserFriendlyError(error: any): Error {
+    const errorMessage = error?.message || 'Unknown error';
+    
+    if (errorMessage.includes('Subscribing to') && errorMessage.includes('failed')) {
+      return new Error('WalletConnect service is temporarily unavailable. Please check your internet connection and try again.');
+    }
+    
+    if (errorMessage.includes('WebSocket')) {
+      return new Error('Connection to wallet service failed. Please check your internet connection and try again.');
+    }
+    
+    if (errorMessage.includes('Connection timeout')) {
+      return new Error('Connection timed out. Please ensure your wallet app is installed and try again.');
+    }
+    
+    if (errorMessage.includes('User rejected')) {
+      return new Error('Connection was cancelled. Please try again and approve the connection in your wallet.');
+    }
+    
+    return new Error(`Wallet connection failed: ${errorMessage}`);
   }
 
   async disconnectWallet(): Promise<void> {
