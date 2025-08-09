@@ -62,11 +62,16 @@ export function WalletConnectButton() {
         description: `Connected to ${walletType} wallet`,
       });
     } catch (error: any) {
+      console.error('Wallet connection error:', error);
+      const errorMessage = error.message || "Failed to connect wallet. Please try again.";
+      
       toast({
-        title: "Wallet connection failed",
-        description: error.message || "Failed to connect wallet. Please try again.",
+        title: "Connection Failed",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Don't close dialog on error so user can retry
     } finally {
       setLoading(false);
     }
@@ -138,14 +143,23 @@ export function WalletConnectButton() {
             variant="outline"
             className="w-full justify-start h-auto p-4"
             onClick={() => handleWalletConnect('walletconnect')}
-            disabled={loading}
+            disabled={loading || isConnecting}
           >
             <div className="flex items-center gap-3 w-full">
-              <span className="text-2xl">🔗</span>
+              {loading || isConnecting ? (
+                <SpinnerIcon className="text-2xl animate-spin" />
+              ) : (
+                <span className="text-2xl">🔗</span>
+              )}
               <div className="flex-1 text-left">
-                <div className="font-medium">WalletConnect</div>
+                <div className="font-medium">
+                  {loading || isConnecting ? 'Connecting...' : 'WalletConnect'}
+                </div>
                 <div className="text-sm text-muted-foreground">
-                  Connect with any compatible Hedera wallet
+                  {loading || isConnecting 
+                    ? 'Please wait while we connect to your wallet'
+                    : 'Connect with any compatible Hedera wallet'
+                  }
                 </div>
               </div>
             </div>
