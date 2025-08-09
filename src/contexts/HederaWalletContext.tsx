@@ -8,8 +8,14 @@ import {
   ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { HederaWalletConnectService, ConnectedWallet } from "@/lib/walletconnect/HederaWalletConnectService";
-import { walletConnectConfig, isWalletConnectConfigured } from "@/lib/walletconnect/config";
+import {
+  HederaWalletConnectService,
+  ConnectedWallet,
+} from "@/lib/walletconnect/HederaWalletConnectService";
+import {
+  walletConnectConfig,
+  isWalletConnectConfigured,
+} from "@/lib/walletconnect/config";
 
 export interface HederaWallet extends ConnectedWallet {}
 
@@ -31,7 +37,9 @@ const HederaWalletContext = createContext<HederaWalletContextType | undefined>(
 export function useHederaWallet() {
   const context = useContext(HederaWalletContext);
   if (context === undefined) {
-    throw new Error("useHederaWallet must be used within a HederaWalletProvider");
+    throw new Error(
+      "useHederaWallet must be used within a HederaWalletProvider"
+    );
   }
   return context;
 }
@@ -44,16 +52,23 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
   const [wallet, setWallet] = useState<HederaWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [accountBalances, setAccountBalances] = useState<Map<string, string>>(new Map());
-  const [tokenBalances, setTokenBalances] = useState<Map<string, Map<string, string>>>(new Map());
-  const [walletConnectService, setWalletConnectService] = useState<HederaWalletConnectService | null>(null);
+  const [accountBalances, setAccountBalances] = useState<Map<string, string>>(
+    new Map()
+  );
+  const [tokenBalances, setTokenBalances] = useState<
+    Map<string, Map<string, string>>
+  >(new Map());
+  const [walletConnectService, setWalletConnectService] =
+    useState<HederaWalletConnectService | null>(null);
 
   // Initialize WalletConnect service
   useEffect(() => {
     const initializeWalletConnect = async () => {
       try {
         if (!isWalletConnectConfigured()) {
-          console.warn('WalletConnect not configured. Please set up PROJECT_ID in config.ts');
+          console.warn(
+            "WalletConnect not configured. Please set up PROJECT_ID in config.ts"
+          );
           setIsAvailable(false);
           return;
         }
@@ -76,7 +91,7 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
 
         return () => unsubscribe();
       } catch (error) {
-        console.error('Failed to initialize WalletConnect:', error);
+        console.error("Failed to initialize WalletConnect:", error);
         setIsAvailable(false);
       }
     };
@@ -86,13 +101,13 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
 
   const connectWallet = async (walletType?: string): Promise<void> => {
     if (!walletConnectService) {
-      throw new Error('WalletConnect service not initialized');
+      throw new Error("WalletConnect service not initialized");
     }
 
     try {
       setIsConnecting(true);
       console.log("Connecting to Hedera wallet via WalletConnect...");
-      
+
       const accountId = await walletConnectService.connectWallet();
       console.log("Wallet connected successfully with account:", accountId);
     } catch (error) {
@@ -128,36 +143,47 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
 
       if (balanceData?.success && balanceData.data?.hbarBalance !== undefined) {
         const hbarBalance = `${balanceData.data.hbarBalance} HBAR`;
-        setAccountBalances(prev => new Map(prev.set(wallet.id, hbarBalance)));
-        
-        setWallet(prev => prev ? {
-          ...prev,
-          balance: hbarBalance,
-        } : null);
+        setAccountBalances((prev) => new Map(prev.set(wallet.id, hbarBalance)));
+
+        setWallet((prev) =>
+          prev
+            ? {
+                ...prev,
+                balance: hbarBalance,
+              }
+            : null
+        );
       }
 
       // Fetch token balances for all tokenized properties user has invested in
       const { data: holdings } = await supabase
-        .from('token_holdings')
-        .select(`
+        .from("token_holdings")
+        .select(
+          `
           tokenized_property_id,
           tokens_owned,
           tokenized_properties!inner(
             hedera_tokens!inner(hedera_token_id, token_symbol)
           )
-        `)
-        .eq('holder_id', wallet.id);
+        `
+        )
+        .eq("holder_id", wallet.id);
 
       if (holdings) {
         const newTokenBalances = new Map<string, Map<string, string>>();
         const accountTokens = new Map<string, string>();
 
         for (const holding of holdings) {
-          const tokenId = holding.tokenized_properties?.hedera_tokens?.[0]?.hedera_token_id;
-          const tokenSymbol = holding.tokenized_properties?.hedera_tokens?.[0]?.token_symbol;
-          
+          const tokenId =
+            holding.tokenized_properties?.hedera_tokens?.[0]?.hedera_token_id;
+          const tokenSymbol =
+            holding.tokenized_properties?.hedera_tokens?.[0]?.token_symbol;
+
           if (tokenId && tokenSymbol) {
-            accountTokens.set(tokenId, `${holding.tokens_owned} ${tokenSymbol}`);
+            accountTokens.set(
+              tokenId,
+              `${holding.tokens_owned} ${tokenSymbol}`
+            );
           }
         }
 

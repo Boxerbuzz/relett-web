@@ -1,12 +1,17 @@
-'use client';
+"use client";
 
-import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
-import { LedgerId } from '@hashgraph/sdk';
+import {
+  DAppConnector,
+  HederaJsonRpcMethod,
+  HederaSessionEvent,
+  HederaChainId,
+} from "@hashgraph/hedera-wallet-connect";
+import { LedgerId } from "@hashgraph/sdk";
 
 export interface ConnectedWallet {
   id: string;
   address: string;
-  type: 'hashpack' | 'kabila' | 'blade' | 'other';
+  type: "hashpack" | "kabila" | "blade" | "other";
   name: string;
   network: string;
   balance?: string;
@@ -26,7 +31,8 @@ export interface WalletConnectOptions {
 export class HederaWalletConnectService {
   private dAppConnector: DAppConnector | null = null;
   private isInitialized = false;
-  private connectionCallbacks: Array<(wallet: ConnectedWallet | null) => void> = [];
+  private connectionCallbacks: Array<(wallet: ConnectedWallet | null) => void> =
+    [];
   private currentWallet: ConnectedWallet | null = null;
 
   constructor(private options: WalletConnectOptions) {}
@@ -45,9 +51,9 @@ export class HederaWalletConnectService {
 
       await this.dAppConnector.init();
       this.isInitialized = true;
-      console.log('Hedera WalletConnect initialized successfully');
+      console.log("Hedera WalletConnect initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize Hedera WalletConnect:', error);
+      console.error("Failed to initialize Hedera WalletConnect:", error);
       throw error;
     }
   }
@@ -58,28 +64,28 @@ export class HederaWalletConnectService {
     }
 
     if (!this.dAppConnector) {
-      throw new Error('DApp connector not initialized');
+      throw new Error("DApp connector not initialized");
     }
 
     try {
-      console.log('Opening WalletConnect modal...');
-      
+      console.log("Opening WalletConnect modal...");
+
       // Create mock wallet for development
       const mockWallet: ConnectedWallet = {
-        id: '0.0.123456',
-        address: '0.0.123456',
-        type: 'hashpack',
-        name: 'HashPack Wallet',
-        network: 'testnet',
+        id: "0.0.123456",
+        address: "0.0.123456",
+        type: "hashpack",
+        name: "HashPack Wallet",
+        network: "testnet",
         isConnected: true,
       };
 
       this.currentWallet = mockWallet;
       this.notifyConnectionCallbacks(mockWallet);
-      
+
       return mockWallet.id;
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error("Failed to connect wallet:", error);
       throw error;
     }
   }
@@ -89,10 +95,12 @@ export class HederaWalletConnectService {
     this.notifyConnectionCallbacks(null);
   }
 
-  onConnectionChanged(callback: (wallet: ConnectedWallet | null) => void): () => void {
+  onConnectionChanged(
+    callback: (wallet: ConnectedWallet | null) => void
+  ): () => void {
     this.connectionCallbacks.push(callback);
     callback(this.currentWallet);
-    
+
     return () => {
       const index = this.connectionCallbacks.indexOf(callback);
       if (index > -1) {
@@ -102,7 +110,7 @@ export class HederaWalletConnectService {
   }
 
   private notifyConnectionCallbacks(wallet: ConnectedWallet | null): void {
-    this.connectionCallbacks.forEach(callback => callback(wallet));
+    this.connectionCallbacks.forEach((callback) => callback(wallet));
   }
 
   getCurrentWallet(): ConnectedWallet | null {
