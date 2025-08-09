@@ -2,6 +2,7 @@
 
 import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
+import { WalletConnectModal } from '@walletconnect/modal';
 
 export interface ConnectedWallet {
   id: string;
@@ -31,6 +32,7 @@ export class HederaWalletConnectService {
   private connectionTimeout = 30000; // 30 seconds
   private maxRetries = 3;
   private retryDelay = 1000; // Start with 1 second
+  private wcModal: WalletConnectModal | null = null;
 
   constructor(private options: WalletConnectOptions) {}
 
@@ -47,6 +49,10 @@ export class HederaWalletConnectService {
       );
 
       await this.dAppConnector.init();
+
+      // Initialize WalletConnect Modal for QR code presentation
+      this.wcModal = new WalletConnectModal({ projectId: this.options.projectId });
+
       this.isInitialized = true;
       console.log('Hedera WalletConnect initialized successfully');
     } catch (error) {
@@ -83,6 +89,8 @@ export class HederaWalletConnectService {
         
         // If this is the last attempt, throw the error
         if (attempt === this.maxRetries - 1) {
+          // Ensure modal is closed on terminal failure
+          try { this.wcModal?.closeModal(); } catch {}
           throw this.createUserFriendlyError(error);
         }
 
@@ -102,14 +110,22 @@ export class HederaWalletConnectService {
       
       // Open WalletConnect modal and wait for connection
       const session = await this.dAppConnector!.connect(
-        (uri: string) => {
+        async (uri: string) => {
           console.log('WalletConnect URI:', uri);
+          try {
+            await this.wcModal?.openModal({ uri });
+          } catch (e) {
+            console.warn('Failed to open WalletConnect modal:', e);
+          }
         }
       );
       
       if (!session) {
         throw new Error('No session returned from wallet connection');
       }
+
+      // Close the modal now that we have a session
+      try { await this.wcModal?.closeModal(); } catch {}
 
       // Extract wallet information from session
       const accounts = session.namespaces?.hedera?.accounts || [];
@@ -151,6 +167,8 @@ export class HederaWalletConnectService {
       return accountId;
     } catch (error) {
       console.error('Connection attempt failed:', error);
+      // Ensure modal is closed on error
+      try { await this.wcModal?.closeModal(); } catch {}
       throw error;
     }
   }

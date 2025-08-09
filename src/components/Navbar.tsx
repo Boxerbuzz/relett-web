@@ -36,6 +36,7 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
   const { profile } = useUserProfile();
   const { wallet, disconnectWallet } = useHederaWallet();
   const [notificationCount] = useState(0);
+  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
 
   if (!user) return null;
 
@@ -159,9 +160,13 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
             <DropdownMenuSeparator />
 
             {/* Wallet Section */}
-            <div className="px-2 py-1">
-              <WalletConnectButton />
-            </div>
+            <DropdownMenuItem
+              onClick={() => setIsWalletDialogOpen(true)}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <WalletIcon size={16} />
+              Connect Wallet
+            </DropdownMenuItem>
 
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -173,6 +178,9 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Controlled Wallet Dialog rendered outside the dropdown to avoid unmount issues */}
+        <WalletConnectButton open={isWalletDialogOpen} onOpenChange={setIsWalletDialogOpen} />
       </div>
 
     </header>

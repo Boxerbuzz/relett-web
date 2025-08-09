@@ -47,9 +47,12 @@ const walletOptions: WalletOption[] = [
   },
 ];
 
-export function WalletConnectButton() {
+export function WalletConnectButton({ open, onOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void }) {
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenInternal, setIsOpenInternal] = useState(false);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const isOpen = isControlled ? (open as boolean) : isOpenInternal;
+  const setIsOpen = isControlled ? (onOpenChange as (open: boolean) => void) : setIsOpenInternal;
   const { connectWallet, disconnectWallet, wallet, isConnecting, isAvailable } = useHederaWallet();
 
   const handleWalletConnect = async (walletType: string) => {
@@ -112,25 +115,27 @@ export function WalletConnectButton() {
 
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={setIsOpen}>
-      <ResponsiveDialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-          disabled={!isAvailable}
-        >
-          {isConnecting ? (
-            <>
-              <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            <>
-              <WalletIcon className="mr-2 h-4 w-4" />
-              Connect Wallet
-            </>
-          )}
-        </Button>
-      </ResponsiveDialogTrigger>
+      {!isControlled && (
+        <ResponsiveDialogTrigger asChild>
+          <Button
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            disabled={!isAvailable}
+          >
+            {isConnecting ? (
+              <>
+                <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              <>
+                <WalletIcon className="mr-2 h-4 w-4" />
+                Connect Wallet
+              </>
+            )}
+          </Button>
+        </ResponsiveDialogTrigger>
+      )}
       <ResponsiveDialogContent className="sm:max-w-md">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Connect Your Hedera Wallet</ResponsiveDialogTitle>
