@@ -4,7 +4,7 @@ A comprehensive blockchain-based platform for tokenizing real estate properties 
 
 ## 🏠 Platform Overview
 
-PropertyToken revolutionizes real estate investment by enabling property owners to tokenize their assets and investors to purchase fractional ownership through blockchain technology. The platform integrates with Hedera's distributed ledger technology for secure, transparent, and efficient property tokenization.
+Relett revolutionizes real estate investment by enabling property owners to tokenize their assets and investors to purchase fractional ownership through blockchain technology. The platform integrates with Hedera's distributed ledger technology for secure, transparent, and efficient property tokenization.
 
 ## ✨ Key Features
 
