@@ -23,6 +23,154 @@ Relett revolutionizes real estate investment by enabling property owners to toke
 - **Google Maps Integration**: Visual property location mapping
 - **Property Analytics**: AI-powered property valuation and market analysis
 
+### 🏠 Property Operations & Activities
+
+#### **Rental Management**
+
+- **Rental Applications**: Complete rental application processing with document collection
+- **Active Rentals**: Manage ongoing rental agreements with payment tracking
+- **Rental Payments**: Automated payment scheduling with late fee calculations
+- **Tenant Relations**: Full tenant management and communication system
+- **Lease Management**: Comprehensive lease agreement handling and renewal tracking
+
+#### **Reservation System**
+
+- **Property Viewings**: Schedule property tours and viewings with agent coordination
+- **Booking Management**: Complete reservation workflow with agent assignment
+- **Payment Integration**: Secure payment processing for reservations and deposits
+- **Cancellation Handling**: Comprehensive cancellation policies and refund processing
+- **Guest Management**: Track guest information and special requirements
+
+#### **Inspection System**
+
+- **Physical/Virtual Inspections**: Support for both in-person and virtual property inspections
+- **Scheduling**: Flexible inspection scheduling with agent coordination
+- **Status Tracking**: Real-time inspection status updates and notifications
+- **Reporting**: Detailed inspection reports with blockchain verification
+- **Follow-up Actions**: Automated follow-up for inspection recommendations
+
+### 🔗 HCS (Hedera Consensus Service) Integration
+
+The platform uses HCS for immutable audit trails of all property activities:
+
+#### **HCS Topic Architecture**
+
+- **Per-Property Topics**: Each property gets its own HCS topic for audit trail
+- **Event Recording**: All property activities are recorded as immutable messages
+- **Consensus Timestamps**: Every event gets a Hedera consensus timestamp
+- **Sequence Numbers**: Ordered event tracking with sequence numbers
+
+#### **Tracked Activities**
+
+- **Property Registration**: Initial property verification and blockchain registration
+- **Tokenization Events**: Token creation, distribution, and trading activities
+- **Rental Operations**: Rental applications, payments, and management activities
+- **Reservation Events**: Booking creation, modifications, and cancellations
+- **Inspection Activities**: Inspection scheduling, completion, and reporting
+- **Financial Transactions**: All payment and revenue distribution events
+
+#### **HCS Implementation Details**
+
+```typescript
+// Example HCS event recording
+const eventRecord = {
+  eventType: "PROPERTY_REGISTRATION",
+  propertyId: property.id,
+  timestamp: new Date().toISOString(),
+  data: {
+    action: "property_verified_and_registered",
+    hederaFileId: hederaFileId,
+    metadata: propertyMetadata,
+  },
+};
+
+// Submit to HCS topic
+const messageSubmitTx = new TopicMessageSubmitTransaction()
+  .setTopicId(TopicId.fromString(hcsTopicId))
+  .setMessage(JSON.stringify(eventRecord))
+  .setMaxTransactionFee(new Hbar(2));
+```
+
+### 🏗️ Smart Contract Architecture
+
+The platform uses both Solidity contracts and Hedera native services:
+
+#### **Solidity Contracts (Ethereum-style)**
+
+- **PropertyRegistry.sol**: Central property registry with verification
+- **PropertyToken.sol**: ERC20 tokens for fractional ownership
+- **PropertyMarketplace.sol**: Trading platform for token exchanges
+- **RevenueDistributor.sol**: Automated profit distribution system
+
+#### **Hedera Native Services**
+
+- **HTS (Hedera Token Service)**: Native token creation and management
+- **HCS (Hedera Consensus Service)**: Immutable audit trails
+- **HFS (Hedera File Service)**: Document storage and verification
+- **Account Management**: Hedera account operations and associations
+
+#### **Hybrid Architecture**
+
+```typescript
+// Token creation using HTS
+const tokenCreateTx = new TokenCreateTransaction()
+  .setTokenName(tokenData.token_name)
+  .setTokenSymbol(tokenData.token_symbol)
+  .setDecimals(8)
+  .setInitialSupply(0)
+  .setTreasuryAccountId(treasuryAccountId);
+
+// Audit trail using HCS
+const messageSubmitTx = new TopicMessageSubmitTransaction()
+  .setTopicId(TopicId.fromString(hcsTopicId))
+  .setMessage(JSON.stringify(auditEvent));
+```
+
+### 📊 Activity Tracking & Analytics
+
+#### **Real-time Activity Monitoring**
+
+- **Agent Activity Calendar**: Comprehensive calendar view of all agent activities
+- **Inspection Tracking**: Real-time inspection status and scheduling
+- **Rental Management**: Active rental monitoring and payment tracking
+- **Reservation Analytics**: Booking patterns and occupancy rates
+
+#### **HCS Audit Trail Integration**
+
+- **Event Types**: 20+ different event types tracked on HCS
+- **Consensus Verification**: All events verified by Hedera consensus
+- **Immutable Records**: Tamper-proof audit trail for compliance
+- **Real-time Updates**: Live activity feeds with blockchain verification
+
+### 🔄 Complete Activity Flow
+
+#### **Rental Process**
+
+1. **Application**: Tenant submits rental application
+2. **HCS Recording**: Application event recorded on blockchain
+3. **Verification**: Agent reviews and approves application
+4. **Agreement**: Rental agreement created and signed
+5. **Payment Setup**: Automated payment scheduling
+6. **Ongoing Management**: Monthly payments and maintenance tracking
+
+#### **Reservation Process**
+
+1. **Booking Request**: User requests property reservation
+2. **HCS Event**: Reservation event recorded on HCS
+3. **Payment Processing**: Secure payment handling
+4. **Confirmation**: Booking confirmed with blockchain verification
+5. **Stay Management**: Check-in/check-out tracking
+6. **Post-Stay**: Review and feedback collection
+
+#### **Inspection Process**
+
+1. **Request**: User requests property inspection
+2. **HCS Recording**: Inspection request recorded on blockchain
+3. **Scheduling**: Agent schedules inspection
+4. **Conducting**: Physical or virtual inspection
+5. **Reporting**: Inspection report with blockchain verification
+6. **Follow-up**: Action items and recommendations
+
 ### 🪙 Tokenization Process
 
 - **Token Creation**: Convert properties into fungible tokens on Hedera network
@@ -42,10 +190,11 @@ Relett revolutionizes real estate investment by enabling property owners to toke
 ### 🔗 Blockchain Integration
 
 - **Hedera Network**: Built on Hedera's enterprise-grade blockchain
-- **HCS Topics**: Audit trails using Hedera Consensus Service
-- **Token Standards**: HTS (Hedera Token Service) implementation
+- **HCS Topics**: Immutable audit trails using Hedera Consensus Service
+- **HTS Integration**: Native Hedera Token Service for token operations
+- **HFS Storage**: Hedera File Service for document storage
 - **Wallet Integration**: WalletConnect for secure wallet connections
-- **Smart Contracts**: Solidity contracts for property operations
+- **Hybrid Architecture**: Combines Solidity contracts with Hedera native services
 
 ### 🏪 Marketplace
 
@@ -62,6 +211,9 @@ Relett revolutionizes real estate investment by enabling property owners to toke
 - **Financial Reports**: Comprehensive investment reports
 - **Market Trends**: Property market analysis and trends
 - **ROI Calculations**: Return on investment tracking
+- **Activity Monitoring**: Real-time tracking of all property activities
+- **HCS Audit Trails**: Blockchain-verified activity logs
+- **Agent Performance**: Agent activity and productivity analytics
 
 ### 💬 Communication
 
@@ -212,14 +364,21 @@ Relett revolutionizes real estate investment by enabling property owners to toke
 - **HTS** for token operations
 - **HCS** for audit trails
 
-### Smart Contracts
+### Smart Contracts & Hedera Services
 
-Located in `/contracts` directory:
+#### **Solidity Contracts** (Located in `/contracts` directory)
 
-- **PropertyRegistry.sol**: Central property registry
-- **PropertyToken.sol**: Individual property tokens
-- **PropertyMarketplace.sol**: Trading marketplace
-- **RevenueDistributor.sol**: Revenue distribution
+- **PropertyRegistry.sol**: Central property registry with verification
+- **PropertyToken.sol**: ERC20 tokens for fractional ownership
+- **PropertyMarketplace.sol**: Trading platform for token exchanges
+- **RevenueDistributor.sol**: Automated profit distribution system
+
+#### **Hedera Native Services**
+
+- **HTS (Hedera Token Service)**: Native token creation and management
+- **HCS (Hedera Consensus Service)**: Immutable audit trails for all activities
+- **HFS (Hedera File Service)**: Document storage and verification
+- **Account Management**: Hedera account operations and associations
 
 ## 🔧 Configuration Guide
 
@@ -227,11 +386,53 @@ Located in `/contracts` directory:
 
 The platform uses Supabase with pre-configured tables and functions. Key tables include:
 
-- `properties`: Property information
+#### **Core Property Tables**
+
+- `properties`: Property information and details
 - `tokenized_properties`: Tokenization records
 - `token_holdings`: Investor holdings
 - `revenue_distributions`: Revenue sharing
 - `governance_proposals`: Voting systems
+
+#### **Property Operations Tables**
+
+- `rentals`: Active rental agreements and management
+- `rental_applications`: Rental application processing
+- `rental_payments`: Payment tracking and scheduling
+- `reservations`: Property booking and reservation system
+- `inspections`: Property inspection scheduling and tracking
+
+#### **Audit & Security Tables**
+
+- `audit_events`: Blockchain audit events with HCS integration
+- `audit_trails`: System audit logging
+- `hcs_topics`: HCS topic management for properties
+- `identity_audit_logs`: Identity verification audit trails
+
+### Edge Functions
+
+The platform includes 50+ edge functions for various operations:
+
+#### **Hedera Integration Functions**
+
+- `create-hcs-topic-and-token`: Token creation with HCS audit trail
+- `record-hcs-event`: Record events on HCS topics
+- `register-property-blockchain`: Property blockchain registration
+- `transfer-hedera-tokens`: Token transfer operations
+- `distribute-hedera-revenue`: Revenue distribution
+
+#### **Property Operations Functions**
+
+- `send-inspection-notification`: Inspection notifications
+- `send-rental-notification`: Rental activity notifications
+- `send-booking-notification`: Reservation notifications
+- `process-notification`: Notification processing
+
+#### **Payment & Financial Functions**
+
+- `create-payment-session`: Payment session creation
+- `verify-payment`: Payment verification
+- `create-payment-intent`: Payment intent handling
 
 ### Hedera Configuration
 
