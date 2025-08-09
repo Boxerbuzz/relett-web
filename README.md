@@ -102,7 +102,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 4. **Configure Hedera Credentials**:
    Set up the following secrets in Supabase (Project Settings → Edge Functions → Secrets):
 
-   ```
+   ``` java
    HEDERA_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
    HEDERA_PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE
    ```
@@ -115,7 +115,7 @@ PropertyToken revolutionizes real estate investment by enabling property owners 
 5. **Optional API Keys**:
    Configure these secrets for enhanced functionality:
 
-   ```
+   ``` java
    OPENAI_API_KEY=your_openai_key        # For AI features
    PAYSTACK_SECRET_KEY=your_paystack_key # For payments
    TWILIO_ACCOUNT_SID=your_twilio_sid    # For SMS
