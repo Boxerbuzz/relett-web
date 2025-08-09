@@ -53,6 +53,12 @@ export class HederaWalletConnectService {
       // Initialize WalletConnect Modal for QR code presentation
       this.wcModal = new WalletConnectModal({ projectId: this.options.projectId });
 
+      // Sanity check: ensure WalletConnect client actually initialized inside DAppConnector
+      // The underlying library swallows init errors, so verify explicitly.
+      if (!(this.dAppConnector as any).walletConnectClient) {
+        throw new Error('Failed to initialize WalletConnect client');
+      }
+
       this.isInitialized = true;
       console.log('Hedera WalletConnect initialized successfully');
     } catch (error) {
