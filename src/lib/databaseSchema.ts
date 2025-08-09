@@ -66,16 +66,6 @@ const tableSchemas = {
     fields: ['id', 'land_title_id', 'agreement_type', 'parties', 'terms', 'financial_terms', 'start_date', 'end_date', 'status', 'signed_document_url', 'blockchain_record', 'created_at', 'updated_at'],
     relationships: ['land_title_id']
   },
-  compliance_records: {
-    domain: '🏛️ Land Registry & Legal',
-    fields: ['id', 'land_title_id', 'compliance_type', 'authority', 'reference_number', 'issue_date', 'expiry_date', 'status', 'document_url', 'renewal_reminder_sent', 'metadata', 'created_at', 'updated_at'],
-    relationships: ['land_title_id']
-  },
-  compliance_reports: {
-    domain: '🏛️ Land Registry & Legal',
-    fields: ['id', 'report_type', 'jurisdiction', 'regulator', 'reporting_period_start', 'reporting_period_end', 'report_data', 'status', 'file_url', 'submission_reference', 'submitted_by', 'submitted_at', 'acknowledgment_received_at', 'created_at', 'updated_at'],
-    relationships: ['submitted_by']
-  },
   document_verification_requests: {
     domain: '🏛️ Land Registry & Legal',
     fields: ['id', 'document_id', 'requested_by', 'assigned_verifier', 'priority', 'status', 'verification_checklist', 'notes', 'completed_at', 'created_at', 'updated_at'],
@@ -123,16 +113,6 @@ const tableSchemas = {
     fields: ['id', 'investment_group_id', 'user_id', 'parent_id', 'content', 'attachments', 'is_pinned', 'is_private', 'vote_count', 'created_at', 'updated_at'],
     relationships: ['investment_group_id', 'user_id', 'parent_id']
   },
-  investment_analytics: {
-    domain: '🪙 Tokenization & Investment',
-    fields: ['id', 'user_id', 'tokenized_property_id', 'metric_type', 'metric_value', 'period_start', 'period_end', 'calculation_date', 'metadata', 'created_at'],
-    relationships: ['user_id', 'tokenized_property_id']
-  },
-  auction_listings: {
-    domain: '🪙 Tokenization & Investment',
-    fields: ['id', 'property_id', 'tokenized_property_id', 'auctioneer_id', 'auction_type', 'starting_price', 'reserve_price', 'current_bid', 'bid_increment', 'high_bidder_id', 'total_bids', 'start_time', 'end_time', 'auto_extend', 'extension_time_minutes', 'status', 'terms_and_conditions', 'created_at', 'updated_at'],
-    relationships: ['property_id', 'tokenized_property_id', 'auctioneer_id', 'high_bidder_id']
-  },
   investment_polls: {
     domain: '🪙 Tokenization & Investment',
     fields: ['id', 'investment_group_id', 'created_by', 'title', 'description', 'poll_type', 'status', 'starts_at', 'ends_at', 'min_participation_percentage', 'requires_consensus', 'consensus_threshold', 'allow_vote_changes', 'is_anonymous', 'voting_power_basis', 'hedera_topic_id', 'hedera_consensus_timestamp', 'metadata', 'created_at', 'updated_at'],
@@ -155,11 +135,6 @@ const tableSchemas = {
     fields: ['id', 'user_id', 'document_type', 'document_side', 'file_url', 'file_size', 'mime_type', 'file_hash', 'verification_status', 'verification_provider', 'verification_response', 'extracted_data', 'verified_by', 'verified_at', 'expires_at', 'rejection_reason', 'retry_count', 'created_at', 'updated_at'],
     relationships: ['user_id', 'verified_by']
   },
-  sanctions_screening: {
-    domain: '👤 User Management & Authentication',
-    fields: ['id', 'user_id', 'screening_type', 'status', 'last_screened_at', 'next_screening_due', 'screening_frequency', 'lists_checked', 'matches_found', 'confidence_scores', 'false_positive', 'exemption_reason', 'exemption_approved_by', 'created_at', 'updated_at'],
-    relationships: ['user_id', 'exemption_approved_by']
-  },
 
   // Financial & Payment Systems
   payments: {
@@ -176,11 +151,6 @@ const tableSchemas = {
     domain: '💰 Financial & Payment Systems',
     fields: ['id', 'user_id', 'session_id', 'purpose', 'amount', 'currency', 'payment_provider', 'status', 'metadata', 'expires_at', 'completed_at', 'created_at', 'updated_at'],
     relationships: ['user_id']
-  },
-  escrow_accounts: {
-    domain: '💰 Financial & Payment Systems',
-    fields: ['id', 'buyer_id', 'seller_id', 'mediator_id', 'property_id', 'tokenized_property_id', 'transaction_id', 'escrow_amount', 'currency', 'conditions', 'release_conditions_met', 'status', 'dispute_reason', 'expires_at', 'created_at', 'updated_at'],
-    relationships: ['buyer_id', 'seller_id', 'mediator_id', 'property_id', 'tokenized_property_id']
   },
   financial_reports: {
     domain: '💰 Financial & Payment Systems',
@@ -203,11 +173,6 @@ const tableSchemas = {
     domain: '🔐 Security & Compliance',
     fields: ['id', 'user_id', 'performed_by', 'action', 'resource_type', 'resource_id', 'old_values', 'new_values', 'ip_address', 'user_agent', 'device_fingerprint', 'created_at'],
     relationships: ['user_id', 'performed_by']
-  },
-  backup_recovery: {
-    domain: '🔐 Security & Compliance',
-    fields: ['id', 'backup_type', 'backup_scope', 'backup_location', 'backup_size_bytes', 'backup_hash', 'compression_enabled', 'compression_ratio', 'encryption_enabled', 'status', 'started_at', 'completed_at', 'retention_until', 'recovery_tested', 'last_recovery_test', 'error_message', 'created_by'],
-    relationships: ['created_by']
   },
   api_keys: {
     domain: '🔐 Security & Compliance',
@@ -316,11 +281,6 @@ const tableSchemas = {
     domain: '📈 Analytics & AI',
     fields: ['id', 'user_id', 'agent_id', 'conversation_id', 'property_id', 'interaction_type', 'user_message', 'agent_response', 'response_time_ms', 'outcome', 'context_data', 'user_satisfaction_score', 'created_at', 'updated_at'],
     relationships: ['user_id', 'conversation_id', 'property_id']
-  },
-  agent_performance_metrics: {
-    domain: '📈 Analytics & AI',
-    fields: ['id', 'agent_id', 'metric_type', 'metric_value', 'period_start', 'period_end', 'sample_size', 'metadata', 'created_at'],
-    relationships: []
   },
 
   // User Engagement
@@ -455,7 +415,6 @@ export function generateDatabaseEdges(): Edge[] {
     
     // Land title relationships
     { from: 'legal_agreements', to: 'land_titles', field: 'land_title_id' },
-    { from: 'compliance_records', to: 'land_titles', field: 'land_title_id' },
     
     // Tokenization relationships
     { from: 'tokenized_properties', to: 'land_titles', field: 'land_title_id' },
@@ -468,15 +427,10 @@ export function generateDatabaseEdges(): Edge[] {
     { from: 'investment_tracking', to: 'tokenized_properties', field: 'tokenized_property_id' },
     { from: 'investment_groups', to: 'tokenized_properties', field: 'tokenized_property_id' },
     { from: 'investment_discussions', to: 'investment_groups', field: 'investment_group_id' },
-    { from: 'investment_analytics', to: 'tokenized_properties', field: 'tokenized_property_id' },
-    { from: 'auction_listings', to: 'properties', field: 'property_id' },
-    { from: 'auction_listings', to: 'tokenized_properties', field: 'tokenized_property_id' },
     { from: 'investment_polls', to: 'investment_groups', field: 'investment_group_id' },
     
     // Payment relationships
     { from: 'payments', to: 'properties', field: 'property_id' },
-    { from: 'escrow_accounts', to: 'properties', field: 'property_id' },
-    { from: 'escrow_accounts', to: 'tokenized_properties', field: 'tokenized_property_id' },
     
     // Communication relationships
     { from: 'messages', to: 'conversations', field: 'conversation_id' },
