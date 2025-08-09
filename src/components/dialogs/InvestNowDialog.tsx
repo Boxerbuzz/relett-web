@@ -18,7 +18,7 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { CurrencyExchangeWidget } from "@/components/ui/currency-exchange-widget";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useHashPack } from "@/contexts/HashPackContext";
+import { useHederaWallet } from "@/contexts/HederaWalletContext";
 import { TradingService } from "@/lib/tradingService";
 import { TokenizedPropertyLegalFramework } from "@/components/legal/TokenizedPropertyLegalFramework";
 import { LegalFrameworkConfig } from "@/types/legal";
@@ -56,7 +56,7 @@ export function InvestNowDialog({
   tokenizedProperty,
 }: InvestNowDialogProps) {
   const { user } = useAuth();
-  const { wallet, connectWallet, isConnecting } = useHashPack();
+  const { wallet, connectWallet, isConnecting } = useHederaWallet();
   const { toast } = useToast();
   const [investmentAmount, setInvestmentAmount] = useState(
     tokenizedProperty.minimum_investment
@@ -78,7 +78,7 @@ export function InvestNowDialog({
       await connectWallet();
       toast({
         title: "Wallet Connected",
-        description: "Your HashPack wallet has been connected successfully.",
+        description: "Your Hedera wallet has been connected successfully.",
       });
     } catch (error) {
       toast({
@@ -107,7 +107,7 @@ export function InvestNowDialog({
     if (!wallet) {
       toast({
         title: "Wallet Required",
-        description: "Please connect your HashPack wallet to invest",
+        description: "Please connect your Hedera wallet to invest",
         variant: "destructive",
       });
       return;

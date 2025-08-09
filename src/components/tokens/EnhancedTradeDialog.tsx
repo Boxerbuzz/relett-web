@@ -13,8 +13,7 @@ import { TrendingUp, TrendingDown, DollarSign, Coins, AlertTriangle, Loader2, Wa
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
 import { TradingService } from '@/lib/tradingService';
-import { useHederaWallet } from '@/hooks/useHederaWallet';
-import { WalletConnectDialog } from '@/components/wallet/WalletConnectDialog';
+import { useHederaWallet } from '@/contexts/HederaWalletContext';
 import { MarketDepth } from './MarketDepth';
 
 interface EnhancedTradeDialogProps {
@@ -44,7 +43,7 @@ export function EnhancedTradeDialog({ isOpen, onClose, property, onTradeComplete
 
   const { toast } = useToast();
   const { user } = useAuth();
-  const { wallet, isLoading: walletLoading, refreshBalance } = useHederaWallet();
+  const { wallet, isConnecting: walletLoading, refreshBalances, accountBalances } = useHederaWallet();
   const tradingService = new TradingService();
 
   const totalCost = parseFloat(tokenAmount || '0') * parseFloat(pricePerToken || '0');
@@ -142,7 +141,7 @@ export function EnhancedTradeDialog({ isOpen, onClose, property, onTradeComplete
         });
         
         // Refresh wallet balance
-        await refreshBalance();
+        await refreshBalances();
         
         onTradeComplete?.();
         onClose();
@@ -209,7 +208,7 @@ export function EnhancedTradeDialog({ isOpen, onClose, property, onTradeComplete
                         <div className="flex-1">
                           <p className="text-sm font-medium text-green-800">Wallet Connected</p>
                           <p className="text-xs text-green-700 font-mono">
-                            {wallet.address} • {wallet.balance_hbar?.toFixed(2) || '0.00'} HBAR
+                            {wallet.id} • {accountBalances.get('hbar') || '0.00'} HBAR
                           </p>
                         </div>
                       </div>
@@ -397,10 +396,6 @@ export function EnhancedTradeDialog({ isOpen, onClose, property, onTradeComplete
         </DialogContent>
       </Dialog>
 
-      <WalletConnectDialog
-        isOpen={showWalletConnect}
-        onClose={() => setShowWalletConnect(false)}
-      />
     </>
   );
 }

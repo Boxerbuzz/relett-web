@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useHashPack } from "@/contexts/HashPackContext";
+import { useHederaWallet } from "@/contexts/HederaWalletContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,8 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "./profile/UserAvatar";
-import { WalletAvatar } from "./wallet/WalletAvatar";
-import { HashPackConnectDialog } from "./wallet/HashPackConnectDialog";
+import { WalletConnectButton } from "./wallet/WalletConnectButton";
 import { Badge } from "@/components/ui/badge";
 import {
   BellIcon,
@@ -35,9 +34,8 @@ interface NavbarProps {
 export function Navbar({ onToggleSidebar }: NavbarProps) {
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile();
-  const { wallet, disconnectWallet } = useHashPack();
+  const { wallet, disconnectWallet } = useHederaWallet();
   const [notificationCount] = useState(0);
-  const [showWalletDialog, setShowWalletDialog] = useState(false);
 
   if (!user) return null;
 
@@ -90,16 +88,17 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
               {/* Dual Avatar System - Stacked Horizontally */}
               <div className="flex flex-row items-center relative">
                 <UserAvatar size="sm" className="z-10" />
-                <WalletAvatar
-                  size="sm"
-                  className="w-8 h-8 border-2 border-white -ml-3 z-0" // -ml-3 for overlap
-                />
+                {wallet && (
+                  <div className="w-8 h-8 border-2 border-white -ml-3 z-0 rounded-full bg-primary/10 flex items-center justify-center">
+                    <WalletIcon size={14} className="text-primary" />
+                  </div>
+                )}
               </div>
               <div className="hidden text-left">
                 <p className="text-sm font-medium">{userDisplayName}</p>
                 <p className="text-xs text-gray-500">
-                  {wallet?.isConnected
-                    ? `${roleDisplayName} • ${wallet.address.slice(0, 8)}...`
+                  {wallet
+                    ? `${roleDisplayName} • ${wallet.id.slice(0, 8)}...`
                     : roleDisplayName}
                 </p>
               </div>
@@ -160,26 +159,9 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
             <DropdownMenuSeparator />
 
             {/* Wallet Section */}
-            {wallet?.isConnected ? (
-              <DropdownMenuItem
-                onClick={disconnectWallet}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <WalletIcon size={16} />
-                Disconnect Wallet
-                <Badge variant="outline" className="ml-auto text-xs">
-                  Connected
-                </Badge>
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                onClick={() => setShowWalletDialog(true)}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <WalletIcon size={16} />
-                Connect Wallet
-              </DropdownMenuItem>
-            )}
+            <div className="px-2 py-1">
+              <WalletConnectButton />
+            </div>
 
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -193,11 +175,6 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
         </DropdownMenu>
       </div>
 
-      {/* HashPack Connect Dialog */}
-      <HashPackConnectDialog
-        isOpen={showWalletDialog}
-        onClose={() => setShowWalletDialog(false)}
-      />
     </header>
   );
 }

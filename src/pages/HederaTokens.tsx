@@ -8,7 +8,7 @@ import { WalletConnectSetup } from '@/components/setup/WalletConnectSetup';
 import { TokenPurchaseManager } from '@/components/hedera/TokenPurchaseManager';
 import { ContractStatusIndicator } from '@/components/hedera/ContractStatusIndicator';
 import { useAuth } from '@/lib/auth';
-import { useHederaWallet } from '@/hooks/useHederaWallet';
+import { useHederaWallet } from '@/contexts/HederaWalletContext';
 import { Badge } from '@/components/ui/badge';
 import { 
   Coins, 
@@ -20,7 +20,7 @@ import {
 
 const HederaTokens = () => {
   const { user } = useAuth();
-  const { wallet, isLoading } = useHederaWallet();
+  const { wallet, isConnecting } = useHederaWallet();
   const [selectedTab, setSelectedTab] = useState('overview');
 
   if (!user) {
