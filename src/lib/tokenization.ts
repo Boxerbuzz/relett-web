@@ -268,30 +268,28 @@ export class PropertyTokenizationService {
         );
       }
 
-      // Step 4: Transfer tokens from treasury to investor
+      // SECURITY: Token transfer operations moved to secure edge function
       if (property.hedera_token_id) {
-        console.log("Transferring tokens to investor...");
-        const treasuryAccountId =
-          import.meta.env.VITE_HEDERA_ACCOUNT_ID ||
-          import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
-        const treasuryPrivateKey =
-          import.meta.env.VITE_HEDERA_PRIVATE_KEY ||
-          import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
-
-        if (!treasuryAccountId || !treasuryPrivateKey) {
-          console.warn(
-            "Hedera treasury credentials not configured, using mock transfer"
-          );
-        } else {
-          const transferResult = await this.hederaClient.transferTokens({
+        console.log("Processing secure token transfer...");
+        
+        // Call secure edge function for token operations  
+        const { data, error } = await supabase.functions.invoke('process-token-transfer', {
+          body: {
             tokenId: property.hedera_token_id,
-            fromAccountId: treasuryAccountId,
             toAccountId: params.investorAccountId,
             amount: params.tokenAmount,
-            fromPrivateKey: treasuryPrivateKey,
-          });
-          console.log("Token transfer completed:", transferResult);
+            type: 'purchase',
+            investorId: params.investorId,
+            tokenizedPropertyId: params.tokenizedPropertyId
+          }
+        });
+
+        if (error) {
+          console.error("Secure token transfer failed:", error);
+          throw new Error("Token transfer failed - please contact support");
         }
+        
+        console.log("Secure token transfer completed:", data);
       }
 
       // Step 5: Record the token holding

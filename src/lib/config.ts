@@ -11,7 +11,7 @@ export const config = {
   hedera: {
     network: 'testnet',
     accountId: import.meta.env.VITE_HEDERA_ACCOUNT_ID,
-    privateKey: import.meta.env.VITE_HEDERA_PRIVATE_KEY, // This will be configured via backend  
+    // SECURITY: Private key removed from frontend - operations moved to secure edge functions
     contracts: {
       propertyRegistry: import.meta.env.VITE_PROPERTY_REGISTRY_CONTRACT,
       propertyMarketplace: import.meta.env.VITE_PROPERTY_MARKETPLACE_CONTRACT,

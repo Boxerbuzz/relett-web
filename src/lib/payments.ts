@@ -130,29 +130,33 @@ export class PaymentService {
         throw new Error("Payment processing failed");
       }
 
-      // Transfer tokens on Hedera (if payment successful)
+      // SECURITY: Token transfer operations moved to secure edge function
       if (property.hedera_token_id) {
         try {
-          // Use environment variables with proper Vite format
-          const treasuryAccountId =
-            import.meta.env.VITE_HEDERA_ACCOUNT_ID ||
-            import.meta.env.VITE_HEDERA_TESTNET_ACCOUNT_ID;
-          const treasuryPrivateKey =
-            import.meta.env.VITE_HEDERA_PRIVATE_KEY ||
-            import.meta.env.VITE_HEDERA_TESTNET_PRIVATE_KEY;
-
-          if (!treasuryAccountId || !treasuryPrivateKey) {
-            console.warn(
-              "Hedera treasury credentials not configured, skipping token transfer"
-            );
-          } else {
-            await this.hederaClient.transferTokens({
+          // Call secure edge function for token operations
+          const { data, error } = await supabase.functions.invoke('process-token-transfer', {
+            body: {
               tokenId: property.hedera_token_id,
-              fromAccountId: treasuryAccountId,
               toAccountId: params.investorAccountId,
               amount: params.tokenAmount,
-              fromPrivateKey: treasuryPrivateKey,
-            });
+              paymentId: payment.id,
+              type: 'investment'
+            }
+          });
+
+          if (error) {
+            console.error("Token transfer failed:", error);
+            // Mark payment as requiring manual review
+            await supabase
+              .from("payments")
+              .update({ 
+                status: "requires_review",
+                metadata: {
+                  ...payment.metadata,
+                  transfer_error: error.message
+                }
+              })
+              .eq("id", payment.id);
           }
         } catch (hederaError) {
           console.error("Hedera transfer failed:", hederaError);
