@@ -152,7 +152,7 @@ export class PaymentService {
               .update({ 
                 status: "requires_review",
                 metadata: {
-                  ...payment.metadata,
+                  ...(payment.metadata as Record<string, any> || {}),
                   transfer_error: error.message
                 }
               })

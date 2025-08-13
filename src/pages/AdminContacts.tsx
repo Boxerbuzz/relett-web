@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { InputValidator } from "@/lib/security/inputValidation";
 import {
   Card,
   CardContent,
@@ -324,12 +325,13 @@ export default function AdminContacts() {
                             </DialogHeader>
 
                             <div className="space-y-4">
-                              <div>
-                                <h4 className="font-medium">Message:</h4>
-                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                                  {contact.message}
-                                </p>
-                              </div>
+                                <div>
+                                  <h4 className="font-medium">Message:</h4>
+                                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                    {/* SECURITY: Sanitize displayed content */}
+                                    {InputValidator.sanitizeText(contact.message)}
+                                  </p>
+                                </div>
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -382,9 +384,11 @@ export default function AdminContacts() {
                                   <Textarea
                                     placeholder="Type your response here..."
                                     value={responseMessage}
-                                    onChange={(e) =>
-                                      setResponseMessage(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                      // SECURITY: Sanitize input to prevent XSS
+                                      const sanitized = InputValidator.sanitizeText(e.target.value);
+                                      setResponseMessage(sanitized);
+                                    }}
                                     rows={4}
                                   />
 
