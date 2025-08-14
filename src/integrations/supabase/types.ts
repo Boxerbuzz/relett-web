@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -5531,11 +5531,11 @@ export type Database = {
       }
       assign_verification_task: {
         Args: {
-          p_property_id: string
-          p_verifier_id: string
-          p_task_type?: string
-          p_priority?: string
           p_deadline?: string
+          p_priority?: string
+          p_property_id: string
+          p_task_type?: string
+          p_verifier_id: string
         }
         Returns: string
       }
@@ -5549,8 +5549,8 @@ export type Database = {
       }
       check_rate_limit: {
         Args: {
-          p_identifier: string
           p_action: string
+          p_identifier: string
           p_limit?: number
           p_window_minutes?: number
         }
@@ -5570,35 +5570,35 @@ export type Database = {
       }
       complete_verification_task: {
         Args: {
-          p_task_id: string
+          p_checklist?: Json
           p_decision: string
           p_decision_reason?: string
+          p_task_id: string
           p_verifier_notes?: string
-          p_checklist?: Json
         }
         Returns: boolean
       }
       create_investment_tracking: {
         Args: {
-          p_user_id: string
-          p_tokenized_property_id: string
-          p_tokens_owned: number
           p_investment_amount: number
           p_purchase_price_per_token: number
+          p_tokenized_property_id: string
+          p_tokens_owned: number
+          p_user_id: string
         }
         Returns: string
       }
       create_notification_with_delivery: {
         Args: {
-          p_user_id: string
-          p_type: Database["public"]["Enums"]["notification_type"]
-          p_title: string
+          p_action_label?: string
+          p_action_url?: string
+          p_image_url?: string
           p_message?: string
           p_metadata?: Json
-          p_action_url?: string
-          p_action_label?: string
-          p_image_url?: string
           p_sender_id?: string
+          p_title: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_user_id: string
         }
         Returns: string
       }
@@ -5694,8 +5694,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -5705,21 +5705,21 @@ export type Database = {
       }
       reassign_verifier_for_property: {
         Args: {
-          p_property_id: string
-          p_verifier_id: string
-          p_task_type?: string
-          p_priority?: string
           p_deadline?: string
+          p_priority?: string
+          p_property_id: string
+          p_task_type?: string
+          p_verifier_id: string
         }
         Returns: undefined
       }
       register_user_device: {
         Args: {
           p_device_id: string
-          p_device_type: string
           p_device_name?: string
-          p_user_agent?: string
+          p_device_type: string
           p_is_trusted?: boolean
+          p_user_agent?: string
         }
         Returns: string
       }
@@ -5743,35 +5743,35 @@ export type Database = {
       }
       track_agent_interaction: {
         Args: {
-          p_user_id: string
           p_agent_id: string
-          p_conversation_id: string
-          p_property_id: string
-          p_interaction_type: string
-          p_user_message: string
           p_agent_response: string
-          p_response_time_ms: number
-          p_outcome?: string
           p_context_data?: Json
+          p_conversation_id: string
+          p_interaction_type: string
+          p_outcome?: string
+          p_property_id: string
+          p_response_time_ms: number
+          p_user_id: string
+          p_user_message: string
         }
         Returns: string
       }
       track_property_interaction: {
         Args: {
-          p_property_id: string
-          p_user_id: string
           p_interaction_type: string
           p_metadata?: Json
+          p_property_id: string
+          p_user_id: string
         }
         Returns: undefined
       }
       update_conversation_context: {
         Args: {
-          p_user_id: string
           p_agent_id: string
-          p_conversation_id: string
           p_context_data: Json
+          p_conversation_id: string
           p_current_intent?: string
+          p_user_id: string
         }
         Returns: string
       }
@@ -5781,10 +5781,10 @@ export type Database = {
       }
       update_token_holdings_after_sale: {
         Args: {
-          p_seller_id: string
           p_buyer_id: string
-          p_tokenized_property_id: string
+          p_seller_id: string
           p_token_amount: number
+          p_tokenized_property_id: string
           p_total_price: number
         }
         Returns: undefined
